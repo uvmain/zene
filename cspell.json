@@ -1,0 +1,15 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [],
+    "dictionaries": [],
+    "language": "en",
+    "allowCompoundWords": true,
+    "minWordLength": 3,
+    "words": [
+        "mdate",
+        "sqlitex"
+    ],
+    "ignoreWords": [],
+    "import": []
+}
