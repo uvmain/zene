@@ -3,12 +3,16 @@
     "ignorePaths": [],
     "dictionaryDefinitions": [],
     "dictionaries": [],
-    "language": "en",
+    "language": "en-GB",
     "allowCompoundWords": true,
     "minWordLength": 3,
     "words": [
+        "env",
+        "godotenv",
+        "joho",
         "mdate",
-        "sqlitex"
+        "sqlitex",
+        "zene"
     ],
     "ignoreWords": [],
     "import": []
