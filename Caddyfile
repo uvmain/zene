@@ -1,0 +1,9 @@
+zene.localhost {
+	tls zene.localhost.pem zene.localhost-key.pem
+	handle /api/* {
+		reverse_proxy localhost:8080
+	}
+	handle {
+		reverse_proxy localhost:5173
+	}
+}

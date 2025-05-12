@@ -1,0 +1,45 @@
+{
+  "name": "zene",
+  "version": "1.0.0",
+  "description": "Self Hosted Music Server",
+  "main": "index.js",
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "postinstall": "go mod download && npm run create-cert",
+    "dev:backend": "cross-env LOCAL_DEV_ENV=true FFMPEG_PATH=./node_modules/.bin/ffmpeg FFPROBE_PATH=./node_modules/.bin/ffprobe go run .",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
+    "build:backend": "go build -o server . && cpy server . --rename=server.exe",
+    "build:frontend": "cd frontend && npm run build && cpy dist ../",
+    "build": "cross-env CGO_ENABLED=0 npm run build:frontend && npm run build:backend",
+    "preview": "concurrently npm:caddy:preview npm:preview:go",
+    "preview:go": "cross-env LOCAL_DEV_ENV=true FFMPEG_PATH=./node_modules/.bin/ffmpeg FFPROBE_PATH=./node_modules/.bin/ffprobe server.exe",
+    "create-cert": "mkcert zene.localhost && mkcert --install",
+    "caddy": "caddy run --config Caddyfile",
+    "caddy:preview": "caddy run --config Caddyfile.preview",
+    "cspell": "cspell \"**/*.{go,ts,js,vue}\"",
+    "ffmpeg:version": "ffmpeg -version",
+    "ffprobe:version": "ffmpeg -version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uvmain/zene.git"
+  },
+  "author": "Ian Baron",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uvmain/zene/issues"
+  },
+  "homepage": "https://github.com/uvmain/zene#readme",
+  "devDependencies": {
+    "caddy-baron": "^2.0.1",
+    "concurrently": "^9.1.2",
+    "cpy-cli": "^5.0.0",
+    "cross-env": "^7.0.3",
+    "ffmpeg-baron": "^1.0.1",
+    "ffprobe-baron": "^1.0.0",
+    "node-mkcert-binary": "^2.1.9"
+  }
+}

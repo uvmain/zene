@@ -1,0 +1,49 @@
+{
+  "name": "uvite",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite-ssg build",
+    "preview": "vite preview",
+    "cspell": "cspell \"**/*.{ts,js,vue}\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@vueuse/core": "^13.0.0",
+    "dayjs": "^1.11.13",
+    "express": "^4.21.0",
+    "http-status-codes": "^2.3.0",
+    "maplibre-gl": "^5.3.0",
+    "vue": "^3.4.29",
+    "vue-router": "^4.3.3"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.1.0",
+    "@iconify-json/carbon": "^1.2.3",
+    "@iconify-json/tabler": "^1.2.6",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.5.5",
+    "@unocss/eslint-plugin": "^65.4.3",
+    "@vitejs/plugin-vue": "^5.0.5",
+    "@vue/tsconfig": "^0.7.0",
+    "cspell": "^8.14.4",
+    "eslint": "^9.10.0",
+    "typescript": "^5.6.2",
+    "unocss": "^65.4.3",
+    "unplugin-auto-import": "^19.0.0",
+    "unplugin-fonts": "^1.1.1",
+    "unplugin-icons": "^22.0.0",
+    "unplugin-vue-components": "^28.0.0",
+    "vite": "^6.0.11",
+    "vite-plugin-pages": "^0.32.3",
+    "vite-ssg": "^25.0.0",
+    "vue-tsc": "^2.0.21"
+  },
+  "overrides": {
+    "vite": "$vite"
+  }
+}

@@ -2,3 +2,12 @@
 *.db-shm
 *.db-wal
 .env
+node_modules
+zene
+zene.exe
+server
+server.exe
+*.pem
+frontend/node_modules
+frontend/dist
+dist

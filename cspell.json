@@ -7,7 +7,9 @@
     "allowCompoundWords": true,
     "minWordLength": 3,
     "words": [
+        "CGO",
         "env",
+        "ffprobe",
         "godotenv",
         "joho",
         "mdate",

@@ -63,7 +63,7 @@ func getFiles(lastModified time.Time) error {
 	})
 
 	database.InsertScanRow(time.Now().Format(time.RFC3339Nano), fileCount, newModified.Format(time.RFC3339Nano))
-	log.Printf("Music directory scan completed, new modified time is %s", newModified.Format(time.RFC3339Nano))
+	log.Printf("Music directory scan completed, found %d new files", fileCount)
 
 	return scanResult
 }
