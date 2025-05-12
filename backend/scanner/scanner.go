@@ -98,7 +98,10 @@ func cleanFiles() error {
 		if !io.FileExists(filePath) {
 			log.Printf("Deleting files row %d for %s", file.Id, filePath)
 			database.DeleteFileById(file.Id)
-			database.DeleteMetadataByFileId(file.Id)
+			if slices.Contains(config.AudioFileTypes, filepath.Ext(filePath)) {
+				database.DeleteMetadataByFileId(file.Id)
+			}
+
 		}
 	}
 	return nil
