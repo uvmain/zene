@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"os/exec"
+	"strings"
 
 	"zene/config"
 	"zene/types"
@@ -35,32 +36,109 @@ func GetTags(audfilePath string) (types.TrackMetadata, error) {
 		return types.TrackMetadata{}, err
 	}
 
-	var trackID = ffprobeOutput.Format.Tags["MUSICBRAINZ_TRACKID"]
-	if trackID == "" {
+	var parsedArtist = ffprobeOutput.Format.Tags["ARTIST"]
+	if parsedArtist == "" {
+		parsedArtist = ffprobeOutput.Format.Tags["artist"]
+	}
+	if parsedArtist == "" {
+		parsedArtist = ffprobeOutput.Format.Tags["album_artist"]
+	}
+
+	var parsedTitle = ffprobeOutput.Format.Tags["TITLE"]
+	if parsedTitle == "" {
+		parsedTitle = ffprobeOutput.Format.Tags["title"]
+	}
+
+	var parsedAlbum = ffprobeOutput.Format.Tags["ALBUM"]
+	if parsedAlbum == "" {
+		parsedAlbum = ffprobeOutput.Format.Tags["album"]
+	}
+
+	var parsedGenre = ffprobeOutput.Format.Tags["GENRE"]
+	if parsedGenre == "" {
+		parsedGenre = ffprobeOutput.Format.Tags["genre"]
+	}
+
+	var parsedReleaseDate = ffprobeOutput.Format.Tags["DATE"]
+	if parsedReleaseDate == "" {
+		parsedReleaseDate = ffprobeOutput.Format.Tags["date"]
+	}
+
+	var musicBrainzAlbumId = ffprobeOutput.Format.Tags["MUSICBRAINZ_ALBUMID"]
+	if musicBrainzAlbumId == "" {
+		musicBrainzAlbumId = ffprobeOutput.Format.Tags["MusicBrainz Album Id"]
+	}
+
+	var musicBrainzArtistId = ffprobeOutput.Format.Tags["MUSICBRAINZ_ARTISTID"]
+	if musicBrainzArtistId == "" {
+		musicBrainzArtistId = ffprobeOutput.Format.Tags["MusicBrainz Artist Id"]
+	}
+
+	var musicBrainzTrackId = ffprobeOutput.Format.Tags["MUSICBRAINZ_TRACKID"]
+	if musicBrainzTrackId == "" {
+		musicBrainzTrackId = ffprobeOutput.Format.Tags["MusicBrainz Release Track Id"]
+	}
+	if musicBrainzTrackId == "" {
 		var filenameBytes = []byte(ffprobeOutput.Format.Filename)
-		trackID = base64.StdEncoding.EncodeToString(filenameBytes)
+		musicBrainzTrackId = base64.StdEncoding.EncodeToString(filenameBytes)
+	}
+
+	var totalTracks = ffprobeOutput.Format.Tags["TOTALTRACKS"]
+	if totalTracks == "" {
+		totalTracks = ffprobeOutput.Format.Tags["totaltracks"]
+	}
+
+	var trackNumber = ffprobeOutput.Format.Tags["track"]
+	if strings.Contains(trackNumber, "/") {
+		splitValue := strings.Split(trackNumber, "/")
+		trackNumber = splitValue[0]
+		if totalTracks == "" && len(splitValue) > 1 {
+			totalTracks = splitValue[1]
+		}
+	}
+
+	var totalDiscs = ffprobeOutput.Format.Tags["TOTALDISCS"]
+	if totalDiscs == "" {
+		totalDiscs = ffprobeOutput.Format.Tags["totaldiscs"]
+	}
+
+	var discNumber = ffprobeOutput.Format.Tags["disc"]
+	if strings.Contains(discNumber, "/") {
+		splitValue := strings.Split(discNumber, "/")
+		discNumber = splitValue[0]
+		if totalDiscs == "" && len(splitValue) > 1 {
+			totalDiscs = splitValue[1]
+		}
+	}
+
+	var label = ffprobeOutput.Format.Tags["LABEL"]
+	if label == "" {
+		label = ffprobeOutput.Format.Tags["label"]
+	}
+	if label == "" {
+		label = ffprobeOutput.Format.Tags["publisher"]
 	}
 
 	metadata := types.TrackMetadata{
-		MusicBrainzTrackID:  trackID,
 		Filename:            ffprobeOutput.Format.Filename,
 		Format:              ffprobeOutput.Format.FormatName,
 		Duration:            ffprobeOutput.Format.Duration,
 		Size:                ffprobeOutput.Format.Size,
 		Bitrate:             ffprobeOutput.Format.Bitrate,
-		Title:               ffprobeOutput.Format.Tags["TITLE"],
-		Artist:              ffprobeOutput.Format.Tags["ARTIST"],
-		Album:               ffprobeOutput.Format.Tags["ALBUM"],
+		Title:               parsedTitle,
+		Artist:              parsedArtist,
+		Album:               parsedAlbum,
 		AlbumArtist:         ffprobeOutput.Format.Tags["album_artist"],
-		Genre:               ffprobeOutput.Format.Tags["GENRE"],
-		TrackNumber:         ffprobeOutput.Format.Tags["track"],
-		DiscNumber:          ffprobeOutput.Format.Tags["disc"],
-		ReleaseDate:         ffprobeOutput.Format.Tags["DATE"],
-		MusicBrainzArtistID: ffprobeOutput.Format.Tags["MUSICBRAINZ_ARTISTID"],
-		MusicBrainzAlbumID:  ffprobeOutput.Format.Tags["MUSICBRAINZ_ALBUMID"],
-		Label:               ffprobeOutput.Format.Tags["LABEL"],
-		TotalTracks:         ffprobeOutput.Format.Tags["TOTALTRACKS"],
-		TotalDiscs:          ffprobeOutput.Format.Tags["TOTALDISCS"],
+		Genre:               parsedGenre,
+		TrackNumber:         trackNumber,
+		DiscNumber:          discNumber,
+		ReleaseDate:         parsedReleaseDate,
+		MusicBrainzArtistID: musicBrainzArtistId,
+		MusicBrainzAlbumID:  musicBrainzAlbumId,
+		MusicBrainzTrackID:  musicBrainzTrackId,
+		Label:               label,
+		TotalTracks:         totalTracks,
+		TotalDiscs:          totalDiscs,
 	}
 
 	return metadata, nil

@@ -15,6 +15,7 @@
         "ffprobe",
         "musicbrainz",
         "sqlitex",
+        "TRACKID",
         "zene"
     ],
     "ignoreWords": [],

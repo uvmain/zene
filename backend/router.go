@@ -32,6 +32,7 @@ func StartServer() {
 
 	router.HandleFunc("/api/files", handlers.HandleGetAllFiles)
 	router.HandleFunc("/api/file", handlers.HandleGetFileByName)
+	router.HandleFunc("/api/artists", handlers.HandleGetArtists)
 
 	handler := cors.AllowAll().Handler(router)
 

@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"zene/types"
 )
 
@@ -61,4 +62,33 @@ func DeleteMetadataByFileId(file_id int) error {
 		return fmt.Errorf("failed to delete metadata row for file_id %d: %v", file_id, err)
 	}
 	return nil
+}
+
+func SelectAllArtists() ([]string, error) {
+	stmt, err := Db.Prepare(`SELECT DISTINCT 
+		CASE 
+			WHEN artist IS NULL OR TRIM(artist) = '' THEN album_artist 
+			ELSE artist 
+		END AS artist
+		FROM track_metadata
+		ORDER BY artist;`)
+
+	var rows []string
+
+	if err != nil {
+		log.Printf("Error selecting artists from track_metadata: %v", err)
+		return rows, err
+	}
+	defer stmt.Finalize()
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return rows, err
+		} else if !hasRow {
+			break
+		} else {
+			rows = append(rows, stmt.GetText("artist"))
+		}
+	}
+	return rows, nil
 }
