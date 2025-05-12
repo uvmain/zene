@@ -21,7 +21,7 @@ func SelectLastScan() (types.ScanRow, error) {
 		return types.ScanRow{}, nil
 	} else {
 		var row types.ScanRow
-		row.Id = stmt.GetText("id")
+		row.Id = int(stmt.GetInt64("id"))
 		row.ScanDate = stmt.GetText("scan_date")
 		row.FileCount = stmt.GetText("file_count")
 		row.DateModified = stmt.GetText("date_modified")
@@ -46,7 +46,7 @@ func SelectAllFiles() ([]types.FilesRow, error) {
 			break
 		} else {
 			var row types.FilesRow
-			row.Id = stmt.GetText("id")
+			row.Id = int(stmt.GetInt64("id"))
 			row.DirPath = stmt.GetText("dir_path")
 			row.Filename = stmt.GetText("filename")
 			row.DateAdded = stmt.GetText("date_added")
@@ -72,13 +72,27 @@ func SelectFileByFilename(filename string) (types.FilesRow, error) {
 		return types.FilesRow{}, nil
 	} else {
 		var row types.FilesRow
-		row.Id = stmt.GetText("id")
+		row.Id = int(stmt.GetInt64("id"))
 		row.DirPath = stmt.GetText("dir_path")
 		row.Filename = stmt.GetText("filename")
 		row.DateAdded = stmt.GetText("date_added")
 		row.DateModified = stmt.GetText("date_modified")
 		return row, nil
 	}
+}
+
+func DeleteFileById(id int) error {
+	stmt, err := Db.Prepare(`delete FROM files WHERE id = $id;`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Finalize()
+	stmt.SetInt64("$id", int64(id))
+	_, err = stmt.Step()
+	if err != nil {
+		return fmt.Errorf("failed to delete files row for id %d: %v", id, err)
+	}
+	return nil
 }
 
 func InsertIntoFiles(dirPath string, fileName string, dateAdded string, dateModified string) error {

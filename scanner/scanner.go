@@ -7,10 +7,10 @@ import (
 	"time"
 	"zene/config"
 	"zene/database"
+	"zene/io"
 )
 
-func ScanMusicDirectory() error {
-	log.Printf("Scanning directory: %s", config.MusicDir)
+func ScanMusicDirectory() {
 	lastScan, err := database.SelectLastScan()
 	if err != nil {
 		log.Printf("Failed to retrieve last scanned info: %v", err)
@@ -21,15 +21,34 @@ func ScanMusicDirectory() error {
 		log.Printf("Error fetching lastModified from scans table: %v", err)
 	}
 
+	err = getFiles(lastModified)
+	if err != nil {
+		log.Printf("Error scanning files in music directory: %v", err)
+	}
+
+	err = cleanFiles()
+	if err != nil {
+		log.Printf("Error cleaning file rows: %v", err)
+	}
+}
+
+func getFiles(lastModified time.Time) error {
+	log.Printf("Scanning directory: %s", config.MusicDir)
+
 	newModified := lastModified
 	fileCount := 0
 
-	scanResult := filepath.Walk(config.MusicDir, func(path string, info os.FileInfo, err error) error {
+	scanResult := filepath.WalkDir(config.MusicDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			log.Printf("Error scanning directory %s: %v", path, err)
 			return nil
 		}
-		if info.IsDir() {
+		if d.IsDir() {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			log.Printf("Error retrieving file info for %s: %v", path, err)
 			return nil
 		}
 		modTime := info.ModTime()
@@ -47,4 +66,19 @@ func ScanMusicDirectory() error {
 	log.Printf("Music directory scan completed, new modified time is %s", newModified.Format(time.RFC3339Nano))
 
 	return scanResult
+}
+
+func cleanFiles() error {
+	files, err := database.SelectAllFiles()
+	if err != nil {
+		return err
+	}
+	for _, file := range files {
+		filePath := filepath.Join(file.DirPath, file.Filename)
+		if !io.FileExists(filePath) {
+			log.Printf("Deleting files row %d for %s", file.Id, filePath)
+			database.DeleteFileById(file.Id)
+		}
+	}
+	return nil
 }

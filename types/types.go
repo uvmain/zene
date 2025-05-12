@@ -1,14 +1,14 @@
 package types
 
 type ScanRow = struct {
-	Id           string
+	Id           int
 	ScanDate     string
 	FileCount    string
 	DateModified string
 }
 
 type FilesRow = struct {
-	Id           string
+	Id           int
 	DirPath      string
 	Filename     string
 	DateAdded    string
