@@ -15,5 +15,4 @@ func main() {
 	go scanner.ScanMusicDirectory()
 
 	StartServer()
-
 }

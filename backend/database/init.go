@@ -78,7 +78,8 @@ func createFilesTable() {
 func createMetadataTable() {
 	tableName := "metadata"
 	schema := `CREATE TABLE IF NOT EXISTS track_metadata (
-		musicbrainz_track_id TEXT PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		file_id INTEGER,
 		filename TEXT,
 		format TEXT,
 		duration TEXT,
@@ -96,6 +97,7 @@ func createMetadataTable() {
 		release_date TEXT,
 		musicbrainz_artist_id TEXT,
 		musicbrainz_album_id TEXT,
+		musicbrainz_track_id TEXT,
 		label TEXT
 	);`
 	createTable(tableName, schema)

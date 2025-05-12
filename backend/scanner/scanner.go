@@ -4,9 +4,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 	"zene/config"
 	"zene/database"
+	"zene/ffprobe"
 	"zene/io"
 )
 
@@ -57,7 +59,25 @@ func getFiles(lastModified time.Time) error {
 				newModified = modTime
 			}
 			fileCount += 1
-			return database.InsertIntoFiles(filepath.Dir(path), info.Name(), time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
+			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
+			if err != nil {
+				log.Printf("Error inserting files row for %s: %v", path, err)
+				return nil
+			}
+
+			if slices.Contains(config.AudioFileTypes, filepath.Ext(path)) {
+				trackMetadata, err := ffprobe.GetTags(path)
+				if err != nil {
+					log.Printf("Error retrieving tags for %s: %v", path, err)
+					return nil
+				}
+
+				err = database.InsertTrackMetadataRow(fileRowId, trackMetadata)
+				if err != nil {
+					log.Printf("Error inserting metadata for %s: %v", path, err)
+					return nil
+				}
+			}
 		}
 		return nil
 	})
@@ -78,6 +98,7 @@ func cleanFiles() error {
 		if !io.FileExists(filePath) {
 			log.Printf("Deleting files row %d for %s", file.Id, filePath)
 			database.DeleteFileById(file.Id)
+			database.DeleteMetadataByFileId(file.Id)
 		}
 	}
 	return nil

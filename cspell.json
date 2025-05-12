@@ -7,12 +7,12 @@
     "allowCompoundWords": true,
     "minWordLength": 3,
     "words": [
+        "alac",
+        "ALBUMID",
+        "ARTISTID",
         "CGO",
         "env",
         "ffprobe",
-        "godotenv",
-        "joho",
-        "mdate",
         "musicbrainz",
         "sqlitex",
         "zene"
