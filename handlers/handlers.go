@@ -6,7 +6,7 @@ import (
 	"zene/database"
 )
 
-func HandleGetAllFiles(w http.ResponseWriter) {
+func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllFiles()
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)

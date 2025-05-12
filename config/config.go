@@ -10,6 +10,7 @@ import (
 )
 
 var MusicDir string
+var DatabaseDirectory string
 
 func LoadConfig() {
 	err := godotenv.Load()
@@ -23,6 +24,13 @@ func LoadConfig() {
 	}
 	MusicDir, _ = filepath.Abs(musicDir)
 	log.Printf("Using music directory: %s", MusicDir)
+
+	dataPath := os.Getenv("DATA_PATH")
+	if dataPath == "" {
+		dataPath = "./data"
+	}
+
+	DatabaseDirectory, _ = filepath.Abs(dataPath)
 }
 
 func IsLocalDevEnv() bool {
