@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"path/filepath"
 	"zene/types"
 )
 
@@ -41,6 +42,31 @@ func SelectFileByFilename(filename string) (types.FilesRow, error) {
 	defer stmt.Finalize()
 
 	stmt.SetText("$filename", filename)
+
+	if hasRow, err := stmt.Step(); err != nil {
+		return types.FilesRow{}, err
+	} else if !hasRow {
+		return types.FilesRow{}, nil
+	} else {
+		var row types.FilesRow
+		row.Id = int(stmt.GetInt64("id"))
+		row.DirPath = stmt.GetText("dir_path")
+		row.Filename = stmt.GetText("filename")
+		row.DateAdded = stmt.GetText("date_added")
+		row.DateModified = stmt.GetText("date_modified")
+		return row, nil
+	}
+}
+
+func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
+	stmt, err := Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE dir_path = $dir_path and filename = $filename;`)
+	if err != nil {
+		return types.FilesRow{}, err
+	}
+	defer stmt.Finalize()
+
+	stmt.SetText("$dir_path", filepath.Dir(filePath))
+	stmt.SetText("$filename", filepath.Base(filePath))
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.FilesRow{}, err

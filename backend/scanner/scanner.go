@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 	"time"
+	"zene/art"
 	"zene/config"
 	"zene/database"
 	"zene/ffprobe"
@@ -46,6 +47,8 @@ func getFiles(lastModified time.Time) error {
 
 	newModified := lastModified
 	fileCount := 0
+	var dirModTime time.Time
+	var checkedAlbums []string
 
 	scanResult := filepath.WalkDir(config.MusicDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -72,9 +75,18 @@ func getFiles(lastModified time.Time) error {
 			modTime = changeTime
 		}
 
-		if modTime.After(lastModified) {
+		row, err := database.SelectFileByFilePath(path)
+		rowExists := false
+		if row.Id != 0 {
+			rowExists = true
+		}
+
+		if modTime.After(lastModified) || !rowExists {
 			if modTime.After(newModified) {
 				newModified = modTime
+			}
+			if dirModTime.After(newModified) {
+				newModified = dirModTime
 			}
 			fileCount += 1
 			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
@@ -94,6 +106,11 @@ func getFiles(lastModified time.Time) error {
 				if err != nil {
 					log.Printf("Error inserting metadata for %s: %v", path, err)
 					return nil
+				}
+
+				if !slices.Contains(checkedAlbums, trackMetadata.MusicBrainzAlbumID) {
+					checkedAlbums = append(checkedAlbums, trackMetadata.MusicBrainzAlbumID)
+					art.GetArtForAlbum(trackMetadata.MusicBrainzAlbumID)
 				}
 			}
 		}
@@ -116,10 +133,6 @@ func cleanFiles() error {
 		if !io.FileExists(filePath) {
 			log.Printf("Deleting files row %d for %s", file.Id, filePath)
 			database.DeleteFileById(file.Id)
-			if slices.Contains(config.AudioFileTypes, filepath.Ext(filePath)) {
-				database.DeleteMetadataByFileId(file.Id)
-			}
-
 		}
 	}
 	return nil

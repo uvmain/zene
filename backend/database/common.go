@@ -44,3 +44,30 @@ func createTable(tableName string, createSql string) {
 		log.Printf("%s table already exists", tableName)
 	}
 }
+
+func createTriggerIfNotExists(triggerName string, triggerSQL string) {
+	checkQuery := Db.Prep("SELECT name FROM sqlite_master WHERE type='trigger' AND name=$triggername")
+	checkQuery.SetText("$triggername", triggerName)
+
+	hasRow, err := checkQuery.Step()
+	if hasRow {
+		log.Printf("%s trigger already exists", triggerName)
+	} else if err != nil {
+		log.Printf("Error checking for %s trigger: %s", triggerName, err)
+	} else {
+		log.Printf("Creating %s trigger", triggerName)
+		stmt, err := Db.Prepare(triggerSQL)
+		if err != nil {
+			log.Printf("Error preparing %s trigger: %s", triggerName, err)
+			return
+		}
+		defer stmt.Finalize()
+
+		_, err = stmt.Step()
+		if err != nil {
+			log.Printf("Error creating %s trigger: %s", triggerName, err)
+			return
+		}
+		log.Printf("%s trigger created", triggerName)
+	}
+}
