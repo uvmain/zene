@@ -20,6 +20,7 @@ func Initialise() {
 	createFilesTable()
 	createMetadataTable()
 	createFilesTriggers()
+	createAlbumArtTable()
 }
 
 func openDatabase() {
@@ -109,4 +110,16 @@ func createFilesTriggers() {
 	BEGIN
 			DELETE FROM track_metadata WHERE file_id = old.id;
 	END;`)
+}
+
+func createAlbumArtTable() {
+	tableName := "album_art"
+	schema := `CREATE TABLE IF NOT EXISTS album_art (
+		musicbrainz_album_id TEXT PRIMARY KEY,
+		slug TEXT NOT NULL,
+		size INTEGER NOT NULL,
+		date_added TEXT NOT NULL,
+		date_modified TEXT NOT NULL
+	);`
+	createTable(tableName, schema)
 }

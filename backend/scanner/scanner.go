@@ -13,8 +13,6 @@ import (
 	"zene/globals"
 	"zene/io"
 	"zene/types"
-
-	"github.com/djherbis/times"
 )
 
 func RunScan() types.ScanResponse {
@@ -26,6 +24,7 @@ func RunScan() types.ScanResponse {
 	}
 
 	globals.Syncing = true
+	log.Printf("Starting scan of music dir")
 
 	lastScan, err := database.SelectLastScan()
 	if err != nil {
@@ -39,10 +38,6 @@ func RunScan() types.ScanResponse {
 	lastModified, err := time.Parse(time.RFC3339Nano, lastScan.DateModified)
 	if err != nil {
 		log.Printf("Error fetching lastModified from scans table: %v", err)
-		return types.ScanResponse{
-			Success: false,
-			Status:  "Error fetching lastModified from scans table",
-		}
 	}
 
 	err = getFiles(lastModified)
@@ -53,6 +48,7 @@ func RunScan() types.ScanResponse {
 			Status:  "Error scanning music directory",
 		}
 	}
+
 	err = cleanFiles()
 	if err != nil {
 		log.Printf("Error cleaning file rows: %v", err)
@@ -83,7 +79,6 @@ func getFiles(lastModified time.Time) error {
 
 	newModified := lastModified
 	fileCount := 0
-	var dirModTime time.Time
 
 	scanError := filepath.WalkDir(config.MusicDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -99,17 +94,7 @@ func getFiles(lastModified time.Time) error {
 			return err
 		}
 
-		t, err := times.Stat(path)
-		if err != nil {
-			log.Printf("Error retrieving file times for %s: %v", path, err)
-			return err
-		}
-
-		modTime := t.ModTime()
-		changeTime := t.ChangeTime()
-		if changeTime.After(modTime) {
-			modTime = changeTime
-		}
+		modTime := io.GetChangedTime(path)
 
 		row, err := database.SelectFileByFilePath(path)
 		rowExists := false
@@ -121,9 +106,7 @@ func getFiles(lastModified time.Time) error {
 			if modTime.After(newModified) {
 				newModified = modTime
 			}
-			if dirModTime.After(newModified) {
-				newModified = dirModTime
-			}
+
 			fileCount += 1
 			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
 			if err != nil {
@@ -179,7 +162,7 @@ func getArtwork() error {
 		return err
 	}
 	for _, album := range albums {
-		art.GetArtForAlbum(album.MusicBrainzAlbumID)
+		art.GetArtForAlbum(album.MusicBrainzAlbumID, album.Album)
 	}
 	return nil
 }

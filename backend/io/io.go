@@ -3,6 +3,9 @@ package io
 import (
 	"log"
 	"os"
+	"time"
+
+	"github.com/djherbis/times"
 )
 
 func FileExists(absoluteFilePath string) bool {
@@ -24,4 +27,19 @@ func CreateDir(directoryPath string) {
 	} else {
 		log.Printf("Directory already exists: %s", directoryPath)
 	}
+}
+
+func GetChangedTime(path string) time.Time {
+	t, err := times.Stat(path)
+	if err != nil {
+		log.Printf("Error retrieving file times for %s: %v", path, err)
+		return time.Time{}
+	}
+
+	modTime := t.ModTime()
+	changeTime := t.ChangeTime()
+	if changeTime.After(modTime) {
+		modTime = changeTime
+	}
+	return modTime
 }
