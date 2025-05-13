@@ -64,16 +64,12 @@ func DeleteMetadataByFileId(file_id int) error {
 	return nil
 }
 
-func SelectAllArtists() ([]string, error) {
-	stmt, err := Db.Prepare(`SELECT DISTINCT 
-		CASE 
-			WHEN artist IS NULL OR TRIM(artist) = '' THEN album_artist 
-			ELSE artist 
-		END AS artist
+func SelectAllArtists() ([]types.ArtistResponse, error) {
+	stmt, err := Db.Prepare(`SELECT DISTINCT artist, musicbrainz_artist_id
 		FROM track_metadata
 		ORDER BY artist;`)
 
-	var rows []string
+	var rows []types.ArtistResponse
 
 	if err != nil {
 		log.Printf("Error selecting artists from track_metadata: %v", err)
@@ -87,7 +83,89 @@ func SelectAllArtists() ([]string, error) {
 		} else if !hasRow {
 			break
 		} else {
-			rows = append(rows, stmt.GetText("artist"))
+			row := types.ArtistResponse{
+				Artist:              stmt.GetText("artist"),
+				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+			}
+			rows = append(rows, row)
+		}
+	}
+	return rows, nil
+}
+
+func SelectAllAlbums() ([]types.AlbumsResponse, error) {
+	stmt, err := Db.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, artist, musicbrainz_artist_id
+		FROM track_metadata
+		ORDER BY album;`)
+
+	var rows []types.AlbumsResponse
+
+	if err != nil {
+		log.Printf("Error selecting albums from track_metadata: %v", err)
+		return rows, err
+	}
+	defer stmt.Finalize()
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return rows, err
+		} else if !hasRow {
+			break
+		} else {
+			row := types.AlbumsResponse{
+				Album:               stmt.GetText("album"),
+				Artist:              stmt.GetText("artist"),
+				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
+				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+			}
+			rows = append(rows, row)
+		}
+	}
+	return rows, nil
+}
+
+func SelectAllMetadata() ([]types.TrackMetadata, error) {
+	stmt, err := Db.Prepare(`SELECT * FROM track_metadata ORDER BY id;`)
+
+	var rows []types.TrackMetadata
+
+	if err != nil {
+		log.Printf("Error selecting albums from track_metadata: %v", err)
+		return rows, err
+	}
+	defer stmt.Finalize()
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return rows, err
+		} else if !hasRow {
+			break
+		} else {
+
+			row := types.TrackMetadata{
+				Id:                  int(stmt.GetInt64("id")),
+				FileId:              int(stmt.GetInt64("file_id")),
+				Filename:            stmt.GetText("filename"),
+				Format:              stmt.GetText("format"),
+				Duration:            stmt.GetText("duration"),
+				Size:                stmt.GetText("size"),
+				Bitrate:             stmt.GetText("bitrate"),
+				Title:               stmt.GetText("title"),
+				Artist:              stmt.GetText("artist"),
+				Album:               stmt.GetText("album"),
+				AlbumArtist:         stmt.GetText("album_artist"),
+				Genre:               stmt.GetText("genre"),
+				TrackNumber:         stmt.GetText("track_number"),
+				TotalTracks:         stmt.GetText("total_tracks"),
+				DiscNumber:          stmt.GetText("disc_number"),
+				TotalDiscs:          stmt.GetText("total_discs"),
+				ReleaseDate:         stmt.GetText("release_date"),
+				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
+				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
+				Label:               stmt.GetText("label"),
+			}
+			rows = append(rows, row)
 		}
 	}
 	return rows, nil

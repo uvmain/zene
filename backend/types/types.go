@@ -17,6 +17,7 @@ type FilesRow = struct {
 
 type TrackMetadata struct {
 	Id                  int    `json:"id"`
+	FileId              int    `json:"file_id"`
 	Filename            string `json:"filename"`
 	Format              string `json:"format"`
 	Duration            string `json:"duration"`

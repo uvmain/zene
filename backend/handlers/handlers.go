@@ -49,3 +49,27 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }
+
+func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
+	rows, err := database.SelectAllAlbums()
+	if err != nil {
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+}
+
+func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
+	rows, err := database.SelectAllMetadata()
+	if err != nil {
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+}

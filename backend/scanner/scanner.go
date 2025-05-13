@@ -9,10 +9,13 @@ import (
 	"zene/config"
 	"zene/database"
 	"zene/ffprobe"
+	"zene/globals"
 	"zene/io"
 )
 
 func ScanMusicDirectory() {
+	globals.Syncing = true
+
 	lastScan, err := database.SelectLastScan()
 	if err != nil {
 		log.Printf("Failed to retrieve last scanned info: %v", err)
@@ -32,6 +35,8 @@ func ScanMusicDirectory() {
 	if err != nil {
 		log.Printf("Error cleaning file rows: %v", err)
 	}
+
+	globals.Syncing = false
 }
 
 func getFiles(lastModified time.Time) error {

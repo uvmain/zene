@@ -33,6 +33,8 @@ func StartServer() {
 	router.HandleFunc("/api/files", handlers.HandleGetAllFiles)
 	router.HandleFunc("/api/file", handlers.HandleGetFileByName)
 	router.HandleFunc("/api/artists", handlers.HandleGetArtists)
+	router.HandleFunc("/api/albums", handlers.HandleGetAlbums)
+	router.HandleFunc("/api/metadata", handlers.HandleGetMetadata)
 
 	handler := cors.AllowAll().Handler(router)
 

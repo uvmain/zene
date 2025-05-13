@@ -36,59 +36,27 @@ func GetTags(audfilePath string) (types.TrackMetadata, error) {
 		return types.TrackMetadata{}, err
 	}
 
-	var parsedArtist = ffprobeOutput.Format.Tags["ARTIST"]
-	if parsedArtist == "" {
-		parsedArtist = ffprobeOutput.Format.Tags["artist"]
-	}
-	if parsedArtist == "" {
-		parsedArtist = ffprobeOutput.Format.Tags["album_artist"]
-	}
+	tags := ffprobeOutput.Format.Tags
 
-	var parsedTitle = ffprobeOutput.Format.Tags["TITLE"]
-	if parsedTitle == "" {
-		parsedTitle = ffprobeOutput.Format.Tags["title"]
-	}
+	parsedArtist := getTagStringValue(tags, []string{"artist", "album_artist"})
+	parsedTitle := getTagStringValue(tags, []string{"title"})
+	parsedAlbum := getTagStringValue(tags, []string{"album"})
+	parsedGenre := getTagStringValue(tags, []string{"genre"})
+	parsedReleaseDate := getTagStringValue(tags, []string{"date", "release_date"})
+	musicBrainzAlbumId := getTagStringValue(tags, []string{"MUSICBRAINZ_ALBUMID", "MusicBrainz Album Id"})
+	musicBrainzArtistId := getTagStringValue(tags, []string{"MUSICBRAINZ_ARTISTID", "MusicBrainz Artist Id"})
+	musicBrainzTrackId := getTagStringValue(tags, []string{"MUSICBRAINZ_TRACKID", "MusicBrainz Release Track Id"})
+	totalTracks := getTagStringValue(tags, []string{"TOTALTRACKS"})
+	trackNumber := getTagStringValue(tags, []string{"track"})
+	totalDiscs := getTagStringValue(tags, []string{"TOTALDISCS"})
+	discNumber := getTagStringValue(tags, []string{"disc"})
+	label := getTagStringValue(tags, []string{"label", "publisher"})
 
-	var parsedAlbum = ffprobeOutput.Format.Tags["ALBUM"]
-	if parsedAlbum == "" {
-		parsedAlbum = ffprobeOutput.Format.Tags["album"]
-	}
-
-	var parsedGenre = ffprobeOutput.Format.Tags["GENRE"]
-	if parsedGenre == "" {
-		parsedGenre = ffprobeOutput.Format.Tags["genre"]
-	}
-
-	var parsedReleaseDate = ffprobeOutput.Format.Tags["DATE"]
-	if parsedReleaseDate == "" {
-		parsedReleaseDate = ffprobeOutput.Format.Tags["date"]
-	}
-
-	var musicBrainzAlbumId = ffprobeOutput.Format.Tags["MUSICBRAINZ_ALBUMID"]
-	if musicBrainzAlbumId == "" {
-		musicBrainzAlbumId = ffprobeOutput.Format.Tags["MusicBrainz Album Id"]
-	}
-
-	var musicBrainzArtistId = ffprobeOutput.Format.Tags["MUSICBRAINZ_ARTISTID"]
-	if musicBrainzArtistId == "" {
-		musicBrainzArtistId = ffprobeOutput.Format.Tags["MusicBrainz Artist Id"]
-	}
-
-	var musicBrainzTrackId = ffprobeOutput.Format.Tags["MUSICBRAINZ_TRACKID"]
-	if musicBrainzTrackId == "" {
-		musicBrainzTrackId = ffprobeOutput.Format.Tags["MusicBrainz Release Track Id"]
-	}
 	if musicBrainzTrackId == "" {
 		var filenameBytes = []byte(ffprobeOutput.Format.Filename)
 		musicBrainzTrackId = base64.StdEncoding.EncodeToString(filenameBytes)
 	}
 
-	var totalTracks = ffprobeOutput.Format.Tags["TOTALTRACKS"]
-	if totalTracks == "" {
-		totalTracks = ffprobeOutput.Format.Tags["totaltracks"]
-	}
-
-	var trackNumber = ffprobeOutput.Format.Tags["track"]
 	if strings.Contains(trackNumber, "/") {
 		splitValue := strings.Split(trackNumber, "/")
 		trackNumber = splitValue[0]
@@ -97,26 +65,12 @@ func GetTags(audfilePath string) (types.TrackMetadata, error) {
 		}
 	}
 
-	var totalDiscs = ffprobeOutput.Format.Tags["TOTALDISCS"]
-	if totalDiscs == "" {
-		totalDiscs = ffprobeOutput.Format.Tags["totaldiscs"]
-	}
-
-	var discNumber = ffprobeOutput.Format.Tags["disc"]
 	if strings.Contains(discNumber, "/") {
 		splitValue := strings.Split(discNumber, "/")
 		discNumber = splitValue[0]
 		if totalDiscs == "" && len(splitValue) > 1 {
 			totalDiscs = splitValue[1]
 		}
-	}
-
-	var label = ffprobeOutput.Format.Tags["LABEL"]
-	if label == "" {
-		label = ffprobeOutput.Format.Tags["label"]
-	}
-	if label == "" {
-		label = ffprobeOutput.Format.Tags["publisher"]
 	}
 
 	metadata := types.TrackMetadata{
@@ -142,4 +96,22 @@ func GetTags(audfilePath string) (types.TrackMetadata, error) {
 	}
 
 	return metadata, nil
+}
+
+func getTagStringValue(tags map[string]string, inputs []string) string {
+	for _, input := range inputs {
+		value := tags[input]
+		if value != "" {
+			return value
+		}
+		value = tags[strings.ToUpper(input)]
+		if value != "" {
+			return value
+		}
+		value = tags[strings.ToLower(input)]
+		if value != "" {
+			return value
+		}
+	}
+	return ""
 }
