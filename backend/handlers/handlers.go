@@ -3,7 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+
 	"zene/database"
+	"zene/scanner"
 )
 
 func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
@@ -70,6 +72,14 @@ func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
+}
+
+func HandlePostScan(w http.ResponseWriter, r *http.Request) {
+	scanResult := scanner.RunScan()
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }

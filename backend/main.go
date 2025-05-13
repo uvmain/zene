@@ -12,7 +12,7 @@ func main() {
 	database.Initialise()
 	defer database.CloseDatabase()
 
-	go scanner.ScanMusicDirectory()
+	go scanner.RunScan()
 
 	StartServer()
 }

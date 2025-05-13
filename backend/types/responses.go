@@ -11,3 +11,8 @@ type AlbumsResponse struct {
 	MusicBrainzArtistID string `json:"musicbrainz_artist_id"`
 	Artist              string `json:"artist"`
 }
+
+type ScanResponse struct {
+	Success bool   `json:"success"`
+	Status  string `json:"status"`
+}

@@ -30,11 +30,12 @@ func StartServer() {
 		http.ServeFile(w, r, "../dist/index.html")
 	})
 
-	router.HandleFunc("/api/files", handlers.HandleGetAllFiles)
-	router.HandleFunc("/api/file", handlers.HandleGetFileByName)
-	router.HandleFunc("/api/artists", handlers.HandleGetArtists)
-	router.HandleFunc("/api/albums", handlers.HandleGetAlbums)
-	router.HandleFunc("/api/metadata", handlers.HandleGetMetadata)
+	router.HandleFunc("GET /api/files", handlers.HandleGetAllFiles)
+	router.HandleFunc("GET /api/file", handlers.HandleGetFileByName)
+	router.HandleFunc("GET /api/artists", handlers.HandleGetArtists)
+	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)
+	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata)
+	router.HandleFunc("POST /api/scan", handlers.HandlePostScan)
 
 	handler := cors.AllowAll().Handler(router)
 

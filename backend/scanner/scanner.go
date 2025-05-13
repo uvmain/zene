@@ -12,34 +12,70 @@ import (
 	"zene/ffprobe"
 	"zene/globals"
 	"zene/io"
+	"zene/types"
 
 	"github.com/djherbis/times"
 )
 
-func ScanMusicDirectory() {
+func RunScan() types.ScanResponse {
+	if globals.Syncing == true {
+		return types.ScanResponse{
+			Success: false,
+			Status:  "Scan already in progress",
+		}
+	}
+
 	globals.Syncing = true
 
 	lastScan, err := database.SelectLastScan()
 	if err != nil {
 		log.Printf("Failed to retrieve last scanned info: %v", err)
+		return types.ScanResponse{
+			Success: false,
+			Status:  "Error retrieving last scanned info",
+		}
 	}
 
 	lastModified, err := time.Parse(time.RFC3339Nano, lastScan.DateModified)
 	if err != nil {
 		log.Printf("Error fetching lastModified from scans table: %v", err)
+		return types.ScanResponse{
+			Success: false,
+			Status:  "Error fetching lastModified from scans table",
+		}
 	}
 
 	err = getFiles(lastModified)
 	if err != nil {
-		log.Printf("Error scanning files in music directory: %v", err)
+		log.Printf("Error scanning music directory: %v", err)
+		return types.ScanResponse{
+			Success: false,
+			Status:  "Error scanning music directory",
+		}
 	}
-
 	err = cleanFiles()
 	if err != nil {
 		log.Printf("Error cleaning file rows: %v", err)
+		return types.ScanResponse{
+			Success: false,
+			Status:  "Error cleaning file rows",
+		}
+	}
+
+	err = getArtwork()
+	if err != nil {
+		log.Printf("Error cleaning file rows: %v", err)
+		return types.ScanResponse{
+			Success: false,
+			Status:  "Error cleaning file rows",
+		}
 	}
 
 	globals.Syncing = false
+	return types.ScanResponse{
+		Success: true,
+		Status:  "Scan complete",
+	}
 }
 
 func getFiles(lastModified time.Time) error {
@@ -48,12 +84,11 @@ func getFiles(lastModified time.Time) error {
 	newModified := lastModified
 	fileCount := 0
 	var dirModTime time.Time
-	var checkedAlbums []string
 
-	scanResult := filepath.WalkDir(config.MusicDir, func(path string, d os.DirEntry, err error) error {
+	scanError := filepath.WalkDir(config.MusicDir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			log.Printf("Error scanning directory %s: %v", path, err)
-			return nil
+			return err
 		}
 		if d.IsDir() {
 			return nil
@@ -61,12 +96,13 @@ func getFiles(lastModified time.Time) error {
 		info, err := d.Info()
 		if err != nil {
 			log.Printf("Error retrieving file info for %s: %v", path, err)
-			return nil
+			return err
 		}
 
 		t, err := times.Stat(path)
 		if err != nil {
 			log.Printf("Error retrieving file times for %s: %v", path, err)
+			return err
 		}
 
 		modTime := t.ModTime()
@@ -92,25 +128,20 @@ func getFiles(lastModified time.Time) error {
 			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
 			if err != nil {
 				log.Printf("Error inserting files row for %s: %v", path, err)
-				return nil
+				return err
 			}
 
 			if slices.Contains(config.AudioFileTypes, filepath.Ext(path)) {
 				trackMetadata, err := ffprobe.GetTags(path)
 				if err != nil {
 					log.Printf("Error retrieving tags for %s: %v", path, err)
-					return nil
+					return err
 				}
 
 				err = database.InsertTrackMetadataRow(fileRowId, trackMetadata)
 				if err != nil {
 					log.Printf("Error inserting metadata for %s: %v", path, err)
-					return nil
-				}
-
-				if !slices.Contains(checkedAlbums, trackMetadata.MusicBrainzAlbumID) {
-					checkedAlbums = append(checkedAlbums, trackMetadata.MusicBrainzAlbumID)
-					art.GetArtForAlbum(trackMetadata.MusicBrainzAlbumID)
+					return err
 				}
 			}
 		}
@@ -120,7 +151,10 @@ func getFiles(lastModified time.Time) error {
 	database.InsertScanRow(time.Now().Format(time.RFC3339Nano), fileCount, newModified.Format(time.RFC3339Nano))
 	log.Printf("Music directory scan completed, found %d new files", fileCount)
 
-	return scanResult
+	if scanError != nil {
+		log.Printf("Error scanning files in music directory: %v", scanError)
+	}
+	return scanError
 }
 
 func cleanFiles() error {
@@ -134,6 +168,18 @@ func cleanFiles() error {
 			log.Printf("Deleting files row %d for %s", file.Id, filePath)
 			database.DeleteFileById(file.Id)
 		}
+	}
+	return nil
+}
+
+func getArtwork() error {
+	albums, err := database.SelectAllAlbums()
+	if err != nil {
+		log.Printf("Error fetching albums from database: %v", err)
+		return err
+	}
+	for _, album := range albums {
+		art.GetArtForAlbum(album.MusicBrainzAlbumID)
 	}
 	return nil
 }
