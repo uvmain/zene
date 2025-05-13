@@ -11,6 +11,8 @@ import (
 	"zene/ffprobe"
 	"zene/globals"
 	"zene/io"
+
+	"github.com/djherbis/times"
 )
 
 func ScanMusicDirectory() {
@@ -58,7 +60,18 @@ func getFiles(lastModified time.Time) error {
 			log.Printf("Error retrieving file info for %s: %v", path, err)
 			return nil
 		}
-		modTime := info.ModTime()
+
+		t, err := times.Stat(path)
+		if err != nil {
+			log.Printf("Error retrieving file times for %s: %v", path, err)
+		}
+
+		modTime := t.ModTime()
+		changeTime := t.ChangeTime()
+		if changeTime.After(modTime) {
+			modTime = changeTime
+		}
+
 		if modTime.After(lastModified) {
 			if modTime.After(newModified) {
 				newModified = modTime
