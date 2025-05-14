@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"zene/config"
 	"zene/database"
 	"zene/io"
 	"zene/lastfm"
@@ -82,7 +83,14 @@ func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
 }
 
 func getArtFromFolder(musicBrainzAlbumId string, imagePath string) {
-	// database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "sm"}, "_")), 34)
+	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 64)
+	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 174)
+	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 300)
+	err := database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	if err != nil {
+		log.Printf("Error inserting album art row: %v", err)
+	}
 }
 
 func getArtFromInternet(musicBrainzAlbumId string) {
