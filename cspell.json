@@ -15,9 +15,13 @@
         "djherbis",
         "env",
         "ffprobe",
+        "godotenv",
+        "img",
+        "joho",
         "musicbrainz",
         "sqlitex",
         "TRACKID",
+        "uvmain",
         "zene"
     ],
     "ignoreWords": [],

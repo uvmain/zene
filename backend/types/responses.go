@@ -16,3 +16,12 @@ type ScanResponse struct {
 	Success bool   `json:"success"`
 	Status  string `json:"status"`
 }
+
+type LastFmAlbumInfoResponse struct {
+	Album struct {
+		Image []struct {
+			Size string `json:"size"`
+			URL  string `json:"#text"`
+		} `json:"image"`
+	} `json:"album"`
+}

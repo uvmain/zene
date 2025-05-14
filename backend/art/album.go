@@ -8,6 +8,7 @@ import (
 	"time"
 	"zene/database"
 	"zene/io"
+	"zene/lastfm"
 )
 
 func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
@@ -85,5 +86,10 @@ func getArtFromFolder(musicBrainzAlbumId string, imagePath string) {
 }
 
 func getArtFromInternet(musicBrainzAlbumId string) {
-	// database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	log.Printf("fetching art for %s from last.fm", musicBrainzAlbumId)
+	go lastfm.GetAlbumArt(musicBrainzAlbumId)
+	err := database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	if err != nil {
+		log.Printf("Error inserting album art row: %v", err)
+	}
 }

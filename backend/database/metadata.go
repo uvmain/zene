@@ -7,7 +7,7 @@ import (
 )
 
 func createMetadataTable() {
-	tableName := "metadata"
+	tableName := "track_metadata"
 	schema := `CREATE TABLE IF NOT EXISTS track_metadata (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		file_id INTEGER,
