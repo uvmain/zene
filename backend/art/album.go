@@ -15,6 +15,13 @@ func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
 	if err != nil {
 		log.Printf("Error getting track data from database: %v", err)
 	}
+
+	existingRow, err := database.SelectAlbumArtByMusicBrainzAlbumId(musicBrainzAlbumId)
+	if err != nil {
+		log.Printf("Error getting album art data from database: %v", err)
+	}
+	existingTime, err := time.Parse(time.RFC3339, existingRow.DateModified)
+
 	directories := []string{}
 
 	for _, trackMetadata := range trackMetadataRows {
@@ -44,5 +51,11 @@ func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
 	if foundFile != "" {
 		foundTime = io.GetChangedTime(foundFile)
 		log.Printf("Found %s for %s, %v", foundFile, albumName, foundTime)
+	} else {
+		log.Printf("No art found %s for %s, %v", foundFile, albumName, foundTime)
+	}
+
+	if existingTime.Before(foundTime) {
+		log.Printf("album art for %s is newer", albumName)
 	}
 }

@@ -6,6 +6,25 @@ import (
 	"zene/types"
 )
 
+func createFilesTable() {
+	tableName := "files"
+	schema := `CREATE TABLE IF NOT EXISTS files (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		dir_path TEXT NOT NULL,
+		filename TEXT NOT NULL,
+		date_added TEXT NOT NULL,
+		date_modified TEXT NOT NULL
+	);`
+	createTable(tableName, schema)
+}
+
+func createFilesTriggers() {
+	createTriggerIfNotExists("files_after_delete", `CREATE TRIGGER files_after_delete AFTER DELETE ON files
+	BEGIN
+			DELETE FROM track_metadata WHERE file_id = old.id;
+	END;`)
+}
+
 func SelectAllFiles() ([]types.FilesRow, error) {
 	stmt, err := Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files;`)
 

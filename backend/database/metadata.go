@@ -6,6 +6,34 @@ import (
 	"zene/types"
 )
 
+func createMetadataTable() {
+	tableName := "metadata"
+	schema := `CREATE TABLE IF NOT EXISTS track_metadata (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		file_id INTEGER,
+		filename TEXT,
+		format TEXT,
+		duration TEXT,
+		size TEXT,
+		bitrate TEXT,
+		title TEXT,
+		artist TEXT,
+		album TEXT,
+		album_artist TEXT,
+		genre TEXT,
+		track_number TEXT,
+		total_tracks TEXT,
+		disc_number TEXT,
+		total_discs TEXT,
+		release_date TEXT,
+		musicbrainz_artist_id TEXT,
+		musicbrainz_album_id TEXT,
+		musicbrainz_track_id TEXT,
+		label TEXT
+	);`
+	createTable(tableName, schema)
+}
+
 func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
 	stmt, err := Db.Prepare(`INSERT INTO track_metadata (
 		file_id, filename, format, duration, size, bitrate, title, artist, album,

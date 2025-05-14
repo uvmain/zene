@@ -38,3 +38,9 @@ type TrackMetadata struct {
 	MusicBrainzTrackID  string `json:"musicbrainz_track_id"`
 	Label               string `json:"label"`
 }
+
+type AlbumArtRow struct {
+	MusicbrainzAlbumId string `json:"musicbrainz_album_id"`
+	DateAdded          string `json:"date_added"`
+	DateModified       string `json:"date_modified"`
+}

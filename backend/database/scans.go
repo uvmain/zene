@@ -5,6 +5,17 @@ import (
 	"zene/types"
 )
 
+func createScansTable() {
+	tableName := "scans"
+	schema := `CREATE TABLE IF NOT EXISTS scans (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		scan_date TEXT NOT NULL,
+		file_count INTEGER NOT NULL,
+		date_modified TEXT NOT NULL
+	);`
+	createTable(tableName, schema)
+}
+
 func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
 	stmt, err := Db.Prepare(`INSERT INTO scans (scan_date, file_count, date_modified)
 		VALUES ($scan_date, $file_count, $date_modified);`)
