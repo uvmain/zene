@@ -19,7 +19,7 @@ func createFilesTable() {
 }
 
 func createFilesTriggers() {
-	createTriggerIfNotExists("files_after_delete", `CREATE TRIGGER files_after_delete AFTER DELETE ON files
+	createTriggerIfNotExists("files_after_delete_track_metadata", `CREATE TRIGGER files_after_delete_track_metadata AFTER DELETE ON files
 	BEGIN
 			DELETE FROM track_metadata WHERE file_id = old.id;
 	END;`)

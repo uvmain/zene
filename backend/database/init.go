@@ -18,8 +18,9 @@ func Initialise() {
 	openDatabase()
 	createScansTable()
 	createFilesTable()
-	createMetadataTable()
 	createFilesTriggers()
+	createMetadataTable()
+	createMetadataTriggers()
 	createAlbumArtTable()
 }
 

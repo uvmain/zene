@@ -34,6 +34,13 @@ func createMetadataTable() {
 	createTable(tableName, schema)
 }
 
+func createMetadataTriggers() {
+	createTriggerIfNotExists("track_metadata_after_delete_album_art", `CREATE TRIGGER track_metadata_after_delete_album_art AFTER DELETE ON track_metadata
+	BEGIN
+			DELETE FROM album_art WHERE musicbrainz_album_id = old.musicbrainz_album_id;
+	END;`)
+}
+
 func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
 	stmt, err := Db.Prepare(`INSERT INTO track_metadata (
 		file_id, filename, format, duration, size, bitrate, title, artist, album,

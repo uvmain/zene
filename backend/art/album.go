@@ -20,7 +20,7 @@ func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
 	if err != nil {
 		log.Printf("Error getting album art data from database: %v", err)
 	}
-	existingTime, err := time.Parse(time.RFC3339, existingRow.DateModified)
+	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
 
 	directories := []string{}
 
@@ -33,7 +33,7 @@ func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
 	directories = slices.Compact(directories)
 
 	var foundFile string
-	var foundTime time.Time
+	var fileTime time.Time
 
 	for _, directory := range directories {
 		folderFilePath := filepath.Join(directory, "folder.jpg")
@@ -48,14 +48,42 @@ func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
 		}
 	}
 
-	if foundFile != "" {
-		foundTime = io.GetChangedTime(foundFile)
-		log.Printf("Found %s for %s, %v", foundFile, albumName, foundTime)
-	} else {
-		log.Printf("No art found %s for %s, %v", foundFile, albumName, foundTime)
-	}
+	fileExists := (foundFile != "")
+	rowExists := (existingRow.MusicbrainzAlbumId != "")
 
-	if existingTime.Before(foundTime) {
-		log.Printf("album art for %s is newer", albumName)
+	// if file exists
+	if fileExists {
+		// if row exists
+		if rowExists {
+			// if row is newer, do nothing
+			if rowTime.After(fileTime) {
+				return
+			} else {
+				// if row is older, getArtFromFolder()
+				log.Printf("local album art for %s is newer, re-importing", albumName)
+				getArtFromFolder(musicBrainzAlbumId, foundFile)
+			}
+		} else {
+			// file hasn't been imported yet
+			log.Printf("Found new album art for %s, importing", albumName)
+			getArtFromFolder(musicBrainzAlbumId, foundFile)
+		}
+	} else {
+		// we've already downloaded an image
+		if rowExists {
+			return
+		} else {
+			// no local image, download from internet
+			log.Printf("No album artwork found for %s, downloading", albumName)
+			getArtFromInternet(musicBrainzAlbumId)
+		}
 	}
+}
+
+func getArtFromFolder(musicBrainzAlbumId string, imagePath string) {
+	// database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+}
+
+func getArtFromInternet(musicBrainzAlbumId string) {
+	// database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
 }
