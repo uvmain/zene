@@ -3,18 +3,11 @@ package main
 import (
 	"log"
 	"net/http"
-	"time"
 	"zene/config"
 	"zene/handlers"
 
 	"github.com/rs/cors"
 )
-
-func enableCdnCaching(w http.ResponseWriter) {
-	expiryDate := time.Now().AddDate(1, 0, 0)
-	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-	w.Header().Set("Expires", expiryDate.String())
-}
 
 func StartServer() {
 	router := http.NewServeMux()
@@ -23,7 +16,7 @@ func StartServer() {
 	fileServer := http.FileServer(distDir)
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := distDir.Open(r.URL.Path); err == nil {
-			enableCdnCaching(w)
+			handlers.EnableCdnCaching(w)
 			fileServer.ServeHTTP(w, r)
 			return
 		}
@@ -36,6 +29,7 @@ func StartServer() {
 	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)
 	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata)
 	router.HandleFunc("POST /api/scan", handlers.HandlePostScan)
+	router.HandleFunc("GET /api/art/albums/{musicBrainzAlbumId}", handlers.GetAlbumArtByMusicBrainzAlbumId)
 
 	handler := cors.AllowAll().Handler(router)
 

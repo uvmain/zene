@@ -162,7 +162,7 @@ func getArtwork() error {
 		return err
 	}
 	for _, album := range albums {
-		art.GetArtForAlbum(album.MusicBrainzAlbumID, album.Album)
+		art.ImportArtForAlbum(album.MusicBrainzAlbumID, album.Album)
 	}
 	return nil
 }

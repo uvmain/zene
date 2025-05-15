@@ -2,6 +2,7 @@ package art
 
 import (
 	"log"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -12,7 +13,7 @@ import (
 	"zene/lastfm"
 )
 
-func GetArtForAlbum(musicBrainzAlbumId string, albumName string) {
+func ImportArtForAlbum(musicBrainzAlbumId string, albumName string) {
 	trackMetadataRows, err := database.SelectMetadataByAlbumID(musicBrainzAlbumId)
 	if err != nil {
 		log.Printf("Error getting track data from database: %v", err)
@@ -100,4 +101,21 @@ func getArtFromInternet(musicBrainzAlbumId string) {
 	if err != nil {
 		log.Printf("Error inserting album art row: %v", err)
 	}
+}
+
+func GetArtForAlbum(musicBrainzAlbumId string, size string) ([]byte, error) {
+	filename := strings.Join([]string{musicBrainzAlbumId, size}, "_")
+	filename = strings.Join([]string{filename, "jpg"}, ".")
+	filePath, _ := filepath.Abs(filepath.Join(config.AlbumArtFolder, filename))
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Printf("Image file does not exist: %s:  %s", filePath, err)
+		return nil, err
+	}
+	blob, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Printf("Error reading image for filename %s: %s", filename, err)
+		return nil, err
+	}
+	return blob, nil
 }

@@ -3,10 +3,18 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
+	"zene/art"
 	"zene/database"
 	"zene/scanner"
 )
+
+func EnableCdnCaching(w http.ResponseWriter) {
+	expiryDate := time.Now().AddDate(1, 0, 0)
+	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	w.Header().Set("Expires", expiryDate.String())
+}
 
 func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllFiles()
@@ -82,4 +90,20 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
+}
+
+func GetAlbumArtByMusicBrainzAlbumId(w http.ResponseWriter, r *http.Request) {
+	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
+	sizeParam := r.URL.Query().Get("size")
+	imageBlob, err := art.GetArtForAlbum(musicBrainzAlbumId, sizeParam)
+
+	if err != nil {
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	}
+	mimeType := http.DetectContentType(imageBlob)
+	EnableCdnCaching(w)
+	w.Header().Set("Content-Type", mimeType)
+	w.WriteHeader(http.StatusOK)
+	w.Write(imageBlob)
 }
