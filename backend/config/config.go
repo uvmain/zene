@@ -16,7 +16,6 @@ var DatabaseDirectory string
 var FfmpegPath string
 var FfprobePath string
 var AudioFileTypes []string
-var LastFmApiKey string
 var ArtworkFolder string
 var AlbumArtFolder string
 var ArtistArtFolder string
@@ -86,14 +85,6 @@ func LoadConfig() {
 		}
 	}
 	log.Printf("Audio file types: %v", AudioFileTypes)
-
-	lastFmApiKey := os.Getenv("LASTFM_API_KEY")
-	if lastFmApiKey == "" {
-		log.Println("Warning: last.fm API key not defined")
-	} else {
-		LastFmApiKey = lastFmApiKey
-		log.Println("last.fm API key is defined")
-	}
 }
 
 func IsLocalDevEnv() bool {

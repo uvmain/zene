@@ -10,7 +10,7 @@ import (
 	"zene/config"
 	"zene/database"
 	"zene/io"
-	"zene/lastfm"
+	"zene/musicbrainz"
 )
 
 func ImportArtForAlbum(musicBrainzAlbumId string, albumName string) {
@@ -84,10 +84,10 @@ func ImportArtForAlbum(musicBrainzAlbumId string, albumName string) {
 }
 
 func getArtFromFolder(musicBrainzAlbumId string, imagePath string) {
-	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "sm"}, "_")), 34)
-	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 64)
-	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 174)
-	go resizeAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 300)
+	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "sm"}, "_")), 64)
+	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 128)
+	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 256)
+	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
 	err := database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
 		log.Printf("Error inserting album art row: %v", err)
@@ -95,9 +95,24 @@ func getArtFromFolder(musicBrainzAlbumId string, imagePath string) {
 }
 
 func getArtFromInternet(musicBrainzAlbumId string) {
-	log.Printf("fetching art for %s from last.fm", musicBrainzAlbumId)
-	go lastfm.GetAlbumArt(musicBrainzAlbumId)
-	err := database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	log.Printf("fetching art for %s from musicbrainz", musicBrainzAlbumId)
+	albumArtUrl, err := musicbrainz.GetAlbumArtUrl(musicBrainzAlbumId)
+	if err != nil {
+		log.Printf("Failed to get album art url for %s from musicbrainz: %v", musicBrainzAlbumId, err)
+		return
+	}
+
+	img, err := getImageFromInternet(albumArtUrl)
+	if err != nil {
+		log.Printf("Failed to get album art image for %s from %s: %v", musicBrainzAlbumId, albumArtUrl, err)
+		return
+	}
+	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "sm"}, "_")), 64)
+	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 128)
+	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 256)
+	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
+
+	err = database.InsertAlbumArtRow(musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
 		log.Printf("Error inserting album art row: %v", err)
 	}
