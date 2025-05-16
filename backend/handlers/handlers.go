@@ -95,6 +95,9 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 func GetAlbumArtByMusicBrainzAlbumId(w http.ResponseWriter, r *http.Request) {
 	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
 	sizeParam := r.URL.Query().Get("size")
+	if sizeParam == "" {
+		sizeParam = "xl"
+	}
 	imageBlob, err := art.GetArtForAlbum(musicBrainzAlbumId, sizeParam)
 
 	if err != nil {
