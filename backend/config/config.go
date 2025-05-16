@@ -27,7 +27,7 @@ func LoadConfig() {
 
 	musicDir := os.Getenv("MUSIC_DIR")
 	if musicDir == "" {
-		musicDir = "./"
+		musicDir = "./data/music"
 	}
 	MusicDir, _ = filepath.Abs(musicDir)
 	log.Printf("Using music directory: %s", MusicDir)
