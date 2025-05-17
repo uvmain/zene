@@ -166,7 +166,7 @@ func SelectAllMetadata() ([]types.TrackMetadata, error) {
 	var rows []types.TrackMetadata
 
 	if err != nil {
-		log.Printf("Error selecting albums from track_metadata: %v", err)
+		log.Printf("Error selecting * from track_metadata: %v", err)
 		return rows, err
 	}
 	defer stmt.Finalize()

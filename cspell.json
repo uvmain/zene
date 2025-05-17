@@ -22,9 +22,11 @@
         "musicbrainz",
         "nfnt",
         "sqlitex",
+        "tabler",
         "TRACKID",
         "uvmain",
-        "zene"
+        "zene",
+        "zenegray"
     ],
     "ignoreWords": [],
     "import": []

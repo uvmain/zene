@@ -23,7 +23,13 @@ export default defineConfig({
     input: 'border-1 border-neutral-800 rounded border-dashed px-2 text-xl outline-none dark:border-neutral-200 standard placeholder:text',
   },
   theme: {
-    colors: {},
+    colors: {
+      zenegray: {
+        50: '#f9f9f9',
+        700: '#18181C',
+        900: '#050505',
+      },
+    },
   },
   presets: [
     presetUno(),

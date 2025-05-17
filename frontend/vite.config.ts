@@ -50,6 +50,8 @@ export default defineConfig({
       google: {
         families: [
           'Montserrat',
+          'Poppins',
+          'Quicksand',
         ],
       },
     }),
