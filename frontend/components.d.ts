@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Header: typeof import('./src/components/Header.vue')['default']
+    HeroTrack: typeof import('./src/components/HeroTrack.vue')['default']
     IconTablerArrowsShuffle: typeof import('~icons/tabler/arrows-shuffle')['default']
     IconTablerEdit: typeof import('~icons/tabler/edit')['default']
     IconTablerHome: typeof import('~icons/tabler/home')['default']
@@ -24,6 +25,7 @@ declare module 'vue' {
     IconTablerVinyl: typeof import('~icons/tabler/vinyl')['default']
     LoginModal: typeof import('./src/components/LoginModal.vue')['default']
     MusicPlayer: typeof import('./src/components/MusicPlayer.vue')['default']
+    Navbar: typeof import('./src/components/Navbar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

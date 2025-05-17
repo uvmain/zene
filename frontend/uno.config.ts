@@ -27,6 +27,7 @@ export default defineConfig({
       zenegray: {
         50: '#f9f9f9',
         700: '#18181C',
+        800: '#151213',
         900: '#050505',
       },
     },

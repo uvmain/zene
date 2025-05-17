@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { backendFetchRequest } from './composables/fetchFromBackend'
 
-const randomTrack = ref()
 const topAlbums = ref()
 const topTracks = ref()
 
@@ -33,22 +32,9 @@ async function getAlbums() {
     name: album.album,
     artist: album.artist,
     musicbrainz_album_id: album.musicbrainz_album_id,
+    image_url: `/api/art/albums/${album.musicbrainz_album_id}?size=md`,
   }))
   topAlbums.value = albums.slice(0, 6)
-}
-
-async function getRandomTrack() {
-  const response = await backendFetchRequest('metadata')
-  const json = await response.json()
-  const tracks = json.map((track: any) => ({
-    name: track.title,
-    artist: track.artist,
-    album: track.album,
-    musicbrainz_track_id: track.musicbrainz_track_id,
-    musicbrainz_album_id: track.musicbrainz_album_id,
-    musicbrainz_artist_id: track.musicbrainz_artist_id,
-  }))
-  randomTrack.value = tracks[Math.floor(Math.random() * tracks.length)]
 }
 
 async function getTopTracks() {
@@ -65,94 +51,63 @@ async function getTopTracks() {
   topTracks.value = tracks.slice(0, 6)
 }
 
-function getAlbumArt(musicbrainz_album_id: string, size = 'md') {
-  if (!musicbrainz_album_id)
-    return ''
-  return `/api/art/albums/${musicbrainz_album_id}?size=${size}`
-}
-
 onBeforeMount(async () => {
   await getAlbums()
-  await getRandomTrack()
   await getTopTracks()
 })
 </script>
 
 <template>
-  <div class="grid grid-cols-[250px_1fr] h-screen from-zenegray-900 to-zenegray-700 bg-gradient-to-b text-white">
-    <!-- Sidebar -->
-    <aside class="bg-zenegray-700 p-4 space-y-6">
-      <div class="space-2 flex">
-        <img class="h-10 w-10 rounded-full" src="/logo.png" alt="Logo" />
-        <div class="text-xl font-bold">
-          Zene
-        </div>
-      </div>
-      <nav class="space-y-2">
-        <div class="text-sm text-gray-400 font-semibold">
-          MAIN
-        </div>
-        <ul class="space-y-1">
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Home</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Genres</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Albums</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Artists</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Radio</a></li>
-        </ul>
-        <div class="mt-4 text-sm text-gray-400 font-semibold">
-          LIBRARY
-        </div>
-        <ul class="space-y-1">
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Recently Added</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Recently Played</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Albums</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Random</a></li>
-        </ul>
-        <div class="mt-4 text-sm text-gray-400 font-semibold">
-          PLAYLISTS
-        </div>
-        <ul class="space-y-1">
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Create New</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Running club</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Head bangers</a></li>
-          <li><a class="block rounded px-2 py-1 hover:bg-gray-700">Tomato</a></li>
-        </ul>
-      </nav>
-    </aside>
+  <div class="via-zenegray-800 grid grid-cols-[250px_1fr] h-screen from-zenegray-900 to-zenegray-700 bg-gradient-to-b text-white">
+    <Navbar />
 
-    <!-- Main Content -->
     <main class="overflow-y-auto p-6 space-y-6">
       <Header />
 
-      <section v-if="randomTrack">
-        <img :src="getAlbumArt(randomTrack?.musicbrainz_album_id, 'xl')" class="h-80 w-full object-cover">
-        <h1 class="text-4xl font-bold">
-          {{ randomTrack?.name }}
-        </h1>
-        <p class="text-gray-400">
-          {{ randomTrack?.artist }} - {{ randomTrack?.album }}
-        </p>
-        <button class="mt-2 rounded border-none bg-sky-300 px-4 py-2 outline-none">
-          Listen Now
-        </button>
-      </section>
+      <HeroTrack />
 
       <section class="grid grid-cols-2 gap-6">
         <div>
-          <h2 class="mb-2 text-lg font-semibold">
-            Top Albums
-          </h2>
-          <div class="flex gap-6 overflow-x-auto">
-            <div v-for="album in topAlbums" :key="album.album" class="w-20 text-center">
-              <img class="h-20 w-20 rounded-lg bg-gray-700" :src="getAlbumArt(album.musicbrainz_album_id)" alt="Album Cover" />
-              <div class="mt-1 text-sm">
-                {{ album.name }}
-              </div>
-              <div class="text-xs text-gray-400">
-                {{ album.artist }}
+          <div>
+            <h2 class="mb-2 text-lg font-semibold">
+              Top Albums
+            </h2>
+            <div class="flex gap-6 overflow-x-auto">
+              <div v-for="album in topAlbums" :key="album.album" class="w-20 text-center">
+                <img class="h-20 w-20 rounded-lg bg-gray-700" :src="album.image_url" alt="Album Cover" />
+                <div class="mt-1 text-sm">
+                  {{ album.name }}
+                </div>
+                <div class="text-xs text-gray-400">
+                  {{ album.artist }}
+                </div>
               </div>
             </div>
           </div>
+          <section class="grid grid-cols-3 gap-6">
+            <!-- Genres -->
+            <div>
+              <h2 class="mb-2 text-lg font-semibold">
+                Genres
+              </h2>
+              <div class="flex flex-wrap gap-2">
+                <span v-for="genre in genres" :key="genre" class="rounded bg-gray-700 px-3 py-1 text-sm">{{ genre }}</span>
+              </div>
+            </div>
+
+            <!-- Top Tracks -->
+            <div>
+              <h2 class="mb-2 text-lg font-semibold">
+                Top Tracks
+              </h2>
+              <ul class="space-y-2">
+                <li v-for="(track, i) in topTracks" :key="track.title" class="flex justify-between text-sm">
+                  <span>{{ i + 1 }}. {{ track.name }}</span>
+                  <span>{{ track.artist }}</span>
+                </li>
+              </ul>
+            </div>
+          </section>
         </div>
 
         <!-- Player -->
@@ -184,31 +139,6 @@ onBeforeMount(async () => {
           <button class="mt-2 text-xs underline">
             LYRICS
           </button>
-        </div>
-      </section>
-
-      <section class="grid grid-cols-3 gap-6">
-        <!-- Genres -->
-        <div>
-          <h2 class="mb-2 text-lg font-semibold">
-            Genres
-          </h2>
-          <div class="flex flex-wrap gap-2">
-            <span v-for="genre in genres" :key="genre" class="rounded bg-gray-700 px-3 py-1 text-sm">{{ genre }}</span>
-          </div>
-        </div>
-
-        <!-- Top Tracks -->
-        <div>
-          <h2 class="mb-2 text-lg font-semibold">
-            Top Tracks
-          </h2>
-          <ul class="space-y-2">
-            <li v-for="(track, i) in topTracks" :key="track.title" class="flex justify-between text-sm">
-              <span>{{ i + 1 }}. {{ track.name }}</span>
-              <span>{{ track.artist }}</span>
-            </li>
-          </ul>
         </div>
       </section>
     </main>

@@ -58,7 +58,7 @@ async function navigateTags() {
 </script>
 
 <template>
-  <div class="px-2 pt-2 standard lg:px-6">
+  <div class="">
     <header class="mx-0 mx-auto flex justify-around pt-2 lg:max-w-8/10 lg:justify-between lg:p-6">
       <div class="flex items-center gap-0 gap-4">
         <div class="hidden p-2 text-2xl lg:block hover:cursor-pointer" @click="navigateHome">
