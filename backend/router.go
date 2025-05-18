@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"zene/config"
 	"zene/handlers"
+	"zene/net"
 
 	"github.com/rs/cors"
 )
@@ -16,7 +17,7 @@ func StartServer() {
 	fileServer := http.FileServer(distDir)
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := distDir.Open(r.URL.Path); err == nil {
-			handlers.EnableCdnCaching(w)
+			net.EnableCdnCaching(w)
 			fileServer.ServeHTTP(w, r)
 			return
 		}

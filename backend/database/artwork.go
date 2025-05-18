@@ -16,12 +16,9 @@ func createAlbumArtTable() {
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumArtRow, error) {
-	stmt, err := Db.Prepare(`SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = $musicbrainz_album_id;`)
-	if err != nil {
-		return types.AlbumArtRow{}, err
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtSelectAlbumArtByMusicBrainzAlbumId
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -37,15 +34,9 @@ func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumA
 }
 
 func InsertAlbumArtRow(musicbrainzAlbumId string, dateModified string) error {
-	stmt, err := Db.Prepare(`INSERT INTO album_art (musicbrainz_album_id, date_modified)
-		VALUES ($musicbrainz_album_id, $date_modified)
-		ON CONFLICT(musicbrainz_album_id) DO UPDATE SET date_modified=excluded.date_modified
-  	 WHERE excluded.date_modified>album_art.date_modified;`)
-	if err != nil {
-		return fmt.Errorf("failed to prepare statement: %v", err)
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtInsertAlbumArtRow
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
 	stmt.SetText("$date_modified", time.Now().Format(time.RFC3339Nano))
 

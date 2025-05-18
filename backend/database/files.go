@@ -26,14 +26,10 @@ func createFilesTriggers() {
 }
 
 func SelectAllFiles() ([]types.FilesRow, error) {
-	stmt, err := Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files;`)
+	stmt := stmtSelectAllFiles
+	stmt.Reset()
 
 	var rows []types.FilesRow
-
-	if err != nil {
-		return rows, err
-	}
-	defer stmt.Finalize()
 
 	for {
 		if hasRow, err := stmt.Step(); err != nil {
@@ -54,12 +50,9 @@ func SelectAllFiles() ([]types.FilesRow, error) {
 }
 
 func SelectFileByFilename(filename string) (types.FilesRow, error) {
-	stmt, err := Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE filename = $filename;`)
-	if err != nil {
-		return types.FilesRow{}, err
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtSelectFileByFilename
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetText("$filename", filename)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -78,12 +71,9 @@ func SelectFileByFilename(filename string) (types.FilesRow, error) {
 }
 
 func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
-	stmt, err := Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE dir_path = $dir_path and filename = $filename;`)
-	if err != nil {
-		return types.FilesRow{}, err
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtSelectFileByFilePath
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetText("$dir_path", filepath.Dir(filePath))
 	stmt.SetText("$filename", filepath.Base(filePath))
 
@@ -103,12 +93,11 @@ func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
 }
 
 func DeleteFileById(id int) error {
-	stmt, err := Db.Prepare(`delete FROM files WHERE id = $id;`)
-	if err != nil {
-		return err
-	}
-	defer stmt.Finalize()
+	stmt := stmtDeleteFileById
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetInt64("$id", int64(id))
+
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to delete files row for id %d: %v", id, err)
@@ -117,13 +106,9 @@ func DeleteFileById(id int) error {
 }
 
 func InsertIntoFiles(dirPath string, fileName string, dateAdded string, dateModified string) (int, error) {
-	stmt, err := Db.Prepare(`INSERT INTO files (dir_path, filename, date_added, date_modified)
-		VALUES ($dir_path, $filename, $date_added, $date_modified);`)
-	if err != nil {
-		return 0, fmt.Errorf("failed to prepare statement: %v", err)
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtInsertIntoFiles
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetText("$dir_path", dirPath)
 	stmt.SetText("$filename", fileName)
 	stmt.SetText("$date_added", dateAdded)

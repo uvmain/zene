@@ -17,13 +17,9 @@ func createScansTable() {
 }
 
 func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
-	stmt, err := Db.Prepare(`INSERT INTO scans (scan_date, file_count, date_modified)
-		VALUES ($scan_date, $file_count, $date_modified);`)
-	if err != nil {
-		return fmt.Errorf("failed to prepare statement: %v", err)
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtInsertScanRow
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetText("$scan_date", scanDate)
 	stmt.SetInt64("$file_count", int64(fileCount))
 	stmt.SetText("$date_modified", dateModified)
@@ -36,12 +32,8 @@ func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
 }
 
 func SelectLastScan() (types.ScanRow, error) {
-	stmt, err := Db.Prepare(`SELECT id, scan_date, file_count, date_modified from scans order by id desc limit 1;`)
-
-	if err != nil {
-		return types.ScanRow{}, err
-	}
-	defer stmt.Finalize()
+	stmt := stmtSelectLastScan
+	stmt.Reset()
 
 	hasRow, err := stmt.Step()
 

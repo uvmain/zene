@@ -26,6 +26,7 @@ export default defineConfig({
     colors: {
       zenegray: {
         50: '#f9f9f9',
+        200: '#505050',
         700: '#18181C',
         800: '#151213',
         900: '#050505',

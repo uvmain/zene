@@ -3,28 +3,24 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"time"
 
 	"zene/art"
 	"zene/database"
+	"zene/net"
 	"zene/scanner"
 )
-
-func EnableCdnCaching(w http.ResponseWriter) {
-	expiryDate := time.Now().AddDate(1, 0, 0)
-	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-	w.Header().Set("Expires", expiryDate.String())
-}
 
 func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllFiles()
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -44,6 +40,7 @@ func HandleGetFileByName(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(row); err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -52,11 +49,13 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllArtists()
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -64,11 +63,13 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllAlbums()
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -76,11 +77,13 @@ func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllMetadata()
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -89,6 +92,7 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -105,7 +109,7 @@ func GetAlbumArtByMusicBrainzAlbumId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mimeType := http.DetectContentType(imageBlob)
-	EnableCdnCaching(w)
+	net.EnableCdnCaching(w)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(imageBlob)

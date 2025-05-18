@@ -22,6 +22,7 @@ func Initialise() {
 	createMetadataTable()
 	createMetadataTriggers()
 	createAlbumArtTable()
+	prepareStatements()
 }
 
 func openDatabase() {

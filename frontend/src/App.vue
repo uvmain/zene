@@ -58,7 +58,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="via-zenegray-800 grid grid-cols-[250px_1fr] h-screen from-zenegray-900 to-zenegray-700 bg-gradient-to-b text-white">
+  <div class="grid grid-cols-[250px_1fr] h-screen from-zenegray-900 via-zenegray-800 to-zenegray-700 bg-gradient-to-b text-white">
     <Navbar />
 
     <main class="overflow-y-auto p-6 space-y-6">

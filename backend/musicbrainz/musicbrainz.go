@@ -6,13 +6,22 @@ import (
 	"io"
 	"net/http"
 
+	"zene/net"
 	"zene/types"
 )
 
 func GetAlbumArtUrl(musicBrainzAlbumId string) (string, error) {
 	url := fmt.Sprintf("https://coverartarchive.org/release/%s", musicBrainzAlbumId)
 
-	res, err := http.Get(url)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("HTTP New Request failed: %v", err)
+	}
+
+	net.AddUserAgentHeaderToRequest(req)
+
+	res, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("HTTP error: %w", err)
 	}

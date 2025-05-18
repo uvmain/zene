@@ -42,20 +42,9 @@ func createMetadataTriggers() {
 }
 
 func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
-	stmt, err := Db.Prepare(`INSERT INTO track_metadata (
-		file_id, filename, format, duration, size, bitrate, title, artist, album,
-		album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
-		musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
-	) VALUES (
-	  $file_id, $filename, $format, $duration, $size, $bitrate, $title, $artist, $album,
-		$album_artist, $genre, $track_number, $total_tracks, $disc_number, $total_discs, $release_date,
-		$musicbrainz_artist_id, $musicbrainz_album_id, $musicbrainz_track_id, $label
-	 )`)
-	if err != nil {
-		return err
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtInsertTrackMetadataRow
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetInt64("$file_id", int64(fileRowId))
 	stmt.SetText("$filename", metadata.Filename)
 	stmt.SetText("$format", metadata.Format)
@@ -86,12 +75,11 @@ func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
 }
 
 func DeleteMetadataByFileId(file_id int) error {
-	stmt, err := Db.Prepare(`delete FROM metadata WHERE file_id = $file_id;`)
-	if err != nil {
-		return err
-	}
-	defer stmt.Finalize()
+	stmt := stmtDeleteMetadataByFileId
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetInt64("$file_id", int64(file_id))
+
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to delete metadata row for file_id %d: %v", file_id, err)
@@ -101,21 +89,14 @@ func DeleteMetadataByFileId(file_id int) error {
 }
 
 func SelectAllArtists() ([]types.ArtistResponse, error) {
-	stmt, err := Db.Prepare(`SELECT DISTINCT artist, musicbrainz_artist_id
-		FROM track_metadata
-		ORDER BY artist;`)
+	stmt := stmtSelectAllArtists
+	stmt.Reset()
 
 	var rows []types.ArtistResponse
 
-	if err != nil {
-		log.Printf("Error selecting artists from track_metadata: %v", err)
-		return rows, err
-	}
-	defer stmt.Finalize()
-
 	for {
 		if hasRow, err := stmt.Step(); err != nil {
-			return rows, err
+			return []types.ArtistResponse{}, err
 		} else if !hasRow {
 			break
 		} else {
@@ -126,25 +107,21 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 			rows = append(rows, row)
 		}
 	}
+	if rows == nil {
+		rows = []types.ArtistResponse{}
+	}
 	return rows, nil
 }
 
 func SelectAllAlbums() ([]types.AlbumsResponse, error) {
-	stmt, err := Db.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, artist, musicbrainz_artist_id
-		FROM track_metadata
-		ORDER BY album;`)
+	stmt := stmtSelectAllAlbums
+	stmt.Reset()
 
 	var rows []types.AlbumsResponse
 
-	if err != nil {
-		log.Printf("Error selecting albums from track_metadata: %v", err)
-		return rows, err
-	}
-	defer stmt.Finalize()
-
 	for {
 		if hasRow, err := stmt.Step(); err != nil {
-			return rows, err
+			return []types.AlbumsResponse{}, err
 		} else if !hasRow {
 			break
 		} else {
@@ -157,72 +134,68 @@ func SelectAllAlbums() ([]types.AlbumsResponse, error) {
 			rows = append(rows, row)
 		}
 	}
+	if rows == nil {
+		rows = []types.AlbumsResponse{}
+	}
 	return rows, nil
 }
 
 func SelectAllMetadata() ([]types.TrackMetadata, error) {
-	stmt, err := Db.Prepare(`SELECT * FROM track_metadata ORDER BY id;`)
+	stmt := stmtSelectAllMetadata
+	stmt.Reset()
 
 	var rows []types.TrackMetadata
-
-	if err != nil {
-		log.Printf("Error selecting * from track_metadata: %v", err)
-		return rows, err
-	}
-	defer stmt.Finalize()
-
 	for {
-		if hasRow, err := stmt.Step(); err != nil {
-			return rows, err
+		hasRow, err := stmt.Step()
+		if err != nil {
+			return []types.TrackMetadata{}, err
 		} else if !hasRow {
 			break
-		} else {
-
-			row := types.TrackMetadata{
-				Id:                  int(stmt.GetInt64("id")),
-				FileId:              int(stmt.GetInt64("file_id")),
-				Filename:            stmt.GetText("filename"),
-				Format:              stmt.GetText("format"),
-				Duration:            stmt.GetText("duration"),
-				Size:                stmt.GetText("size"),
-				Bitrate:             stmt.GetText("bitrate"),
-				Title:               stmt.GetText("title"),
-				Artist:              stmt.GetText("artist"),
-				Album:               stmt.GetText("album"),
-				AlbumArtist:         stmt.GetText("album_artist"),
-				Genre:               stmt.GetText("genre"),
-				TrackNumber:         stmt.GetText("track_number"),
-				TotalTracks:         stmt.GetText("total_tracks"),
-				DiscNumber:          stmt.GetText("disc_number"),
-				TotalDiscs:          stmt.GetText("total_discs"),
-				ReleaseDate:         stmt.GetText("release_date"),
-				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
-				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
-				Label:               stmt.GetText("label"),
-			}
-			rows = append(rows, row)
 		}
+
+		row := types.TrackMetadata{
+			Id:                  int(stmt.GetInt64("id")),
+			FileId:              int(stmt.GetInt64("file_id")),
+			Filename:            stmt.GetText("filename"),
+			Format:              stmt.GetText("format"),
+			Duration:            stmt.GetText("duration"),
+			Size:                stmt.GetText("size"),
+			Bitrate:             stmt.GetText("bitrate"),
+			Title:               stmt.GetText("title"),
+			Artist:              stmt.GetText("artist"),
+			Album:               stmt.GetText("album"),
+			AlbumArtist:         stmt.GetText("album_artist"),
+			Genre:               stmt.GetText("genre"),
+			TrackNumber:         stmt.GetText("track_number"),
+			TotalTracks:         stmt.GetText("total_tracks"),
+			DiscNumber:          stmt.GetText("disc_number"),
+			TotalDiscs:          stmt.GetText("total_discs"),
+			ReleaseDate:         stmt.GetText("release_date"),
+			MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+			MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
+			MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
+			Label:               stmt.GetText("label"),
+		}
+		rows = append(rows, row)
+	}
+
+	if rows == nil {
+		rows = []types.TrackMetadata{}
 	}
 	return rows, nil
 }
 
 func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata, error) {
-	stmt, err := Db.Prepare(`SELECT * FROM track_metadata where musicbrainz_album_id = $musicbrainz_album_id ORDER BY id;`)
+	stmt := stmtSelectMetadataByAlbumID
+	stmt.Reset()
+	stmt.ClearBindings()
+	stmt.SetText("$musicbrainz_album_id", musicbrainz_album_id)
 
 	var rows []types.TrackMetadata
 
-	if err != nil {
-		log.Printf("Error selecting albums from track_metadata: %v", err)
-		return rows, err
-	}
-	defer stmt.Finalize()
-
-	stmt.SetText("$musicbrainz_album_id", musicbrainz_album_id)
-
 	for {
 		if hasRow, err := stmt.Step(); err != nil {
-			return rows, err
+			return []types.TrackMetadata{}, err
 		} else if !hasRow {
 			break
 		} else {
@@ -252,6 +225,9 @@ func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata
 			}
 			rows = append(rows, row)
 		}
+	}
+	if rows == nil {
+		rows = []types.TrackMetadata{}
 	}
 	return rows, nil
 }
