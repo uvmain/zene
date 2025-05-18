@@ -2,49 +2,44 @@
 import dayjs from 'dayjs'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
-const randomAlbum = ref()
+const randomMetadata = ref()
 
-async function getRandomTrack() {
-  const response = await backendFetchRequest('metadata')
+async function getRandomMetadata() {
+  const response = await backendFetchRequest('metadata/random')
   const json = await response.json()
-  const tracks = json.map((track: any) => ({
-    name: track.title,
-    artist: track.artist,
-    album: track.album,
-    musicbrainz_track_id: track.musicbrainz_track_id,
-    musicbrainz_album_id: track.musicbrainz_album_id,
-    musicbrainz_artist_id: track.musicbrainz_artist_id,
-    genre: track.genre,
-    release_date: dayjs(track.release_date).format('YYYY'),
-    image_url: `/api/art/albums/${track.musicbrainz_album_id}?size=xl`,
-  }))
-  randomAlbum.value = tracks[Math.floor(Math.random() * tracks.length)]
+  randomMetadata.value = {
+    name: json.title,
+    artist: json.artist,
+    album: json.album,
+    musicbrainz_track_id: json.musicbrainz_track_id,
+    musicbrainz_album_id: json.musicbrainz_album_id,
+    musicbrainz_artist_id: json.musicbrainz_artist_id,
+    genres: json.genre.split(';'),
+    release_date: dayjs(json.release_date).format('YYYY'),
+    image_url: `/api/art/albums/${json.musicbrainz_album_id}?size=xl`,
+  }
 }
 
-const genres = computed(() => {
-  return randomAlbum.value.genre.split(';')
-})
-
 onBeforeMount(async () => {
-  await getRandomTrack()
+  await getRandomMetadata()
 })
 </script>
 
 <template>
-  <section v-if="randomAlbum" class="relative h-80">
-    <img :src="randomAlbum?.image_url" class="absolute z-0 h-80 w-full rounded-xl object-cover">
+  <section v-if="randomMetadata" class="relative h-80">
+    <img :src="randomMetadata.image_url" class="absolute z-0 h-80 w-full rounded-xl object-cover">
     <div class="absolute z-10 h-full w-full backdrop-blur-md">
       <div class="h-60 flex flex-row from-black to-opacity-0 bg-gradient-to-r p-10">
-        <img :src="randomAlbum?.image_url" class="rounded-lg">
+        <img :src="randomMetadata.image_url" class="rounded-lg">
         <div class="m-6 flex flex-col gap-5">
           <div class="text-4xl text-white font-bold">
-            {{ randomAlbum?.album }}
+            {{ randomMetadata.album }}
           </div>
           <div class="text-white">
-            {{ randomAlbum?.artist }} • {{ randomAlbum.release_date }}
+            {{ randomMetadata.artist }} • {{ randomMetadata.release_date }}
           </div>
           <div class="flex flex-row gap-x-2">
-            <span v-for="genre in genres" :key="genre" class="bg-zenegray-200 rounded-full px-4 py-1 text-xs text-zenegray-50 font-semibold">
+            <span v-for="genre in randomMetadata.genres" :key="genre" class="rounded-full bg-zenegray-200 px-4 py-1 text-xs text-zenegray-50 font-semibold">
               {{ genre }}
             </span>
           </div>

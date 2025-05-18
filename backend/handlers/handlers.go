@@ -88,6 +88,20 @@ func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleGetRandomMetadata(w http.ResponseWriter, r *http.Request) {
+	data, err := database.SelectOneRandomMetadata()
+	if err != nil {
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
 func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 	scanResult := scanner.RunScan()
 	w.Header().Set("Content-Type", "application/json")

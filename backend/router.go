@@ -29,6 +29,7 @@ func StartServer() {
 	router.HandleFunc("GET /api/artists", handlers.HandleGetArtists)
 	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)
 	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata)
+	router.HandleFunc("GET /api/metadata/random", handlers.HandleGetRandomMetadata)
 	router.HandleFunc("POST /api/scan", handlers.HandlePostScan)
 	router.HandleFunc("GET /api/art/albums/{musicBrainzAlbumId}", handlers.GetAlbumArtByMusicBrainzAlbumId)
 
