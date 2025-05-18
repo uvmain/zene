@@ -16,6 +16,9 @@ func createAlbumArtTable() {
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumArtRow, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectAlbumArtByMusicBrainzAlbumId
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -34,6 +37,9 @@ func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumA
 }
 
 func InsertAlbumArtRow(musicbrainzAlbumId string, dateModified string) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtInsertAlbumArtRow
 	stmt.Reset()
 	stmt.ClearBindings()

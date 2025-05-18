@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"zene/art"
@@ -19,7 +20,7 @@ func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
 		return
 	}
 }
@@ -54,7 +55,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
 		return
 	}
 }
@@ -68,7 +69,7 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
 		return
 	}
 }
@@ -82,7 +83,7 @@ func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
 		return
 	}
 }
@@ -91,7 +92,7 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 	scanResult := scanner.RunScan()
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
 		return
 	}
 }

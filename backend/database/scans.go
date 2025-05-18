@@ -17,6 +17,9 @@ func createScansTable() {
 }
 
 func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtInsertScanRow
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -32,6 +35,9 @@ func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
 }
 
 func SelectLastScan() (types.ScanRow, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectLastScan
 	stmt.Reset()
 

@@ -26,6 +26,9 @@ func createFilesTriggers() {
 }
 
 func SelectAllFiles() ([]types.FilesRow, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectAllFiles
 	stmt.Reset()
 
@@ -50,6 +53,9 @@ func SelectAllFiles() ([]types.FilesRow, error) {
 }
 
 func SelectFileByFilename(filename string) (types.FilesRow, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectFileByFilename
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -71,6 +77,9 @@ func SelectFileByFilename(filename string) (types.FilesRow, error) {
 }
 
 func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectFileByFilePath
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -93,6 +102,9 @@ func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
 }
 
 func DeleteFileById(id int) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtDeleteFileById
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -106,6 +118,9 @@ func DeleteFileById(id int) error {
 }
 
 func InsertIntoFiles(dirPath string, fileName string, dateAdded string, dateModified string) (int, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtInsertIntoFiles
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -119,6 +134,6 @@ func InsertIntoFiles(dirPath string, fileName string, dateAdded string, dateModi
 		return 0, fmt.Errorf("failed to insert file: %v", err)
 	}
 
-	rowId := int(Db.LastInsertRowID())
+	rowId := int(DbRW.LastInsertRowID())
 	return rowId, nil
 }

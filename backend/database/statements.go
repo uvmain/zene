@@ -7,6 +7,8 @@ import (
 )
 
 var err error
+var stmtDoesTableExist *sqlite.Stmt
+var stmtCreateTriggerIfNotExists *sqlite.Stmt
 var stmtSelectAlbumArtByMusicBrainzAlbumId *sqlite.Stmt
 var stmtInsertAlbumArtRow *sqlite.Stmt
 var stmtInsertIntoFiles *sqlite.Stmt
@@ -25,12 +27,23 @@ var stmtInsertScanRow *sqlite.Stmt
 
 func prepareStatements() {
 	log.Println("Preparing SQL statements")
-	stmtSelectAlbumArtByMusicBrainzAlbumId, err = Db.Prepare(`SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = $musicbrainz_album_id;`)
+
+	stmtDoesTableExist, err = DbReadOnly.Prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = $table_name;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtInsertAlbumArtRow, err = Db.Prepare(`INSERT INTO album_art (musicbrainz_album_id, date_modified)
+	stmtCreateTriggerIfNotExists, err = DbReadOnly.Prepare("SELECT name FROM sqlite_master WHERE type='trigger' AND name=$triggername")
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectAlbumArtByMusicBrainzAlbumId, err = DbReadOnly.Prepare(`SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = $musicbrainz_album_id;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtInsertAlbumArtRow, err = DbRW.Prepare(`INSERT INTO album_art (musicbrainz_album_id, date_modified)
 		VALUES ($musicbrainz_album_id, $date_modified)
 		ON CONFLICT(musicbrainz_album_id) DO UPDATE SET date_modified=excluded.date_modified
 	 	WHERE excluded.date_modified>album_art.date_modified;`)
@@ -38,33 +51,33 @@ func prepareStatements() {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtInsertIntoFiles, err = Db.Prepare(`INSERT INTO files (dir_path, filename, date_added, date_modified)
+	stmtInsertIntoFiles, err = DbRW.Prepare(`INSERT INTO files (dir_path, filename, date_added, date_modified)
 		VALUES ($dir_path, $filename, $date_added, $date_modified);`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtDeleteFileById, err = Db.Prepare(`delete FROM files WHERE id = $id;`)
+	stmtDeleteFileById, err = DbRW.Prepare(`delete FROM files WHERE id = $id;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectFileByFilePath, err = Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE dir_path = $dir_path and filename = $filename;`)
+	stmtSelectFileByFilePath, err = DbReadOnly.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE dir_path = $dir_path and filename = $filename;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectFileByFilename, err = Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE filename = $filename;`)
+	stmtSelectFileByFilename, err = DbReadOnly.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE filename = $filename;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectAllFiles, err = Db.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files;`)
+	stmtSelectAllFiles, err = DbReadOnly.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtInsertTrackMetadataRow, err = Db.Prepare(`INSERT INTO track_metadata (
+	stmtInsertTrackMetadataRow, err = DbRW.Prepare(`INSERT INTO track_metadata (
 		file_id, filename, format, duration, size, bitrate, title, artist, album,
 		album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
 		musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
@@ -77,37 +90,37 @@ func prepareStatements() {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtDeleteMetadataByFileId, err = Db.Prepare(`delete FROM track_metadata WHERE file_id = $file_id;`)
+	stmtDeleteMetadataByFileId, err = DbRW.Prepare(`delete FROM track_metadata WHERE file_id = $file_id;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectAllArtists, err = Db.Prepare(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	ORDER BY artist;`)
+	stmtSelectAllArtists, err = DbReadOnly.Prepare(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	ORDER BY artist;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectAllAlbums, err = Db.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, artist, musicbrainz_artist_id FROM track_metadata ORDER BY album;`)
+	stmtSelectAllAlbums, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, artist, musicbrainz_artist_id FROM track_metadata ORDER BY album;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectAllMetadata, err = Db.Prepare(`SELECT * FROM track_metadata ORDER BY id;`)
+	stmtSelectAllMetadata, err = DbReadOnly.Prepare(`SELECT * FROM track_metadata ORDER BY id;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectMetadataByAlbumID, err = Db.Prepare(`SELECT * FROM track_metadata where musicbrainz_album_id = $musicbrainz_album_id ORDER BY id;`)
+	stmtSelectMetadataByAlbumID, err = DbReadOnly.Prepare(`SELECT * FROM track_metadata where musicbrainz_album_id = $musicbrainz_album_id ORDER BY id;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectLastScan, err = Db.Prepare(`SELECT id, scan_date, file_count, date_modified from scans order by id desc limit 1;`)
+	stmtSelectLastScan, err = DbReadOnly.Prepare(`SELECT id, scan_date, file_count, date_modified from scans order by id desc limit 1;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtInsertScanRow, err = Db.Prepare(`INSERT INTO scans (scan_date, file_count, date_modified)
+	stmtInsertScanRow, err = DbRW.Prepare(`INSERT INTO scans (scan_date, file_count, date_modified)
 		VALUES ($scan_date, $file_count, $date_modified);`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)

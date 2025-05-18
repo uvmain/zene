@@ -7,13 +7,9 @@ import (
 )
 
 func doesTableExist(tableName string) (bool, error) {
-	stmt, err := Db.Prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = $table_name;`)
-
-	if err != nil {
-		return false, err
-	}
-	defer stmt.Finalize()
-
+	stmt := stmtDoesTableExist
+	stmt.Reset()
+	stmt.ClearBindings()
 	stmt.SetText("$table_name", tableName)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -34,7 +30,7 @@ func createTable(tableName string, createSql string) {
 	}
 	if !table_exists {
 		stmt := createSql
-		err := sqlitex.ExecuteTransient(Db, stmt, nil)
+		err := sqlitex.ExecuteTransient(DbRW, stmt, nil)
 		if err != nil {
 			log.Fatalf("Failed to create %s table: %v", tableName, err)
 		} else {
@@ -46,17 +42,22 @@ func createTable(tableName string, createSql string) {
 }
 
 func createTriggerIfNotExists(triggerName string, triggerSQL string) {
-	checkQuery := Db.Prep("SELECT name FROM sqlite_master WHERE type='trigger' AND name=$triggername")
-	checkQuery.SetText("$triggername", triggerName)
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 
-	hasRow, err := checkQuery.Step()
+	stmt := stmtCreateTriggerIfNotExists
+	stmt.Reset()
+	stmt.ClearBindings()
+	stmt.SetText("$triggername", triggerName)
+
+	hasRow, err := stmt.Step()
 	if hasRow {
 		log.Printf("%s trigger already exists", triggerName)
 	} else if err != nil {
 		log.Printf("Error checking for %s trigger: %s", triggerName, err)
 	} else {
 		log.Printf("Creating %s trigger", triggerName)
-		stmt, err := Db.Prepare(triggerSQL)
+		stmt, err := DbRW.Prepare(triggerSQL)
 		if err != nil {
 			log.Printf("Error preparing %s trigger: %s", triggerName, err)
 			return

@@ -42,6 +42,9 @@ func createMetadataTriggers() {
 }
 
 func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtInsertTrackMetadataRow
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -75,6 +78,9 @@ func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
 }
 
 func DeleteMetadataByFileId(file_id int) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtDeleteMetadataByFileId
 	stmt.Reset()
 	stmt.ClearBindings()
@@ -89,6 +95,9 @@ func DeleteMetadataByFileId(file_id int) error {
 }
 
 func SelectAllArtists() ([]types.ArtistResponse, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectAllArtists
 	stmt.Reset()
 
@@ -114,11 +123,12 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 }
 
 func SelectAllAlbums() ([]types.AlbumsResponse, error) {
-	stmt := stmtSelectAllAlbums
-	stmt.Reset()
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	stmt := DbReadOnly.Prep(`SELECT DISTINCT album, musicbrainz_album_id, artist, musicbrainz_artist_id FROM track_metadata ORDER BY album;`)
 
 	var rows []types.AlbumsResponse
-
 	for {
 		if hasRow, err := stmt.Step(); err != nil {
 			return []types.AlbumsResponse{}, err
@@ -141,6 +151,9 @@ func SelectAllAlbums() ([]types.AlbumsResponse, error) {
 }
 
 func SelectAllMetadata() ([]types.TrackMetadata, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectAllMetadata
 	stmt.Reset()
 
@@ -186,6 +199,9 @@ func SelectAllMetadata() ([]types.TrackMetadata, error) {
 }
 
 func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
 	stmt := stmtSelectMetadataByAlbumID
 	stmt.Reset()
 	stmt.ClearBindings()

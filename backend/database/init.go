@@ -3,6 +3,7 @@ package database
 import (
 	"log"
 	"path/filepath"
+	"sync"
 	"zene/config"
 	"zene/io"
 
@@ -11,18 +12,20 @@ import (
 )
 
 var dbFile = "sqlite.db"
-var Db *sqlite.Conn
+var DbRW *sqlite.Conn
+var DbReadOnly *sqlite.Conn
+var dbMutex sync.Mutex
 
 func Initialise() {
 	io.CreateDir(config.DatabaseDirectory)
 	openDatabase()
+	prepareStatements()
 	createScansTable()
 	createFilesTable()
 	createFilesTriggers()
 	createMetadataTable()
 	createMetadataTriggers()
 	createAlbumArtTable()
-	prepareStatements()
 }
 
 func openDatabase() {
@@ -34,14 +37,19 @@ func openDatabase() {
 		log.Println("Creating database file")
 	}
 
-	conn, err := sqlite.OpenConn(dbFile, sqlite.OpenReadWrite|sqlite.OpenCreate)
+	var err error
+
+	DbRW, err = sqlite.OpenConn(dbFile, sqlite.OpenReadWrite|sqlite.OpenCreate)
 	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
+		log.Fatalf("Failed to open CRUD database connection: %v", err)
 	}
 
-	Db = conn
+	DbReadOnly, err = sqlite.OpenConn(dbFile, sqlite.OpenReadOnly)
+	if err != nil {
+		log.Fatalf("Failed to open read-only database connection: %v", err)
+	}
 
-	err = sqlitex.ExecuteTransient(conn, "PRAGMA journal_mode=WAL;", nil)
+	err = sqlitex.ExecuteTransient(DbRW, "PRAGMA journal_mode=WAL;", nil)
 	if err != nil {
 		log.Fatalf("Failed to set WAL mode: %v", err)
 	} else {
@@ -50,7 +58,10 @@ func openDatabase() {
 }
 
 func CloseDatabase() {
-	if Db != nil {
-		Db.Close()
+	if DbRW != nil {
+		DbRW.Close()
+	}
+	if DbReadOnly != nil {
+		DbReadOnly.Close()
 	}
 }
