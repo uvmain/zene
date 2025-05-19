@@ -126,7 +126,8 @@ func SelectAllAlbums() ([]types.AlbumsResponse, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := DbReadOnly.Prep(`SELECT DISTINCT album, musicbrainz_album_id, artist, musicbrainz_artist_id FROM track_metadata ORDER BY album;`)
+	stmt := stmtSelectAllAlbums
+	stmt.Reset()
 
 	var rows []types.AlbumsResponse
 	for {
@@ -137,7 +138,7 @@ func SelectAllAlbums() ([]types.AlbumsResponse, error) {
 		} else {
 			row := types.AlbumsResponse{
 				Album:               stmt.GetText("album"),
-				Artist:              stmt.GetText("artist"),
+				Artist:              stmt.GetText("album_artist"),
 				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
 				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
 			}

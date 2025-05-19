@@ -95,7 +95,6 @@ func HandleGetRandomMetadataWithLimit(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	limitParam := r.URL.Query().Get("limit")
-	log.Printf("Limit parameter: %s", limitParam)
 
 	if limitParam == "" {
 		data, err = database.SelectAllMetadataRandomized()

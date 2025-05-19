@@ -12,6 +12,7 @@ declare module 'vue' {
     Header: typeof import('./src/components/Header.vue')['default']
     HeroTrack: typeof import('./src/components/HeroTrack.vue')['default']
     IconTablerArrowsShuffle: typeof import('~icons/tabler/arrows-shuffle')['default']
+    IconTablerDice6: typeof import('~icons/tabler/dice6')['default']
     IconTablerEdit: typeof import('~icons/tabler/edit')['default']
     IconTablerHome: typeof import('~icons/tabler/home')['default']
     IconTablerLibraryPlus: typeof import('~icons/tabler/library-plus')['default']
