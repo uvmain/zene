@@ -248,41 +248,100 @@ func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata
 	return rows, nil
 }
 
-func SelectOneRandomMetadata() (types.TrackMetadata, error) {
+func SelectAllMetadataRandomized() ([]types.TrackMetadata, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtSelectOneRandomMetadata
+	stmt := stmtSelectRandomizedMetadata
 	stmt.Reset()
 
-	row := types.TrackMetadata{}
+	var rows []types.TrackMetadata
 
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.TrackMetadata{}, err
-	} else if !hasRow {
-		return types.TrackMetadata{}, err
-	} else {
-		row.Id = int(stmt.GetInt64("id"))
-		row.FileId = int(stmt.GetInt64("file_id"))
-		row.Filename = stmt.GetText("filename")
-		row.Format = stmt.GetText("format")
-		row.Duration = stmt.GetText("duration")
-		row.Size = stmt.GetText("size")
-		row.Bitrate = stmt.GetText("bitrate")
-		row.Title = stmt.GetText("title")
-		row.Artist = stmt.GetText("artist")
-		row.Album = stmt.GetText("album")
-		row.AlbumArtist = stmt.GetText("album_artist")
-		row.Genre = stmt.GetText("genre")
-		row.TrackNumber = stmt.GetText("track_number")
-		row.TotalTracks = stmt.GetText("total_tracks")
-		row.DiscNumber = stmt.GetText("disc_number")
-		row.TotalDiscs = stmt.GetText("total_discs")
-		row.ReleaseDate = stmt.GetText("release_date")
-		row.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
-		row.MusicBrainzAlbumID = stmt.GetText("musicbrainz_album_id")
-		row.MusicBrainzTrackID = stmt.GetText("musicbrainz_track_id")
-		row.Label = stmt.GetText("label")
-		return row, nil
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return []types.TrackMetadata{}, err
+		} else if !hasRow {
+			break
+		} else {
+
+			row := types.TrackMetadata{
+				Id:                  int(stmt.GetInt64("id")),
+				FileId:              int(stmt.GetInt64("file_id")),
+				Filename:            stmt.GetText("filename"),
+				Format:              stmt.GetText("format"),
+				Duration:            stmt.GetText("duration"),
+				Size:                stmt.GetText("size"),
+				Bitrate:             stmt.GetText("bitrate"),
+				Title:               stmt.GetText("title"),
+				Artist:              stmt.GetText("artist"),
+				Album:               stmt.GetText("album"),
+				AlbumArtist:         stmt.GetText("album_artist"),
+				Genre:               stmt.GetText("genre"),
+				TrackNumber:         stmt.GetText("track_number"),
+				TotalTracks:         stmt.GetText("total_tracks"),
+				DiscNumber:          stmt.GetText("disc_number"),
+				TotalDiscs:          stmt.GetText("total_discs"),
+				ReleaseDate:         stmt.GetText("release_date"),
+				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
+				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
+				Label:               stmt.GetText("label"),
+			}
+			rows = append(rows, row)
+		}
 	}
+	if rows == nil {
+		rows = []types.TrackMetadata{}
+	}
+	return rows, nil
+}
+
+func SelectRandomMetadataWithLimit(limit int) ([]types.TrackMetadata, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	stmt := stmtSelectRandomMetadataWithLimit
+	stmt.Reset()
+	stmt.ClearBindings()
+	stmt.SetInt64("$limit", int64(limit))
+
+	var rows []types.TrackMetadata
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return []types.TrackMetadata{}, err
+		} else if !hasRow {
+			break
+		} else {
+
+			row := types.TrackMetadata{
+				Id:                  int(stmt.GetInt64("id")),
+				FileId:              int(stmt.GetInt64("file_id")),
+				Filename:            stmt.GetText("filename"),
+				Format:              stmt.GetText("format"),
+				Duration:            stmt.GetText("duration"),
+				Size:                stmt.GetText("size"),
+				Bitrate:             stmt.GetText("bitrate"),
+				Title:               stmt.GetText("title"),
+				Artist:              stmt.GetText("artist"),
+				Album:               stmt.GetText("album"),
+				AlbumArtist:         stmt.GetText("album_artist"),
+				Genre:               stmt.GetText("genre"),
+				TrackNumber:         stmt.GetText("track_number"),
+				TotalTracks:         stmt.GetText("total_tracks"),
+				DiscNumber:          stmt.GetText("disc_number"),
+				TotalDiscs:          stmt.GetText("total_discs"),
+				ReleaseDate:         stmt.GetText("release_date"),
+				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
+				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
+				Label:               stmt.GetText("label"),
+			}
+			rows = append(rows, row)
+		}
+	}
+	if rows == nil {
+		rows = []types.TrackMetadata{}
+	}
+	return rows, nil
 }

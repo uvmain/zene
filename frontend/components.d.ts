@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     HeroTrack: typeof import('./src/components/HeroTrack.vue')['default']
     IconTablerArrowsShuffle: typeof import('~icons/tabler/arrows-shuffle')['default']

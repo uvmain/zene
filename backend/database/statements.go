@@ -17,7 +17,8 @@ var stmtSelectFileByFilePath *sqlite.Stmt
 var stmtSelectFileByFilename *sqlite.Stmt
 var stmtSelectAllFiles *sqlite.Stmt
 var stmtInsertTrackMetadataRow *sqlite.Stmt
-var stmtSelectOneRandomMetadata *sqlite.Stmt
+var stmtSelectRandomMetadataWithLimit *sqlite.Stmt
+var stmtSelectRandomizedMetadata *sqlite.Stmt
 var stmtDeleteMetadataByFileId *sqlite.Stmt
 var stmtSelectAllArtists *sqlite.Stmt
 var stmtSelectAllAlbums *sqlite.Stmt
@@ -111,11 +112,12 @@ func prepareStatements() {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectOneRandomMetadata, err = DbReadOnly.Prepare(`SELECT * FROM track_metadata
-		WHERE rowid > (
-			ABS(RANDOM()) % (SELECT max(rowid) FROM track_metadata)
-		)
-		LIMIT 1;`)
+	stmtSelectRandomMetadataWithLimit, err = DbReadOnly.Prepare(`SELECT * FROM track_metadata order by random() limit $limit;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectRandomizedMetadata, err = DbReadOnly.Prepare(`SELECT * FROM track_metadata order by random();`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}

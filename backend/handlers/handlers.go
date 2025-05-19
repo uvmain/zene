@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"zene/art"
 	"zene/database"
 	"zene/net"
 	"zene/scanner"
+	"zene/types"
 )
 
 func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
@@ -88,11 +90,26 @@ func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetRandomMetadata(w http.ResponseWriter, r *http.Request) {
-	data, err := database.SelectOneRandomMetadata()
-	if err != nil {
-		http.Error(w, "Failed to query database", http.StatusInternalServerError)
-		return
+func HandleGetRandomMetadataWithLimit(w http.ResponseWriter, r *http.Request) {
+	var data []types.TrackMetadata
+	var err error
+
+	limitParam := r.URL.Query().Get("limit")
+	log.Printf("Limit parameter: %s", limitParam)
+
+	if limitParam == "" {
+		data, err = database.SelectAllMetadataRandomized()
+		if err != nil {
+			http.Error(w, "Failed to query database", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		limitParamInt, err := strconv.Atoi(limitParam)
+		data, err = database.SelectRandomMetadataWithLimit(limitParamInt)
+		if err != nil {
+			http.Error(w, "Failed to query database", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -58,7 +58,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="grid grid-cols-[250px_1fr] h-screen from-zenegray-900 via-zenegray-800 to-zenegray-700 bg-gradient-to-b text-white">
+  <div class="grid grid-cols-[250px_1fr] h-screen from-zenegray-900 to-zenegray-700 bg-gradient-to-b text-white">
     <Navbar />
 
     <main class="overflow-y-auto p-6 space-y-6">
@@ -74,7 +74,7 @@ onBeforeMount(async () => {
             </h2>
             <div class="flex gap-6 overflow-x-auto">
               <div v-for="album in topAlbums" :key="album.album" class="w-20 text-center">
-                <img class="h-20 w-20 rounded-lg bg-gray-700" :src="album.image_url" alt="Album Cover" />
+                <img class="h-20 w-20 rounded-lg" :src="album.image_url" alt="Album Cover" />
                 <div class="mt-1 text-sm">
                   {{ album.name }}
                 </div>
@@ -91,7 +91,7 @@ onBeforeMount(async () => {
                 Genres
               </h2>
               <div class="flex flex-wrap gap-2">
-                <span v-for="genre in genres" :key="genre" class="rounded bg-gray-700 px-3 py-1 text-sm">{{ genre }}</span>
+                <GenreBottle v-for="genre in genres" :key="genre" :genre />
               </div>
             </div>
 
