@@ -10,6 +10,8 @@ type AlbumsResponse struct {
 	Album               string `json:"album"`
 	MusicBrainzArtistID string `json:"musicbrainz_artist_id"`
 	Artist              string `json:"artist"`
+	Genres              string `json:"genres"`
+	ReleaseDate         string `json:"release_date"`
 }
 
 type ScanResponse struct {

@@ -27,3 +27,14 @@ export interface ImageMetadata {
   orientation: string
   panoramic: boolean
 }
+
+export interface HeroMetadata {
+  artist: string
+  album: string
+  musicbrainz_track_id: string
+  musicbrainz_album_id: string
+  musicbrainz_artist_id: string
+  genres: string[]
+  release_date: string
+  image_url: string
+}

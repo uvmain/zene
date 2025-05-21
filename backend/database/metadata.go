@@ -3,7 +3,10 @@ package database
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"zene/types"
+
+	"zombiezen.com/go/sqlite"
 )
 
 func createMetadataTable() {
@@ -122,12 +125,34 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 	return rows, nil
 }
 
-func SelectAllAlbums() ([]types.AlbumsResponse, error) {
+func SelectAllAlbums(random string, limit string) ([]types.AlbumsResponse, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
+	var stmt *sqlite.Stmt
 
-	stmt := stmtSelectAllAlbums
-	stmt.Reset()
+	if random == "true" {
+		if limit != "" {
+			limitInt, _ := strconv.Atoi(limit)
+			stmt = stmtSelectRandomizedAlbumsWithLimit
+			stmt.Reset()
+			stmt.ClearBindings()
+			stmt.SetInt64("$limit", int64(limitInt))
+		} else {
+			stmt = stmtSelectRandomizedAlbums
+			stmt.Reset()
+		}
+	} else {
+		if limit != "" {
+			limitInt, _ := strconv.Atoi(limit)
+			stmt = stmtSelectAlbumsWithLimit
+			stmt.Reset()
+			stmt.ClearBindings()
+			stmt.SetInt64("$limit", int64(limitInt))
+		} else {
+			stmt = stmtSelectAllAlbums
+			stmt.Reset()
+		}
+	}
 
 	var rows []types.AlbumsResponse
 	for {
@@ -141,6 +166,8 @@ func SelectAllAlbums() ([]types.AlbumsResponse, error) {
 				Artist:              stmt.GetText("album_artist"),
 				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
 				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+				Genres:              stmt.GetText("genre"),
+				ReleaseDate:         stmt.GetText("release_date"),
 			}
 			rows = append(rows, row)
 		}

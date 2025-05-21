@@ -10,8 +10,11 @@ declare module 'vue' {
   export interface GlobalComponents {
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
+    HeroAlbum: typeof import('./src/components/HeroAlbum.vue')['default']
     HeroTrack: typeof import('./src/components/HeroTrack.vue')['default']
     IconTablerArrowsShuffle: typeof import('~icons/tabler/arrows-shuffle')['default']
+    IconTablerChevronLeft: typeof import('~icons/tabler/chevron-left')['default']
+    IconTablerChevronRight: typeof import('~icons/tabler/chevron-right')['default']
     IconTablerDice6: typeof import('~icons/tabler/dice6')['default']
     IconTablerEdit: typeof import('~icons/tabler/edit')['default']
     IconTablerHome: typeof import('~icons/tabler/home')['default']

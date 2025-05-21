@@ -63,7 +63,10 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.SelectAllAlbums()
+	randomParam := r.URL.Query().Get("random")
+	limitParam := r.URL.Query().Get("limit")
+
+	rows, err := database.SelectAllAlbums(randomParam, limitParam)
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return

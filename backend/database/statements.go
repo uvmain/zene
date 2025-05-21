@@ -22,6 +22,9 @@ var stmtSelectRandomizedMetadata *sqlite.Stmt
 var stmtDeleteMetadataByFileId *sqlite.Stmt
 var stmtSelectAllArtists *sqlite.Stmt
 var stmtSelectAllAlbums *sqlite.Stmt
+var stmtSelectRandomizedAlbumsWithLimit *sqlite.Stmt
+var stmtSelectRandomizedAlbums *sqlite.Stmt
+var stmtSelectAlbumsWithLimit *sqlite.Stmt
 var stmtSelectAllMetadata *sqlite.Stmt
 var stmtSelectMetadataByAlbumID *sqlite.Stmt
 var stmtSelectLastScan *sqlite.Stmt
@@ -102,7 +105,22 @@ func prepareStatements() {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectAllAlbums, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, artist, musicbrainz_artist_id FROM track_metadata ORDER BY album;`)
+	stmtSelectAllAlbums, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY album;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectRandomizedAlbumsWithLimit, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY random() limit $limit;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectAlbumsWithLimit, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY album limit $limit;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectRandomizedAlbums, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY random();`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
