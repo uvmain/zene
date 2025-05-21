@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { backendFetchRequest } from './composables/fetchFromBackend'
 
-const topAlbums = ref()
+const recentlyAddedAlbums = ref()
 const topTracks = ref()
 
 // async function getArtists() {
@@ -26,7 +26,7 @@ const genres = ref([
 ])
 
 async function getAlbums() {
-  const response = await backendFetchRequest('albums')
+  const response = await backendFetchRequest('albums?recent=true&limit=8')
   const json = await response.json()
   const albums = json.map((album: any) => ({
     name: album.album,
@@ -34,7 +34,7 @@ async function getAlbums() {
     musicbrainz_album_id: album.musicbrainz_album_id,
     image_url: `/api/art/albums/${album.musicbrainz_album_id}?size=md`,
   }))
-  topAlbums.value = albums.slice(0, 6)
+  recentlyAddedAlbums.value = albums
 }
 
 async function getTopTracks() {
@@ -53,12 +53,12 @@ async function getTopTracks() {
 
 onBeforeMount(async () => {
   await getAlbums()
-  await getTopTracks()
+  // await getTopTracks()
 })
 </script>
 
 <template>
-  <div class="grid grid-cols-[250px_1fr] h-screen from-zenegray-900 to-zenegray-700 bg-gradient-to-b text-white">
+  <div class="from-zene-800 to-zene-600 grid grid-cols-[250px_1fr] h-screen bg-gradient-to-b text-white">
     <Navbar />
 
     <main class="overflow-y-auto p-6 space-y-6">
@@ -70,15 +70,15 @@ onBeforeMount(async () => {
         <div>
           <div>
             <h2 class="mb-2 text-lg font-semibold">
-              Top Albums
+              Recently Added Albums
             </h2>
-            <div class="flex gap-6 overflow-x-auto">
-              <div v-for="album in topAlbums" :key="album.album" class="w-20 text-center">
-                <img class="h-20 w-20 rounded-lg" :src="album.image_url" alt="Album Cover" />
-                <div class="mt-1 text-sm">
+            <div class="flex gap-6">
+              <div v-for="album in recentlyAddedAlbums" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
+                <img class="w-full rounded-md" :src="album.image_url" alt="Album Cover" />
+                <div class="text-nowrap text-sm">
                   {{ album.name }}
                 </div>
-                <div class="text-xs text-gray-400">
+                <div class="text-nowrap text-xs text-gray-300">
                   {{ album.artist }}
                 </div>
               </div>

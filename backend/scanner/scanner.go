@@ -156,7 +156,7 @@ func cleanFiles() error {
 }
 
 func getArtwork() error {
-	albums, err := database.SelectAllAlbums("false", "")
+	albums, err := database.SelectAllAlbums("false", "", "")
 	if err != nil {
 		log.Printf("Error fetching albums from database: %v", err)
 		return err

@@ -28,9 +28,7 @@ async function getRandomAlbums(limit: number): Promise<HeroMetadata[]> {
   const response = await backendFetchRequest(`albums?random=true&limit=${limit}`)
   const json = await response.json()
   const heroMetadata: HeroMetadata[] = []
-  console.log('fetching new metadata')
   json.forEach((metadata: any) => {
-    console.log(metadata.musicbrainz_album_id)
     const metadataInstance = {
       artist: metadata.artist,
       album: metadata.album,
@@ -80,13 +78,13 @@ onBeforeMount(async () => {
           <div v-if="albumArray[index].genres.length > 0" class="flex flex-row gap-x-2">
             <GenreBottle v-for="genre in albumArray[index].genres" :key="genre" :genre />
           </div>
-          <button class="w-30 border-1 border-white rounded-full border-solid bg-zenegray-800/30 px-4 py-2 text-white font-semibold outline-none hover:bg-sky-400/70">
+          <button class="bg-zene-600/70 hover:bg-zene-200/70 w-30 border-1 border-white rounded-full border-solid px-4 py-2 text-xl text-white outline-none">
             Play
           </button>
         </div>
       </div>
     </div>
-    <div class="absolute right-3 top-3 z-10 flex gap-4 rounded-full bg-zenegray-900/30 p-2 text-zenegray-50">
+    <div class="bg-zene-800/50 absolute right-3 top-3 z-10 flex gap-4 rounded-full p-2 text-white">
       <icon-tabler-chevron-left class="text-4xl" :class="{ 'opacity-40': index === 0 }" @click="prevIndex" />
       <icon-tabler-dice-6 class="text-4xl" :class="{ shake: isShaking }" @click="handleDiceClick" />
       <icon-tabler-chevron-right class="text-4xl" :class="{ 'opacity-40': index === indexCount - 1 }" @click="nextIndex" />

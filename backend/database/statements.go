@@ -25,6 +25,8 @@ var stmtSelectAllAlbums *sqlite.Stmt
 var stmtSelectRandomizedAlbumsWithLimit *sqlite.Stmt
 var stmtSelectRandomizedAlbums *sqlite.Stmt
 var stmtSelectAlbumsWithLimit *sqlite.Stmt
+var stmtSelectAlbumsRecentlyAdded *sqlite.Stmt
+var stmtSelectAlbumsRecentlyAddedWithLimit *sqlite.Stmt
 var stmtSelectAllMetadata *sqlite.Stmt
 var stmtSelectMetadataByAlbumID *sqlite.Stmt
 var stmtSelectLastScan *sqlite.Stmt
@@ -121,6 +123,16 @@ func prepareStatements() {
 	}
 
 	stmtSelectRandomizedAlbums, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY random();`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectAlbumsRecentlyAdded, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata join files on file_id group by album ORDER BY date_added desc;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectAlbumsRecentlyAddedWithLimit, err = DbReadOnly.Prepare(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata join files on file_id group by album ORDER BY date_added desc limit $limit;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}

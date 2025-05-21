@@ -125,12 +125,23 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 	return rows, nil
 }
 
-func SelectAllAlbums(random string, limit string) ([]types.AlbumsResponse, error) {
+func SelectAllAlbums(random string, limit string, recent string) ([]types.AlbumsResponse, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 	var stmt *sqlite.Stmt
 
-	if random == "true" {
+	if recent == "true" {
+		if limit != "" {
+			limitInt, _ := strconv.Atoi(limit)
+			stmt = stmtSelectAlbumsRecentlyAddedWithLimit
+			stmt.Reset()
+			stmt.ClearBindings()
+			stmt.SetInt64("$limit", int64(limitInt))
+		} else {
+			stmt = stmtSelectAlbumsRecentlyAdded
+			stmt.Reset()
+		}
+	} else if random == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
 			stmt = stmtSelectRandomizedAlbumsWithLimit
