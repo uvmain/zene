@@ -13,19 +13,20 @@ import (
 
 var dbFile = "sqlite.db"
 var DbRW *sqlite.Conn
-var DbReadOnly *sqlite.Conn
+var DbRO *sqlite.Conn
 var dbMutex sync.Mutex
 
 func Initialise() {
 	io.CreateDir(config.DatabaseDirectory)
 	openDatabase()
-	prepareStatements()
+	prepareInitStatements()
 	createScansTable()
 	createFilesTable()
 	createFilesTriggers()
 	createMetadataTable()
 	createMetadataTriggers()
 	createAlbumArtTable()
+	prepareStatements()
 }
 
 func openDatabase() {
@@ -44,24 +45,32 @@ func openDatabase() {
 		log.Fatalf("Failed to open CRUD database connection: %v", err)
 	}
 
-	DbReadOnly, err = sqlite.OpenConn(dbFile, sqlite.OpenReadOnly)
+	DbRO, err = sqlite.OpenConn(dbFile, sqlite.OpenReadOnly)
 	if err != nil {
 		log.Fatalf("Failed to open read-only database connection: %v", err)
 	}
 
 	err = sqlitex.ExecuteTransient(DbRW, "PRAGMA journal_mode=WAL;", nil)
 	if err != nil {
-		log.Fatalf("Failed to set WAL mode: %v", err)
+		log.Fatalf("DbRW Failed to set WAL mode: %v", err)
 	} else {
-		log.Printf("Database is in WAL mode")
+		log.Printf("DbRW Database is in WAL mode")
 	}
+
+	err = sqlitex.ExecuteTransient(DbRO, "PRAGMA journal_mode=WAL;", nil)
+	if err != nil {
+		log.Fatalf("DbRO Failed to set WAL mode: %v", err)
+	} else {
+		log.Printf("DbRO Database is in WAL mode")
+	}
+
 }
 
 func CloseDatabase() {
 	if DbRW != nil {
 		DbRW.Close()
 	}
-	if DbReadOnly != nil {
-		DbReadOnly.Close()
+	if DbRO != nil {
+		DbRO.Close()
 	}
 }

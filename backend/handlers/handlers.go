@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"zene/art"
 	"zene/database"
 	"zene/net"
 	"zene/scanner"
-	"zene/types"
 )
 
 func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
@@ -27,14 +25,14 @@ func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetFileByName(w http.ResponseWriter, r *http.Request) {
-	filename := r.URL.Query().Get("filename")
-	if filename == "" {
-		http.Error(w, "Missing filename parameter", http.StatusBadRequest)
+func HandleGetFileById(w http.ResponseWriter, r *http.Request) {
+	fileId := r.PathValue("fileId")
+	if fileId == "" {
+		http.Error(w, "Missing fileId parameter", http.StatusBadRequest)
 		return
 	}
 
-	row, err := database.SelectFileByFilename(filename)
+	row, err := database.SelectFileByFileId(fileId)
 
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -81,7 +79,11 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.SelectAllMetadata()
+	randomParam := r.URL.Query().Get("random")
+	limitParam := r.URL.Query().Get("limit")
+	recentParam := r.URL.Query().Get("recent")
+
+	rows, err := database.SelectAllMetadata(randomParam, limitParam, recentParam)
 	if err != nil {
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
@@ -89,34 +91,6 @@ func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
-		return
-	}
-}
-
-func HandleGetRandomMetadataWithLimit(w http.ResponseWriter, r *http.Request) {
-	var data []types.TrackMetadata
-	var err error
-
-	limitParam := r.URL.Query().Get("limit")
-
-	if limitParam == "" {
-		data, err = database.SelectAllMetadataRandomized()
-		if err != nil {
-			http.Error(w, "Failed to query database", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		limitParamInt, err := strconv.Atoi(limitParam)
-		data, err = database.SelectRandomMetadataWithLimit(limitParamInt)
-		if err != nil {
-			http.Error(w, "Failed to query database", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Println("Error encoding database response:", err)
 		return
 	}

@@ -11,7 +11,7 @@ type Image struct {
 	Comment    string            `json:"comment"`
 	Edit       int64             `json:"edit"`
 	Front      bool              `json:"front"`
-	ID         int64             `json:"id"`
+	ID         string            `json:"id"`
 	Image      string            `json:"image"`
 	Thumbnails map[string]string `json:"thumbnails"`
 	Types      []string          `json:"types"`

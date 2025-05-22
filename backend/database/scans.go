@@ -40,6 +40,7 @@ func SelectLastScan() (types.ScanRow, error) {
 
 	stmt := stmtSelectLastScan
 	stmt.Reset()
+	stmt.ClearBindings()
 
 	hasRow, err := stmt.Step()
 

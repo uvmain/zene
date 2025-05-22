@@ -31,6 +31,7 @@ func SelectAllFiles() ([]types.FilesRow, error) {
 
 	stmt := stmtSelectAllFiles
 	stmt.Reset()
+	stmt.ClearBindings()
 
 	var rows []types.FilesRow
 
@@ -52,14 +53,14 @@ func SelectAllFiles() ([]types.FilesRow, error) {
 	return rows, nil
 }
 
-func SelectFileByFilename(filename string) (types.FilesRow, error) {
+func SelectFileByFileId(fileId string) (types.FilesRow, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtSelectFileByFilename
+	stmt := stmtSelectFileByFileId
 	stmt.Reset()
 	stmt.ClearBindings()
-	stmt.SetText("$filename", filename)
+	stmt.SetText("$fileid", fileId)
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.FilesRow{}, err

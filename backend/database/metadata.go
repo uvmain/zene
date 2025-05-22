@@ -103,6 +103,7 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 
 	stmt := stmtSelectAllArtists
 	stmt.Reset()
+	stmt.ClearBindings()
 
 	var rows []types.ArtistResponse
 
@@ -134,36 +135,35 @@ func SelectAllAlbums(random string, limit string, recent string) ([]types.Albums
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
 			stmt = stmtSelectAlbumsRecentlyAddedWithLimit
-			stmt.Reset()
 			stmt.ClearBindings()
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
 			stmt = stmtSelectAlbumsRecentlyAdded
-			stmt.Reset()
+			stmt.ClearBindings()
 		}
 	} else if random == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
 			stmt = stmtSelectRandomizedAlbumsWithLimit
-			stmt.Reset()
 			stmt.ClearBindings()
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
 			stmt = stmtSelectRandomizedAlbums
-			stmt.Reset()
+			stmt.ClearBindings()
 		}
 	} else {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
 			stmt = stmtSelectAlbumsWithLimit
-			stmt.Reset()
 			stmt.ClearBindings()
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
 			stmt = stmtSelectAllAlbums
-			stmt.Reset()
+			stmt.ClearBindings()
 		}
 	}
+
+	stmt.Reset()
 
 	var rows []types.AlbumsResponse
 	for {
@@ -189,12 +189,49 @@ func SelectAllAlbums(random string, limit string, recent string) ([]types.Albums
 	return rows, nil
 }
 
-func SelectAllMetadata() ([]types.TrackMetadata, error) {
+func SelectAllMetadata(random string, limit string, recent string) ([]types.TrackMetadata, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtSelectAllMetadata
-	stmt.Reset()
+	var stmt *sqlite.Stmt
+
+	if recent == "true" {
+		if limit != "" {
+			limitInt, _ := strconv.Atoi(limit)
+			stmt = stmtSelectMetadataRecentlyAddedWithLimit
+			stmt.Reset()
+			stmt.ClearBindings()
+			stmt.SetInt64("$limit", int64(limitInt))
+		} else {
+			stmt = stmtSelectMetadataRecentlyAdded
+			stmt.Reset()
+			stmt.ClearBindings()
+		}
+	} else if random == "true" {
+		if limit != "" {
+			limitInt, _ := strconv.Atoi(limit)
+			stmt = stmtSelectMetadataRandomisedWithLimit
+			stmt.Reset()
+			stmt.ClearBindings()
+			stmt.SetInt64("$limit", int64(limitInt))
+		} else {
+			stmt = stmtSelectMetadataRandomised
+			stmt.Reset()
+			stmt.ClearBindings()
+		}
+	} else {
+		if limit != "" {
+			limitInt, _ := strconv.Atoi(limit)
+			stmt = stmtSelectMetadataWithLimit
+			stmt.Reset()
+			stmt.ClearBindings()
+			stmt.SetInt64("$limit", int64(limitInt))
+		} else {
+			stmt = stmtSelectMetadata
+			stmt.Reset()
+			stmt.ClearBindings()
+		}
+	}
 
 	var rows []types.TrackMetadata
 	for {
@@ -245,104 +282,6 @@ func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata
 	stmt.Reset()
 	stmt.ClearBindings()
 	stmt.SetText("$musicbrainz_album_id", musicbrainz_album_id)
-
-	var rows []types.TrackMetadata
-
-	for {
-		if hasRow, err := stmt.Step(); err != nil {
-			return []types.TrackMetadata{}, err
-		} else if !hasRow {
-			break
-		} else {
-
-			row := types.TrackMetadata{
-				Id:                  int(stmt.GetInt64("id")),
-				FileId:              int(stmt.GetInt64("file_id")),
-				Filename:            stmt.GetText("filename"),
-				Format:              stmt.GetText("format"),
-				Duration:            stmt.GetText("duration"),
-				Size:                stmt.GetText("size"),
-				Bitrate:             stmt.GetText("bitrate"),
-				Title:               stmt.GetText("title"),
-				Artist:              stmt.GetText("artist"),
-				Album:               stmt.GetText("album"),
-				AlbumArtist:         stmt.GetText("album_artist"),
-				Genre:               stmt.GetText("genre"),
-				TrackNumber:         stmt.GetText("track_number"),
-				TotalTracks:         stmt.GetText("total_tracks"),
-				DiscNumber:          stmt.GetText("disc_number"),
-				TotalDiscs:          stmt.GetText("total_discs"),
-				ReleaseDate:         stmt.GetText("release_date"),
-				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
-				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
-				Label:               stmt.GetText("label"),
-			}
-			rows = append(rows, row)
-		}
-	}
-	if rows == nil {
-		rows = []types.TrackMetadata{}
-	}
-	return rows, nil
-}
-
-func SelectAllMetadataRandomized() ([]types.TrackMetadata, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	stmt := stmtSelectRandomizedMetadata
-	stmt.Reset()
-
-	var rows []types.TrackMetadata
-
-	for {
-		if hasRow, err := stmt.Step(); err != nil {
-			return []types.TrackMetadata{}, err
-		} else if !hasRow {
-			break
-		} else {
-
-			row := types.TrackMetadata{
-				Id:                  int(stmt.GetInt64("id")),
-				FileId:              int(stmt.GetInt64("file_id")),
-				Filename:            stmt.GetText("filename"),
-				Format:              stmt.GetText("format"),
-				Duration:            stmt.GetText("duration"),
-				Size:                stmt.GetText("size"),
-				Bitrate:             stmt.GetText("bitrate"),
-				Title:               stmt.GetText("title"),
-				Artist:              stmt.GetText("artist"),
-				Album:               stmt.GetText("album"),
-				AlbumArtist:         stmt.GetText("album_artist"),
-				Genre:               stmt.GetText("genre"),
-				TrackNumber:         stmt.GetText("track_number"),
-				TotalTracks:         stmt.GetText("total_tracks"),
-				DiscNumber:          stmt.GetText("disc_number"),
-				TotalDiscs:          stmt.GetText("total_discs"),
-				ReleaseDate:         stmt.GetText("release_date"),
-				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
-				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
-				Label:               stmt.GetText("label"),
-			}
-			rows = append(rows, row)
-		}
-	}
-	if rows == nil {
-		rows = []types.TrackMetadata{}
-	}
-	return rows, nil
-}
-
-func SelectRandomMetadataWithLimit(limit int) ([]types.TrackMetadata, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	stmt := stmtSelectRandomMetadataWithLimit
-	stmt.Reset()
-	stmt.ClearBindings()
-	stmt.SetInt64("$limit", int64(limit))
 
 	var rows []types.TrackMetadata
 
