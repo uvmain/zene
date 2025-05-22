@@ -75,8 +75,10 @@ func prepareStatements() {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtInsertIntoFiles, err = DbRW.Prepare(`INSERT INTO files (dir_path, filename, date_added, date_modified)
-		VALUES ($dir_path, $filename, $date_added, $date_modified);`)
+	stmtInsertIntoFiles, err = DbRW.Prepare(`INSERT INTO files (dir_path, file_path, filename, date_added, date_modified)
+		VALUES ($dir_path, $file_path, $filename, $date_added, $date_modified)
+		ON CONFLICT(file_path) DO UPDATE SET date_modified=excluded.date_modified
+	 	WHERE excluded.date_modified>files.date_modified;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
@@ -86,17 +88,17 @@ func prepareStatements() {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectFileByFilePath, err = DbRO.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE dir_path = $dir_path and filename = $filename;`)
+	stmtSelectFileByFilePath, err = DbRO.Prepare(`SELECT id, dir_path, file_path, filename, date_added, date_modified FROM files WHERE file_path = $file_path;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectFileByFileId, err = DbRO.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files WHERE id = $fileid;`)
+	stmtSelectFileByFileId, err = DbRO.Prepare(`SELECT id, dir_path, filename, file_path, date_added, date_modified FROM files WHERE id = $fileid;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
 
-	stmtSelectAllFiles, err = DbRO.Prepare(`SELECT id, dir_path, filename, date_added, date_modified FROM files;`)
+	stmtSelectAllFiles, err = DbRO.Prepare(`SELECT id, dir_path, filename, file_path, date_added, date_modified FROM files;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}

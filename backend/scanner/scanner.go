@@ -108,7 +108,7 @@ func getFiles(lastModified time.Time) error {
 			}
 
 			fileCount += 1
-			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
+			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), path, time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
 			if err != nil {
 				log.Printf("Error inserting files row for %s: %v", path, err)
 				return err

@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"path/filepath"
 	"zene/types"
 )
 
@@ -11,6 +10,7 @@ func createFilesTable() {
 	schema := `CREATE TABLE IF NOT EXISTS files (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		dir_path TEXT NOT NULL,
+		file_path TEXT NOT NULL UNIQUE,
 		filename TEXT NOT NULL,
 		date_added TEXT NOT NULL,
 		date_modified TEXT NOT NULL
@@ -44,6 +44,7 @@ func SelectAllFiles() ([]types.FilesRow, error) {
 			var row types.FilesRow
 			row.Id = int(stmt.GetInt64("id"))
 			row.DirPath = stmt.GetText("dir_path")
+			row.FilePath = stmt.GetText("file_path")
 			row.Filename = stmt.GetText("filename")
 			row.DateAdded = stmt.GetText("date_added")
 			row.DateModified = stmt.GetText("date_modified")
@@ -70,6 +71,7 @@ func SelectFileByFileId(fileId string) (types.FilesRow, error) {
 		var row types.FilesRow
 		row.Id = int(stmt.GetInt64("id"))
 		row.DirPath = stmt.GetText("dir_path")
+		row.FilePath = stmt.GetText("file_path")
 		row.Filename = stmt.GetText("filename")
 		row.DateAdded = stmt.GetText("date_added")
 		row.DateModified = stmt.GetText("date_modified")
@@ -84,8 +86,7 @@ func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
 	stmt := stmtSelectFileByFilePath
 	stmt.Reset()
 	stmt.ClearBindings()
-	stmt.SetText("$dir_path", filepath.Dir(filePath))
-	stmt.SetText("$filename", filepath.Base(filePath))
+	stmt.SetText("$file_path", filePath)
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.FilesRow{}, err
@@ -96,6 +97,7 @@ func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
 		row.Id = int(stmt.GetInt64("id"))
 		row.DirPath = stmt.GetText("dir_path")
 		row.Filename = stmt.GetText("filename")
+		row.FilePath = stmt.GetText("file_path")
 		row.DateAdded = stmt.GetText("date_added")
 		row.DateModified = stmt.GetText("date_modified")
 		return row, nil
@@ -118,7 +120,7 @@ func DeleteFileById(id int) error {
 	return nil
 }
 
-func InsertIntoFiles(dirPath string, fileName string, dateAdded string, dateModified string) (int, error) {
+func InsertIntoFiles(dirPath string, fileName string, filePath string, dateAdded string, dateModified string) (int, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
@@ -127,6 +129,7 @@ func InsertIntoFiles(dirPath string, fileName string, dateAdded string, dateModi
 	stmt.ClearBindings()
 	stmt.SetText("$dir_path", dirPath)
 	stmt.SetText("$filename", fileName)
+	stmt.SetText("$file_path", filePath)
 	stmt.SetText("$date_added", dateAdded)
 	stmt.SetText("$date_modified", dateModified)
 

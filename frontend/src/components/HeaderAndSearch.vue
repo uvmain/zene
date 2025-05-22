@@ -68,6 +68,20 @@ const searchResultsAlbums = computed(() => {
   return Array.from(uniqueAlbums.values())
 })
 
+const searchResultsTracks = computed(() => {
+  const tracks = searchResults.value.filter((track: TrackMetadataWithImageUrl) => {
+    let found = true
+    const inputStrings = inputText.value.split(' ')
+    inputStrings.forEach((inputString: string) => {
+      if (!track.title.toLowerCase().includes(inputString.toLowerCase())) {
+        found = false
+      }
+    })
+    return found
+  })
+  return tracks
+})
+
 async function getGenres() {
   const response = await backendFetchRequest(`genres?search=${inputText.value}`)
   const json = await response.json()
@@ -109,7 +123,7 @@ async function getGenres() {
         </div>
       </div>
     </div>
-    <div v-if="inputText.length > 3" class="mt-2 rounded-lg bg-zene-600">
+    <div v-if="inputText.length >= 3" class="mt-2 rounded-lg bg-zene-600">
       <div class="flex flex-col gap-2 p-4">
         <h3>
           Search results for "{{ inputText }}":
@@ -119,6 +133,15 @@ async function getGenres() {
         </h4>
         <div class="flex flex-wrap gap-6">
           <div v-for="album in searchResultsAlbums" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
+            <Album :album="album" size="lg" />
+          </div>
+        </div>
+        <h4>
+          Tracks: {{ searchResultsTracks.length }}
+        </h4>
+        <div class="flex flex-wrap gap-6">
+          <div v-for="album in searchResultsTracks" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
+            {{ album.title }}
             <Album :album="album" size="lg" />
           </div>
         </div>

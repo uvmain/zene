@@ -11,6 +11,7 @@ type FilesRow = struct {
 	Id           int    `json:"id"`
 	DirPath      string `json:"directory"`
 	Filename     string `json:"filename"`
+	FilePath     string `json:"file_path"`
 	DateAdded    string `json:"date_added"`
 	DateModified string `json:"date_modified"`
 }
