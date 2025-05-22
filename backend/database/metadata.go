@@ -3,7 +3,9 @@ package database
 import (
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
+	"strings"
 	"zene/types"
 
 	"zombiezen.com/go/sqlite"
@@ -135,35 +137,39 @@ func SelectAllAlbums(random string, limit string, recent string) ([]types.Albums
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
 			stmt = stmtSelectAlbumsRecentlyAddedWithLimit
+			stmt.Reset()
 			stmt.ClearBindings()
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
 			stmt = stmtSelectAlbumsRecentlyAdded
+			stmt.Reset()
 			stmt.ClearBindings()
 		}
 	} else if random == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
 			stmt = stmtSelectRandomizedAlbumsWithLimit
+			stmt.Reset()
 			stmt.ClearBindings()
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
 			stmt = stmtSelectRandomizedAlbums
+			stmt.Reset()
 			stmt.ClearBindings()
 		}
 	} else {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
 			stmt = stmtSelectAlbumsWithLimit
+			stmt.Reset()
 			stmt.ClearBindings()
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
 			stmt = stmtSelectAllAlbums
+			stmt.Reset()
 			stmt.ClearBindings()
 		}
 	}
-
-	stmt.Reset()
 
 	var rows []types.AlbumsResponse
 	for {
@@ -322,4 +328,51 @@ func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata
 		rows = []types.TrackMetadata{}
 	}
 	return rows, nil
+}
+
+func SelectDistinctGenres() ([]types.GenreResponse, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	stmt := stmtSelectDistinctGenres
+	stmt.Reset()
+	stmt.ClearBindings()
+
+	var genres []string
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return []types.GenreResponse{}, err
+		} else if !hasRow {
+			break
+		} else {
+			row := stmt.GetText("genre")
+			splits := strings.Split(row, ";")
+			for _, split := range splits {
+				trimmed := strings.TrimSpace(split)
+				if trimmed != "" {
+					genres = append(genres, trimmed)
+				}
+			}
+		}
+	}
+
+	dict := map[string]int{}
+	for _, num := range genres {
+		dict[num]++
+	}
+
+	var ss []types.GenreResponse
+	for k, v := range dict {
+		ss = append(ss, types.GenreResponse{
+			Genre: k,
+			Count: v,
+		})
+	}
+
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Count > ss[j].Count
+	})
+
+	return ss, nil
 }

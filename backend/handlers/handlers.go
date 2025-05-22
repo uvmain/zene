@@ -14,6 +14,7 @@ import (
 func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllFiles()
 	if err != nil {
+		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -35,6 +36,7 @@ func HandleGetFileById(w http.ResponseWriter, r *http.Request) {
 	row, err := database.SelectFileByFileId(fileId)
 
 	if err != nil {
+		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	} else {
@@ -49,6 +51,7 @@ func HandleGetFileById(w http.ResponseWriter, r *http.Request) {
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllArtists()
 	if err != nil {
+		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -67,6 +70,22 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAllAlbums(randomParam, limitParam, recentParam)
 	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
+func HandleGetUniqueGenres(w http.ResponseWriter, r *http.Request) {
+	rows, err := database.SelectDistinctGenres()
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -85,6 +104,7 @@ func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAllMetadata(randomParam, limitParam, recentParam)
 	if err != nil {
+		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}

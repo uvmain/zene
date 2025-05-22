@@ -26,6 +26,7 @@ var stmtSelectMetadataRandomised *sqlite.Stmt
 var stmtSelectMetadataWithLimit *sqlite.Stmt
 var stmtSelectMetadata *sqlite.Stmt
 var stmtSelectMetadataByAlbumID *sqlite.Stmt
+var stmtSelectDistinctGenres *sqlite.Stmt
 
 var stmtSelectAllArtists *sqlite.Stmt
 
@@ -192,6 +193,11 @@ func prepareStatements() {
 
 	stmtInsertScanRow, err = DbRW.Prepare(`INSERT INTO scans (scan_date, file_count, date_modified)
 		VALUES ($scan_date, $file_count, $date_modified);`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectDistinctGenres, err = DbRO.Prepare(`SELECT DISTINCT genre FROM track_metadata;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}

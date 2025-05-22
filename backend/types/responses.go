@@ -19,6 +19,11 @@ type ScanResponse struct {
 	Status  string `json:"status"`
 }
 
+type GenreResponse struct {
+	Genre string `json:"genre"`
+	Count int    `json:"count"`
+}
+
 type LastFmAlbumInfoResponse struct {
 	Album struct {
 		Image []struct {

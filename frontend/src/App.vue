@@ -1,42 +1,5 @@
 <script setup lang="ts">
-import RecentlyAddedAlbums from './components/RecentlyAddedAlbums.vue'
-
 const topTracks = ref()
-
-// async function getArtists() {
-//   const response = await backendFetchRequest('artists')
-//   const json = await response.json()
-//   topArtists.value = json.map((artist: any) => ({
-//     name: artist.artist,
-//     plays: artist.musicbrainz_artist_id,
-//   }))
-// }
-
-const genres = ref([
-  'Pop',
-  'Rock',
-  'Hip-Hop',
-  'Jazz',
-  'Classical',
-  'Electronic',
-  'Country',
-  'Reggae',
-  'Blues',
-])
-
-// async function getTopTracks() {
-//   const response = await backendFetchRequest('metadata')
-//   const json = await response.json()
-//   const tracks = json.map((track: any) => ({
-//     name: track.title,
-//     artist: track.artist,
-//     album: track.album,
-//     musicbrainz_track_id: track.musicbrainz_track_id,
-//     musicbrainz_album_id: track.musicbrainz_album_id,
-//     musicbrainz_artist_id: track.musicbrainz_artist_id,
-//   }))
-//   topTracks.value = tracks.slice(0, 6)
-// }
 </script>
 
 <template>
@@ -45,22 +8,12 @@ const genres = ref([
 
     <main class="overflow-y-auto p-6 space-y-6">
       <Header />
-
       <HeroAlbum />
-
       <section class="grid grid-cols-2 gap-6">
         <div>
           <RecentlyAddedAlbums />
           <section class="grid grid-cols-3 gap-6">
-            <!-- Genres -->
-            <div>
-              <h2 class="mb-2 text-lg font-semibold">
-                Genres
-              </h2>
-              <div class="flex flex-wrap gap-2">
-                <GenreBottle v-for="genre in genres" :key="genre" :genre />
-              </div>
-            </div>
+            <TopGenres />
 
             <!-- Top Tracks -->
             <div>
