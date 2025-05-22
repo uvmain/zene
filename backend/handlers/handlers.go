@@ -125,6 +125,23 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
+	searchQuery := r.URL.Query().Get("search")
+
+	rows, err := database.SearchMetadata(searchQuery)
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
 func GetAlbumArtByMusicBrainzAlbumId(w http.ResponseWriter, r *http.Request) {
 	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
 	sizeParam := r.URL.Query().Get("size")

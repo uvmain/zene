@@ -42,6 +42,8 @@ var stmtSelectAlbumsRecentlyAddedWithLimit *sqlite.Stmt
 var stmtSelectLastScan *sqlite.Stmt
 var stmtInsertScanRow *sqlite.Stmt
 
+var stmtSelectFullTextSearchFromMetadata *sqlite.Stmt
+
 func prepareInitStatements() {
 	log.Println("Preparing SQL init statements")
 
@@ -198,6 +200,16 @@ func prepareStatements() {
 	}
 
 	stmtSelectDistinctGenres, err = DbRO.Prepare(`SELECT DISTINCT genre FROM track_metadata;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectFullTextSearchFromMetadata, err = DbRO.Prepare(`select distinct m.file_id, m.filename, m.format, m.duration, m.size, m.bitrate, m.title, m.artist, m.album,
+		m.album_artist, m.genre, m.track_number, m.total_tracks, m.disc_number, m.total_discs, m.release_date,
+		m.musicbrainz_artist_id, m.musicbrainz_album_id, m.musicbrainz_track_id, m.label
+		FROM track_metadata m JOIN track_metadata_fts f ON m.file_id = f.file_id
+		WHERE track_metadata_fts MATCH $searchQuery
+		ORDER BY m.file_id DESC;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)
 	}
