@@ -28,7 +28,7 @@ export interface ImageMetadata {
   panoramic: boolean
 }
 
-export interface HeroMetadata {
+export interface AlbumMetadata {
   artist: string
   album: string
   musicbrainz_track_id: string

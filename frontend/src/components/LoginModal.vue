@@ -69,9 +69,9 @@ onClickOutside(target, () => emits('modalClose'))
 </script>
 
 <template>
-  <div v-if="isOpen" class="fixed left-0 top-0 z-999 size-full backdrop-blur-xl text">
+  <div v-if="isOpen" class="text fixed left-0 top-0 z-999 size-full backdrop-blur-xl">
     <div v-if="!isLoggedIn" @keydown.escape="cancel">
-      <div ref="target" class="mx-auto mb-auto mt-150px w-300px px-30px pb-30px pt-20px modal">
+      <div ref="target" class="modal mx-auto mb-auto mt-150px w-300px px-30px pb-30px pt-20px">
         <div class="w-300 flex flex-col gap-4 p-6">
           <form class="flex flex-col gap-2">
             <div class="flex flex-row items-center gap-2">
@@ -95,7 +95,7 @@ onClickOutside(target, () => emits('modalClose'))
       </div>
     </div>
     <div v-else @keydown.escape="cancel">
-      <div class="mx-auto mb-auto mt-150px w-300px rounded-sm px-30px pb-30px pt-20px modal">
+      <div class="modal mx-auto mb-auto mt-150px w-300px rounded-sm px-30px pb-30px pt-20px">
         <div class="mb-2 py-4 text-center">
           You are logged in.
         </div>

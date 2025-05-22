@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Album: typeof import('./src/components/Album.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     Header: typeof import('./src/components/Header.vue')['default']
     HeroAlbum: typeof import('./src/components/HeroAlbum.vue')['default']
@@ -31,6 +32,7 @@ declare module 'vue' {
     LoginModal: typeof import('./src/components/LoginModal.vue')['default']
     MusicPlayer: typeof import('./src/components/MusicPlayer.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
+    RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

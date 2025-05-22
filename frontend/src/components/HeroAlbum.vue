@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { HeroMetadata } from '../types'
+import type { AlbumMetadata } from '../types'
 import dayjs from 'dayjs'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const METADATA_COUNT = 20
 const isShaking = ref(false)
-const albumArray = ref<HeroMetadata[]>([])
+const albumArray = ref<AlbumMetadata[]>([])
 const index = ref(0)
 
 const indexCount = computed(() => {
@@ -24,10 +24,10 @@ function prevIndex() {
   }
 }
 
-async function getRandomAlbums(limit: number): Promise<HeroMetadata[]> {
+async function getRandomAlbums(limit: number): Promise<AlbumMetadata[]> {
   const response = await backendFetchRequest(`albums?random=true&limit=${limit}`)
   const json = await response.json()
-  const heroMetadata: HeroMetadata[] = []
+  const albumMetadata: AlbumMetadata[] = []
   json.forEach((metadata: any) => {
     const metadataInstance = {
       artist: metadata.artist,
@@ -39,9 +39,9 @@ async function getRandomAlbums(limit: number): Promise<HeroMetadata[]> {
       release_date: dayjs(metadata.release_date).format('YYYY'),
       image_url: `/api/art/albums/${metadata.musicbrainz_album_id}?size=xl`,
     }
-    heroMetadata.push(metadataInstance)
+    albumMetadata.push(metadataInstance)
   })
-  return heroMetadata
+  return albumMetadata
 }
 
 async function getNewRandomMetadata() {
@@ -68,24 +68,8 @@ onBeforeMount(async () => {
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${albumArray[index].image_url})` }"
     >
-      <div class="h-full w-full flex items-center justify-between from-zene-600 to-opacity-0 bg-gradient-to-r backdrop-blur-md">
-        <div class="flex items-center gap-6 p-10">
-          <img :src="albumArray[index].image_url" class="size-50 rounded-lg object-cover">
-          <div class="flex flex-col gap-5">
-            <div class="text-4xl text-white font-bold">
-              {{ albumArray[index].album }}
-            </div>
-            <div class="text-white">
-              {{ albumArray[index].artist }} • {{ albumArray[index].release_date }}
-            </div>
-            <div v-if="albumArray[index].genres.length > 0" class="flex flex-row gap-x-2">
-              <GenreBottle v-for="genre in albumArray[index].genres" :key="genre" :genre />
-            </div>
-            <button class="w-30 border-1 border-white rounded-full border-solid bg-zene-600/70 px-4 py-2 text-xl text-white outline-none hover:bg-zene-200/70">
-              Play
-            </button>
-          </div>
-        </div>
+      <div class="h-full w-full flex items-center justify-between backdrop-blur-md">
+        <Album :album="albumArray[index]" size="xl" />
         <div class="m-6 mb-auto flex gap-2 rounded-full bg-zene-800/50 p-2 text-white">
           <icon-tabler-chevron-left
             class="cursor-pointer text-3xl opacity-80 active:opacity-100"

@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { backendFetchRequest } from './composables/fetchFromBackend'
+import RecentlyAddedAlbums from './components/RecentlyAddedAlbums.vue'
 
-const recentlyAddedAlbums = ref()
 const topTracks = ref()
 
 // async function getArtists() {
@@ -25,40 +24,23 @@ const genres = ref([
   'Blues',
 ])
 
-async function getAlbums() {
-  const response = await backendFetchRequest('albums?recent=true&limit=8')
-  const json = await response.json()
-  const albums = json.map((album: any) => ({
-    name: album.album,
-    artist: album.artist,
-    musicbrainz_album_id: album.musicbrainz_album_id,
-    image_url: `/api/art/albums/${album.musicbrainz_album_id}?size=md`,
-  }))
-  recentlyAddedAlbums.value = albums
-}
-
-async function getTopTracks() {
-  const response = await backendFetchRequest('metadata')
-  const json = await response.json()
-  const tracks = json.map((track: any) => ({
-    name: track.title,
-    artist: track.artist,
-    album: track.album,
-    musicbrainz_track_id: track.musicbrainz_track_id,
-    musicbrainz_album_id: track.musicbrainz_album_id,
-    musicbrainz_artist_id: track.musicbrainz_artist_id,
-  }))
-  topTracks.value = tracks.slice(0, 6)
-}
-
-onBeforeMount(async () => {
-  await getAlbums()
-  // await getTopTracks()
-})
+// async function getTopTracks() {
+//   const response = await backendFetchRequest('metadata')
+//   const json = await response.json()
+//   const tracks = json.map((track: any) => ({
+//     name: track.title,
+//     artist: track.artist,
+//     album: track.album,
+//     musicbrainz_track_id: track.musicbrainz_track_id,
+//     musicbrainz_album_id: track.musicbrainz_album_id,
+//     musicbrainz_artist_id: track.musicbrainz_artist_id,
+//   }))
+//   topTracks.value = tracks.slice(0, 6)
+// }
 </script>
 
 <template>
-  <div class="from-zene-800 to-zene-600 grid grid-cols-[250px_1fr] h-screen bg-gradient-to-b text-white">
+  <div class="grid grid-cols-[250px_1fr] h-screen from-zene-800 to-zene-600 bg-gradient-to-b text-white">
     <Navbar />
 
     <main class="overflow-y-auto p-6 space-y-6">
@@ -68,22 +50,7 @@ onBeforeMount(async () => {
 
       <section class="grid grid-cols-2 gap-6">
         <div>
-          <div>
-            <h2 class="mb-2 text-lg font-semibold">
-              Recently Added Albums
-            </h2>
-            <div class="flex gap-6">
-              <div v-for="album in recentlyAddedAlbums" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
-                <img class="w-full rounded-md" :src="album.image_url" alt="Album Cover" />
-                <div class="text-nowrap text-sm">
-                  {{ album.name }}
-                </div>
-                <div class="text-nowrap text-xs text-gray-300">
-                  {{ album.artist }}
-                </div>
-              </div>
-            </div>
-          </div>
+          <RecentlyAddedAlbums />
           <section class="grid grid-cols-3 gap-6">
             <!-- Genres -->
             <div>

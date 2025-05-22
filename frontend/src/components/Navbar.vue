@@ -11,29 +11,29 @@
         MAIN
       </div>
       <ul class="space-y-1">
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Home</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Genres</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Albums</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Artists</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Radio</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Home</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Genres</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Albums</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Artists</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Radio</a></li>
       </ul>
       <div class="mt-4 text-sm text-gray-400 font-semibold">
         LIBRARY
       </div>
       <ul class="space-y-1">
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Recently Added</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Recently Played</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Albums</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Random</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Recently Added</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Recently Played</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Albums</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Random</a></li>
       </ul>
       <div class="mt-4 text-sm text-gray-400 font-semibold">
         PLAYLISTS
       </div>
       <ul class="space-y-1">
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Create New</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Running club</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Head bangers</a></li>
-        <li><a class="hover:bg-zene-800 block rounded px-2 py-1">Tomato</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Create New</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Running club</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Head bangers</a></li>
+        <li><a class="block rounded px-2 py-1 hover:bg-zene-800">Tomato</a></li>
       </ul>
     </nav>
   </aside>
