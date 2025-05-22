@@ -35,6 +35,7 @@ declare module 'vue' {
     RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SearchBar: typeof import('./src/components/SearchBar.vue')['default']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
   }
 }

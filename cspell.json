@@ -25,7 +25,8 @@
         "tabler",
         "TRACKID",
         "uvmain",
-        "zene",
+        "vueuse",
+        "zene"
     ],
     "ignoreWords": [],
     "import": []
