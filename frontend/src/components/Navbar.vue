@@ -1,6 +1,6 @@
 <template>
   <aside class="bg-zene-600 p-4 space-y-6">
-    <div class="space-2 flex">
+    <div class="flex items-center gap-x-2">
       <img class="h-10 w-10 rounded-full" src="/logo.png" alt="Logo" />
       <div class="text-xl font-bold">
         Zene
