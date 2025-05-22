@@ -330,7 +330,7 @@ func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata
 	return rows, nil
 }
 
-func SelectDistinctGenres() ([]types.GenreResponse, error) {
+func SelectDistinctGenres(searchParam string) ([]types.GenreResponse, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
@@ -351,7 +351,13 @@ func SelectDistinctGenres() ([]types.GenreResponse, error) {
 			for _, split := range splits {
 				trimmed := strings.TrimSpace(split)
 				if trimmed != "" {
-					genres = append(genres, trimmed)
+					if searchParam != "" {
+						if strings.Contains(strings.ToLower(trimmed), strings.ToLower(searchParam)) {
+							genres = append(genres, trimmed)
+						}
+					} else {
+						genres = append(genres, trimmed)
+					}
 				}
 			}
 		}

@@ -27,9 +27,9 @@ func StartServer() {
 	router.HandleFunc("GET /api/files", handlers.HandleGetAllFiles)
 	router.HandleFunc("GET /api/files/{fileId}", handlers.HandleGetFileById)
 	router.HandleFunc("GET /api/artists", handlers.HandleGetArtists)
-	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)     // query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata) // query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/genres", handlers.HandleGetUniqueGenres)
+	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)       // query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata)   // query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/genres", handlers.HandleGetUniqueGenres) // query params: search=searchTerm
 	router.HandleFunc("GET /api/scan", handlers.HandlePostScan)
 	router.HandleFunc("GET /api/search", handlers.HandleSearchMetadata) // query params: search=searchTerm
 	router.HandleFunc("GET /api/art/albums/{musicBrainzAlbumId}", handlers.GetAlbumArtByMusicBrainzAlbumId)

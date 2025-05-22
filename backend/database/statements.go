@@ -43,6 +43,7 @@ var stmtSelectLastScan *sqlite.Stmt
 var stmtInsertScanRow *sqlite.Stmt
 
 var stmtSelectFullTextSearchFromMetadata *sqlite.Stmt
+var stmtSelectFtsGenre *sqlite.Stmt
 
 func prepareInitStatements() {
 	log.Println("Preparing SQL init statements")

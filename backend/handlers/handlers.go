@@ -83,7 +83,8 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetUniqueGenres(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.SelectDistinctGenres()
+	searchParam := r.URL.Query().Get("search")
+	rows, err := database.SelectDistinctGenres(searchParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)

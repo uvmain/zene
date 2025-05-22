@@ -30,7 +30,7 @@ const artistAndDate = computed(() => {
       <div class="text-xl text-white">
         {{ artistAndDate }}
       </div>
-      <div v-if="album.genres.length > 0" class="flex flex-row gap-x-2">
+      <div v-if="album.genres.length > 0" class="flex flex-wrap gap-2">
         <GenreBottle v-for="genre in album.genres" :key="genre" :genre />
       </div>
       <button class="w-30 border-1 border-white rounded-full border-solid bg-zene-600/70 px-4 py-2 text-xl text-white outline-none hover:bg-zene-200">

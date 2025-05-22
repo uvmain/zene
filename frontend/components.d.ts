@@ -10,7 +10,8 @@ declare module 'vue' {
   export interface GlobalComponents {
     Album: typeof import('./src/components/Album.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
-    Header: typeof import('./src/components/Header.vue')['default']
+    Header: typeof import('./src/components/HeaderAndSearch.vue')['default']
+    HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
     HeroAlbum: typeof import('./src/components/HeroAlbum.vue')['default']
     HeroTrack: typeof import('./src/components/HeroTrack.vue')['default']
     IconTablerArrowsShuffle: typeof import('~icons/tabler/arrows-shuffle')['default']
@@ -24,6 +25,7 @@ declare module 'vue' {
     IconTablerPlayerPlayFilled: typeof import('~icons/tabler/player-play-filled')['default']
     IconTablerPlayerSkipBackFilled: typeof import('~icons/tabler/player-skip-back-filled')['default']
     IconTablerPlayerSkipForwardFilled: typeof import('~icons/tabler/player-skip-forward-filled')['default']
+    IconTablerSearch: typeof import('~icons/tabler/search')['default']
     IconTablerSun: typeof import('~icons/tabler/sun')['default']
     IconTablerTags: typeof import('~icons/tabler/tags')['default']
     IconTablerUpload: typeof import('~icons/tabler/upload')['default']

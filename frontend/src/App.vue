@@ -7,7 +7,7 @@ const topTracks = ref()
     <Navbar />
 
     <main class="overflow-y-auto p-6 space-y-6">
-      <Header />
+      <HeaderAndSearch />
       <HeroAlbum />
       <section class="grid grid-cols-2 gap-6">
         <div>

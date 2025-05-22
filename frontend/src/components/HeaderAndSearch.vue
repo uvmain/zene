@@ -8,6 +8,7 @@ const inputText = useSessionStorage<string>('searchInput', '')
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const searchResults = ref<TrackMetadataWithImageUrl[]>([])
+const searchResultsGenres = ref<any[]>([])
 
 async function search() {
   if (!inputText.value || inputText.value.length < 3) {
@@ -45,6 +46,7 @@ async function search() {
     albumMetadata.push(metadataInstance)
   })
   searchResults.value = albumMetadata
+  getGenres()
 }
 
 const searchResultsAlbums = computed(() => {
@@ -65,21 +67,37 @@ const searchResultsAlbums = computed(() => {
   })
   return Array.from(uniqueAlbums.values())
 })
+
+async function getGenres() {
+  const response = await backendFetchRequest(`genres?search=${inputText.value}`)
+  const json = await response.json()
+  if (!json || json.length === 0) {
+    searchResultsGenres.value = []
+    return
+  }
+  searchResultsGenres.value = json.slice(0, 12)
+}
 </script>
 
 <template>
   <header>
     <div class="flex p-2">
       <div class="flex flex-grow justify-center">
-        <input
-          id="search-input"
-          v-model="inputText"
-          placeholder="Type here to search"
-          type="text"
-          class="block w-1/2 border border-zene-400 rounded rounded-lg bg-gray-800 px-4 py-2 text-white focus-border-1 focus:border-zene-200 focus:border-solid focus:shadow-zene-400 hover:shadow-lg focus:outline-none"
-          @change="search()"
-          @input="search()"
-        >
+        <div class="relative w-1/2">
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+            <icon-tabler-search class="text-xl" />
+          </span>
+          <input
+            id="search-input"
+            v-model="inputText"
+            placeholder="Type here to search"
+            type="text"
+            class="block w-full border border-zene-400 rounded-lg bg-gray-800 px-10 py-2 text-white focus:border-zene-200 focus:border-solid focus:shadow-zene-400 hover:shadow-lg focus:outline-none"
+            @change="search()"
+            @input="search()"
+            @keydown.escape="inputText = ''"
+          >
+        </div>
       </div>
       <div id="user-and-settings" class="flex gap-4">
         <div class="hover:cursor-pointer" @click="toggleDark()">
@@ -91,18 +109,24 @@ const searchResultsAlbums = computed(() => {
         </div>
       </div>
     </div>
-    <div v-if="inputText.length > 3" class="z-100 h-full w-full rounded-lg bg-zene-600/70 px-2">
+    <div v-if="inputText.length > 3" class="mt-2 rounded-lg bg-zene-600">
       <div class="flex flex-col gap-2 p-4">
         <h3>
-          Search results:
+          Search results for "{{ inputText }}":
         </h3>
-        <div>
+        <h4>
           Albums: {{ searchResultsAlbums.length }}
-        </div>
+        </h4>
         <div class="flex flex-wrap gap-6">
           <div v-for="album in searchResultsAlbums" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
             <Album :album="album" size="lg" />
           </div>
+        </div>
+        <h4>
+          Genres: {{ searchResultsGenres.length }}
+        </h4>
+        <div v-if="searchResultsGenres.length > 0" class="flex flex-wrap gap-2">
+          <GenreBottle v-for="genre in searchResultsGenres" :key="genre" :genre="genre.genre" />
         </div>
       </div>
     </div>
