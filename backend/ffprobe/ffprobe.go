@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"zene/config"
+	"zene/musicbrainz"
 	"zene/types"
 )
 
@@ -71,6 +72,11 @@ func GetTags(audfilePath string) (types.TrackMetadata, error) {
 		if totalDiscs == "" && len(splitValue) > 1 {
 			totalDiscs = splitValue[1]
 		}
+	}
+
+	if parsedReleaseDate == "" {
+		metadata, _ := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
+		parsedReleaseDate = metadata.Date
 	}
 
 	metadata := types.TrackMetadata{

@@ -5,6 +5,10 @@ const props = defineProps({
   album: { type: Object as PropType<AlbumMetadata>, required: true },
   size: { type: String, default: 'md' },
 })
+
+const artistAndDate = computed(() => {
+  return props.album.release_date !== 'Invalid Date' ? `${props.album.artist} • ${props.album.release_date}` : props.album.artist
+})
 </script>
 
 <template>
@@ -23,8 +27,8 @@ const props = defineProps({
       <div class="text-4xl text-white font-bold">
         {{ album.album }}
       </div>
-      <div class="text-white">
-        {{ album.artist }} • {{ album.release_date }}
+      <div class="text-xl text-white">
+        {{ artistAndDate }}
       </div>
       <div v-if="album.genres.length > 0" class="flex flex-row gap-x-2">
         <GenreBottle v-for="genre in album.genres" :key="genre" :genre />
