@@ -8,7 +8,6 @@ const inputText = useSessionStorage<string>('searchInput', '')
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const searchResults = ref<TrackMetadataWithImageUrl[]>([])
-const searchDialog = ref<HTMLDialogElement | null>(null)
 
 async function search() {
   if (!inputText.value || inputText.value.length < 3) {
@@ -46,12 +45,6 @@ async function search() {
     albumMetadata.push(metadataInstance)
   })
   searchResults.value = albumMetadata
-  if (searchResults.value.length > 0) {
-    searchDialog.value?.showModal()
-  }
-  else {
-    searchDialog.value?.close()
-  }
 }
 
 const searchResultsAlbums = computed(() => {
@@ -75,38 +68,43 @@ const searchResultsAlbums = computed(() => {
 </script>
 
 <template>
-  <header class="flex p-2">
-    <div class="flex flex-grow justify-center">
-      <input
-        id="search-input"
-        v-model="inputText"
-        placeholder="Type here to search"
-        type="text"
-        class="block w-1/2 border border-zene-400 rounded rounded-lg bg-gray-800 px-4 py-2 text-white focus-border-1 focus:border-zene-200 focus:border-solid focus:shadow-zene-400 hover:shadow-lg focus:outline-none"
-        @change="search()"
-        @input="search()"
-      >
-    </div>
-    <div id="user-and-settings" class="flex gap-4">
-      <div class="hover:cursor-pointer" @click="toggleDark()">
-        <icon-tabler-sun v-if="isDark" class="text-2xl" />
-        <icon-tabler-moon-stars v-else class="text-2xl" />
+  <header>
+    <div class="flex p-2">
+      <div class="flex flex-grow justify-center">
+        <input
+          id="search-input"
+          v-model="inputText"
+          placeholder="Type here to search"
+          type="text"
+          class="block w-1/2 border border-zene-400 rounded rounded-lg bg-gray-800 px-4 py-2 text-white focus-border-1 focus:border-zene-200 focus:border-solid focus:shadow-zene-400 hover:shadow-lg focus:outline-none"
+          @change="search()"
+          @input="search()"
+        >
       </div>
-      <div class="hover:cursor-pointer">
-        <icon-tabler-user class="text-2xl" />
+      <div id="user-and-settings" class="flex gap-4">
+        <div class="hover:cursor-pointer" @click="toggleDark()">
+          <icon-tabler-sun v-if="isDark" class="text-2xl" />
+          <icon-tabler-moon-stars v-else class="text-2xl" />
+        </div>
+        <div class="hover:cursor-pointer">
+          <icon-tabler-user class="text-2xl" />
+        </div>
       </div>
     </div>
-    <dialog ref="searchDialog" class="absolute px-2 backdrop-blur-md" data-cy="modal-dialog">
-      <div class="rounded-lg bg-white pb-4 md:pb-8">
-        <div class="flex gap-6">
+    <div v-if="inputText.length > 3" class="z-100 h-full w-full rounded-lg bg-zene-600/70 px-2">
+      <div class="flex flex-col gap-2 p-4">
+        <h3>
+          Search results:
+        </h3>
+        <div>
+          Albums: {{ searchResultsAlbums.length }}
+        </div>
+        <div class="flex flex-wrap gap-6">
           <div v-for="album in searchResultsAlbums" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
             <Album :album="album" size="lg" />
           </div>
         </div>
-        <button class="bg-university-400 mx-auto mt-4 block rounded px-6 py-3 text-white" data-cy="close" @click="searchDialog?.close()">
-          Close
-        </button>
       </div>
-    </dialog>
+    </div>
   </header>
 </template>
