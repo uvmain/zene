@@ -9,6 +9,7 @@ async function getAlbums() {
   const albums = json.map((album: any) => ({
     album: album.album,
     artist: album.artist,
+    album_artist: album.album_artist ?? album.artist,
     musicbrainz_album_id: album.musicbrainz_album_id,
     image_url: `/api/art/albums/${album.musicbrainz_album_id}?size=lg`,
   }))

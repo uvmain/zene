@@ -24,15 +24,17 @@ func StartServer() {
 		http.ServeFile(w, r, "../dist/index.html")
 	})
 
-	router.HandleFunc("GET /api/files", handlers.HandleGetAllFiles)
-	router.HandleFunc("GET /api/files/{fileId}", handlers.HandleGetFileById)
-	router.HandleFunc("GET /api/artists", handlers.HandleGetArtists)     // query params: search=searchTerm
-	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)       // query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata)   // query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/genres", handlers.HandleGetUniqueGenres) // query params: search=searchTerm
-	router.HandleFunc("GET /api/scan", handlers.HandlePostScan)
-	router.HandleFunc("GET /api/search", handlers.HandleSearchMetadata) // query params: search=searchTerm
-	router.HandleFunc("GET /api/art/albums/{musicBrainzAlbumId}", handlers.GetAlbumArtByMusicBrainzAlbumId)
+	router.HandleFunc("GET /api/files", handlers.HandleGetAllFiles)                                         //
+	router.HandleFunc("GET /api/files/{fileId}", handlers.HandleGetFileById)                                //
+	router.HandleFunc("GET /api/artists", handlers.HandleGetArtists)                                        // query params: search=searchTerm
+	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}", handlers.HandleGetArtist)                   //
+	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/art", handlers.GetArtistArt)                  //
+	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)                                          // query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata)                                      // query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/genres", handlers.HandleGetUniqueGenres)                                    // query params: search=searchTerm
+	router.HandleFunc("GET /api/scan", handlers.HandlePostScan)                                             //
+	router.HandleFunc("GET /api/search", handlers.HandleSearchMetadata)                                     // query params: search=searchTerm
+	router.HandleFunc("GET /api/art/albums/{musicBrainzAlbumId}", handlers.GetAlbumArtByMusicBrainzAlbumId) //
 
 	handler := cors.AllowAll().Handler(router)
 

@@ -99,6 +99,37 @@ func DeleteMetadataByFileId(file_id int) error {
 	return nil
 }
 
+func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) ([]types.ArtistResponse, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	stmt := stmtSelectArtist
+	stmt.Reset()
+	stmt.ClearBindings()
+	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
+
+	var rows []types.ArtistResponse
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return []types.ArtistResponse{}, err
+		} else if !hasRow {
+			break
+		} else {
+			row := types.ArtistResponse{
+				Artist:              stmt.GetText("artist"),
+				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+				ImageURL:            fmt.Sprintf("/api/artists/%s/art", stmt.GetText("musicbrainz_artist_id")),
+			}
+			rows = append(rows, row)
+		}
+	}
+	if rows == nil {
+		rows = []types.ArtistResponse{}
+	}
+	return rows, nil
+}
+
 func SelectAllArtists() ([]types.ArtistResponse, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
@@ -118,7 +149,37 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 			row := types.ArtistResponse{
 				Artist:              stmt.GetText("artist"),
 				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-				ImageURL:            fmt.Sprintf("/api/artist/%s/image", stmt.GetText("musicbrainz_artist_id")),
+				ImageURL:            fmt.Sprintf("/api/artists/%s/art", stmt.GetText("musicbrainz_artist_id")),
+			}
+			rows = append(rows, row)
+		}
+	}
+	if rows == nil {
+		rows = []types.ArtistResponse{}
+	}
+	return rows, nil
+}
+
+func SelectAllAlbumArtists() ([]types.ArtistResponse, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	stmt := stmtSelectAllAlbumArtists
+	stmt.Reset()
+	stmt.ClearBindings()
+
+	var rows []types.ArtistResponse
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return []types.ArtistResponse{}, err
+		} else if !hasRow {
+			break
+		} else {
+			row := types.ArtistResponse{
+				Artist:              stmt.GetText("album_artist"),
+				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+				ImageURL:            fmt.Sprintf("/api/artists/%s/art", stmt.GetText("musicbrainz_artist_id")),
 			}
 			rows = append(rows, row)
 		}
@@ -404,7 +465,7 @@ func SearchForArtists(searchParam string) ([]types.ArtistResponse, error) {
 			var artist types.ArtistResponse
 			artist.Artist = stmt.GetText("artist")
 			artist.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
-			artist.ImageURL = fmt.Sprintf("/api/artist/%s/image", stmt.GetText("musicbrainz_artist_id"))
+			artist.ImageURL = fmt.Sprintf("/api/artists/%s/art", stmt.GetText("musicbrainz_artist_id"))
 			artists = append(artists, artist)
 		}
 	}

@@ -72,6 +72,41 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
+	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
+	var rows []types.ArtistResponse
+	var err error
+
+	rows, err = database.SelectArtistByMusicBrainzArtistId(musicBrainzArtistId)
+
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
+func GetArtistArt(w http.ResponseWriter, r *http.Request) {
+	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
+	imageBlob, err := art.GetArtForArtist(musicBrainzArtistId)
+
+	if err != nil {
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	}
+	mimeType := http.DetectContentType(imageBlob)
+	net.EnableCdnCaching(w)
+	w.Header().Set("Content-Type", mimeType)
+	w.WriteHeader(http.StatusOK)
+	w.Write(imageBlob)
+}
+
 func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 	randomParam := r.URL.Query().Get("random")
 	limitParam := r.URL.Query().Get("limit")

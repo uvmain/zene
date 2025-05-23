@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AlbumMetadata, TrackMetadataWithImageUrl } from '../types'
+import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
 import { useDark, useSessionStorage, useToggle } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
@@ -9,7 +9,7 @@ const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const searchResults = ref<TrackMetadataWithImageUrl[]>([])
 const searchResultsGenres = ref<any[]>([])
-const searchResultsArtists = ref<any[]>([])
+const searchResultsArtists = ref<ArtistMetadata[]>([])
 
 async function search() {
   if (!inputText.value || inputText.value.length < 3) {
@@ -167,11 +167,10 @@ async function getArtists() {
         <div class="flex flex-wrap gap-6">
           <div
             v-for="artist in searchResultsArtists"
-            :key="artist"
+            :key="artist.artist"
             class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
           >
-            <!-- <Album :album="album" size="lg" /> -->
-            {{ artist.artist }}
+            <ArtistThumb :artist="artist" />
           </div>
         </div>
         <h4>

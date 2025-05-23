@@ -26,6 +26,7 @@ func Initialise() {
 	createMetadataTable()
 	createMetadataTriggers()
 	createAlbumArtTable()
+	createArtistArtTable()
 	createFts()
 	prepareStatements()
 }

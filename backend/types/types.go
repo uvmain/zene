@@ -45,3 +45,9 @@ type AlbumArtRow struct {
 	DateAdded          string `json:"date_added"`
 	DateModified       string `json:"date_modified"`
 }
+
+type ArtistArtRow struct {
+	MusicbrainzArtistId string `json:"musicbrainz_artist_id"`
+	DateAdded           string `json:"date_added"`
+	DateModified        string `json:"date_modified"`
+}

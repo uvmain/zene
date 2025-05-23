@@ -58,12 +58,21 @@ func RunScan() types.ScanResponse {
 		}
 	}
 
-	err = getArtwork()
+	err = getAlbumArtwork()
 	if err != nil {
-		log.Printf("Error cleaning file rows: %v", err)
+		log.Printf("Error getting album artwork: %v", err)
 		return types.ScanResponse{
 			Success: false,
-			Status:  "Error cleaning file rows",
+			Status:  "Error getting album artwork",
+		}
+	}
+
+	err = getArtistArtwork()
+	if err != nil {
+		log.Printf("Error getting artist artwork: %v", err)
+		return types.ScanResponse{
+			Success: false,
+			Status:  "Error getting artist artwork",
 		}
 	}
 
@@ -141,6 +150,7 @@ func getFiles(lastModified time.Time) error {
 }
 
 func cleanFiles() error {
+	log.Println("Cleaning orphan files")
 	files, err := database.SelectAllFiles()
 	if err != nil {
 		return err
@@ -155,7 +165,8 @@ func cleanFiles() error {
 	return nil
 }
 
-func getArtwork() error {
+func getAlbumArtwork() error {
+	log.Println("Getting album artwork")
 	albums, err := database.SelectAllAlbums("false", "", "")
 	if err != nil {
 		log.Printf("Error fetching albums from database: %v", err)
@@ -163,6 +174,19 @@ func getArtwork() error {
 	}
 	for _, album := range albums {
 		art.ImportArtForAlbum(album.MusicBrainzAlbumID, album.Album)
+	}
+	return nil
+}
+
+func getArtistArtwork() error {
+	log.Println("Getting artist artwork")
+	artists, err := database.SelectAllAlbumArtists()
+	if err != nil {
+		log.Printf("Error fetching artists from database: %v", err)
+		return err
+	}
+	for _, artist := range artists {
+		art.ImportArtForArtist(artist.MusicBrainzArtistID, artist.Artist)
 	}
 	return nil
 }

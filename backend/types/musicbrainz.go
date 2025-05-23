@@ -54,3 +54,59 @@ type MbRelease struct {
 	Disambiguation string  `json:"disambiguation"`
 	Quality        string  `json:"quality"`
 }
+
+type MbArtist struct {
+	ID             string       `json:"id"`
+	Name           string       `json:"name"`
+	SortName       string       `json:"sort-name"`
+	Type           string       `json:"type"`
+	TypeID         string       `json:"type-id"`
+	Country        string       `json:"country"`
+	GenderID       *string      `json:"gender-id"`
+	Disambiguation string       `json:"disambiguation"`
+	IPIs           []string     `json:"ipis"`
+	ISNIs          []string     `json:"isnis"`
+	LifeSpan       MbLifeSpan   `json:"life-span"`
+	Area           MbArea       `json:"area"`
+	BeginArea      *MbArea      `json:"begin-area"`
+	EndArea        *MbArea      `json:"end-area"`
+	Relations      []MbRelation `json:"relations"`
+}
+
+type MbLifeSpan struct {
+	Begin string  `json:"begin"`
+	End   *string `json:"end"`
+	Ended bool    `json:"ended"`
+}
+
+type MbArea struct {
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	SortName       string   `json:"sort-name"`
+	ISO3166_1Codes []string `json:"iso-3166-1-codes,omitempty"`
+	ISO3166_2Codes []string `json:"iso-3166-2-codes,omitempty"`
+	Type           *string  `json:"type"`
+	TypeID         *string  `json:"type-id"`
+	Disambiguation string   `json:"disambiguation"`
+}
+
+type MbRelation struct {
+	Type            string        `json:"type"`
+	TypeID          string        `json:"type-id"`
+	Direction       string        `json:"direction"`
+	Ended           bool          `json:"ended"`
+	Begin           *string       `json:"begin"`
+	End             *string       `json:"end"`
+	URL             MbRelationURL `json:"url"`
+	TargetType      string        `json:"target-type"`
+	TargetCredit    string        `json:"target-credit"`
+	SourceCredit    string        `json:"source-credit"`
+	Attributes      []interface{} `json:"attributes"`
+	AttributeIDs    interface{}   `json:"attribute-ids"`
+	AttributeValues interface{}   `json:"attribute-values"`
+}
+
+type MbRelationURL struct {
+	ID       string `json:"id"`
+	Resource string `json:"resource"`
+}
