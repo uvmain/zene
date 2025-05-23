@@ -122,7 +122,7 @@ func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
 		}
 	}
 
-	if entityId != "" {
+	if entityId == "" {
 		return "", fmt.Errorf("no wikidata entity found for artist %s", musicBrainzArtistId)
 	}
 
@@ -197,5 +197,5 @@ func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
 
 	url = fmt.Sprintf("https://commons.wikimedia.org/wiki/Special:FilePath/%s", value)
 
-	return "", fmt.Errorf("no wikidata URL found for artist %s", musicBrainzArtistId)
+	return url, nil
 }

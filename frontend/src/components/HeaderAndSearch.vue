@@ -126,7 +126,7 @@ async function getArtists() {
         </div>
       </div>
     </div>
-    <div v-if="inputText.length >= 3" class="mt-2 rounded-lg bg-zene-600">
+    <div v-if="inputText.length >= 3" class="to-zene-700 mt-2 rounded-lg from-zene-400 bg-gradient-to-b">
       <div class="flex flex-col gap-2 p-4">
         <h3>
           Search results for "{{ inputText }}":
@@ -134,7 +134,7 @@ async function getArtists() {
         <h4>
           Tracks: {{ searchResultsTracks.length }}
         </h4>
-        <div class="flex flex-nowrap gap-6 overflow-scroll">
+        <div class="flex flex-nowrap gap-6 overflow-hidden">
           <div
             v-for="track in searchResultsTracks"
             :key="track.title"
@@ -152,7 +152,7 @@ async function getArtists() {
         <h4>
           Albums: {{ searchResultsAlbums.length }}
         </h4>
-        <div class="flex flex-nowrap gap-6 overflow-scroll">
+        <div class="flex flex-nowrap gap-6">
           <div
             v-for="album in searchResultsAlbums"
             :key="album.album"

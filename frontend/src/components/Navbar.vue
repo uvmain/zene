@@ -1,8 +1,8 @@
 <template>
-  <aside class="bg-zene-600 p-4 space-y-6">
-    <div class="flex items-center gap-x-2">
-      <img class="h-10 w-10 rounded-full" src="/logo.png" alt="Logo" />
-      <div class="text-xl font-bold">
+  <aside class="to-zene-700 w-210px from-zene-600 bg-gradient-to-b p-4 space-y-6">
+    <div class="flex items-center justify-center gap-x-2">
+      <img class="size-12 rounded-full" src="/logo.png" alt="Logo" />
+      <div class="text-2xl font-bold">
         Zene
       </div>
     </div>

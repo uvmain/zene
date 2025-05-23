@@ -8,7 +8,7 @@ const topTracks = ref()
     <section class="grid grid-cols-2 gap-6">
       <div>
         <RecentlyAddedAlbums />
-        <section class="grid grid-cols-3 gap-6">
+        <section class="grid grid-cols-2 gap-6">
           <TopGenres />
 
           <!-- Top Tracks -->

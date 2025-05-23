@@ -19,7 +19,7 @@ const currentView = computed(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-[250px_1fr] h-screen from-zene-800 to-zene-600 bg-gradient-to-b text-white">
+  <div class="to-zene-700 grid grid-cols-[250px_1fr] h-screen from-zene-800 bg-gradient-to-b text-white">
     <Navbar />
     <main class="overflow-y-auto p-6 space-y-6">
       <HeaderAndSearch />
