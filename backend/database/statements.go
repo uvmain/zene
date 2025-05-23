@@ -44,6 +44,7 @@ var stmtInsertScanRow *sqlite.Stmt
 
 var stmtSelectFullTextSearchFromMetadata *sqlite.Stmt
 var stmtSelectFtsGenre *sqlite.Stmt
+var stmtSelectFtsArtist *sqlite.Stmt
 
 func prepareInitStatements() {
 	log.Println("Preparing SQL init statements")
@@ -212,6 +213,14 @@ func prepareStatements() {
 		m.musicbrainz_artist_id, m.musicbrainz_album_id, m.musicbrainz_track_id, m.label
 		FROM track_metadata m JOIN track_metadata_fts f ON m.file_id = f.file_id
 		WHERE track_metadata_fts MATCH $searchQuery
+		ORDER BY m.file_id DESC;`)
+	if err != nil {
+		log.Fatalf("Failed to prepare statement: %v", err)
+	}
+
+	stmtSelectFtsArtist, err = DbRO.Prepare(`select distinct m.artist, m.musicbrainz_artist_id
+		FROM track_metadata m JOIN artists_fts f ON m.file_id = f.file_id
+		WHERE artists_fts MATCH $searchQuery
 		ORDER BY m.file_id DESC;`)
 	if err != nil {
 		log.Fatalf("Failed to prepare statement: %v", err)

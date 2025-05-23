@@ -118,6 +118,7 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 			row := types.ArtistResponse{
 				Artist:              stmt.GetText("artist"),
 				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+				ImageURL:            fmt.Sprintf("/api/artist/%s/image", stmt.GetText("musicbrainz_artist_id")),
 			}
 			rows = append(rows, row)
 		}
@@ -381,4 +382,31 @@ func SelectDistinctGenres(searchParam string) ([]types.GenreResponse, error) {
 	})
 
 	return ss, nil
+}
+
+func SearchForArtists(searchParam string) ([]types.ArtistResponse, error) {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	stmt := stmtSelectFtsArtist
+	stmt.Reset()
+	stmt.ClearBindings()
+	stmt.SetText("$searchQuery", searchParam)
+
+	var artists []types.ArtistResponse
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return []types.ArtistResponse{}, err
+		} else if !hasRow {
+			break
+		} else {
+			var artist types.ArtistResponse
+			artist.Artist = stmt.GetText("artist")
+			artist.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
+			artist.ImageURL = fmt.Sprintf("/api/artist/%s/image", stmt.GetText("musicbrainz_artist_id"))
+			artists = append(artists, artist)
+		}
+	}
+	return artists, nil
 }

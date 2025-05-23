@@ -7,30 +7,21 @@ import (
 )
 
 func createFts() {
-	createFtsTable()
-	createFtsTriggers()
-	insertFtsData()
+	createFtsMetadataTable()
+	createFtsMetadataTriggers()
+	insertFtsMetadataData()
+	createFtsArtistsTable()
+	createFtsArtistsTriggers()
+	insertFtsArtistsData()
 }
 
-func createFtsTable() {
+func createFtsMetadataTable() {
 	tableName := "track_metadata_fts"
-	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS track_metadata_fts USING fts5(file_id, filename, title, artist, album, album_artist, genre, release_date, label, tokenize="trigram");`
+	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS track_metadata_fts USING fts5(file_id, filename, title, artist, album, album_artist, genre, release_date, label, tokenize="trigram remove_diacritics 1");`
 	createTable(tableName, schema)
 }
 
-func insertFtsData() {
-	query := `INSERT INTO track_metadata_fts (file_id, filename, title, artist, album, album_artist, genre, release_date, label)
-		SELECT file_id, filename, title, artist, album, album_artist, genre, release_date, label FROM track_metadata;`
-
-	err := sqlitex.ExecuteTransient(DbRW, query, nil)
-	if err != nil {
-		log.Printf("Error inserting data into fts table: %s", err)
-	} else {
-		log.Println("Data inserted into fts table")
-	}
-}
-
-func createFtsTriggers() {
+func createFtsMetadataTriggers() {
 	createTriggerIfNotExists("after_insert_fts", `CREATE TRIGGER after_insert_fts AFTER INSERT ON track_metadata
         BEGIN
             INSERT INTO track_metadata_fts (file_id, filename, title, artist, album, album_artist, genre, release_date, label)
@@ -56,4 +47,51 @@ func createFtsTriggers() {
 						label = new.label
         WHERE file_id = old.file_id;
     END;`)
+}
+
+func insertFtsMetadataData() {
+	query := `INSERT INTO track_metadata_fts (file_id, filename, title, artist, album, album_artist, genre, release_date, label)
+		SELECT file_id, filename, title, artist, album, album_artist, genre, release_date, label FROM track_metadata;`
+
+	err := sqlitex.ExecuteTransient(DbRW, query, nil)
+	if err != nil {
+		log.Printf("Error inserting data into track_metadata_fts table: %s", err)
+	} else {
+		log.Println("Data inserted into track_metadata_fts table")
+	}
+}
+
+func createFtsArtistsTable() {
+	tableName := "artists_fts"
+	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS artists_fts USING fts5(file_id, artist, tokenize="trigram remove_diacritics 1");`
+	createTable(tableName, schema)
+}
+
+func createFtsArtistsTriggers() {
+	createTriggerIfNotExists("after_insert_artists_fts", `CREATE TRIGGER after_insert_artists_fts AFTER INSERT ON track_metadata
+        BEGIN
+            INSERT INTO artists_fts (file_id, artist) VALUES (new.file_id, new.artist);
+        END;`)
+
+	createTriggerIfNotExists("after_delete_artists_fts", `CREATE TRIGGER after_delete_artists_fts AFTER DELETE ON track_metadata
+    BEGIN
+        DELETE FROM artists_fts WHERE file_id = old.file_id;
+    END;`)
+
+	createTriggerIfNotExists("after_update_artists_fts", `CREATE TRIGGER after_update_artists_fts AFTER UPDATE ON track_metadata
+    BEGIN
+        UPDATE artists_fts SET file_id = new.file_id, artist = new.artist WHERE file_id = old.file_id;
+    END;`)
+}
+
+func insertFtsArtistsData() {
+	query := `INSERT INTO artists_fts (file_id, artist)
+		SELECT file_id, artist FROM track_metadata;`
+
+	err := sqlitex.ExecuteTransient(DbRW, query, nil)
+	if err != nil {
+		log.Printf("Error inserting data into artists_fts table: %s", err)
+	} else {
+		log.Println("Data inserted into artists_fts table")
+	}
 }

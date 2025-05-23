@@ -3,6 +3,7 @@ package types
 type ArtistResponse struct {
 	MusicBrainzArtistID string `json:"musicbrainz_artist_id"`
 	Artist              string `json:"artist"`
+	ImageURL            string `json:"image_url"`
 }
 
 type AlbumsResponse struct {
@@ -22,13 +23,4 @@ type ScanResponse struct {
 type GenreResponse struct {
 	Genre string `json:"genre"`
 	Count int    `json:"count"`
-}
-
-type LastFmAlbumInfoResponse struct {
-	Album struct {
-		Image []struct {
-			Size string `json:"size"`
-			URL  string `json:"#text"`
-		} `json:"image"`
-	} `json:"album"`
 }

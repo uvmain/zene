@@ -9,6 +9,7 @@ const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const searchResults = ref<TrackMetadataWithImageUrl[]>([])
 const searchResultsGenres = ref<any[]>([])
+const searchResultsArtists = ref<any[]>([])
 
 async function search() {
   if (!inputText.value || inputText.value.length < 3) {
@@ -47,12 +48,13 @@ async function search() {
   })
   searchResults.value = albumMetadata
   getGenres()
+  getArtists()
 }
 
 const searchResultsAlbums = computed(() => {
   const uniqueAlbums = new Map<string, AlbumMetadata>()
   searchResults.value.forEach((album: TrackMetadataWithImageUrl) => {
-    if (!uniqueAlbums.has(album.musicbrainz_album_id) && album.album.toLowerCase().includes(inputText.value.toLowerCase())) {
+    if (!uniqueAlbums.has(album.musicbrainz_album_id)) {
       uniqueAlbums.set(album.musicbrainz_album_id, {
         artist: album.artist,
         album_artist: album.album_artist ?? album.artist,
@@ -70,17 +72,7 @@ const searchResultsAlbums = computed(() => {
 })
 
 const searchResultsTracks = computed(() => {
-  const tracks = searchResults.value.filter((track: TrackMetadataWithImageUrl) => {
-    let found = true
-    const inputStrings = inputText.value.split(' ')
-    inputStrings.forEach((inputString: string) => {
-      if (!track.title.toLowerCase().includes(inputString.toLowerCase())) {
-        found = false
-      }
-    })
-    return found
-  })
-  return tracks
+  return searchResults.value
 })
 
 async function getGenres() {
@@ -91,6 +83,16 @@ async function getGenres() {
     return
   }
   searchResultsGenres.value = json.slice(0, 12)
+}
+
+async function getArtists() {
+  const response = await backendFetchRequest(`artists?search=${inputText.value}`)
+  const json = await response.json()
+  if (!json || json.length === 0) {
+    searchResultsArtists.value = []
+    return
+  }
+  searchResultsArtists.value = json
 }
 </script>
 
@@ -130,22 +132,46 @@ async function getGenres() {
           Search results for "{{ inputText }}":
         </h3>
         <h4>
+          Tracks: {{ searchResultsTracks.length }}
+        </h4>
+        <div class="flex flex-nowrap gap-6 overflow-scroll">
+          <div
+            v-for="track in searchResultsTracks"
+            :key="track.title"
+            class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
+          >
+            <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-300">
+              {{ track.track_number }} / {{ track.total_tracks }}
+            </div>
+            <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-300">
+              {{ track.title }}
+            </div>
+            <Album :album="track" size="lg" />
+          </div>
+        </div>
+        <h4>
           Albums: {{ searchResultsAlbums.length }}
         </h4>
-        <div class="flex flex-wrap gap-6">
-          <div v-for="album in searchResultsAlbums" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
+        <div class="flex flex-nowrap gap-6 overflow-scroll">
+          <div
+            v-for="album in searchResultsAlbums"
+            :key="album.album"
+            class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
+          >
             <Album :album="album" size="lg" />
           </div>
         </div>
         <h4>
-          Tracks: {{ searchResultsTracks.length }}
+          Artists: {{ searchResultsArtists.length }}
         </h4>
         <div class="flex flex-wrap gap-6">
-          <div v-for="track in searchResultsTracks" :key="track.title" class="w-30 flex flex-col gap-y-1 overflow-hidden">
-            <div class="text-ellipsis text-sm text-gray-300">
-              {{ track.track_number }} / {{ track.total_tracks }} • {{ track.title }}
-            </div>
-            <Album :album="track" size="lg" />
+          <div
+            v-for="artist in searchResultsArtists"
+            :key="artist"
+            class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
+          >
+            <!-- <Album :album="album" size="lg" /> -->
+            {{ artist.artist }}
           </div>
         </div>
         <h4>

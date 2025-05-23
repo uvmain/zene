@@ -14,6 +14,8 @@ declare module 'vue' {
     HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
     HeroAlbum: typeof import('./src/components/HeroAlbum.vue')['default']
     HeroTrack: typeof import('./src/components/HeroTrack.vue')['default']
+    Home: typeof import('./src/components/routes/Home.vue')['default']
+    HomeRoute: typeof import('./src/components/routes/Home.vue')['default']
     IconTablerArrowsShuffle: typeof import('~icons/tabler/arrows-shuffle')['default']
     IconTablerChevronLeft: typeof import('~icons/tabler/chevron-left')['default']
     IconTablerChevronRight: typeof import('~icons/tabler/chevron-right')['default']

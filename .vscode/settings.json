@@ -1,4 +1,7 @@
 {
+  "css.customData": [
+    ".vscode/tailwind.json"
+  ],
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   }

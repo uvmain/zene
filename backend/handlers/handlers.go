@@ -9,6 +9,7 @@ import (
 	"zene/database"
 	"zene/net"
 	"zene/scanner"
+	"zene/types"
 )
 
 func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +50,15 @@ func HandleGetFileById(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.SelectAllArtists()
+	searchParam := r.URL.Query().Get("search")
+	var rows []types.ArtistResponse
+	var err error
+
+	if searchParam == "" {
+		rows, err = database.SelectAllArtists()
+	} else {
+		rows, err = database.SearchForArtists(searchParam)
+	}
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
