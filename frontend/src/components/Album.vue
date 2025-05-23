@@ -18,7 +18,7 @@ const artistAndDate = computed(() => {
       {{ album.album }}
     </div>
     <div class="text-nowrap text-xs text-gray-300">
-      {{ album.artist }}
+      {{ album.album_artist }}
     </div>
   </div>
   <div v-else-if="props.size === 'xl'" class="h-full flex items-center gap-6 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-10">

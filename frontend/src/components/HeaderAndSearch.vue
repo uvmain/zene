@@ -30,7 +30,7 @@ async function search() {
       title: metadata.title,
       artist: metadata.artist,
       album: metadata.album,
-      album_artist: metadata.album_artist,
+      album_artist: metadata.album_artist ?? metadata.artist,
       track_number: metadata.track_number,
       total_tracks: metadata.total_tracks,
       disc_number: metadata.disc_number,
@@ -52,9 +52,10 @@ async function search() {
 const searchResultsAlbums = computed(() => {
   const uniqueAlbums = new Map<string, AlbumMetadata>()
   searchResults.value.forEach((album: TrackMetadataWithImageUrl) => {
-    if (!uniqueAlbums.has(album.musicbrainz_album_id)) {
+    if (!uniqueAlbums.has(album.musicbrainz_album_id) && album.album.toLowerCase().includes(inputText.value.toLowerCase())) {
       uniqueAlbums.set(album.musicbrainz_album_id, {
         artist: album.artist,
+        album_artist: album.album_artist ?? album.artist,
         album: album.album,
         musicbrainz_track_id: album.musicbrainz_track_id,
         musicbrainz_album_id: album.musicbrainz_album_id,
@@ -140,9 +141,11 @@ async function getGenres() {
           Tracks: {{ searchResultsTracks.length }}
         </h4>
         <div class="flex flex-wrap gap-6">
-          <div v-for="album in searchResultsTracks" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden">
-            {{ album.title }}
-            <Album :album="album" size="lg" />
+          <div v-for="track in searchResultsTracks" :key="track.title" class="w-30 flex flex-col gap-y-1 overflow-hidden">
+            <div class="text-ellipsis text-sm text-gray-300">
+              {{ track.track_number }} / {{ track.total_tracks }} • {{ track.title }}
+            </div>
+            <Album :album="track" size="lg" />
           </div>
         </div>
         <h4>
