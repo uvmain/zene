@@ -106,6 +106,9 @@ func getFiles(lastModified time.Time) error {
 		modTime := io.GetChangedTime(path)
 
 		row, err := database.SelectFileByFilePath(path)
+		if err != nil {
+			log.Printf("Error selecting file by path %s: %v", path, err)
+		}
 		rowExists := false
 		if row.Id != 0 {
 			rowExists = true

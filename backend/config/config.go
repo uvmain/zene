@@ -75,7 +75,7 @@ func LoadConfig() {
 	audioFileTypesEnv := os.Getenv("AUDIO_FILE_TYPES")
 	if audioFileTypesEnv == "" {
 		AudioFileTypes = []string{
-			".aac", ".alac", ".flac", ".m4a", ".mp3", ".ogg",
+			".aac", ".alac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav", ".wma",
 		}
 	} else {
 		AudioFileTypes = strings.Split(audioFileTypesEnv, ",")
