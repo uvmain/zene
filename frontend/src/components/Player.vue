@@ -96,10 +96,20 @@ async function playNext() {
   const audio = audioRef.value
   if (!audio)
     return
+
   audio.pause()
   audio.removeAttribute('src')
+  currentTime.value = 0
   track.value = await getRandomTrack()
-  audio.play()
+  audio.addEventListener(
+    'canplay',
+    () => {
+      audio.play()
+    },
+    { once: true },
+  )
+  audio.src = trackUrl.value
+  audio.load()
 }
 
 onUnmounted(() => {
