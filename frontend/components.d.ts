@@ -26,6 +26,7 @@ declare module 'vue' {
     IconTablerUser: typeof import('~icons/tabler/user')['default']
     LoginModal: typeof import('./src/components/LoginModal.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
+    Player: typeof import('./src/components/Player.vue')['default']
     RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

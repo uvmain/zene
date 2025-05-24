@@ -22,7 +22,7 @@ async function login() {
   const response = await backendFetchRequest('login', {
     body: formData,
     method: 'POST',
-  })
+  }) as any
   isLoggedIn.value = (response.status !== 401)
   userLoginState.value = (response.status !== 401)
   emits('modalClose')
@@ -36,7 +36,7 @@ async function logout() {
   const response = await backendFetchRequest('logout', {
     method: 'GET',
     credentials: 'include',
-  })
+  }) as any
   isLoggedIn.value = (response.status !== 401)
   userLoginState.value = (response.status !== 401)
   emits('modalClose')
@@ -47,7 +47,7 @@ async function checkIfLoggedIn() {
     const response = await backendFetchRequest('check-session', {
       method: 'GET',
       credentials: 'include',
-    })
+    }) as any
     if (response.status === 401) {
       isLoggedIn.value = false
       userLoginState.value = false

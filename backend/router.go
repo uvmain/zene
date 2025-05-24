@@ -34,6 +34,7 @@ func StartServer() {
 	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}", handlers.HandleGetAlbum)        // returns types.AlbumsResponse
 	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/art", handlers.HandleGetAlbumArt) // returns image/jpeg blob
 	router.HandleFunc("GET /api/tracks", handlers.HandleGetTracks)                            // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/tracks/{musicBrainzTrackId}", handlers.HandleGetTrack)        // returns types.TrackMetadata
 	router.HandleFunc("GET /api/genres", handlers.HandleGetGenres)                            // query params: search=searchTerm
 	router.HandleFunc("POST /api/scan", handlers.HandlePostScan)                              //
 	router.HandleFunc("GET /api/search", handlers.HandleSearchMetadata)                       // query params: search=searchTerm

@@ -193,6 +193,23 @@ func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
+	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
+
+	row, err := database.SelectTrack(musicBrainzTrackId)
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(row); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
 func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 	scanResult := scanner.RunScan()
 	w.Header().Set("Content-Type", "application/json")

@@ -17,7 +17,7 @@ async function search() {
     return
   }
   const response = await backendFetchRequest(`search?search=${inputText.value}`)
-  const json = await response.json() as TrackMetadataWithImageUrl[]
+  const json = await response.json()
   const albumMetadata: TrackMetadataWithImageUrl[] = []
   json.forEach((metadata: any) => {
     const metadataInstance = {
@@ -76,7 +76,7 @@ const searchResultsTracks = computed(() => {
 })
 
 async function getGenres() {
-  const response = await backendFetchRequest(`genres?search=${inputText.value}`)
+  const response = await backendFetchRequest(`genres?search=${inputText.value}`) as any
   const json = await response.json()
   if (!json || json.length === 0) {
     searchResultsGenres.value = []

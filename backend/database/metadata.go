@@ -403,6 +403,56 @@ func SelectAllTracks(random string, limit string, recent string) ([]types.TrackM
 	return rows, nil
 }
 
+func SelectTrack(musicBrainzTrackId string) (types.TrackMetadata, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	var stmt *sqlite.Stmt
+
+	stmt = conn.Prep(`SELECT * FROM track_metadata where musicbrainz_track_id = $musicbrainz_track_id limit 1;`)
+	defer stmt.Finalize()
+	stmt.SetText("$musicbrainz_track_id", musicBrainzTrackId)
+
+	var row types.TrackMetadata
+
+	if hasRow, err := stmt.Step(); err != nil {
+		return types.TrackMetadata{}, err
+	} else if !hasRow {
+		return types.TrackMetadata{}, nil
+	} else {
+		row.Id = int(stmt.GetInt64("id"))
+		row.FileId = int(stmt.GetInt64("file_id"))
+		row.Filename = stmt.GetText("filename")
+		row.Format = stmt.GetText("format")
+		row.Duration = stmt.GetText("duration")
+		row.Size = stmt.GetText("size")
+		row.Bitrate = stmt.GetText("bitrate")
+		row.Title = stmt.GetText("title")
+		row.Artist = stmt.GetText("artist")
+		row.Album = stmt.GetText("album")
+		row.AlbumArtist = stmt.GetText("album_artist")
+		row.Genre = stmt.GetText("genre")
+		row.TrackNumber = stmt.GetText("track_number")
+		row.TotalTracks = stmt.GetText("total_tracks")
+		row.DiscNumber = stmt.GetText("disc_number")
+		row.TotalDiscs = stmt.GetText("total_discs")
+		row.ReleaseDate = stmt.GetText("release_date")
+		row.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
+		row.MusicBrainzAlbumID = stmt.GetText("musicbrainz_album_id")
+		row.MusicBrainzTrackID = stmt.GetText("musicbrainz_track_id")
+		row.Label = stmt.GetText("label")
+	}
+
+	return row, nil
+}
+
 func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
