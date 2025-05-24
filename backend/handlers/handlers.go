@@ -112,7 +112,7 @@ func GetArtistArt(w http.ResponseWriter, r *http.Request) {
 	imageBlob, err := art.GetArtForArtist(musicBrainzArtistId)
 
 	if err != nil {
-		http.Error(w, "Image not found", http.StatusNotFound)
+		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
 		return
 	}
 	mimeType := http.DetectContentType(imageBlob)
@@ -245,7 +245,7 @@ func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
 	imageBlob, err := art.GetArtForAlbum(musicBrainzAlbumId, sizeParam)
 
 	if err != nil {
-		http.Error(w, "Image not found", http.StatusNotFound)
+		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
 		return
 	}
 	mimeType := http.DetectContentType(imageBlob)
