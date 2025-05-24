@@ -1,15 +1,20 @@
 package database
 
 import (
+	"context"
+	"fmt"
 	"log"
 
+	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
 )
 
-func doesTableExist(tableName string) (bool, error) {
-	stmt := stmtDoesTableExist
-	stmt.Reset()
-	stmt.ClearBindings()
+func doesTableExist(tableName string, conn *sqlite.Conn) (bool, error) {
+	stmt, err := conn.Prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = $table_name;`)
+	if err != nil {
+		return false, fmt.Errorf("error preparing doesTableExist stmt: %v", err)
+	}
+	defer stmt.Finalize()
 	stmt.SetText("$table_name", tableName)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -23,14 +28,25 @@ func doesTableExist(tableName string) (bool, error) {
 }
 
 func createTable(tableName string, createSql string) {
-	table_exists, err := doesTableExist(tableName)
+	log.Printf("creating table %s", tableName)
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	tableExists, err := doesTableExist(tableName, conn)
+	log.Printf("table %v exists", tableExists)
 
 	if err != nil {
 		log.Printf("Error checking if %s table exists: %s", tableName, err)
 	}
-	if !table_exists {
+	if !tableExists {
 		stmt := createSql
-		err := sqlitex.ExecuteTransient(DbRW, stmt, nil)
+		err := sqlitex.ExecuteTransient(conn, stmt, nil)
 		if err != nil {
 			log.Fatalf("Failed to create %s table: %v", tableName, err)
 		} else {
@@ -44,10 +60,18 @@ func createTable(tableName string, createSql string) {
 func createTriggerIfNotExists(triggerName string, triggerSQL string) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
 
-	stmt := stmtCreateTriggerIfNotExists
-	stmt.Reset()
-	stmt.ClearBindings()
+	stmt, err := conn.Prepare("SELECT name FROM sqlite_master WHERE type='trigger' AND name=$triggername")
+	if err != nil {
+		log.Fatalf("Failed to prepare stmtCreateTriggerIfNotExists: %v", err)
+	}
+	defer stmt.Finalize()
 	stmt.SetText("$triggername", triggerName)
 
 	hasRow, err := stmt.Step()
@@ -57,7 +81,7 @@ func createTriggerIfNotExists(triggerName string, triggerSQL string) {
 		log.Printf("Error checking for %s trigger: %s", triggerName, err)
 	} else {
 		log.Printf("Creating %s trigger", triggerName)
-		stmt, err := DbRW.Prepare(triggerSQL)
+		stmt, err := conn.Prepare(triggerSQL)
 		if err != nil {
 			log.Printf("Error preparing %s trigger: %s", triggerName, err)
 			return

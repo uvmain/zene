@@ -1,17 +1,30 @@
 package database
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"zene/types"
 )
 
 func SearchMetadata(searchQuery string) ([]types.TrackMetadata, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectFullTextSearchFromMetadata
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`select distinct m.file_id, m.filename, m.format, m.duration, m.size, m.bitrate, m.title, m.artist, m.album,
+		m.album_artist, m.genre, m.track_number, m.total_tracks, m.disc_number, m.total_discs, m.release_date,
+		m.musicbrainz_artist_id, m.musicbrainz_album_id, m.musicbrainz_track_id, m.label
+		FROM track_metadata m JOIN track_metadata_fts f ON m.file_id = f.file_id
+		WHERE track_metadata_fts MATCH $searchQuery
+		ORDER BY m.file_id DESC;`)
+	defer stmt.Finalize()
 
 	if searchQuery != "" {
 		stmt.SetText("$searchQuery", searchQuery)

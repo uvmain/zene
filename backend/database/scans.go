@@ -1,7 +1,9 @@
 package database
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"zene/types"
 )
 
@@ -20,9 +22,15 @@ func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtInsertScanRow
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`INSERT INTO scans (scan_date, file_count, date_modified) VALUES ($scan_date, $file_count, $date_modified);`)
+	defer stmt.Finalize()
 	stmt.SetText("$scan_date", scanDate)
 	stmt.SetInt64("$file_count", int64(fileCount))
 	stmt.SetText("$date_modified", dateModified)
@@ -35,12 +43,18 @@ func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
 }
 
 func SelectLastScan() (types.ScanRow, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectLastScan
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT id, scan_date, file_count, date_modified from scans order by id desc limit 1;`)
+	defer stmt.Finalize()
 
 	hasRow, err := stmt.Step()
 

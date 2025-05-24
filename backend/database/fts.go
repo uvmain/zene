@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"log"
 
 	"zombiezen.com/go/sqlite/sqlitex"
@@ -50,10 +51,19 @@ func createFtsMetadataTriggers() {
 }
 
 func insertFtsMetadataData() {
-	query := `INSERT INTO track_metadata_fts (file_id, filename, title, artist, album, album_artist, genre, release_date, label)
-		SELECT file_id, filename, title, artist, album, album_artist, genre, release_date, label FROM track_metadata;`
+	const query = `
+		INSERT INTO track_metadata_fts (
+			file_id, filename, title, artist, album, album_artist, genre, release_date, label
+		)
+		SELECT 
+			file_id, filename, title, artist, album, album_artist, genre, release_date, label 
+		FROM track_metadata;`
 
-	err := sqlitex.ExecuteTransient(DbRW, query, nil)
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	defer DbPool.Put(conn)
+
+	err = sqlitex.ExecuteTransient(conn, query, nil)
 	if err != nil {
 		log.Printf("Error inserting data into track_metadata_fts table: %s", err)
 	} else {
@@ -88,7 +98,11 @@ func insertFtsArtistsData() {
 	query := `INSERT INTO artists_fts (file_id, artist)
 		SELECT file_id, artist FROM track_metadata;`
 
-	err := sqlitex.ExecuteTransient(DbRW, query, nil)
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	defer DbPool.Put(conn)
+
+	err = sqlitex.ExecuteTransient(conn, query, nil)
 	if err != nil {
 		log.Printf("Error inserting data into artists_fts table: %s", err)
 	} else {

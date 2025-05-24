@@ -1,7 +1,9 @@
 package database
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"time"
 	"zene/types"
 )
@@ -25,12 +27,17 @@ func createArtistArtTable() {
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumArtRow, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
 
-	stmt := stmtSelectAlbumArtByMusicBrainzAlbumId
-	stmt.Reset()
-	stmt.ClearBindings()
+	stmt := conn.Prep(`SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = $musicbrainz_album_id;`)
+	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -48,10 +55,18 @@ func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumA
 func InsertAlbumArtRow(musicbrainzAlbumId string, dateModified string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
 
-	stmt := stmtInsertAlbumArtRow
-	stmt.Reset()
-	stmt.ClearBindings()
+	stmt := conn.Prep(`INSERT INTO album_art (musicbrainz_album_id, date_modified)
+		VALUES ($musicbrainz_album_id, $date_modified)
+		ON CONFLICT(musicbrainz_album_id) DO UPDATE SET date_modified=excluded.date_modified
+	 	WHERE excluded.date_modified>album_art.date_modified;`)
+	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
 	stmt.SetText("$date_modified", time.Now().Format(time.RFC3339Nano))
 
@@ -63,12 +78,17 @@ func InsertAlbumArtRow(musicbrainzAlbumId string, dateModified string) error {
 }
 
 func SelectArtistSubDirectories(musicbrainzArtistId string) ([]string, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
 
-	stmt := stmtSelectArtistSubDirectories
-	stmt.Reset()
-	stmt.ClearBindings()
+	stmt := conn.Prep(`SELECT DISTINCT f.dir_path FROM track_metadata m JOIN files f ON f.id = m.file_id WHERE m.musicbrainz_artist_id = $musicbrainz_artist_id;`)
+	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 
 	var rows []string
@@ -87,12 +107,17 @@ func SelectArtistSubDirectories(musicbrainzArtistId string) ([]string, error) {
 }
 
 func SelectArtistArtByMusicBrainzArtistId(musicbrainzArtistId string) (types.ArtistArtRow, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
 
-	stmt := stmtSelectArtistArtByMusicBrainzArtistId
-	stmt.Reset()
-	stmt.ClearBindings()
+	stmt := conn.Prep(`SELECT musicbrainz_artist_id, date_modified FROM artist_art WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
+	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -110,10 +135,18 @@ func SelectArtistArtByMusicBrainzArtistId(musicbrainzArtistId string) (types.Art
 func InsertArtistArtRow(musicbrainzArtistId string, dateModified string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
 
-	stmt := stmtInsertArtistArtRow
-	stmt.Reset()
-	stmt.ClearBindings()
+	stmt := conn.Prep(`INSERT INTO artist_art (musicbrainz_artist_id, date_modified)
+	VALUES ($musicbrainz_artist_id, $date_modified)
+	ON CONFLICT(musicbrainz_artist_id) DO UPDATE SET date_modified=excluded.date_modified
+	 WHERE excluded.date_modified>artist_art.date_modified;`)
+	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 	stmt.SetText("$date_modified", time.Now().Format(time.RFC3339Nano))
 
