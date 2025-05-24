@@ -7,19 +7,16 @@ import (
 	"zene/config"
 	"zene/io"
 
-	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
 )
 
 var dbFile = "sqlite.db"
-var DbRW *sqlite.Conn
-var DbRO *sqlite.Conn
-var dbMutex sync.Mutex
+var DbPool *sqlitex.Pool
+var dbMutex sync.RWMutex
 
 func Initialise() {
 	io.CreateDir(config.DatabaseDirectory)
 	openDatabase()
-	prepareInitStatements()
 	createScansTable()
 	createFilesTable()
 	createFilesTriggers()
@@ -28,11 +25,10 @@ func Initialise() {
 	createAlbumArtTable()
 	createArtistArtTable()
 	createFts()
-	prepareStatements()
 }
 
 func openDatabase() {
-	dbFile := filepath.Join(config.DatabaseDirectory, "sqlite.db")
+	dbFile := filepath.Join(config.DatabaseDirectory, dbFile)
 
 	if io.FileExists(dbFile) {
 		log.Println("Database already exists")
@@ -40,39 +36,22 @@ func openDatabase() {
 		log.Println("Creating database file")
 	}
 
+	poolOptions := sqlitex.PoolOptions{}
+	poolOptions.Flags = 0
+	poolOptions.PoolSize = 10
+
 	var err error
 
-	DbRW, err = sqlite.OpenConn(dbFile, sqlite.OpenReadWrite|sqlite.OpenCreate)
+	DbPool, err = sqlitex.NewPool(dbFile, poolOptions)
 	if err != nil {
-		log.Fatalf("Failed to open CRUD database connection: %v", err)
-	}
-
-	DbRO, err = sqlite.OpenConn(dbFile, sqlite.OpenReadOnly)
-	if err != nil {
-		log.Fatalf("Failed to open read-only database connection: %v", err)
-	}
-
-	err = sqlitex.ExecuteTransient(DbRW, "PRAGMA journal_mode=WAL;", nil)
-	if err != nil {
-		log.Fatalf("DbRW Failed to set WAL mode: %v", err)
+		log.Fatalf("Failed to open database pool: %v", err)
 	} else {
-		log.Printf("DbRW Database is in WAL mode")
+		log.Println("Database pool opened")
 	}
-
-	err = sqlitex.ExecuteTransient(DbRO, "PRAGMA journal_mode=WAL;", nil)
-	if err != nil {
-		log.Fatalf("DbRO Failed to set WAL mode: %v", err)
-	} else {
-		log.Printf("DbRO Database is in WAL mode")
-	}
-
 }
 
 func CloseDatabase() {
-	if DbRW != nil {
-		DbRW.Close()
-	}
-	if DbRO != nil {
-		DbRO.Close()
+	if DbPool != nil {
+		DbPool.Close()
 	}
 }

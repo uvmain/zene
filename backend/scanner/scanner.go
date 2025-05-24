@@ -77,6 +77,8 @@ func RunScan() types.ScanResponse {
 	}
 
 	globals.Syncing = false
+
+	log.Println("Scanner run complete")
 	return types.ScanResponse{
 		Success: true,
 		Status:  "Scan complete",

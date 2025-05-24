@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"sort"
@@ -50,9 +51,23 @@ func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtInsertTrackMetadataRow
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`INSERT INTO track_metadata (
+		file_id, filename, format, duration, size, bitrate, title, artist, album,
+		album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
+		musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
+	) VALUES (
+	  $file_id, $filename, $format, $duration, $size, $bitrate, $title, $artist, $album,
+		$album_artist, $genre, $track_number, $total_tracks, $disc_number, $total_discs, $release_date,
+		$musicbrainz_artist_id, $musicbrainz_album_id, $musicbrainz_track_id, $label
+	 )`)
+	defer stmt.Finalize()
 	stmt.SetInt64("$file_id", int64(fileRowId))
 	stmt.SetText("$filename", metadata.Filename)
 	stmt.SetText("$format", metadata.Format)
@@ -86,9 +101,15 @@ func DeleteMetadataByFileId(file_id int) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtDeleteMetadataByFileId
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`delete FROM track_metadata WHERE file_id = $file_id;`)
+	defer stmt.Finalize()
 	stmt.SetInt64("$file_id", int64(file_id))
 
 	_, err = stmt.Step()
@@ -100,12 +121,18 @@ func DeleteMetadataByFileId(file_id int) error {
 }
 
 func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) ([]types.ArtistResponse, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectArtist
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	where musicbrainz_artist_id = $musicbrainz_artist_id;`)
+	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 
 	var rows []types.ArtistResponse
@@ -131,12 +158,18 @@ func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) ([]types.Arti
 }
 
 func SelectAllArtists() ([]types.ArtistResponse, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectAllArtists
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	ORDER BY artist;`)
+	defer stmt.Finalize()
 
 	var rows []types.ArtistResponse
 
@@ -161,12 +194,18 @@ func SelectAllArtists() ([]types.ArtistResponse, error) {
 }
 
 func SelectAllAlbumArtists() ([]types.ArtistResponse, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectAllAlbumArtists
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT DISTINCT album_artist, musicbrainz_artist_id FROM track_metadata where artist = album_artist ORDER BY artist;`)
+	defer stmt.Finalize()
 
 	var rows []types.ArtistResponse
 
@@ -191,47 +230,45 @@ func SelectAllAlbumArtists() ([]types.ArtistResponse, error) {
 }
 
 func SelectAllAlbums(random string, limit string, recent string) ([]types.AlbumsResponse, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
 	var stmt *sqlite.Stmt
 
 	if recent == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = stmtSelectAlbumsRecentlyAddedWithLimit
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata m join files f on m.file_id = f.id group by album ORDER BY f.date_added desc limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = stmtSelectAlbumsRecentlyAdded
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata m join files f on m.file_id = f.id group by album ORDER BY f.date_added desc;`)
 		}
 	} else if random == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = stmtSelectRandomizedAlbumsWithLimit
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY random() limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = stmtSelectRandomizedAlbums
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY random();`)
 		}
 	} else {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = stmtSelectAlbumsWithLimit
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY album limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = stmtSelectAllAlbums
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY album;`)
 		}
 	}
+
+	defer stmt.Finalize()
 
 	var rows []types.AlbumsResponse
 	for {
@@ -258,48 +295,45 @@ func SelectAllAlbums(random string, limit string, recent string) ([]types.Albums
 }
 
 func SelectAllMetadata(random string, limit string, recent string) ([]types.TrackMetadata, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
 
 	var stmt *sqlite.Stmt
 
 	if recent == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = stmtSelectMetadataRecentlyAddedWithLimit
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT * FROM track_metadata m join files f on m.file_id = f.id ORDER BY f.date_added desc limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = stmtSelectMetadataRecentlyAdded
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT * FROM track_metadata m join files f on m.file_id = f.id ORDER BY f.date_added desc;`)
 		}
 	} else if random == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = stmtSelectMetadataRandomisedWithLimit
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT * FROM track_metadata order by random() limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = stmtSelectMetadataRandomised
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT * FROM track_metadata order by random();`)
 		}
 	} else {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = stmtSelectMetadataWithLimit
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT * FROM track_metadata ORDER BY id limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = stmtSelectMetadata
-			stmt.Reset()
-			stmt.ClearBindings()
+			stmt = conn.Prep(`SELECT * FROM track_metadata ORDER BY id;`)
 		}
 	}
+
+	defer stmt.Finalize()
 
 	var rows []types.TrackMetadata
 	for {
@@ -343,12 +377,18 @@ func SelectAllMetadata(random string, limit string, recent string) ([]types.Trac
 }
 
 func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectMetadataByAlbumID
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT * FROM track_metadata where musicbrainz_album_id = $musicbrainz_album_id ORDER BY id;`)
+	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_album_id", musicbrainz_album_id)
 
 	var rows []types.TrackMetadata
@@ -393,12 +433,18 @@ func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata
 }
 
 func SelectDistinctGenres(searchParam string) ([]types.GenreResponse, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectDistinctGenres
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT DISTINCT genre FROM track_metadata;`)
+	defer stmt.Finalize()
 
 	var genres []string
 
@@ -446,12 +492,21 @@ func SelectDistinctGenres(searchParam string) ([]types.GenreResponse, error) {
 }
 
 func SearchForArtists(searchParam string) ([]types.ArtistResponse, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectFtsArtist
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`select distinct m.artist, m.musicbrainz_artist_id
+		FROM track_metadata m JOIN artists_fts f ON m.file_id = f.file_id
+		WHERE artists_fts MATCH $searchQuery
+		ORDER BY m.file_id DESC;`)
+	defer stmt.Finalize()
 	stmt.SetText("$searchQuery", searchParam)
 
 	var artists []types.ArtistResponse

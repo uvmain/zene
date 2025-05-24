@@ -1,7 +1,9 @@
 package database
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"zene/types"
 )
 
@@ -26,12 +28,18 @@ func createFilesTriggers() {
 }
 
 func SelectAllFiles() ([]types.FilesRow, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectAllFiles
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT id, dir_path, filename, file_path, date_added, date_modified FROM files;`)
+	defer stmt.Finalize()
 
 	var rows []types.FilesRow
 
@@ -55,12 +63,18 @@ func SelectAllFiles() ([]types.FilesRow, error) {
 }
 
 func SelectFileByFileId(fileId string) (types.FilesRow, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectFileByFileId
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT id, dir_path, filename, file_path, date_added, date_modified FROM files WHERE id = $fileid;`)
+	defer stmt.Finalize()
 	stmt.SetText("$fileid", fileId)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -80,12 +94,18 @@ func SelectFileByFileId(fileId string) (types.FilesRow, error) {
 }
 
 func SelectFileByFilePath(filePath string) (types.FilesRow, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
-	stmt := stmtSelectFileByFilePath
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT id, dir_path, file_path, filename, date_added, date_modified FROM files WHERE file_path = $file_path;`)
+	defer stmt.Finalize()
 	stmt.SetText("$file_path", filePath)
 
 	if hasRow, err := stmt.Step(); err != nil {
@@ -108,9 +128,15 @@ func DeleteFileById(id int) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtDeleteFileById
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`delete FROM files WHERE id = $id;`)
+	defer stmt.Finalize()
 	stmt.SetInt64("$id", int64(id))
 
 	_, err = stmt.Step()
@@ -124,9 +150,18 @@ func InsertIntoFiles(dirPath string, fileName string, filePath string, dateAdded
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	stmt := stmtInsertIntoFiles
-	stmt.Reset()
-	stmt.ClearBindings()
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`INSERT INTO files (dir_path, file_path, filename, date_added, date_modified)
+		VALUES ($dir_path, $file_path, $filename, $date_added, $date_modified)
+		ON CONFLICT(file_path) DO UPDATE SET date_modified=excluded.date_modified
+	 	WHERE excluded.date_modified>files.date_modified;`)
+	defer stmt.Finalize()
 	stmt.SetText("$dir_path", dirPath)
 	stmt.SetText("$filename", fileName)
 	stmt.SetText("$file_path", filePath)
@@ -138,6 +173,6 @@ func InsertIntoFiles(dirPath string, fileName string, filePath string, dateAdded
 		return 0, fmt.Errorf("failed to insert file: %v", err)
 	}
 
-	rowId := int(DbRW.LastInsertRowID())
+	rowId := int(conn.LastInsertRowID())
 	return rowId, nil
 }
