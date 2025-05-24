@@ -11,8 +11,7 @@
     },
     "types": [
       "node",
-      "vite/client",
-      "vite-plugin-pages/client"
+      "vite/client"
     ],
     "strict": true,
     "noEmit": true,

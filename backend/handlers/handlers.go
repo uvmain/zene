@@ -12,7 +12,7 @@ import (
 	"zene/types"
 )
 
-func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
+func HandleGetFiles(w http.ResponseWriter, r *http.Request) {
 	rows, err := database.SelectAllFiles()
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
@@ -27,7 +27,7 @@ func HandleGetAllFiles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetFileById(w http.ResponseWriter, r *http.Request) {
+func HandleGetFile(w http.ResponseWriter, r *http.Request) {
 	fileId := r.PathValue("fileId")
 	if fileId == "" {
 		http.Error(w, "Missing fileId parameter", http.StatusBadRequest)
@@ -47,6 +47,21 @@ func HandleGetFileById(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func HandleDownloadFile(w http.ResponseWriter, r *http.Request) {
+	fileId := r.PathValue("fileId")
+	fileBlob, err := database.GetFileBlob(fileId)
+
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+	mimeType := http.DetectContentType(fileBlob)
+	net.EnableCdnCaching(w)
+	w.Header().Set("Content-Type", mimeType)
+	w.WriteHeader(http.StatusOK)
+	w.Write(fileBlob)
 }
 
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
@@ -74,10 +89,10 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	var rows []types.ArtistResponse
+	var row types.ArtistResponse
 	var err error
 
-	rows, err = database.SelectArtistByMusicBrainzArtistId(musicBrainzArtistId)
+	row, err = database.SelectArtistByMusicBrainzArtistId(musicBrainzArtistId)
 
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
@@ -86,7 +101,7 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(rows); err != nil {
+	if err := json.NewEncoder(w).Encode(row); err != nil {
 		log.Println("Error encoding database response:", err)
 		return
 	}
@@ -126,7 +141,24 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetUniqueGenres(w http.ResponseWriter, r *http.Request) {
+func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
+	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
+
+	rows, err := database.SelectAlbum(musicBrainzAlbumId)
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
+func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 	searchParam := r.URL.Query().Get("search")
 	rows, err := database.SelectDistinctGenres(searchParam)
 	if err != nil {
@@ -142,12 +174,12 @@ func HandleGetUniqueGenres(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetMetadata(w http.ResponseWriter, r *http.Request) {
+func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 	randomParam := r.URL.Query().Get("random")
 	limitParam := r.URL.Query().Get("limit")
 	recentParam := r.URL.Query().Get("recent")
 
-	rows, err := database.SelectAllMetadata(randomParam, limitParam, recentParam)
+	rows, err := database.SelectAllTracks(randomParam, limitParam, recentParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -187,7 +219,7 @@ func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetAlbumArtByMusicBrainzAlbumId(w http.ResponseWriter, r *http.Request) {
+func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
 	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
 	sizeParam := r.URL.Query().Get("size")
 	if sizeParam == "" {

@@ -27,7 +27,7 @@ const topTracks = ref()
       </div>
 
       <!-- Player -->
-      <div class="rounded bg-gray-800 p-4">
+      <div class="m-4 rounded-xl bg-zene-800/60 p-4">
         <div class="text-center">
           <div class="mx-auto mb-2 h-24 w-24 bg-blue-500"></div>
           <div class="font-semibold">

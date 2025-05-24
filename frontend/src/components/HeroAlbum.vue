@@ -32,12 +32,13 @@ async function getRandomAlbums(limit: number): Promise<AlbumMetadata[]> {
     const metadataInstance = {
       artist: metadata.artist,
       album: metadata.album,
+      album_artist: metadata.album_artist,
       musicbrainz_track_id: metadata.musicbrainz_track_id,
       musicbrainz_album_id: metadata.musicbrainz_album_id as string,
       musicbrainz_artist_id: metadata.musicbrainz_artist_id,
       genres: metadata.genres.split(';').filter((genre: string) => genre !== ''),
       release_date: dayjs(metadata.release_date).format('YYYY'),
-      image_url: `/api/art/albums/${metadata.musicbrainz_album_id}?size=xl`,
+      image_url: `/api/albums/${metadata.musicbrainz_album_id}/art?size=xl`,
     }
     albumMetadata.push(metadataInstance)
   })

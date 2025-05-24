@@ -24,17 +24,19 @@ func StartServer() {
 		http.ServeFile(w, r, "../dist/index.html")
 	})
 
-	router.HandleFunc("GET /api/files", handlers.HandleGetAllFiles)                                         //
-	router.HandleFunc("GET /api/files/{fileId}", handlers.HandleGetFileById)                                //
-	router.HandleFunc("GET /api/artists", handlers.HandleGetArtists)                                        // query params: search=searchTerm
-	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}", handlers.HandleGetArtist)                   //
-	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/art", handlers.GetArtistArt)                  //
-	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)                                          // query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/metadata", handlers.HandleGetMetadata)                                      // query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/genres", handlers.HandleGetUniqueGenres)                                    // query params: search=searchTerm
-	router.HandleFunc("GET /api/scan", handlers.HandlePostScan)                                             //
-	router.HandleFunc("GET /api/search", handlers.HandleSearchMetadata)                                     // query params: search=searchTerm
-	router.HandleFunc("GET /api/art/albums/{musicBrainzAlbumId}", handlers.GetAlbumArtByMusicBrainzAlbumId) //
+	router.HandleFunc("GET /api/files", handlers.HandleGetFiles)                              // returns []types.FilesRow
+	router.HandleFunc("GET /api/files/{fileId}", handlers.HandleGetFile)                      // returns types.FilesRow
+	router.HandleFunc("GET /api/files/{fileId}/download", handlers.HandleDownloadFile)        // returns blob
+	router.HandleFunc("GET /api/artists", handlers.HandleGetArtists)                          // returns []types.ArtistResponse; query params: search=searchTerm
+	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}", handlers.HandleGetArtist)     // returns types.ArtistResponse
+	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/art", handlers.GetArtistArt)    // returns image/jpeg blob
+	router.HandleFunc("GET /api/albums", handlers.HandleGetAlbums)                            // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}", handlers.HandleGetAlbum)        // returns types.AlbumsResponse
+	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/art", handlers.HandleGetAlbumArt) // returns image/jpeg blob
+	router.HandleFunc("GET /api/tracks", handlers.HandleGetTracks)                            // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/genres", handlers.HandleGetGenres)                            // query params: search=searchTerm
+	router.HandleFunc("POST /api/scan", handlers.HandlePostScan)                              //
+	router.HandleFunc("GET /api/search", handlers.HandleSearchMetadata)                       // query params: search=searchTerm
 
 	handler := cors.AllowAll().Handler(router)
 

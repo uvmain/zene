@@ -120,7 +120,7 @@ func DeleteMetadataByFileId(file_id int) error {
 	return nil
 }
 
-func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) ([]types.ArtistResponse, error) {
+func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) (types.ArtistResponse, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
@@ -131,30 +131,24 @@ func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) ([]types.Arti
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	where musicbrainz_artist_id = $musicbrainz_artist_id;`)
+	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	where musicbrainz_artist_id = $musicbrainz_artist_id limit 1;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 
-	var rows []types.ArtistResponse
+	var row types.ArtistResponse
 
-	for {
-		if hasRow, err := stmt.Step(); err != nil {
-			return []types.ArtistResponse{}, err
-		} else if !hasRow {
-			break
-		} else {
-			row := types.ArtistResponse{
-				Artist:              stmt.GetText("artist"),
-				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-				ImageURL:            fmt.Sprintf("/api/artists/%s/art", stmt.GetText("musicbrainz_artist_id")),
-			}
-			rows = append(rows, row)
-		}
+	if hasRow, err := stmt.Step(); err != nil {
+		return types.ArtistResponse{}, err
+	} else if !hasRow {
+		return types.ArtistResponse{}, nil
+	} else {
+		var row types.ArtistResponse
+		row.Artist = stmt.GetText("artist")
+		row.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
+		row.ImageURL = fmt.Sprintf("/api/artists/%s/art", stmt.GetText("musicbrainz_artist_id"))
 	}
-	if rows == nil {
-		rows = []types.ArtistResponse{}
-	}
-	return rows, nil
+
+	return row, nil
 }
 
 func SelectAllArtists() ([]types.ArtistResponse, error) {
@@ -229,6 +223,39 @@ func SelectAllAlbumArtists() ([]types.ArtistResponse, error) {
 	return rows, nil
 }
 
+func SelectAlbum(musicbrainzAlbumId string) (types.AlbumsResponse, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT DISTINCT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM track_metadata limit 1;`)
+	defer stmt.Finalize()
+
+	var row types.AlbumsResponse
+
+	if hasRow, err := stmt.Step(); err != nil {
+		return types.AlbumsResponse{}, err
+	} else if !hasRow {
+		return types.AlbumsResponse{}, nil
+	} else {
+		var row types.AlbumsResponse
+		row.Album = stmt.GetText("album")
+		row.Artist = stmt.GetText("album_artist")
+		row.MusicBrainzAlbumID = stmt.GetText("musicbrainz_album_id")
+		row.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
+		row.Genres = stmt.GetText("genre")
+		row.ReleaseDate = stmt.GetText("release_date")
+	}
+
+	return row, nil
+}
+
 func SelectAllAlbums(random string, limit string, recent string) ([]types.AlbumsResponse, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
@@ -294,7 +321,7 @@ func SelectAllAlbums(random string, limit string, recent string) ([]types.Albums
 	return rows, nil
 }
 
-func SelectAllMetadata(random string, limit string, recent string) ([]types.TrackMetadata, error) {
+func SelectAllTracks(random string, limit string, recent string) ([]types.TrackMetadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 

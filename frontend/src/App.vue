@@ -7,11 +7,15 @@ const routes: Record<string, Component> = {
   '/': Home,
 }
 
-const currentPath = ref(window.location.hash)
+const currentPath = ref('#/')
 
-window.addEventListener('hashchange', () => {
+if (typeof window !== 'undefined') {
   currentPath.value = window.location.hash
-})
+
+  window.addEventListener('hashchange', () => {
+    currentPath.value = window.location.hash
+  })
+}
 
 const currentView = computed(() => {
   return routes[currentPath.value.slice(1) || '/'] as Component
@@ -19,7 +23,7 @@ const currentView = computed(() => {
 </script>
 
 <template>
-  <div class="to-zene-700 grid grid-cols-[250px_1fr] h-screen from-zene-800 bg-gradient-to-b text-white">
+  <div class="grid grid-cols-[250px_1fr] h-screen from-zene-800 to-zene-700 bg-gradient-to-b text-white">
     <Navbar />
     <main class="overflow-y-auto p-6 space-y-6">
       <HeaderAndSearch />

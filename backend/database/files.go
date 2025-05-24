@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"zene/types"
 )
 
@@ -91,6 +93,25 @@ func SelectFileByFileId(fileId string) (types.FilesRow, error) {
 		row.DateModified = stmt.GetText("date_modified")
 		return row, nil
 	}
+}
+
+func GetFileBlob(fileId string) ([]byte, error) {
+	row, err := SelectFileByFileId(fileId)
+	if err != nil {
+		return []byte{}, err
+	}
+	filePath, _ := filepath.Abs(row.FilePath)
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Printf("File does not exist: %s:  %s", filePath, err)
+		return nil, err
+	}
+	blob, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Printf("Error reading File for filepath %s: %s", filePath, err)
+		return nil, err
+	}
+	return blob, nil
 }
 
 func SelectFileByFilePath(filePath string) (types.FilesRow, error) {

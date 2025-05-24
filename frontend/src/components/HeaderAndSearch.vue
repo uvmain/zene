@@ -42,7 +42,7 @@ async function search() {
       label: metadata.label,
       genres: metadata.genre.split(';').filter((genre: string) => genre !== ''),
       release_date: dayjs(metadata.release_date).format('YYYY'),
-      image_url: `/api/art/albums/${metadata.musicbrainz_album_id}?size=lg`,
+      image_url: `/api/albums/${metadata.musicbrainz_album_id}/art?size=lg`,
     }
     albumMetadata.push(metadataInstance)
   })
@@ -126,7 +126,7 @@ async function getArtists() {
         </div>
       </div>
     </div>
-    <div v-if="inputText.length >= 3" class="to-zene-700 mt-2 rounded-lg from-zene-400 bg-gradient-to-b">
+    <div v-if="inputText.length >= 3" class="mt-2 rounded-lg from-zene-400 to-zene-700 bg-gradient-to-b">
       <div class="flex flex-col gap-2 p-4">
         <h3>
           Search results for "{{ inputText }}":
