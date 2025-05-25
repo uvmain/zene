@@ -15,7 +15,8 @@
   "dependencies": {
     "@vueuse/core": "^13.0.0",
     "dayjs": "^1.11.13",
-    "vue": "^3.4.29"
+    "vue": "^3.4.29",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.1.0",

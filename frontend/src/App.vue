@@ -1,25 +1,4 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
-
-import Home from './components/routes/Home.vue'
-
-const routes: Record<string, Component> = {
-  '/': Home,
-}
-
-const currentPath = ref('#/')
-
-if (typeof window !== 'undefined') {
-  currentPath.value = window.location.hash
-
-  window.addEventListener('hashchange', () => {
-    currentPath.value = window.location.hash
-  })
-}
-
-const currentView = computed(() => {
-  return routes[currentPath.value.slice(1) || '/'] as Component
-})
 </script>
 
 <template>
@@ -27,7 +6,7 @@ const currentView = computed(() => {
     <Navbar />
     <main class="overflow-y-auto p-6 space-y-6">
       <HeaderAndSearch />
-      <component :is="currentView" />
+      <RouterView />
     </main>
   </div>
 </template>

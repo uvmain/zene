@@ -16,6 +16,7 @@ export default defineConfig({
     AutoImport({
       imports: [
         'vue',
+        'vue-router',
       ],
       dts: true,
       viteOptimizeDeps: true,
@@ -67,5 +68,13 @@ export default defineConfig({
     beastiesOptions: {
       reduceInlineStyles: false,
     },
+  },
+  optimizeDeps: {
+    include: [
+      'vue',
+      'vue-router',
+      '@vueuse/core',
+    ],
+    exclude: [],
   },
 })

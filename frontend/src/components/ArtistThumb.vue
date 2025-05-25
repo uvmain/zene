@@ -13,12 +13,14 @@ function onImageError(event: Event) {
 </script>
 
 <template>
-  <div>
-    <img
-      class="w-full rounded-md"
-      :src="artist.image_url"
-      @error="onImageError"
-    />
+  <div class="flex flex-col gap-2">
+    <div class="size-30">
+      <img
+        class="h-full w-full rounded-md object-cover"
+        :src="artist.image_url"
+        @error="onImageError"
+      />
+    </div>
     <div class="text-nowrap text-xs text-gray-300">
       {{ artist.artist }}
     </div>

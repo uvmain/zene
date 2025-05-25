@@ -2,7 +2,7 @@
 import { getRandomTrack } from '../../composables/randomTrack'
 
 const topTracks = ref()
-const randomTrack = ref() //await getRandomTrack()
+const randomTrack = ref()
 
 onMounted(async () => {
   randomTrack.value = await getRandomTrack()
@@ -33,8 +33,7 @@ onMounted(async () => {
         </section>
       </div>
 
-     <Player :track="randomTrack" />
-
+      <Player :track="randomTrack" />
     </section>
   </div>
 </template>
