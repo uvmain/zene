@@ -9,14 +9,10 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Album: typeof import('./src/components/Album.vue')['default']
-    Albums: typeof import('./src/components/routes/Albums.vue')['default']
-    Artists: typeof import('./src/components/routes/Artists.vue')['default']
     ArtistThumb: typeof import('./src/components/ArtistThumb.vue')['default']
-    copy: typeof import('./src/components/routes/Albums copy.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
     HeroAlbum: typeof import('./src/components/HeroAlbum.vue')['default']
-    Home: typeof import('./src/components/routes/Home.vue')['default']
     IconTablerArrowsShuffle: typeof import('~icons/tabler/arrows-shuffle')['default']
     IconTablerChevronLeft: typeof import('~icons/tabler/chevron-left')['default']
     IconTablerChevronRight: typeof import('~icons/tabler/chevron-right')['default']
@@ -28,7 +24,6 @@ declare module 'vue' {
     IconTablerPlayerSkipBack: typeof import('~icons/tabler/player-skip-back')['default']
     IconTablerPlayerSkipForward: typeof import('~icons/tabler/player-skip-forward')['default']
     IconTablerPlaylist: typeof import('~icons/tabler/playlist')['default']
-    IconTablerPLAYLIST: typeof import('~icons/tabler/p-l-a-y-l-i-s-t')['default']
     IconTablerRepeat: typeof import('~icons/tabler/repeat')['default']
     IconTablerSearch: typeof import('~icons/tabler/search')['default']
     IconTablerSun: typeof import('~icons/tabler/sun')['default']

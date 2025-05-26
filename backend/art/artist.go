@@ -11,9 +11,22 @@ import (
 	"zene/database"
 	"zene/io"
 	"zene/musicbrainz"
+	"zene/types"
 )
 
-func ImportArtForArtist(musicBrainzArtistId string, artistName string) {
+func ImportArtForArtists(artists []types.ArtistResponse) {
+	for _, artist := range artists {
+		if artist.MusicBrainzArtistID == "" {
+			log.Printf("Skipping artist with empty MusicBrainz ID: %s", artist.Artist)
+			continue
+		}
+		log.Printf("Importing art for artist: %s (%s)", artist.Artist, artist.MusicBrainzArtistID)
+		getArtistArtFromInternet(artist.MusicBrainzArtistID)
+	}
+	log.Println("Finished importing art for artists")
+}
+
+func ImportArtForAlbumArtist(musicBrainzArtistId string, artistName string) {
 	albumDirectories, err := database.SelectArtistSubDirectories(musicBrainzArtistId)
 	if err != nil {
 		log.Printf("Error getting artist subdirectories from database: %v", err)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ArtistMetadata } from '../../types'
-import { backendFetchRequest } from '../../composables/fetchFromBackend'
+import type { ArtistMetadata } from '../types'
+import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const artists = ref()
 

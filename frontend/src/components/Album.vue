@@ -6,6 +6,8 @@ const props = defineProps({
   size: { type: String, default: 'md' },
 })
 
+const router = useRouter()
+
 const artistAndDate = computed(() => {
   return props.album.release_date !== 'Invalid Date' ? `${props.album.artist} • ${props.album.release_date}` : props.album.artist
 })
@@ -18,7 +20,7 @@ function onImageError(event: Event) {
 </script>
 
 <template>
-  <div v-if="props.size === 'lg'">
+  <div v-if="props.size === 'lg'" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)">
     <img class="w-full rounded-md" :src="album.image_url" alt="Album Cover" @error="onImageError" />
     <div class="text-nowrap text-sm">
       {{ album.album }}
@@ -27,7 +29,7 @@ function onImageError(event: Event) {
       {{ album.album_artist }}
     </div>
   </div>
-  <div v-else-if="props.size === 'xl'" class="h-full flex items-center gap-6 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-10">
+  <div v-else-if="props.size === 'xl'" class="h-full flex items-center gap-6 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-10" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)">
     <img :src="album.image_url" class="size-50 rounded-lg object-cover" @error="onImageError">
     <div class="flex flex-col gap-5">
       <div class="text-4xl text-white font-bold">

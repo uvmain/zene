@@ -38,7 +38,6 @@ export interface AlbumMetadata {
   artist: string
   album_artist: string
   album: string
-  musicbrainz_track_id: string
   musicbrainz_album_id: string
   musicbrainz_artist_id: string
   genres: string[]

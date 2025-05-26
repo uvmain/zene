@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { backendFetchRequest } from '../../composables/fetchFromBackend'
+import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const recentlyAddedAlbums = ref()
 

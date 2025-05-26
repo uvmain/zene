@@ -135,8 +135,6 @@ func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) (types.Artist
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 
-	var row types.ArtistResponse
-
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.ArtistResponse{}, err
 	} else if !hasRow {
@@ -146,9 +144,8 @@ func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) (types.Artist
 		row.Artist = stmt.GetText("artist")
 		row.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
 		row.ImageURL = fmt.Sprintf("/api/artists/%s/art", stmt.GetText("musicbrainz_artist_id"))
+		return row, nil
 	}
-
-	return row, nil
 }
 
 func SelectAllArtists() ([]types.ArtistResponse, error) {
@@ -234,10 +231,9 @@ func SelectAlbum(musicbrainzAlbumId string) (types.AlbumsResponse, error) {
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT DISTINCT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM track_metadata limit 1;`)
+	stmt := conn.Prep(`SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM track_metadata where musicbrainz_album_id = $musicbrainzAlbumId limit 1;`)
 	defer stmt.Finalize()
-
-	var row types.AlbumsResponse
+	stmt.SetText("$musicbrainzAlbumId", musicbrainzAlbumId)
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.AlbumsResponse{}, err
@@ -251,9 +247,8 @@ func SelectAlbum(musicbrainzAlbumId string) (types.AlbumsResponse, error) {
 		row.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
 		row.Genres = stmt.GetText("genre")
 		row.ReleaseDate = stmt.GetText("release_date")
+		return row, nil
 	}
-
-	return row, nil
 }
 
 func SelectAllAlbums(random string, limit string, recent string) ([]types.AlbumsResponse, error) {

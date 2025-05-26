@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getRandomTrack } from '../../composables/randomTrack'
+import { getRandomTrack } from '../composables/randomTrack'
 
 const topTracks = ref()
 const randomTrack = ref()

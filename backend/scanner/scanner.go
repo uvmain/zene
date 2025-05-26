@@ -185,13 +185,16 @@ func getAlbumArtwork() error {
 
 func getArtistArtwork() error {
 	log.Println("Getting artist artwork")
-	artists, err := database.SelectAllAlbumArtists()
+
+	albumArtists, err := database.SelectAllAlbumArtists()
+
 	if err != nil {
 		log.Printf("Error fetching artists from database: %v", err)
 		return err
 	}
-	for _, artist := range artists {
-		art.ImportArtForArtist(artist.MusicBrainzArtistID, artist.Artist)
+	for _, artist := range albumArtists {
+		art.ImportArtForAlbumArtist(artist.MusicBrainzArtistID, artist.Artist)
 	}
+
 	return nil
 }

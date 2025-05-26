@@ -70,7 +70,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	if searchParam == "" {
-		rows, err = database.SelectAllArtists()
+		rows, err = database.SelectAllAlbumArtists()
 	} else {
 		rows, err = database.SearchForArtists(searchParam)
 	}
