@@ -4,14 +4,14 @@ import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const artists = ref()
 
-async function getAlbums() {
+async function getArtists() {
   const response = await backendFetchRequest('artists')
   const json = await response.json() as ArtistMetadata[]
   artists.value = json
 }
 
 onBeforeMount(async () => {
-  await getAlbums()
+  await getArtists()
 })
 </script>
 

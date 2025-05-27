@@ -8,3 +8,9 @@ export function niceDate(dateString: string): string {
 export function getThumbnailPath(slug: string) {
   return `/api/thumbnail/${slug}`
 }
+
+export function formatTime(time: number): string {
+  const minutes = Math.floor(time / 60)
+  const seconds = Math.floor(time % 60)
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}

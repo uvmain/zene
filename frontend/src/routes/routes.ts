@@ -1,8 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router'
 import Album from './AlbumRoute.vue'
-import Albums from './Albums.vue'
-import Artists from './Artists.vue'
-import Home from './Home.vue'
+import Albums from './AlbumsRoute.vue'
+import Artists from './ArtistsRoute.vue'
+import Home from './HomeRoute.vue'
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -19,7 +19,6 @@ export const routes: RouteRecordRaw[] = [
     path: '/albums/:musicbrainz_album_id',
     name: 'Album',
     component: Album as Component,
-    props: true, // Ensure route params are passed as props
   },
   {
     path: '/artists',

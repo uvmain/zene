@@ -448,7 +448,7 @@ func SelectTrack(musicBrainzTrackId string) (types.TrackMetadata, error) {
 	return row, nil
 }
 
-func SelectMetadataByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata, error) {
+func SelectTracksByAlbumID(musicbrainz_album_id string) ([]types.TrackMetadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 

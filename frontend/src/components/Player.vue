@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TrackMetadata } from '../types'
 import { onMounted, onUnmounted, ref } from 'vue'
+import { formatTime } from '../composables/logic'
 import { getRandomTrack } from '../composables/randomTrack'
 
 const track = ref<TrackMetadata>()
@@ -49,12 +50,6 @@ function updateProgress() {
   if (!audioRef.value)
     return
   currentTime.value = audioRef.value.currentTime
-}
-
-function formatTime(time: number): string {
-  const minutes = Math.floor(time / 60)
-  const seconds = Math.floor(time % 60)
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
 function seek(event: Event) {

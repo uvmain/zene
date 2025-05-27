@@ -158,6 +158,23 @@ func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
+	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
+
+	rows, err := database.SelectTracksByAlbumID(musicBrainzAlbumId)
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
 func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 	searchParam := r.URL.Query().Get("search")
 	rows, err := database.SelectDistinctGenres(searchParam)

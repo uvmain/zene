@@ -59,7 +59,6 @@ const searchResultsAlbums = computed(() => {
         artist: album.artist,
         album_artist: album.album_artist ?? album.artist,
         album: album.album,
-        musicbrainz_track_id: album.musicbrainz_track_id,
         musicbrainz_album_id: album.musicbrainz_album_id,
         musicbrainz_artist_id: album.musicbrainz_artist_id,
         genres: album.genres,
