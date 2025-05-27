@@ -73,7 +73,7 @@ onBeforeMount(async () => {
             </div>
             <div class="flex flex-grow">
               <div class="flex-col gap-1">
-                <div class="font-semibold group-hover:ml-1">
+                <div class="font-semibold">
                   {{ track.title }}
                 </div>
                 <a class="cursor-pointer text-sm text-white no-underline hover:underline hover:underline-white" :href="getArtistUrl(track.musicbrainz_artist_id)">
