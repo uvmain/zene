@@ -28,6 +28,11 @@ export interface ImageMetadata {
   panoramic: boolean
 }
 
+export interface GenreMetadata {
+  genre: string
+  count: string
+}
+
 export interface ArtistMetadata {
   musicbrainz_artist_id: string
   artist: string

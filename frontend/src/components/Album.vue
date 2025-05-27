@@ -20,22 +20,23 @@ function onImageError(event: Event) {
 </script>
 
 <template>
-  <div v-if="props.size === 'lg'" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)">
-    <img class="w-full rounded-md" :src="album.image_url" alt="Album Cover" @error="onImageError" />
+  <div v-if="props.size === 'lg'">
+    <img class="w-full cursor-pointer rounded-md" :src="album.image_url" alt="Album Cover" @error="onImageError" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)" />
     <div class="text-nowrap text-sm">
       {{ album.album }}
     </div>
-    <div class="text-nowrap text-xs text-gray-300">
+    <div class="cursor-pointer text-nowrap text-xs text-gray-300" @click="() => router.push(`/artists/${album.musicbrainz_artist_id}`)">
+      {{ artistAndDate }}
       {{ album.album_artist }}
     </div>
   </div>
-  <div v-else-if="props.size === 'xl'" class="h-full flex items-center gap-6 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-10" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)">
+  <div v-else-if="props.size === 'xl'" class="h-full flex items-center gap-6 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-10">
     <img :src="album.image_url" class="size-50 rounded-lg object-cover" @error="onImageError">
     <div class="flex flex-col gap-5">
-      <div class="text-4xl text-white font-bold">
+      <div class="cursor-pointer text-4xl text-white font-bold" @click="() => router.push(`/aLbums/${album.musicbrainz_album_id}`)">
         {{ album.album }}
       </div>
-      <div class="text-xl text-white">
+      <div class="cursor-pointer text-xl text-white" @click="() => router.push(`/artists/${album.musicbrainz_artist_id}`)">
         {{ artistAndDate }}
       </div>
       <div v-if="album.genres.length > 0" class="flex flex-wrap gap-2">

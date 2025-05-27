@@ -2,6 +2,7 @@
 import type { ArtistMetadata } from '../types'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
+const router = useRouter()
 const artists = ref()
 
 async function getArtists() {
@@ -22,7 +23,7 @@ onBeforeMount(async () => {
     </h2>
     <div class="flex flex-wrap gap-6">
       <div v-for="artist in artists" :key="artist.musicbrainz_artist_id" class="w-30 flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-        <ArtistThumb :artist="artist" />
+        <ArtistThumb :artist="artist" @click="() => router.push(`/artists/${artist.musicbrainz_artist_id}`)" />
       </div>
     </div>
   </div>

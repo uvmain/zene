@@ -34,6 +34,10 @@ watch(() => route.params.musicbrainz_album_id, async () => {
   getAlbumTracks()
 })
 
+function getArtistUrl(musicbrainz_artist_id: string) {
+  return `/artists/${musicbrainz_artist_id}`
+}
+
 onBeforeMount(async () => {
   await getAlbum()
   await getAlbumTracks()
@@ -67,12 +71,14 @@ onBeforeMount(async () => {
               </span>
               <icon-tabler-player-play-filled class="hidden text-xl group-hover:block" />
             </div>
-            <div class="flex flex-grow flex-col gap-1">
-              <div class="font-semibold group-hover:ml-1">
-                {{ track.title }}
-              </div>
-              <div class="text-sm">
-                {{ track.artist }}
+            <div class="flex flex-grow">
+              <div class="flex-col gap-1">
+                <div class="font-semibold group-hover:ml-1">
+                  {{ track.title }}
+                </div>
+                <a class="cursor-pointer text-sm text-white no-underline hover:underline hover:underline-white" :href="getArtistUrl(track.musicbrainz_artist_id)">
+                  {{ track.artist }}
+                </a>
               </div>
             </div>
             <div class="w-15 flex items-center justify-center">
