@@ -7,11 +7,11 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"zene/config"
-	"zene/database"
-	"zene/io"
-	"zene/musicbrainz"
-	"zene/types"
+	"zene/core/config"
+	"zene/core/database"
+	"zene/core/io"
+	"zene/core/musicbrainz"
+	"zene/core/types"
 )
 
 func ImportArtForArtists(artists []types.ArtistResponse) {

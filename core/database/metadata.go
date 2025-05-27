@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"zene/types"
+	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
 )

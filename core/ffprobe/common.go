@@ -6,9 +6,9 @@ import (
 	"log"
 	"os/exec"
 	"strings"
-	"zene/config"
-	"zene/musicbrainz"
-	"zene/types"
+	"zene/core/config"
+	"zene/core/musicbrainz"
+	"zene/core/types"
 )
 
 func GetCommonTags(audiofilePath string) (types.TrackMetadata, error) {

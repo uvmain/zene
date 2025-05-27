@@ -1,15 +1,14 @@
-package handlers
+package net
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
 
-	"zene/art"
-	"zene/database"
-	"zene/net"
-	"zene/scanner"
-	"zene/types"
+	"zene/core/art"
+	"zene/core/database"
+	"zene/core/scanner"
+	"zene/core/types"
 )
 
 func HandleGetFiles(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +57,7 @@ func HandleDownloadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mimeType := http.DetectContentType(fileBlob)
-	net.EnableCdnCaching(w)
+	enableCdnCaching(w)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(fileBlob)
@@ -116,7 +115,7 @@ func GetArtistArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mimeType := http.DetectContentType(imageBlob)
-	net.EnableCdnCaching(w)
+	enableCdnCaching(w)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(imageBlob)
@@ -266,7 +265,7 @@ func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mimeType := http.DetectContentType(imageBlob)
-	net.EnableCdnCaching(w)
+	enableCdnCaching(w)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(imageBlob)

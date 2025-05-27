@@ -2,8 +2,8 @@ package art
 
 import (
 	"log"
-	"zene/config"
-	"zene/io"
+	"zene/core/config"
+	"zene/core/io"
 )
 
 func Initialise() {

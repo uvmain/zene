@@ -10,5 +10,4 @@ server.exe
 *.pem
 frontend/node_modules
 frontend/dist
-dist
-backend/data/*
+data

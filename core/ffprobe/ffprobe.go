@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"zene/types"
+	"zene/core/types"
 )
 
 func GetTags(audiofilePath string) (types.TrackMetadata, error) {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"zene/types"
+	"zene/core/types"
 )
 
 func createScansTable() {

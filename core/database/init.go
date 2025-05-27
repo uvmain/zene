@@ -4,8 +4,8 @@ import (
 	"log"
 	"path/filepath"
 	"sync"
-	"zene/config"
-	"zene/io"
+	"zene/core/config"
+	"zene/core/io"
 
 	"zombiezen.com/go/sqlite/sqlitex"
 )

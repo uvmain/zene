@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"zene/types"
+	"zene/core/types"
 )
 
 func createAlbumArtTable() {

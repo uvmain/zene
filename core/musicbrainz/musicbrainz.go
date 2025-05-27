@@ -8,9 +8,13 @@ import (
 	"net/http"
 	"strings"
 
-	"zene/net"
-	"zene/types"
+	"zene/core/types"
 )
+
+func addUserAgentHeaderToRequest(req *http.Request) {
+	var userAgent = "zene/core/1.0 (https://github.com/uvmain/zene)"
+	req.Header.Set("User-Agent", userAgent)
+}
 
 func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbRelease, error) {
 	log.Printf("Fetching metadata from MB for album ID: %s", musicBrainzAlbumId)
@@ -22,7 +26,7 @@ func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbReleas
 		return types.MbRelease{}, fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	net.AddUserAgentHeaderToRequest(req)
+	addUserAgentHeaderToRequest(req)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -56,7 +60,7 @@ func GetAlbumArtUrl(musicBrainzAlbumId string) (string, error) {
 		return "", fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	net.AddUserAgentHeaderToRequest(req)
+	addUserAgentHeaderToRequest(req)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -90,7 +94,7 @@ func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
 		return "", fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	net.AddUserAgentHeaderToRequest(req)
+	addUserAgentHeaderToRequest(req)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -134,7 +138,7 @@ func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
 		return "", fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	net.AddUserAgentHeaderToRequest(req)
+	addUserAgentHeaderToRequest(req)
 
 	res, err = client.Do(req)
 	if err != nil {

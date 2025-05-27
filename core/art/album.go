@@ -7,10 +7,10 @@ import (
 	"slices"
 	"strings"
 	"time"
-	"zene/config"
-	"zene/database"
-	"zene/io"
-	"zene/musicbrainz"
+	"zene/core/config"
+	"zene/core/database"
+	"zene/core/io"
+	"zene/core/musicbrainz"
 )
 
 func ImportArtForAlbum(musicBrainzAlbumId string, albumName string) {

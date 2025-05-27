@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 	"slices"
 	"time"
-	"zene/art"
-	"zene/config"
-	"zene/database"
-	"zene/ffprobe"
-	"zene/globals"
-	"zene/io"
-	"zene/types"
+	"zene/core/art"
+	"zene/core/config"
+	"zene/core/database"
+	"zene/core/ffprobe"
+	"zene/core/globals"
+	"zene/core/io"
+	"zene/core/types"
 )
 
 func RunScan() types.ScanResponse {

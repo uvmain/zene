@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"zene/types"
+	"zene/core/types"
 )
 
 func createFilesTable() {

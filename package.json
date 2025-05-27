@@ -7,23 +7,21 @@
     "frontend"
   ],
   "scripts": {
-    "postinstall": "cd backend && go mod download && cd ../ && npm run create-cert",
-    "clean": "rimraf -v -I backend/server backend/server.exe dist frontend/dist",
-    "clean:full": "rimraf -v -I backend/server backend/server.exe backend/data dist frontend/dist frontend/node_modules node_modules zene.localhost.pem zene.localhost-key.pem",
-    "dev:backend": "cd backend && go run .",
+    "postinstall": "go mod download && npm run create-cert",
+    "clean": "rimraf -v -I zene zene.exe frontend/dist",
+    "clean:full": "rimraf -v -I zene zene.exe data frontend/dist frontend/node_modules node_modules zene.localhost.pem zene.localhost-key.pem",
+    "dev:backend": "go run .",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
-    "build:backend": "cd backend && go build -o server . && cpy server . --rename=server.exe",
-    "build:frontend": "cd frontend && npm run build && cpy dist ../",
-    "build": "cross-env CGO_ENABLED=0 npm run build:frontend && npm run build:backend",
+    "build:backend": "cross-env CGO_ENABLED=0 go build -o zene . && cpy zene . --rename=zene.exe",
+    "build:frontend": "npm run build --workspace frontend",
+    "build": "npm run build:frontend && npm run build:backend",
     "preview": "concurrently npm:caddy:preview npm:preview:go",
-    "preview:go": "cd backend && server.exe",
+    "preview:go": "zene.exe",
     "create-cert": "mkcert zene.localhost && mkcert --install",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
-    "cspell": "cspell \"**/*.{go,ts,js,vue}\"",
-    "ffmpeg:version": "ffmpeg -version",
-    "ffprobe:version": "ffmpeg -version"
+    "cspell": "cspell \"**/*.{go,ts,js,vue}\""
   },
   "repository": {
     "type": "git",
