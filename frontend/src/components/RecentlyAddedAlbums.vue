@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import dayjs from 'dayjs'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const recentlyAddedAlbums = ref()
@@ -11,6 +12,7 @@ async function getAlbums() {
     artist: album.artist,
     album_artist: album.album_artist ?? album.artist,
     musicbrainz_album_id: album.musicbrainz_album_id,
+    release_date: dayjs(album.release_date).format('YYYY'),
     image_url: `/api/albums/${album.musicbrainz_album_id}/art?size=lg`,
   }))
   recentlyAddedAlbums.value = albums

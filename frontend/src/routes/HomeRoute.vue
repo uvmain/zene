@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import { getRandomTrack } from '../composables/randomTrack'
-
 const topTracks = ref()
-const randomTrack = ref()
-
-onMounted(async () => {
-  randomTrack.value = await getRandomTrack()
-})
 </script>
 
 <template>
@@ -14,6 +7,10 @@ onMounted(async () => {
     <HeroAlbum />
     <section class="grid grid-cols-2 gap-6">
       <div>
+        <RecentlyAddedAlbums />
+        <RecentlyAddedAlbums />
+        <RecentlyAddedAlbums />
+        <RecentlyAddedAlbums />
         <RecentlyAddedAlbums />
         <section class="grid grid-cols-2 gap-6">
           <TopGenres />
@@ -32,8 +29,6 @@ onMounted(async () => {
           </div>
         </section>
       </div>
-
-      <Player :track="randomTrack" />
     </section>
   </div>
 </template>

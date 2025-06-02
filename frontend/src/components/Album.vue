@@ -21,13 +21,12 @@ function onImageError(event: Event) {
 
 <template>
   <div v-if="props.size === 'lg'">
-    <img class="w-full cursor-pointer rounded-md" :src="album.image_url" alt="Album Cover" @error="onImageError" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)" />
+    <img class="size-25 cursor-pointer rounded-lg rounded-md object-cover" :src="album.image_url" alt="Album Cover" @error="onImageError" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)" />
     <div class="text-nowrap text-sm">
       {{ album.album }}
     </div>
     <div class="cursor-pointer text-nowrap text-xs text-gray-300" @click="() => router.push(`/artists/${album.musicbrainz_artist_id}`)">
       {{ artistAndDate }}
-      {{ album.album_artist }}
     </div>
   </div>
   <div v-else-if="props.size === 'xl'" class="h-full flex items-center gap-6 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-10">

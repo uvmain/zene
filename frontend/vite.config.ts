@@ -9,8 +9,8 @@ import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     AutoImport({
@@ -22,26 +22,57 @@ export default defineConfig({
       viteOptimizeDeps: true,
     }),
     vue(),
+    VitePWA(
+      {
+        manifest: {
+          name: 'Zene',
+          short_name: 'Zene',
+          icons: [
+            {
+              src: '/zene.png',
+              sizes: '1024x1024',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+          ],
+        },
+        includeAssets: [
+          '/default-image.jpg',
+          '/default-square.png',
+          '/favicon.ico',
+          '/logo.png',
+          '/zene.png',
+        ],
+        workbox: {
+          runtimeCaching: [
+            {
+              urlPattern: ({ url }) => {
+                return url.pathname.startsWith('/api') && !['/api/check-session'].includes(url.pathname)
+              },
+              handler: 'CacheFirst' as const,
+              options: {
+                cacheName: 'api-cache',
+                cacheableResponse: {
+                  statuses: [0, 200, 206],
+                },
+              },
+            },
+          ],
+        },
+      },
+    ),
     Icons(),
     // https://github.com/antfu/unplugin-vue-components
     Components({
-      // allow auto load markdown components under `./src/components/`
-      extensions: ['vue', 'md'],
+      extensions: ['vue'],
       dts: true,
-      // allow auto import and register components used in markdown
-      include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
-      // custom resolvers
+      include: [/\.vue$/, /\.vue\?vue/],
       resolvers: [
-        // auto import icons
-        // https://github.com/antfu/unplugin-icons
         IconsResolver({
           prefix: 'icon',
-          // enabledCollections: ['carbon']
         }),
       ],
     }),
-    // https://github.com/antfu/unocss
-    // see uno.config.ts for config
     UnoCSS(),
     Unfonts({
       google: {
@@ -49,6 +80,7 @@ export default defineConfig({
           'Montserrat',
           'Poppins',
           'Quicksand',
+          'Leto',
         ],
       },
     }),
