@@ -16,3 +16,13 @@ export async function getAlbumTracks(musicbrainz_album_id: string): Promise<Trac
   })
   return trackArray
 }
+
+export async function getArtistTracks(musicbrainz_artist_id: string): Promise<TrackMetadataWithImageUrl[]> {
+  const response = await backendFetchRequest(`artists/${musicbrainz_artist_id}/tracks?random=true`)
+  const json = await response.json() as TrackMetadata[]
+  const trackArray: TrackMetadataWithImageUrl[] = []
+  json.forEach((track) => {
+    trackArray.push(trackWithImageUrl(track))
+  })
+  return trackArray
+}

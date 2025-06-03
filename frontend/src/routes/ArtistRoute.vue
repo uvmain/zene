@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import type { ArtistMetadata } from '../types'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import type { ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
+import { backendFetchRequest, getArtistTracks } from '../composables/fetchFromBackend'
 
 const route = useRoute()
 const artist = ref<ArtistMetadata>()
+const tracks = ref<TrackMetadataWithImageUrl[]>()
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 
-async function getArtists() {
+async function getArtist() {
   const response = await backendFetchRequest(`artists/${musicbrainz_artist_id.value}`)
   const json = await response.json() as ArtistMetadata
   artist.value = json
+}
+
+async function getTracks() {
+  tracks.value = await getArtistTracks(musicbrainz_artist_id.value)
 }
 
 function onImageError(event: Event) {
@@ -20,12 +25,16 @@ function onImageError(event: Event) {
 }
 
 onBeforeMount(async () => {
-  await getArtists()
+  await getArtist()
+})
+
+onMounted(async () => {
+  await getTracks()
 })
 </script>
 
 <template>
-  <section v-if="artist" class="h-80 overflow-hidden rounded-lg">
+  <section v-if="artist" class="h-80 rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${artist.image_url})` }"
@@ -46,4 +55,5 @@ onBeforeMount(async () => {
       </div>
     </div>
   </section>
+  <Tracks v-if="tracks" :tracks="tracks" :show-album="true" />
 </template>

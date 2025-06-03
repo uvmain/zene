@@ -147,7 +147,28 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetArtistArt(w http.ResponseWriter, r *http.Request) {
+func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
+	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
+	randomParam := r.URL.Query().Get("random")
+	limitParam := r.URL.Query().Get("limit")
+	offsetParam := r.URL.Query().Get("offset")
+	recentParam := r.URL.Query().Get("recent")
+
+	rows, err := database.SelectTracksByArtistId(musicBrainzArtistId, randomParam, limitParam, offsetParam, recentParam)
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
+
+func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
 	imageBlob, err := art.GetArtForArtist(musicBrainzArtistId)
 

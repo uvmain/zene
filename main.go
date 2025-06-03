@@ -41,22 +41,23 @@ func StartServer() {
 	}
 	router.Handle("GET /", http.FileServer(http.FS(dist)))
 
-	router.HandleFunc("GET /api/files", net.HandleGetFiles)                                    // returns []types.FilesRow
-	router.HandleFunc("GET /api/files/{fileId}", net.HandleGetFile)                            // returns types.FilesRow
-	router.HandleFunc("GET /api/files/{fileId}/download", net.HandleDownloadFile)              // returns blob
-	router.HandleFunc("GET /api/files/{fileId}/stream", net.HandleStreamFile)                  // returns blob
-	router.HandleFunc("GET /api/artists", net.HandleGetArtists)                                // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}", net.HandleGetArtist)           // returns types.ArtistResponse
-	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/art", net.GetArtistArt)          // returns image/jpeg blob
-	router.HandleFunc("GET /api/albums", net.HandleGetAlbums)                                  // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}", net.HandleGetAlbum)              // returns types.AlbumsResponse
-	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/art", net.HandleGetAlbumArt)       // returns image/jpeg blob
-	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/tracks", net.HandleGetAlbumTracks) // returns []types.TrackMetadata
-	router.HandleFunc("GET /api/tracks", net.HandleGetTracks)                                  // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/tracks/{musicBrainzTrackId}", net.HandleGetTrack)              // returns types.TrackMetadata
-	router.HandleFunc("GET /api/genres", net.HandleGetGenres)                                  // query params: search=searchTerm
-	router.HandleFunc("POST /api/scan", net.HandlePostScan)                                    //
-	router.HandleFunc("GET /api/search", net.HandleSearchMetadata)                             // query params: search=searchTerm
+	router.HandleFunc("GET /api/files", net.HandleGetFiles)                                       // returns []types.FilesRow
+	router.HandleFunc("GET /api/files/{fileId}", net.HandleGetFile)                               // returns types.FilesRow
+	router.HandleFunc("GET /api/files/{fileId}/download", net.HandleDownloadFile)                 // returns blob
+	router.HandleFunc("GET /api/files/{fileId}/stream", net.HandleStreamFile)                     // returns blob
+	router.HandleFunc("GET /api/artists", net.HandleGetArtists)                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
+	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}", net.HandleGetArtist)              // returns types.ArtistResponse
+	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/tracks", net.HandleGetArtistTracks) // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10, offset=10
+	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/art", net.HandleGetArtistArt)       // returns image/jpeg blob
+	router.HandleFunc("GET /api/albums", net.HandleGetAlbums)                                     // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}", net.HandleGetAlbum)                 // returns types.AlbumsResponse
+	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/art", net.HandleGetAlbumArt)          // returns image/jpeg blob
+	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/tracks", net.HandleGetAlbumTracks)    // returns []types.TrackMetadata
+	router.HandleFunc("GET /api/tracks", net.HandleGetTracks)                                     // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10
+	router.HandleFunc("GET /api/tracks/{musicBrainzTrackId}", net.HandleGetTrack)                 // returns types.TrackMetadata
+	router.HandleFunc("GET /api/genres", net.HandleGetGenres)                                     // query params: search=searchTerm
+	router.HandleFunc("POST /api/scan", net.HandlePostScan)                                       //
+	router.HandleFunc("GET /api/search", net.HandleSearchMetadata)                                // query params: search=searchTerm
 
 	handler := cors.AllowAll().Handler(router)
 

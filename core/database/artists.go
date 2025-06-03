@@ -38,6 +38,97 @@ func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) (types.Artist
 	}
 }
 
+func SelectTracksByArtistId(musicbrainz_artist_id string, random string, limit string, offset string, recent string) ([]types.TrackMetadata, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+	}
+	defer DbPool.Put(conn)
+
+	var stmtText string
+	var stmt *sqlite.Stmt
+
+	stmtText = "SELECT m.* FROM track_metadata m join files f on m.file_id = f.id where m.musicbrainz_artist_id = $musicbrainz_artist_id"
+
+	if recent == "true" {
+		stmtText = fmt.Sprintf("%s ORDER BY f.date_added desc", stmtText)
+	} else if random == "true" {
+		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
+	}
+	if limit != "" {
+		stmtText = fmt.Sprintf("%s limit $limit", stmtText)
+	}
+	if offset != "" {
+		stmtText = fmt.Sprintf("%s offset $offset", stmtText)
+	}
+
+	stmtText = fmt.Sprintf("%s;", stmtText)
+
+	stmt = conn.Prep(stmtText)
+	defer stmt.Finalize()
+
+	stmt.SetText("$musicbrainz_artist_id", musicbrainz_artist_id)
+
+	if limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			return []types.TrackMetadata{}, fmt.Errorf("failed to convert limit to int: %v", err)
+		}
+		stmt.SetInt64("$limit", int64(limitInt))
+	}
+	if offset != "" {
+		offsetInt, err := strconv.Atoi(offset)
+		if err != nil {
+			return []types.TrackMetadata{}, fmt.Errorf("failed to convert limit to int: %v", err)
+		}
+		stmt.SetInt64("$offset", int64(offsetInt))
+	}
+
+	var rows []types.TrackMetadata
+	for {
+		hasRow, err := stmt.Step()
+		if err != nil {
+			return []types.TrackMetadata{}, err
+		} else if !hasRow {
+			break
+		}
+
+		row := types.TrackMetadata{
+			Id:                  int(stmt.GetInt64("id")),
+			FileId:              int(stmt.GetInt64("file_id")),
+			Filename:            stmt.GetText("filename"),
+			Format:              stmt.GetText("format"),
+			Duration:            stmt.GetText("duration"),
+			Size:                stmt.GetText("size"),
+			Bitrate:             stmt.GetText("bitrate"),
+			Title:               stmt.GetText("title"),
+			Artist:              stmt.GetText("artist"),
+			Album:               stmt.GetText("album"),
+			AlbumArtist:         stmt.GetText("album_artist"),
+			Genre:               stmt.GetText("genre"),
+			TrackNumber:         stmt.GetText("track_number"),
+			TotalTracks:         stmt.GetText("total_tracks"),
+			DiscNumber:          stmt.GetText("disc_number"),
+			TotalDiscs:          stmt.GetText("total_discs"),
+			ReleaseDate:         stmt.GetText("release_date"),
+			MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
+			MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
+			MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
+			Label:               stmt.GetText("label"),
+		}
+		rows = append(rows, row)
+	}
+
+	if rows == nil {
+		rows = []types.TrackMetadata{}
+	}
+	return rows, nil
+}
+
 func SelectAlbumArtists(searchParam string, random string, limit string, offset string, recent string) ([]types.ArtistResponse, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
