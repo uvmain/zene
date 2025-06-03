@@ -168,8 +168,13 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <footer class="sticky bottom-0 mt-auto h-40 w-full border-0 border-t-1 border-white/20 border-solid bg-zene-700">
-    <div class="w-full flex flex-grow justify-center">
+  <footer
+    class="sticky bottom-0 mt-auto h-40 w-full bg-zene-700 bg-cover bg-center"
+    :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
+  >
+    <div
+      class="h-full w-full flex flex-grow justify-center bg-zene-700/50 backdrop-blur-xl backdrop-contrast-50"
+    >
       <div class="m-2 rounded-xl p-4">
         <audio ref="audioRef" :src="trackUrl" preload="metadata" />
 
@@ -177,7 +182,7 @@ onUnmounted(() => {
         <div v-if="audioRef" class="mt-4 flex flex-col items-center">
           <input
             type="range"
-            class="h-1 w-full cursor-pointer appearance-none rounded-lg bg-gray-600 accent-zene-200"
+            class="h-1 w-full cursor-pointer bg-white/60 accent-zene-200"
             :max="currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0"
             :value="currentTime"
             @input="seek"

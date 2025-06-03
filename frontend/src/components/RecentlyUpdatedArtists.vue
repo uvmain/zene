@@ -3,10 +3,10 @@ import type { ArtistMetadata } from '../types'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const router = useRouter()
-const artists = ref()
+const artists = ref<ArtistMetadata[]>()
 
 async function getArtists() {
-  const response = await backendFetchRequest('artists')
+  const response = await backendFetchRequest('artists?recent=true&limit=8')
   const json = await response.json() as ArtistMetadata[]
   artists.value = json
 }
@@ -19,7 +19,7 @@ onBeforeMount(async () => {
 <template>
   <div>
     <h2 class="mb-2 text-lg font-semibold">
-      Recently Added Artists
+      Recently Updated Artists
     </h2>
     <div class="flex flex-wrap gap-6">
       <div v-for="artist in artists" :key="artist.musicbrainz_artist_id" class="w-30 flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">

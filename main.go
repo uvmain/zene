@@ -44,7 +44,7 @@ func StartServer() {
 	router.HandleFunc("GET /api/files", net.HandleGetFiles)                                    // returns []types.FilesRow
 	router.HandleFunc("GET /api/files/{fileId}", net.HandleGetFile)                            // returns types.FilesRow
 	router.HandleFunc("GET /api/files/{fileId}/download", net.HandleDownloadFile)              // returns blob
-	router.HandleFunc("GET /api/artists", net.HandleGetArtists)                                // returns []types.ArtistResponse; query params: search=searchTerm
+	router.HandleFunc("GET /api/artists", net.HandleGetArtists)                                // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10
 	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}", net.HandleGetArtist)           // returns types.ArtistResponse
 	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/art", net.GetArtistArt)          // returns image/jpeg blob
 	router.HandleFunc("GET /api/albums", net.HandleGetAlbums)                                  // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10

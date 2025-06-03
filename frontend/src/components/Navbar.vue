@@ -2,6 +2,7 @@
 import { currentlyPlayingTrack } from '../composables/globalState'
 
 const route = useRoute()
+const router = useRouter()
 
 const currentRoute = computed(() => {
   return route.path
@@ -75,7 +76,7 @@ function onImageError(event: Event) {
       </nav>
     </div>
     <div v-if="currentlyPlayingTrack" class="flex flex-col gap-2">
-      <img :src="currentlyPlayingTrack?.image_url" class="w-full rounded-lg object-cover" @error="onImageError">
+      <img :src="currentlyPlayingTrack?.image_url" class="w-full cursor-pointer rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.musicbrainz_album_id}`)">
       <div class="">
         {{ currentlyPlayingTrack?.title }}
       </div>

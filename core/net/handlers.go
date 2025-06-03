@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"zene/core/art"
 	"zene/core/database"
@@ -65,14 +66,27 @@ func HandleDownloadFile(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	searchParam := r.URL.Query().Get("search")
-	var rows []types.ArtistResponse
-	var err error
+	randomParam := r.URL.Query().Get("random")
+	limitParam := r.URL.Query().Get("limit")
+	recentParam := r.URL.Query().Get("recent")
 
-	if searchParam == "" {
-		rows, err = database.SelectAllAlbumArtists()
-	} else {
-		rows, err = database.SearchForArtists(searchParam)
+	if randomParam != "" && randomParam != "true" && randomParam != "false" {
+		http.Error(w, "Invalid value for 'random' parameter", http.StatusBadRequest)
+		return
 	}
+	if recentParam != "" && recentParam != "true" && recentParam != "false" {
+		http.Error(w, "Invalid value for 'recent' parameter", http.StatusBadRequest)
+		return
+	}
+
+	if limitParam != "" {
+		if _, err := strconv.Atoi(limitParam); err != nil {
+			http.Error(w, "Invalid value for 'limit' parameter", http.StatusBadRequest)
+			return
+		}
+	}
+
+	rows, err := database.SelectAlbumArtists(searchParam, randomParam, limitParam, recentParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
