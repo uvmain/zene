@@ -68,6 +68,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	searchParam := r.URL.Query().Get("search")
 	randomParam := r.URL.Query().Get("random")
 	limitParam := r.URL.Query().Get("limit")
+	offsetParam := r.URL.Query().Get("offset")
 	recentParam := r.URL.Query().Get("recent")
 
 	if randomParam != "" && randomParam != "true" && randomParam != "false" {
@@ -86,7 +87,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rows, err := database.SelectAlbumArtists(searchParam, randomParam, limitParam, recentParam)
+	rows, err := database.SelectAlbumArtists(searchParam, randomParam, limitParam, offsetParam, recentParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)

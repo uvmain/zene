@@ -186,7 +186,7 @@ func getAlbumArtwork() error {
 func getArtistArtwork() error {
 	log.Println("Getting artist artwork")
 
-	albumArtists, err := database.SelectAlbumArtists("", "false", "", "")
+	albumArtists, err := database.SelectAlbumArtists("", "false", "", "", "")
 
 	if err != nil {
 		log.Printf("Error fetching artists from database: %v", err)

@@ -38,7 +38,7 @@ func SelectArtistByMusicBrainzArtistId(musicbrainzArtistId string) (types.Artist
 	}
 }
 
-func SelectAlbumArtists(searchParam string, random string, limit string, recent string) ([]types.ArtistResponse, error) {
+func SelectAlbumArtists(searchParam string, random string, limit string, offset string, recent string) ([]types.ArtistResponse, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
@@ -69,6 +69,9 @@ func SelectAlbumArtists(searchParam string, random string, limit string, recent 
 	if limit != "" {
 		stmtText = fmt.Sprintf("%s limit $limit", stmtText)
 	}
+	if offset != "" {
+		stmtText = fmt.Sprintf("%s offset $offset", stmtText)
+	}
 
 	stmtText = fmt.Sprintf("%s;", stmtText)
 
@@ -84,6 +87,13 @@ func SelectAlbumArtists(searchParam string, random string, limit string, recent 
 			return []types.ArtistResponse{}, fmt.Errorf("failed to convert limit to int: %v", err)
 		}
 		stmt.SetInt64("$limit", int64(limitInt))
+	}
+	if offset != "" {
+		offsetInt, err := strconv.Atoi(offset)
+		if err != nil {
+			return []types.ArtistResponse{}, fmt.Errorf("failed to convert limit to int: %v", err)
+		}
+		stmt.SetInt64("$offset", int64(offsetInt))
 	}
 
 	var artists []types.ArtistResponse

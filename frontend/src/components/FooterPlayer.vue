@@ -169,17 +169,19 @@ onUnmounted(() => {
 
 <template>
   <footer
-    class="sticky bottom-0 mt-auto h-40 w-full bg-zene-700 bg-cover bg-center"
+    class="sticky bottom-0 mt-auto w-full bg-zene-700 bg-cover bg-center"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
   >
+    <audio ref="audioRef" :src="trackUrl" preload="metadata" />
     <div
-      class="h-full w-full flex flex-grow justify-center bg-zene-700/50 backdrop-blur-xl backdrop-contrast-50"
+      class="mb-8 h-full w-full flex flex-grow flex-col items-center justify-center bg-zene-700/50 py-2 backdrop-blur-xl backdrop-contrast-50 space-y-2"
     >
-      <div class="m-2 rounded-xl p-4">
-        <audio ref="audioRef" :src="trackUrl" preload="metadata" />
-
+      <div>
         <!-- Progress Bar -->
-        <div v-if="audioRef" class="mt-4 flex flex-col items-center">
+        <div v-if="audioRef" class="max-w-200 flex flex-row items-center gap-2">
+          <span id="currentTime" class="w-12 text-right text-sm text-gray-2">
+            {{ formatTime(currentTime) }}
+          </span>
           <input
             type="range"
             class="h-1 w-full cursor-pointer bg-white/60 accent-zene-200"
@@ -187,14 +189,13 @@ onUnmounted(() => {
             :value="currentTime"
             @input="seek"
           />
-          <!-- Time Display -->
-          <div class="mt-2 w-full flex justify-between text-xs text-gray-400">
-            <span>{{ formatTime(currentTime) }}</span>
-            <span>{{ formatTime(currentlyPlayingTrack ? Number.parseFloat(currentlyPlayingTrack.duration) : 0) }}</span>
-          </div>
+          <span id="duration" class="w-12 text-sm text-gray-2">
+            {{ formatTime(currentlyPlayingTrack ? Number.parseFloat(currentlyPlayingTrack.duration) : 0) }}
+          </span>
         </div>
+
         <!-- Buttons -->
-        <div class="mt-2 flex justify-center space-x-4">
+        <div class="mt-2 flex flex-row items-center justify-center gap-x-4">
           <button id="repeat" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="stopPlayback()">
             <icon-tabler-player-stop class="text-xl" />
           </button>
