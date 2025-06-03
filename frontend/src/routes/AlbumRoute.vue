@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { AlbumMetadata, TrackMetadata } from '../types'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
-import { formatTime } from '../composables/logic'
-import { play } from '../composables/play'
 
 const route = useRoute()
 const album = ref<AlbumMetadata>()
@@ -35,10 +33,6 @@ watch(() => route.params.musicbrainz_album_id, async () => {
   getAlbumTracks()
 })
 
-function getArtistUrl(musicbrainz_artist_id: string) {
-  return `/artists/${musicbrainz_artist_id}`
-}
-
 onBeforeMount(async () => {
   await getAlbum()
   await getAlbumTracks()
@@ -49,45 +43,7 @@ onBeforeMount(async () => {
   <div v-if="album && tracks">
     <div class="flex flex-grow flex-col gap-6">
       <Album :album="album" size="xl" class="rounded-lg" />
-      <div class="rounded-lg bg-black/20 p-4">
-        <div class="flex flex-row gap-2">
-          <div class="w-15 flex justify-center">
-            #
-          </div>
-          <div class="flex flex-grow">
-            Title
-          </div>
-          <icon-tabler-clock-hour-3 class="w-15 flex justify-center" />
-        </div>
-        <hr class="my-4 border-white/10" />
-        <div class="w-full flex flex-col gap-2">
-          <div
-            v-for="track in tracks"
-            :key="track.title"
-            class="group w-full flex flex-none flex-row overflow-hidden rounded p-1 duration-200 transition-ease-out hover:bg-zene-200/20"
-          >
-            <div class="w-15 flex items-center justify-center" @click="play(undefined, undefined, track)">
-              <span class="group-hover:hidden">
-                {{ track.track_number }}
-              </span>
-              <icon-tabler-player-play-filled class="hidden text-xl group-hover:block" />
-            </div>
-            <div class="flex flex-grow">
-              <div class="flex-col gap-1">
-                <div class="font-semibold">
-                  {{ track.title }}
-                </div>
-                <a class="cursor-pointer text-sm text-white no-underline hover:underline hover:underline-white" :href="getArtistUrl(track.musicbrainz_artist_id)">
-                  {{ track.artist }}
-                </a>
-              </div>
-            </div>
-            <div class="w-15 flex items-center justify-center">
-              {{ formatTime(Number.parseInt(track.duration)) }}
-            </div>
-          </div>
-        </div>
-      </div>
+      <Tracks :tracks="tracks" />
     </div>
   </div>
 </template>

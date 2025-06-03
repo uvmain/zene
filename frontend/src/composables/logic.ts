@@ -23,3 +23,7 @@ export function trackWithImageUrl(track: TrackMetadata | TrackMetadataWithImageU
   }
   return trackMetadataWithImageUrl
 }
+
+export function getArtistUrl(musicbrainz_artist_id: string) {
+  return `/artists/${musicbrainz_artist_id}`
+}

@@ -40,11 +40,11 @@ declare module 'vue' {
     LoginModal: typeof import('./src/components/LoginModal.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     PlayButton: typeof import('./src/components/PlayButton.vue')['default']
-    RecentlUpdatedArtists: typeof import('./src/components/RecentlUpdatedArtists.vue')['default']
     RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
     RecentlyUpdatedArtists: typeof import('./src/components/RecentlyUpdatedArtists.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
+    Tracks: typeof import('./src/components/Tracks.vue')['default']
   }
 }

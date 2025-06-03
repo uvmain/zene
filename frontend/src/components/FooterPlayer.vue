@@ -10,7 +10,7 @@ const currentTime = ref(0)
 const isPlayPauseActive = ref(false)
 
 const trackUrl = computed<string>(() => {
-  return currentlyPlayingTrack.value ? `/api/files/${currentlyPlayingTrack.value.file_id}/download` : ''
+  return currentlyPlayingTrack.value ? `/api/files/${currentlyPlayingTrack.value.file_id}/stream` : ''
 })
 
 function togglePlayback() {
@@ -172,11 +172,11 @@ onUnmounted(() => {
     class="sticky bottom-0 mt-auto w-full bg-zene-700 bg-cover bg-center"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
   >
-    <audio ref="audioRef" :src="trackUrl" preload="metadata" />
     <div
-      class="mb-8 h-full w-full flex flex-grow flex-col items-center justify-center bg-zene-700/50 py-2 backdrop-blur-xl backdrop-contrast-50 space-y-2"
+      class="mb-8 h-full w-full flex flex-grow flex-col items-center justify-center bg-zene-700/50 backdrop-blur-xl backdrop-contrast-50 space-y-2"
     >
-      <div>
+      <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
+      <div class="">
         <!-- Progress Bar -->
         <div v-if="audioRef" class="max-w-200 flex flex-row items-center gap-2">
           <span id="currentTime" class="w-12 text-right text-sm text-gray-2">

@@ -8,5 +8,6 @@ export function resetCurrentlyPlayingTrack() {
 }
 
 export function setCurrentlyPlayingTrack(track: TrackMetadata | TrackMetadataWithImageUrl) {
+  console.log(`setting current track to ${track.filename}`)
   currentlyPlayingTrack.value = trackWithImageUrl(track)
 }
