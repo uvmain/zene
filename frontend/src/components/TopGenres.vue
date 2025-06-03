@@ -16,7 +16,7 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="mb-2 text-lg font-semibold">
+    <h2 class="py-2 text-lg font-semibold">
       Top Genres
     </h2>
     <div class="flex flex-wrap gap-2">

@@ -5,7 +5,7 @@ import { backendFetchRequest } from '../composables/fetchFromBackend'
 const recentlyAddedAlbums = ref()
 
 async function getAlbums() {
-  const response = await backendFetchRequest('albums?recent=true&limit=8')
+  const response = await backendFetchRequest('albums?recent=true&limit=30')
   const json = await response.json()
   const albums = json.map((album: any) => ({
     album: album.album,
@@ -25,7 +25,7 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="mb-2 text-lg font-semibold">
+    <h2 class="py-2 text-lg font-semibold">
       Recently Added Albums
     </h2>
     <div class="flex flex-wrap gap-6">

@@ -6,7 +6,7 @@ const router = useRouter()
 const artists = ref<ArtistMetadata[]>()
 
 async function getArtists() {
-  const response = await backendFetchRequest('artists?recent=true&limit=8')
+  const response = await backendFetchRequest('artists?recent=true&limit=15')
   const json = await response.json() as ArtistMetadata[]
   artists.value = json
 }
@@ -18,7 +18,7 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="mb-2 text-lg font-semibold">
+    <h2 class="py-2 text-lg font-semibold">
       Recently Updated Artists
     </h2>
     <div class="flex flex-wrap gap-6">

@@ -18,8 +18,8 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="mb-2 text-lg font-semibold">
-      Recently Added Artists
+    <h2 class="py-2 text-lg font-semibold">
+      Genres
     </h2>
     <div class="flex flex-wrap gap-6">
       <div v-if="genres" class="flex flex-wrap cursor-pointer gap-2">
