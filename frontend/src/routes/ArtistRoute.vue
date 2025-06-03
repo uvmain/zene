@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import type { AlbumMetadata, ArtistMetadata } from '../types'
+import type { ArtistMetadata } from '../types'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const route = useRoute()
-
 const artist = ref<ArtistMetadata>()
-// const albums = ref<AlbumMetadata[]>()
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 

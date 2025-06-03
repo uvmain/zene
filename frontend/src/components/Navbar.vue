@@ -3,10 +3,6 @@ import { currentlyPlayingTrack } from '../composables/globalState'
 
 const route = useRoute()
 
-const imageUrl = computed<string>(() => {
-  return currentlyPlayingTrack.value ? `api/albums/${currentlyPlayingTrack.value.musicbrainz_album_id}/art` : 'default-square.png'
-})
-
 const currentRoute = computed(() => {
   return route.path
 })
@@ -45,6 +41,14 @@ function onImageError(event: Event) {
           Albums
         </RouterLink>
         <RouterLink
+          to="/tracks"
+          class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
+          :class="{ 'ml-4': currentRoute === '/tracks' }"
+        >
+          <icon-tabler-music />
+          Tracks
+        </RouterLink>
+        <RouterLink
           to="/artists"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/artists' }"
@@ -61,7 +65,7 @@ function onImageError(event: Event) {
           Genres
         </RouterLink>
         <RouterLink
-          to="/playlists"
+          to="/genres"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/playlists' }"
         >
@@ -71,7 +75,7 @@ function onImageError(event: Event) {
       </nav>
     </div>
     <div v-if="currentlyPlayingTrack" class="flex flex-col gap-2">
-      <img :src="imageUrl" class="w-full rounded-lg object-cover" @error="onImageError">
+      <img :src="currentlyPlayingTrack?.image_url" class="w-full rounded-lg object-cover" @error="onImageError">
       <div class="">
         {{ currentlyPlayingTrack?.title }}
       </div>

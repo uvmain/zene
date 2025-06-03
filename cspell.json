@@ -1,7 +1,12 @@
 {
     "version": "0.2",
     "ignorePaths": [
-        "frontend/vite.config.ts"
+        "frontend/vite.config.ts",
+        "node_modules",
+        "frontend/node_modules",
+        "frontend/dist",
+        "frontend/auto-imports.d.ts",
+        "frontend/components.d.ts"
     ],
     "dictionaryDefinitions": [],
     "dictionaries": [],
@@ -23,9 +28,12 @@
         "img",
         "joho",
         "Lanczos",
+        "mainsnak",
         "musicbrainz",
         "nfnt",
+        "Snak",
         "sqlitex",
+        "SSG",
         "tabler",
         "TRACKID",
         "uvmain",
