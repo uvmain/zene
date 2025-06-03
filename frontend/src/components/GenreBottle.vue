@@ -5,7 +5,7 @@ defineProps({
 </script>
 
 <template>
-  <span class="rounded-full bg-zene-400 px-4 py-1 text-xs text-white font-semibold">
+  <span class="rounded-full bg-zene-400 px-3 py-1 text-sm text-white">
     {{ genre }}
   </span>
 </template>

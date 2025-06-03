@@ -2,6 +2,7 @@
 import type { AlbumMetadata, TrackMetadata } from '../types'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 import { formatTime } from '../composables/logic'
+import { play } from '../composables/play'
 
 const route = useRoute()
 const album = ref<AlbumMetadata>()
@@ -65,7 +66,7 @@ onBeforeMount(async () => {
             :key="track.title"
             class="group w-full flex flex-none flex-row overflow-hidden rounded p-1 duration-200 transition-ease-out hover:bg-zene-200/20"
           >
-            <div class="w-15 flex items-center justify-center">
+            <div class="w-15 flex items-center justify-center" @click="play(undefined, undefined, track)">
               <span class="group-hover:hidden">
                 {{ track.track_number }}
               </span>

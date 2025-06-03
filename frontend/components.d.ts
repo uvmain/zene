@@ -10,7 +10,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     Album: typeof import('./src/components/Album.vue')['default']
     ArtistThumb: typeof import('./src/components/ArtistThumb.vue')['default']
-    copy: typeof import('./src/components/HeaderAndSearch copy.vue')['default']
     FooterPlayer: typeof import('./src/components/FooterPlayer.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
@@ -33,7 +32,6 @@ declare module 'vue' {
     IconTablerPlaylist: typeof import('~icons/tabler/playlist')['default']
     IconTablerRepeat: typeof import('~icons/tabler/repeat')['default']
     IconTablerSearch: typeof import('~icons/tabler/search')['default']
-    IconTablerStop: typeof import('~icons/tabler/stop')['default']
     IconTablerSun: typeof import('~icons/tabler/sun')['default']
     IconTablerTags: typeof import('~icons/tabler/tags')['default']
     IconTablerUser: typeof import('~icons/tabler/user')['default']
@@ -42,7 +40,6 @@ declare module 'vue' {
     LoginModal: typeof import('./src/components/LoginModal.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     PlayButton: typeof import('./src/components/PlayButton.vue')['default']
-    Player: typeof import('./src/components/Player.vue')['default']
     RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -30,9 +30,9 @@ function onImageError(event: Event) {
     </div>
   </div>
   <div v-else-if="props.size === 'xl'" class="h-full flex items-center gap-6 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-10">
-    <img :src="album.image_url" class="size-50 rounded-lg object-cover" @error="onImageError">
+    <img :src="album.image_url" class="size-50 rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)">
     <div class="flex flex-col gap-5">
-      <div class="cursor-pointer text-4xl text-white font-bold" @click="() => router.push(`/aLbums/${album.musicbrainz_album_id}`)">
+      <div class="cursor-pointer text-4xl text-white font-bold" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)">
         {{ album.album }}
       </div>
       <div class="cursor-pointer text-xl text-white" @click="() => router.push(`/artists/${album.musicbrainz_artist_id}`)">
