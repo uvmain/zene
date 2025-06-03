@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
-import { currentlyPlayingTrack, resetCurrentlyPlayingTrack } from '../composables/globalState'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { currentlyPlayingTrack, resetCurrentlyPlayingTrack, setCurrentlyPlayingTrack } from '../composables/globalState'
 import { formatTime } from '../composables/logic'
 import { getRandomTrack } from '../composables/randomTrack'
 
@@ -10,7 +10,7 @@ const currentTime = ref(0)
 const isPlayPauseActive = ref(false)
 
 const trackUrl = computed<string>(() => {
-  return currentlyPlayingTrack.value ? `api/files/${currentlyPlayingTrack.value.file_id}/download` : ''
+  return currentlyPlayingTrack.value ? `/api/files/${currentlyPlayingTrack.value.file_id}/download` : ''
 })
 
 function togglePlayback() {
@@ -72,7 +72,8 @@ async function randomTrack() {
   audioRef.value.pause()
   audioRef.value.removeAttribute('src')
   currentTime.value = 0
-  currentlyPlayingTrack.value = await getRandomTrack()
+  const randomTrack = await getRandomTrack()
+  setCurrentlyPlayingTrack(randomTrack)
   audioRef.value.addEventListener(
     'canplay',
     () => {
@@ -88,10 +89,36 @@ onBeforeMount(() => {
   randomTrack()
 })
 
+watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
+  const audio = audioRef.value
+  if (!audio) {
+    return
+  }
+  if (newTrack && newTrack.file_id !== oldTrack?.file_id) {
+    audio.pause()
+    audio.load()
+    audio.addEventListener(
+      'canplaythrough',
+      () => {
+        audio?.play()
+      },
+      { once: true },
+    )
+  }
+  else if (!newTrack) {
+    audio.pause()
+    audio.removeAttribute('src')
+    audio.load()
+    currentTime.value = 0
+    isPlaying.value = false
+  }
+})
+
 onMounted(() => {
   const audio = audioRef.value
-  if (!audio)
+  if (!audio) {
     return
+  }
 
   audio.addEventListener('play', updateIsPlaying)
   audio.addEventListener('pause', updateIsPlaying)
@@ -109,7 +136,8 @@ async function playNext() {
   audio.pause()
   audio.removeAttribute('src')
   currentTime.value = 0
-  currentlyPlayingTrack.value = await getRandomTrack()
+  const randomTrack = await getRandomTrack()
+  setCurrentlyPlayingTrack(randomTrack)
   audio.addEventListener(
     'canplay',
     () => {
@@ -140,7 +168,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <footer class="sticky bottom-0 h-40 w-full border-0 border-t-1 border-white/20 border-solid bg-zene-700">
+  <footer class="sticky bottom-0 mt-auto h-40 w-full border-0 border-t-1 border-white/20 border-solid bg-zene-700">
     <div class="w-full flex flex-grow justify-center">
       <div class="m-2 rounded-xl p-4">
         <audio ref="audioRef" :src="trackUrl" preload="metadata" />

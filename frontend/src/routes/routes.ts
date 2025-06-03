@@ -5,6 +5,8 @@ import Artist from './ArtistRoute.vue'
 import Artists from './ArtistsRoute.vue'
 import Genres from './GenresRoute.vue'
 import Home from './HomeRoute.vue'
+import Track from './TrackRoute.vue'
+import Tracks from './TracksRoute.vue'
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -36,5 +38,15 @@ export const routes: RouteRecordRaw[] = [
     path: '/genres',
     name: 'Genres',
     component: Genres as Component,
+  },
+  {
+    path: '/tracks',
+    name: 'Tracks',
+    component: Tracks as Component,
+  },
+  {
+    path: '/tracks/:musicbrainz_track_id',
+    name: 'Track',
+    component: Track as Component,
   },
 ]

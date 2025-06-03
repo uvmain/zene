@@ -55,6 +55,7 @@ type MbRelease struct {
 	Quality        string  `json:"quality"`
 }
 
+/* cspell: disable */
 type MbArtist struct {
 	ID             string       `json:"id"`
 	Name           string       `json:"name"`
@@ -72,6 +73,8 @@ type MbArtist struct {
 	EndArea        *MbArea      `json:"end-area"`
 	Relations      []MbRelation `json:"relations"`
 }
+
+/* cspell: enable */
 
 type MbLifeSpan struct {
 	Begin string  `json:"begin"`

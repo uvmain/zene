@@ -5,10 +5,10 @@
   <div class="grid grid-cols-[250px_1fr] h-screen from-zene-800 to-zene-700 bg-gradient-to-b text-white">
     <Navbar />
     <main class="flex flex-col overflow-y-auto">
-      <page class="flex flex-col overflow-y-auto p-6 space-y-6">
+      <div class="flex flex-col overflow-y-auto p-6 space-y-6">
         <HeaderAndSearch />
         <RouterView />
-      </page>
+      </div>
       <FooterPlayer />
     </main>
   </div>
