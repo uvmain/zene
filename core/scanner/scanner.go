@@ -16,14 +16,14 @@ import (
 )
 
 func RunScan() types.ScanResponse {
-	if globals.Syncing == true {
+	if globals.IsScanning == true {
 		return types.ScanResponse{
 			Success: false,
 			Status:  "Scan already in progress",
 		}
 	}
 
-	globals.Syncing = true
+	globals.IsScanning = true
 	log.Printf("Starting scan of music dir")
 
 	lastScan, err := database.SelectLastScan()
@@ -37,7 +37,8 @@ func RunScan() types.ScanResponse {
 
 	lastModified, err := time.Parse(time.RFC3339Nano, lastScan.DateModified)
 	if err != nil {
-		log.Printf("Error fetching lastModified from scans table: %v", err)
+		lastModified = time.Now().Add(-(time.Hour * 24 * 365 * 10))
+		log.Printf("Falling back to lastModified of %v: %v", lastModified, err)
 	}
 
 	err = getFiles(lastModified)
@@ -76,7 +77,7 @@ func RunScan() types.ScanResponse {
 		}
 	}
 
-	globals.Syncing = false
+	globals.IsScanning = false
 
 	log.Println("Scanner run complete")
 	return types.ScanResponse{

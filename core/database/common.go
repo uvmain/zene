@@ -39,7 +39,6 @@ func createTable(tableName string, createSql string) {
 	defer DbPool.Put(conn)
 
 	tableExists, err := doesTableExist(tableName, conn)
-	log.Printf("table %v exists", tableExists)
 
 	if err != nil {
 		log.Printf("Error checking if %s table exists: %s", tableName, err)
