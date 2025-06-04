@@ -22,7 +22,7 @@ onBeforeMount(async () => {
       Recently Updated Artists
     </h2>
     <div class="flex flex-wrap gap-6">
-      <div v-for="artist in artists" :key="artist.musicbrainz_artist_id" class="w-30 flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+      <div v-for="artist in artists" :key="artist.musicbrainz_artist_id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <ArtistThumb :artist="artist" class="cursor-pointer" @click="() => router.push(`/artists/${artist.musicbrainz_artist_id}`)" />
       </div>
     </div>

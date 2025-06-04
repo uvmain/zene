@@ -20,12 +20,12 @@ function onImageError(event: Event) {
 </script>
 
 <template>
-  <div v-if="props.size === 'lg'">
-    <img class="size-25 cursor-pointer rounded-lg rounded-md object-cover" :src="album.image_url" alt="Album Cover" @error="onImageError" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)" />
-    <div class="text-nowrap text-sm">
+  <div v-if="props.size === 'lg'" class="w-30">
+    <img class="size-30 cursor-pointer rounded-lg rounded-md object-cover" :src="album.image_url" alt="Album Cover" @error="onImageError" @click="() => router.push(`/albums/${album.musicbrainz_album_id}`)" />
+    <div class="w-30 truncate text-nowrap text-sm">
       {{ album.album }}
     </div>
-    <div class="cursor-pointer text-nowrap text-xs text-gray-300" @click="() => router.push(`/artists/${album.musicbrainz_artist_id}`)">
+    <div class="w-30 cursor-pointer truncate text-nowrap text-xs text-gray-300" @click="() => router.push(`/artists/${album.musicbrainz_artist_id}`)">
       {{ artistAndDate }}
     </div>
   </div>

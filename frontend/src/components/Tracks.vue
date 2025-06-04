@@ -13,7 +13,7 @@ defineProps({
   <div class="rounded-lg bg-black/20 p-4">
     <table class="w-full table-auto text-left">
       <thead>
-        <tr class="text-white/70">
+        <tr class="text-lg text-white/70">
           <th class="w-15 text-center">
             #
           </th>
@@ -25,12 +25,21 @@ defineProps({
             <icon-tabler-clock-hour-3 class="inline" />
           </th>
         </tr>
+        <tr>
+          <td><hr class="border-1 border-white/40 border-solid" /></td>
+          <td><hr class="border-1 border-white/40 border-solid" /></td>
+          <td v-if="showAlbum">
+            <hr class="border-1 border-white/40 border-solid" />
+          </td>
+          <td><hr class="border-1 border-white/40 border-solid" /></td>
+        </tr>
       </thead>
       <tbody>
         <tr
-          v-for="track in tracks"
+          v-for="track, index in tracks"
           :key="track.title"
           class="group transition-colors duration-200 ease-out hover:bg-zene-200/20"
+          :class="{ 'bg-white/02': index % 2 === 0 }"
         >
           <td
             class="w-15 cursor-pointer text-center"

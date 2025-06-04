@@ -13,7 +13,7 @@ function onImageError(event: Event) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="w-30 flex flex-col gap-2">
     <div class="size-30">
       <img
         class="h-full w-full rounded-md object-cover"
