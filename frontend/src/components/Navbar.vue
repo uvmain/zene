@@ -1,18 +1,9 @@
 <script setup lang="ts">
-import { currentlyPlayingTrack } from '../composables/globalState'
-
 const route = useRoute()
-const router = useRouter()
 
 const currentRoute = computed(() => {
   return route.path
 })
-
-function onImageError(event: Event) {
-  const target = event.target as HTMLImageElement
-  target.onerror = null
-  target.src = '/default-square.png'
-}
 </script>
 
 <template>
@@ -75,17 +66,6 @@ function onImageError(event: Event) {
         </RouterLink>
       </nav>
     </div>
-    <div v-if="currentlyPlayingTrack" class="flex flex-col gap-2">
-      <img :src="currentlyPlayingTrack?.image_url" class="w-full cursor-pointer rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.musicbrainz_album_id}`)">
-      <div class="">
-        {{ currentlyPlayingTrack?.title }}
-      </div>
-      <div class="text-sm text-white/80">
-        {{ currentlyPlayingTrack?.artist }}
-      </div>
-      <div class="text-sm text-white/80">
-        {{ currentlyPlayingTrack?.album }}
-      </div>
-    </div>
+    <NavArt />
   </aside>
 </template>

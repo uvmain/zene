@@ -41,7 +41,7 @@ func RunScan() types.ScanResponse {
 		log.Printf("Falling back to lastModified of %v: %v", lastModified, err)
 	}
 
-	err = getFiles(lastModified)
+	files, err := getFiles(lastModified)
 	if err != nil {
 		log.Printf("Error scanning music directory: %v", err)
 		return types.ScanResponse{
@@ -50,7 +50,7 @@ func RunScan() types.ScanResponse {
 		}
 	}
 
-	err = cleanFiles()
+	err = cleanFiles(files)
 	if err != nil {
 		log.Printf("Error cleaning file rows: %v", err)
 		return types.ScanResponse{
@@ -86,8 +86,15 @@ func RunScan() types.ScanResponse {
 	}
 }
 
-func getFiles(lastModified time.Time) error {
+func getFiles(lastModified time.Time) (map[string]struct{}, error) {
 	log.Printf("Scanning directory: %s", config.MusicDir)
+	filesystemFilePaths := make(map[string]struct{})
+
+	dbFileModTimes, err := database.SelectAllFilePathsAndModTimes()
+	if err != nil {
+		log.Printf("Failed to retrieve file modification times from database: %v", err)
+		return filesystemFilePaths, err
+	}
 
 	newModified := lastModified
 	fileCount := 0
@@ -100,30 +107,44 @@ func getFiles(lastModified time.Time) error {
 		if d.IsDir() {
 			return nil
 		}
+		// Add all encountered file paths to the map.
+		filesystemFilePaths[path] = struct{}{}
+
 		info, err := d.Info()
 		if err != nil {
 			log.Printf("Error retrieving file info for %s: %v", path, err)
 			return err
 		}
 
-		modTime := io.GetChangedTime(path)
+		fsModTime := io.GetChangedTime(path)
+		dbModTimeStr, fileExistsInMap := dbFileModTimes[path]
 
-		row, err := database.SelectFileByFilePath(path)
-		if err != nil {
-			log.Printf("Error selecting file by path %s: %v", path, err)
-		}
-		rowExists := false
-		if row.Id != 0 {
-			rowExists = true
+		needsProcessing := false
+		if !fileExistsInMap {
+			needsProcessing = true
+		} else {
+			dbModTime, err := time.Parse(time.RFC3339Nano, dbModTimeStr)
+			if err != nil {
+				// Consider errors in parsing as a need to process, as the stored time is invalid.
+				log.Printf("Error parsing stored modification time for %s: %v. Reprocessing.", path, err)
+				needsProcessing = true
+			} else if fsModTime.After(dbModTime) {
+				needsProcessing = true
+			}
 		}
 
-		if modTime.After(lastModified) || !rowExists {
-			if modTime.After(newModified) {
-				newModified = modTime
+		// Also consider if the file was modified after the last scan time.
+		if fsModTime.After(lastModified) {
+			needsProcessing = true
+		}
+
+		if needsProcessing {
+			if fsModTime.After(newModified) {
+				newModified = fsModTime
 			}
 
 			fileCount += 1
-			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), path, time.Now().Format(time.RFC3339Nano), modTime.Format(time.RFC3339Nano))
+			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), path, time.Now().Format(time.RFC3339Nano), fsModTime.Format(time.RFC3339Nano))
 			if err != nil {
 				log.Printf("Error inserting files row for %s: %v", path, err)
 				return err
@@ -152,20 +173,25 @@ func getFiles(lastModified time.Time) error {
 	if scanError != nil {
 		log.Printf("Error scanning files in music directory: %v", scanError)
 	}
-	return scanError
+	return filesystemFilePaths, scanError
 }
 
-func cleanFiles() error {
+func cleanFiles(filesystemFilePaths map[string]struct{}) error {
 	log.Println("Cleaning orphan files")
-	files, err := database.SelectAllFiles()
+
+	if filesystemFilePaths == nil || len(filesystemFilePaths) == 0 {
+		log.Println("Skipping file cleaning as the list of filesystem paths is empty or nil.")
+		return nil
+	}
+
+	filesFromDB, err := database.SelectAllFiles()
 	if err != nil {
 		return err
 	}
-	for _, file := range files {
-		filePath := filepath.Join(file.DirPath, file.Filename)
-		if !io.FileExists(filePath) {
-			log.Printf("Deleting files row %d for %s", file.Id, filePath)
-			database.DeleteFileById(file.Id)
+	for _, fileFromDB := range filesFromDB {
+		if _, exists := filesystemFilePaths[fileFromDB.FilePath]; !exists {
+			log.Printf("Deleting files row %d for %s (not found on filesystem)", fileFromDB.Id, fileFromDB.FilePath)
+			database.DeleteFileById(fileFromDB.Id)
 		}
 	}
 	return nil

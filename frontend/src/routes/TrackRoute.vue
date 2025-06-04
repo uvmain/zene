@@ -59,18 +59,18 @@ function onImageError(event: Event) {
         <h1 class="mb-2 text-3xl font-bold">
           {{ track.title }}
         </h1>
-        <a
+        <RouterLink
           class="mb-1 cursor-pointer text-xl text-gray-300 no-underline hover:underline hover:underline-white"
-          :href="getArtistUrl(track.musicbrainz_artist_id)"
+          :to="getArtistUrl(track.musicbrainz_artist_id)"
         >
           Artist: {{ track.artist }}
-        </a>
-        <a
+        </RouterLink>
+        <RouterLink
           class="mb-1 cursor-pointer text-lg text-gray-300 no-underline hover:underline hover:underline-white"
-          :href="getAlbumUrl(track.musicbrainz_album_id)"
+          :to="getAlbumUrl(track.musicbrainz_album_id)"
         >
           Album: {{ track.album }}
-        </a>
+        </RouterLink>
         <p class="mb-1 text-gray-300">
           Duration: {{ formatTime(Number.parseFloat(track.duration)) }}
         </p>

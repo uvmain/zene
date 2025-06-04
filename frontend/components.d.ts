@@ -41,6 +41,7 @@ declare module 'vue' {
     IconTablerVinyl: typeof import('~icons/tabler/vinyl')['default']
     Login: typeof import('./src/components/Login.vue')['default']
     LoginModal: typeof import('./src/components/LoginModal.vue')['default']
+    NavArt: typeof import('./src/components/NavArt.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     PlayButton: typeof import('./src/components/PlayButton.vue')['default']
     RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
