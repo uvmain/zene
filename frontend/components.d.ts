@@ -30,8 +30,10 @@ declare module 'vue' {
     IconTablerPlayerSkipForward: typeof import('~icons/tabler/player-skip-forward')['default']
     IconTablerPlayerStop: typeof import('~icons/tabler/player-stop')['default']
     IconTablerPlaylist: typeof import('~icons/tabler/playlist')['default']
+    IconTablerRefresh: typeof import('~icons/tabler/refresh')['default']
     IconTablerRepeat: typeof import('~icons/tabler/repeat')['default']
     IconTablerSearch: typeof import('~icons/tabler/search')['default']
+    IconTablerSettings: typeof import('~icons/tabler/settings')['default']
     IconTablerSun: typeof import('~icons/tabler/sun')['default']
     IconTablerTags: typeof import('~icons/tabler/tags')['default']
     IconTablerUser: typeof import('~icons/tabler/user')['default']
@@ -45,6 +47,7 @@ declare module 'vue' {
     RecentlyUpdatedArtists: typeof import('./src/components/RecentlyUpdatedArtists.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SettingsDropDown: typeof import('./src/components/SettingsDropDown.vue')['default']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']
   }

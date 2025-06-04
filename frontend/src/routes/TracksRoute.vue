@@ -8,7 +8,7 @@ const error = ref<string | null>(null)
 
 onMounted(async () => {
   try {
-    const response = await backendFetchRequest('tracks')
+    const response = await backendFetchRequest('tracks?random=true&limit=100')
     const json = await response.json()
     tracks.value = json as TrackMetadataWithImageUrl[]
   }

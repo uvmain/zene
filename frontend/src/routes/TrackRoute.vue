@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '../types'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
-import { formatTime } from '../composables/logic'
+import { formatTime, getAlbumUrl, getArtistUrl } from '../composables/logic'
 
 const route = useRoute()
 const track = ref<TrackMetadataWithImageUrl | null>(null)
@@ -55,16 +55,22 @@ function onImageError(event: Event) {
     </div>
     <div v-if="track && !loading && !error" class="flex flex-col gap-8 md:flex-row">
       <img v-if="track.image_url" :src="track.image_url" alt="Album Art" class="h-auto max-w-30vw w-full rounded-lg shadow-lg" @error="onImageError">
-      <div class="md:w-2/3">
+      <div class="flex flex-col md:w-2/3">
         <h1 class="mb-2 text-3xl font-bold">
           {{ track.title }}
         </h1>
-        <p class="mb-1 text-xl text-gray-300">
+        <a
+          class="mb-1 cursor-pointer text-xl text-gray-300 no-underline hover:underline hover:underline-white"
+          :href="getArtistUrl(track.musicbrainz_artist_id)"
+        >
           Artist: {{ track.artist }}
-        </p>
-        <p class="mb-1 text-lg text-gray-300">
+        </a>
+        <a
+          class="mb-1 cursor-pointer text-lg text-gray-300 no-underline hover:underline hover:underline-white"
+          :href="getAlbumUrl(track.musicbrainz_album_id)"
+        >
           Album: {{ track.album }}
-        </p>
+        </a>
         <p class="mb-1 text-gray-300">
           Duration: {{ formatTime(Number.parseFloat(track.duration)) }}
         </p>

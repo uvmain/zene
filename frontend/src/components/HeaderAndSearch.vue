@@ -120,6 +120,7 @@ async function getArtists() {
           <icon-tabler-sun v-if="isDark" class="text-2xl" />
           <icon-tabler-moon-stars v-else class="text-2xl" />
         </div>
+        <SettingsDropDown />
         <div class="hover:cursor-pointer">
           <icon-tabler-user class="text-2xl" />
         </div>
@@ -151,7 +152,7 @@ async function getArtists() {
         <h4>
           Albums: {{ searchResultsAlbums.length }}
         </h4>
-        <div class="flex flex-nowrap gap-6">
+        <div class="flex flex-nowrap gap-6 overflow-hidden">
           <div
             v-for="album in searchResultsAlbums"
             :key="album.album"
@@ -163,7 +164,7 @@ async function getArtists() {
         <h4>
           Artists: {{ searchResultsArtists.length }}
         </h4>
-        <div class="flex flex-wrap gap-6">
+        <div class="flex flex-wrap gap-6 overflow-hidden">
           <div
             v-for="artist in searchResultsArtists"
             :key="artist.artist"
@@ -175,7 +176,7 @@ async function getArtists() {
         <h4>
           Genres: {{ searchResultsGenres.length }}
         </h4>
-        <div v-if="searchResultsGenres.length > 0" class="flex flex-wrap gap-2">
+        <div v-if="searchResultsGenres.length > 0" class="flex flex-wrap gap-2 overflow-hidden">
           <GenreBottle v-for="genre in searchResultsGenres" :key="genre" :genre="genre.genre" />
         </div>
       </div>

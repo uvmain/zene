@@ -23,13 +23,6 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="mb-2 text-lg font-semibold">
-      Recently Added Albums
-    </h2>
-    <div class="flex flex-wrap gap-6">
-      <div v-for="album in recentlyAddedAlbums" :key="album.album" class="w-30 flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-        <Album :album="album" size="lg" />
-      </div>
-    </div>
+    <RecentlyAddedAlbums :limit="100" />
   </div>
 </template>

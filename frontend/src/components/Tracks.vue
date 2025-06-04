@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import { formatTime, getArtistUrl } from '../composables/logic'
+import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
 import { play } from '../composables/play'
 
 defineProps({
@@ -48,10 +48,13 @@ defineProps({
             <span class="group-hover:hidden">{{ track.track_number }}</span>
             <icon-tabler-player-play-filled class="hidden text-xl group-hover:inline" />
           </td>
-          <td>
-            <div class="text-lg">
+          <td class="flex flex-col">
+            <a
+              class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
+              :href="getTrackUrl(track.musicbrainz_track_id)"
+            >
               {{ track.title }}
-            </div>
+            </a>
             <a
               class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
               :href="getArtistUrl(track.musicbrainz_artist_id)"
@@ -60,7 +63,12 @@ defineProps({
             </a>
           </td>
           <td v-if="showAlbum">
-            {{ track.album }}
+            <a
+              class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
+              :href="getAlbumUrl(track.musicbrainz_album_id)"
+            >
+              {{ track.album }}
+            </a>
           </td>
           <td class="w-15 text-center">
             {{ formatTime(Number.parseInt(track.duration)) }}

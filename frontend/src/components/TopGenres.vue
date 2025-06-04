@@ -6,7 +6,7 @@ const topGenres = ref<any[]>([])
 async function getGenres() {
   const response = await backendFetchRequest('genres')
   const json = await response.json()
-  topGenres.value = json.slice(0, 12)
+  topGenres.value = json.slice(0, 30)
 }
 
 onBeforeMount(async () => {
