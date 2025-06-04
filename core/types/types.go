@@ -51,3 +51,7 @@ type ArtistArtRow struct {
 	DateAdded           string `json:"date_added"`
 	DateModified        string `json:"date_modified"`
 }
+
+type SessionCheck struct {
+	LoggedIn bool `json:"loggedIn"`
+}
