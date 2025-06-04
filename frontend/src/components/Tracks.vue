@@ -49,26 +49,26 @@ defineProps({
             <icon-tabler-player-play-filled class="hidden text-xl group-hover:inline" />
           </td>
           <td class="flex flex-col">
-            <a
+            <RouterLink
               class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
-              :href="getTrackUrl(track.musicbrainz_track_id)"
+              :to="getTrackUrl(track.musicbrainz_track_id)"
             >
               {{ track.title }}
-            </a>
-            <a
+            </RouterLink>
+            <RouterLink
               class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
-              :href="getArtistUrl(track.musicbrainz_artist_id)"
+              :to="getArtistUrl(track.musicbrainz_artist_id)"
             >
               {{ track.artist }}
-            </a>
+            </RouterLink>
           </td>
           <td v-if="showAlbum">
-            <a
+            <RouterLink
               class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
-              :href="getAlbumUrl(track.musicbrainz_album_id)"
+              :to="getAlbumUrl(track.musicbrainz_album_id)"
             >
               {{ track.album }}
-            </a>
+            </RouterLink>
           </td>
           <td class="w-15 text-center">
             {{ formatTime(Number.parseInt(track.duration)) }}

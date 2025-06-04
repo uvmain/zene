@@ -176,7 +176,7 @@ onUnmounted(() => {
     <div
       class="mb-8 h-full w-full flex flex-grow flex-col items-center justify-center bg-zene-700/50 backdrop-blur-xl backdrop-contrast-50 space-y-2"
     >
-      <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
+      <audio v-if="trackUrl" ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
       <div class="">
         <!-- Progress Bar -->
         <div v-if="audioRef" class="max-w-200 flex flex-row items-center gap-2">

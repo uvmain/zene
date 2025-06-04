@@ -197,3 +197,34 @@ func InsertIntoFiles(dirPath string, fileName string, filePath string, dateAdded
 	rowId := int(conn.LastInsertRowID())
 	return rowId, nil
 }
+
+func SelectAllFilePathsAndModTimes() (map[string]string, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	ctx := context.Background()
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Println("failed to take a db conn from the pool")
+		return nil, err
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT file_path, date_modified FROM files;`)
+	defer stmt.Finalize()
+
+	fileModTimes := make(map[string]string)
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return nil, err
+		} else if !hasRow {
+			break
+		} else {
+			filePath := stmt.GetText("file_path")
+			dateModified := stmt.GetText("date_modified")
+			fileModTimes[filePath] = dateModified
+		}
+	}
+	return fileModTimes, nil
+}
