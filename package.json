@@ -4,10 +4,10 @@
   "description": "Self Hosted Music Server",
   "main": "index.js",
   "workspaces": [
-    "frontend"
+    "./frontend"
   ],
   "scripts": {
-    "postinstall": "go mod download && npm run create-cert",
+    "setup": "go mod download && npm run create-cert",
     "clean": "rimraf -v -I zene zene.exe frontend/dist",
     "clean:full": "rimraf -v -I zene zene.exe data frontend/dist frontend/node_modules node_modules zene.localhost.pem zene.localhost-key.pem",
     "dev:backend": "go run .",

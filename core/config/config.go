@@ -26,7 +26,7 @@ func LoadConfig() {
 
 	musicDir := os.Getenv("MUSIC_DIR")
 	if musicDir == "" {
-		musicDir = "./data/music"
+		musicDir = "./music"
 	}
 	MusicDir, _ = filepath.Abs(musicDir)
 	log.Printf("Using music directory: %s", MusicDir)
@@ -44,7 +44,7 @@ func LoadConfig() {
 
 	ffmpegPath := os.Getenv("FFMPEG_PATH")
 	if ffmpegPath == "" {
-		FfmpegPath = "ffmpeg"
+		FfmpegPath = "./bin/ffmpeg"
 	} else {
 		FfmpegPath, _ = filepath.Abs(ffmpegPath)
 	}
@@ -59,7 +59,7 @@ func LoadConfig() {
 
 	ffprobePath := os.Getenv("FFPROBE_PATH")
 	if ffprobePath == "" {
-		FfprobePath = "ffprobe"
+		FfprobePath = "./bin/ffprobe"
 	} else {
 		FfprobePath, _ = filepath.Abs(ffprobePath)
 	}
@@ -79,7 +79,6 @@ func LoadConfig() {
 		}
 	} else {
 		AudioFileTypes = strings.Split(audioFileTypesEnv, ",")
-		// Trim whitespace from each element (optional but recommended)
 		for i, ext := range AudioFileTypes {
 			AudioFileTypes[i] = strings.TrimSpace(ext)
 		}

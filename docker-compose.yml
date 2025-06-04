@@ -1,0 +1,11 @@
+services:
+  zene:
+    image: zene:latest
+    container_name: zene
+    env_file:
+      - .env
+    volumes:
+      - /mnt/main/docker/zene:/data
+      - /mnt/main/barra5/Music:/music:ro
+    ports:
+      - 3020:8080
