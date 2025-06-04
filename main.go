@@ -2,6 +2,7 @@ package main
 
 import (
 	"zene/core/art"
+	"zene/core/auth"
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/net"
@@ -41,23 +42,28 @@ func StartServer() {
 	}
 	router.Handle("GET /", http.FileServer(http.FS(dist)))
 
-	router.HandleFunc("GET /api/files", net.HandleGetFiles)                                       // returns []types.FilesRow
-	router.HandleFunc("GET /api/files/{fileId}", net.HandleGetFile)                               // returns types.FilesRow
-	router.HandleFunc("GET /api/files/{fileId}/download", net.HandleDownloadFile)                 // returns blob
-	router.HandleFunc("GET /api/files/{fileId}/stream", net.HandleStreamFile)                     // returns blob
-	router.HandleFunc("GET /api/artists", net.HandleGetArtists)                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
-	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}", net.HandleGetArtist)              // returns types.ArtistResponse
-	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/tracks", net.HandleGetArtistTracks) // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10, offset=10
-	router.HandleFunc("GET /api/artists/{musicBrainzArtistId}/art", net.HandleGetArtistArt)       // returns image/jpeg blob
-	router.HandleFunc("GET /api/albums", net.HandleGetAlbums)                                     // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}", net.HandleGetAlbum)                 // returns types.AlbumsResponse
-	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/art", net.HandleGetAlbumArt)          // returns image/jpeg blob
-	router.HandleFunc("GET /api/albums/{musicBrainzAlbumId}/tracks", net.HandleGetAlbumTracks)    // returns []types.TrackMetadata
-	router.HandleFunc("GET /api/tracks", net.HandleGetTracks)                                     // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10
-	router.HandleFunc("GET /api/tracks/{musicBrainzTrackId}", net.HandleGetTrack)                 // returns types.TrackMetadata
-	router.HandleFunc("GET /api/genres", net.HandleGetGenres)                                     // query params: search=searchTerm
-	router.HandleFunc("POST /api/scan", net.HandlePostScan)                                       //
-	router.HandleFunc("GET /api/search", net.HandleSearchMetadata)                                // query params: search=searchTerm
+	//auth
+	router.HandleFunc("POST /api/login", auth.LoginHandler)
+	router.HandleFunc("GET /api/logout", auth.LogoutHandler)
+	router.HandleFunc("GET /api/check-session", auth.CheckSessionHandler)
+
+	router.Handle("GET /api/files", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetFiles)))                                       // returns []types.FilesRow
+	router.Handle("GET /api/files/{fileId}", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetFile)))                               // returns types.FilesRow
+	router.Handle("GET /api/files/{fileId}/download", auth.AuthMiddleware(http.HandlerFunc(net.HandleDownloadFile)))                 // returns blob
+	router.Handle("GET /api/files/{fileId}/stream", auth.AuthMiddleware(http.HandlerFunc(net.HandleStreamFile)))                     // returns blob
+	router.Handle("GET /api/artists", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtists)))                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
+	router.Handle("GET /api/artists/{musicBrainzArtistId}", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtist)))              // returns types.ArtistResponse
+	router.Handle("GET /api/artists/{musicBrainzArtistId}/tracks", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtistTracks))) // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10, offset=10
+	router.Handle("GET /api/artists/{musicBrainzArtistId}/art", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtistArt)))       // returns image/jpeg blob
+	router.Handle("GET /api/albums", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetAlbums)))                                     // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
+	router.Handle("GET /api/albums/{musicBrainzAlbumId}", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetAlbum)))                 // returns types.AlbumsResponse
+	router.Handle("GET /api/albums/{musicBrainzAlbumId}/art", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetAlbumArt)))          // returns image/jpeg blob
+	router.Handle("GET /api/albums/{musicBrainzAlbumId}/tracks", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetAlbumTracks)))    // returns []types.TrackMetadata
+	router.Handle("GET /api/tracks", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetTracks)))                                     // returns []types.TrackMetadata; query params: recent=true, random=false, limit=10
+	router.Handle("GET /api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetTrack)))                 // returns types.TrackMetadata
+	router.Handle("GET /api/genres", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetGenres)))                                     // query params: search=searchTerm
+	router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(net.HandlePostScan)))                                       //
+	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(net.HandleSearchMetadata)))                                // query params: search=searchTerm
 
 	handler := cors.AllowAll().Handler(router)
 

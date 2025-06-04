@@ -25,6 +25,8 @@ func Initialise() {
 	createAlbumArtTable()
 	createArtistArtTable()
 	createFts()
+	CreateSessionsTable()
+	StartSessionCleanupRoutine()
 }
 
 func openDatabase() {

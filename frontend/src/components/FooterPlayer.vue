@@ -171,6 +171,7 @@ onUnmounted(() => {
   <footer
     class="sticky bottom-0 mt-auto w-full bg-zene-700 bg-cover bg-center"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
+    :class="{ 'animate-pulse-bg': currentlyPlayingTrack && isPlaying }"
   >
     <div
       class="mb-8 h-full w-full flex flex-grow flex-col items-center justify-center bg-zene-700/50 backdrop-blur-xl backdrop-contrast-50 space-y-2"
@@ -232,3 +233,21 @@ onUnmounted(() => {
     </div>
   </footer>
 </template>
+
+<style scoped>
+@keyframes pulse-bg {
+  0% {
+    background-position: top;
+  }
+  50% {
+    background-position: bottom;
+  }
+  100% {
+    background-position: top;
+  }
+}
+
+.animate-pulse-bg {
+  animation: pulse-bg 60s infinite ease-in-out;
+}
+</style>
