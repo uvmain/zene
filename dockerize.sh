@@ -1,0 +1,1 @@
+git pull && docker build -t zene:latest . && docker compose up -d
