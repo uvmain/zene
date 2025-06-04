@@ -1,3 +1,3 @@
 package globals
 
-var Syncing bool
+var IsScanning bool

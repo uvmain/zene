@@ -37,7 +37,14 @@ func GetChangedTime(path string) time.Time {
 	}
 
 	modTime := t.ModTime()
-	changeTime := t.ChangeTime()
+	var changeTime time.Time
+
+	if t.HasChangeTime() {
+		changeTime = t.ChangeTime()
+	} else {
+		changeTime = t.ModTime()
+	}
+
 	if changeTime.After(modTime) {
 		modTime = changeTime
 	}
