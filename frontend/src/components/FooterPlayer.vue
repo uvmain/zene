@@ -8,9 +8,10 @@ const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
 const currentTime = ref(0)
 const isPlayPauseActive = ref(false)
+const debug = ref()
 
 const trackUrl = computed<string>(() => {
-  return currentlyPlayingTrack.value ? `/api/files/${currentlyPlayingTrack.value.file_id}/stream` : ''
+  return currentlyPlayingTrack.value?.file_id ? `/api/files/${currentlyPlayingTrack.value.file_id}/stream` : ''
 })
 
 function togglePlayback() {
@@ -52,8 +53,11 @@ function updateIsPlaying() {
 }
 
 function updateProgress() {
-  if (!audioRef.value)
+  if (!audioRef.value) {
+    debug.value = 'no audioref'
     return
+  }
+  debug.value = `updating currentTime to ${currentTime.value}`
   currentTime.value = audioRef.value.currentTime
 }
 
@@ -176,7 +180,7 @@ onUnmounted(() => {
     <div
       class="mb-8 h-full w-full flex flex-grow flex-col items-center justify-center bg-zene-700/50 backdrop-blur-xl backdrop-contrast-50 space-y-2"
     >
-      <audio v-if="trackUrl" ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
+      <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
       <div class="">
         <!-- Progress Bar -->
         <div v-if="audioRef" class="max-w-200 flex flex-row items-center gap-2">

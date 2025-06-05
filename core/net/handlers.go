@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"zene/core/art"
@@ -63,31 +62,6 @@ func HandleDownloadFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(fileBlob)
-}
-
-func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
-	fileId := r.PathValue("fileId")
-	file, err := database.SelectFileByFileId(fileId)
-
-	if err != nil {
-		http.Error(w, "File not found", http.StatusNotFound)
-		return
-	}
-
-	f, err := os.Open(file.FilePath)
-	if err != nil {
-		http.Error(w, "file not found", http.StatusNotFound)
-		return
-	}
-	defer f.Close()
-
-	fi, err := f.Stat()
-	if err != nil {
-		http.Error(w, "file stat error", http.StatusInternalServerError)
-		return
-	}
-
-	http.ServeContent(w, r, fi.Name(), fi.ModTime(), f)
 }
 
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
