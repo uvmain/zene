@@ -9,6 +9,7 @@
   "scripts": {
     "setup": "go mod download && npm run create-cert",
     "clean": "rimraf -v -I zene zene.exe frontend/dist",
+    "clean:build": "rimraf -v -I zene zene.exe frontend/dist",
     "clean:full": "rimraf -v -I zene zene.exe data frontend/dist frontend/node_modules node_modules zene.localhost.pem zene.localhost-key.pem",
     "dev:backend": "go run .",
     "dev:frontend": "npm run dev --workspace frontend",
@@ -40,6 +41,7 @@
     "cross-env": "^7.0.3",
     "ffmpeg-baron": "^1.0.1",
     "ffprobe-baron": "^1.0.0",
-    "node-mkcert-binary": "^2.1.9"
+    "node-mkcert-binary": "^2.1.9",
+    "rimraf": "^6.0.1"
   }
 }

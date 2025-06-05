@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"zene/core/art"
 	"zene/core/auth"
 	"zene/core/config"
@@ -35,12 +36,34 @@ var dist embed.FS
 func StartServer() {
 	router := http.NewServeMux()
 
-	dist, err := fs.Sub(dist, "frontend/dist")
+	distFS, err := fs.Sub(dist, "frontend/dist")
 	if err != nil {
-		log.Fatalf("sub error")
-		return
+		log.Fatalf("Failed to get dist subdirectory: %v", err)
 	}
-	router.Handle("GET /", http.FileServer(http.FS(dist)))
+
+	fileServer := http.FileServer(http.FS(distFS))
+
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		f, err := distFS.Open(r.URL.Path)
+		if err == nil {
+			f.Close()
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+
+		indexHTML, err := distFS.Open("index.html")
+		if err != nil {
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer indexHTML.Close()
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		if _, err := io.Copy(w, indexHTML); err != nil {
+			log.Printf("Error serving index.html: %v", err)
+		}
+	})
 
 	//auth
 	router.HandleFunc("POST /api/login", auth.LoginHandler)
