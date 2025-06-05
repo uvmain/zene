@@ -1,5 +1,25 @@
 <script setup lang="ts">
-import { checkIfLoggedIn, login } from '../composables/auth'
+import type { SessionCheck } from '../types/auth'
+import { checkIfLoggedIn, userLoginState } from '../composables/auth'
+import { backendFetchRequest } from '../composables/fetchFromBackend'
+
+const router = useRouter()
+
+async function login(username: string, password: string) {
+  const formData = new FormData()
+  formData.append('username', username)
+  formData.append('password', password)
+
+  const response = await backendFetchRequest('login', {
+    body: formData,
+    method: 'POST',
+  })
+  const jsonData = await response.json() as SessionCheck
+  userLoginState.value = jsonData.loggedIn
+  if (jsonData.loggedIn === true) {
+    router.push('/')
+  }
+}
 
 const username = ref('')
 const password = ref('')

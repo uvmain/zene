@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { useSessionStorage } from '@vueuse/core'
-
-const userLoginState = useSessionStorage('untrustedLoginState', false)
+import { userLoginState } from './composables/auth'
 </script>
 
 <template>

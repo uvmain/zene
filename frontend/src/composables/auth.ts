@@ -2,7 +2,7 @@ import type { SessionCheck } from '../types/auth'
 import { useSessionStorage } from '@vueuse/core'
 import { backendFetchRequest } from './fetchFromBackend'
 
-const userLoginState = useSessionStorage('untrustedLoginState', false)
+export const userLoginState = useSessionStorage('untrustedLoginState', false)
 
 export async function checkIfLoggedIn(): Promise<boolean> {
   try {
@@ -18,19 +18,6 @@ export async function checkIfLoggedIn(): Promise<boolean> {
     userLoginState.value = false
     return false
   }
-}
-
-export async function login(username: string, password: string) {
-  const formData = new FormData()
-  formData.append('username', username)
-  formData.append('password', password)
-
-  const response = await backendFetchRequest('login', {
-    body: formData,
-    method: 'POST',
-  })
-  const jsonData = await response.json() as SessionCheck
-  userLoginState.value = jsonData.loggedIn
 }
 
 export async function logout() {

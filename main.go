@@ -2,6 +2,8 @@ package main
 
 import (
 	"io"
+	"path"
+	"strings"
 	"zene/core/art"
 	"zene/core/auth"
 	"zene/core/config"
@@ -32,44 +34,25 @@ func main() {
 
 //go:embed all:frontend/dist
 var dist embed.FS
+var distSubFS fs.FS
+var err error
 
 func StartServer() {
 	router := http.NewServeMux()
 
-	distFS, err := fs.Sub(dist, "frontend/dist")
+	distSubFS, err = fs.Sub(dist, "frontend/dist")
 	if err != nil {
-		log.Fatalf("Failed to get dist subdirectory: %v", err)
+		log.Fatal("Failed to create sub filesystem:", err)
 	}
 
-	fileServer := http.FileServer(http.FS(distFS))
-
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		f, err := distFS.Open(r.URL.Path)
-		if err == nil {
-			f.Close()
-			fileServer.ServeHTTP(w, r)
-			return
-		}
-
-		indexHTML, err := distFS.Open("index.html")
-		if err != nil {
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		defer indexHTML.Close()
-
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-		if _, err := io.Copy(w, indexHTML); err != nil {
-			log.Printf("Error serving index.html: %v", err)
-		}
-	})
+	router.HandleFunc("/", HandleFrontend)
 
 	//auth
 	router.HandleFunc("POST /api/login", auth.LoginHandler)
 	router.HandleFunc("GET /api/logout", auth.LogoutHandler)
 	router.HandleFunc("GET /api/check-session", auth.CheckSessionHandler)
 
+	//protected routes
 	router.Handle("GET /api/files", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetFiles)))                                       // returns []types.FilesRow
 	router.Handle("GET /api/files/{fileId}", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetFile)))                               // returns types.FilesRow
 	router.Handle("GET /api/files/{fileId}/download", auth.AuthMiddleware(http.HandlerFunc(net.HandleDownloadFile)))                 // returns blob
@@ -100,4 +83,33 @@ func StartServer() {
 	}
 
 	http.ListenAndServe(serverAddress, handler)
+}
+
+func HandleFrontend(w http.ResponseWriter, r *http.Request) {
+	cleanPath := path.Clean(r.URL.Path)
+	if cleanPath == "/" {
+		cleanPath = "/index.html"
+	} else {
+		cleanPath = strings.TrimPrefix(cleanPath, "/")
+	}
+
+	file, err := distSubFS.Open(cleanPath)
+	if err == nil {
+		file.Close()
+		http.FileServer(http.FS(distSubFS)).ServeHTTP(w, r)
+		return
+	}
+
+	indexFile, err := distSubFS.Open("index.html")
+	if err != nil {
+		http.Error(w, "index.html not found", http.StatusNotFound)
+		return
+	}
+	defer indexFile.Close()
+
+	if stat, err := indexFile.Stat(); err == nil {
+		http.ServeContent(w, r, "index.html", stat.ModTime(), indexFile.(io.ReadSeeker))
+	} else {
+		http.Error(w, "Failed to serve index.html", http.StatusInternalServerError)
+	}
 }

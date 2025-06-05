@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onClickOutside, useSessionStorage } from '@vueuse/core'
+import { onClickOutside } from '@vueuse/core'
+import { userLoginState } from '../composables/auth'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 defineProps({
@@ -12,7 +13,6 @@ const username = ref('')
 const password = ref('')
 const isLoggedIn = ref(false)
 const target = ref(null)
-const userLoginState = useSessionStorage('login-state', isLoggedIn.value)
 
 async function login() {
   const formData = new FormData()
