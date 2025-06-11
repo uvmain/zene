@@ -17,26 +17,26 @@ import (
 
 func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
 	fileId := r.PathValue("fileId")
-	file, err := database.SelectFileByFileId(r.Context(), fileId)
+	filesRow, err := database.SelectFileByFileId(r.Context(), fileId)
 
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)
 		return
 	}
 
-	f, err := os.Open(file.FilePath)
+	file, err := os.Open(filesRow.FilePath)
 	if err != nil {
 		http.Error(w, "file not found", http.StatusNotFound)
 		return
 	}
-	defer f.Close()
+	defer file.Close()
 
 	if err := logic.CheckContext(r.Context()); err != nil {
 		http.Error(w, "context error", http.StatusInternalServerError)
 		return
 	}
 
-	fi, err := f.Stat()
+	fileInfo, err := file.Stat()
 	if err != nil {
 		http.Error(w, "file stat error", http.StatusInternalServerError)
 		return
@@ -56,30 +56,30 @@ func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		startStr := rangeParts[0]
-		endStr := rangeParts[1]
+		byteRangeStart := rangeParts[0]
+		byteRangeEnd := rangeParts[1]
 
-		start, err := strconv.ParseInt(startStr, 10, 64)
-		if err != nil && startStr != "" { // startStr can be empty for "bytes=-N"
+		start, err := strconv.ParseInt(byteRangeStart, 10, 64)
+		if err != nil && byteRangeStart != "" {
 			http.Error(w, "Invalid start range", http.StatusBadRequest)
 			return
 		}
 
-		fileSize := fi.Size()
+		fileSize := fileInfo.Size()
 		var end int64
 
-		if endStr == "" { // "bytes=N-"
+		if byteRangeEnd == "" {
 			end = fileSize - 1
 		} else {
-			end, err = strconv.ParseInt(endStr, 10, 64)
+			end, err = strconv.ParseInt(byteRangeEnd, 10, 64)
 			if err != nil {
 				http.Error(w, "Invalid end range", http.StatusBadRequest)
 				return
 			}
 		}
 
-		if startStr == "" { // "bytes=-N", means last N bytes
-			if end <= 0 || end > fileSize { // end here is N from "bytes=-N"
+		if byteRangeStart == "" {
+			if end <= 0 || end > fileSize {
 				http.Error(w, "Invalid suffix range", http.StatusBadRequest)
 				return
 			}
@@ -92,7 +92,7 @@ func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		_, err = f.Seek(start, io.SeekStart)
+		_, err = file.Seek(start, io.SeekStart)
 		if err != nil {
 			http.Error(w, "Failed to seek file", http.StatusInternalServerError)
 			return
@@ -102,19 +102,19 @@ func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
 		w.Header().Set("Content-Length", strconv.FormatInt(contentLength, 10))
 		w.Header().Set("Accept-Ranges", "bytes")
-		contentType := mime.TypeByExtension(filepath.Ext(file.FilePath))
+		contentType := mime.TypeByExtension(filepath.Ext(filesRow.FilePath))
 		if contentType == "" {
 			contentType = "application/octet-stream"
 		}
 		w.Header().Set("Content-Type", contentType)
 
 		w.WriteHeader(http.StatusPartialContent)
-		_, err = io.CopyN(w, f, contentLength)
+		_, err = io.CopyN(w, file, contentLength)
 		if err != nil {
 			log.Printf("Error copying range to response: %v", err)
 			return
 		}
 	} else {
-		http.ServeContent(w, r, fi.Name(), fi.ModTime(), f)
+		http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), file)
 	}
 }
