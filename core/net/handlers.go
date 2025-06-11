@@ -13,7 +13,7 @@ import (
 )
 
 func HandleGetFiles(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.SelectAllFiles()
+	rows, err := database.SelectAllFiles(r.Context())
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -34,7 +34,7 @@ func HandleGetFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	row, err := database.SelectFileByFileId(fileId)
+	row, err := database.SelectFileByFileId(r.Context(), fileId)
 
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
@@ -51,7 +51,7 @@ func HandleGetFile(w http.ResponseWriter, r *http.Request) {
 
 func HandleDownloadFile(w http.ResponseWriter, r *http.Request) {
 	fileId := r.PathValue("fileId")
-	fileBlob, err := database.GetFileBlob(fileId)
+	fileBlob, err := database.GetFileBlob(r.Context(), fileId)
 
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)
@@ -87,7 +87,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rows, err := database.SelectAlbumArtists(searchParam, randomParam, limitParam, offsetParam, recentParam)
+	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, limitParam, offsetParam, recentParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -106,7 +106,7 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	var row types.ArtistResponse
 	var err error
 
-	row, err = database.SelectArtistByMusicBrainzArtistId(musicBrainzArtistId)
+	row, err = database.SelectArtistByMusicBrainzArtistId(r.Context(), musicBrainzArtistId)
 
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
@@ -128,7 +128,7 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 	offsetParam := r.URL.Query().Get("offset")
 	recentParam := r.URL.Query().Get("recent")
 
-	rows, err := database.SelectTracksByArtistId(musicBrainzArtistId, randomParam, limitParam, offsetParam, recentParam)
+	rows, err := database.SelectTracksByArtistId(r.Context(), musicBrainzArtistId, randomParam, limitParam, offsetParam, recentParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -144,7 +144,7 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	imageBlob, err := art.GetArtForArtist(musicBrainzArtistId)
+	imageBlob, err := art.GetArtForArtist(r.Context(), musicBrainzArtistId)
 
 	if err != nil {
 		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
@@ -162,7 +162,7 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 	limitParam := r.URL.Query().Get("limit")
 	recentParam := r.URL.Query().Get("recent")
 
-	rows, err := database.SelectAllAlbums(randomParam, limitParam, recentParam)
+	rows, err := database.SelectAllAlbums(r.Context(), randomParam, limitParam, recentParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -179,7 +179,7 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
 
-	rows, err := database.SelectAlbum(musicBrainzAlbumId)
+	rows, err := database.SelectAlbum(r.Context(), musicBrainzAlbumId)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -196,7 +196,7 @@ func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
 	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
 
-	rows, err := database.SelectTracksByAlbumID(musicBrainzAlbumId)
+	rows, err := database.SelectTracksByAlbumID(r.Context(), musicBrainzAlbumId)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -212,7 +212,7 @@ func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 	searchParam := r.URL.Query().Get("search")
-	rows, err := database.SelectDistinctGenres(searchParam)
+	rows, err := database.SelectDistinctGenres(r.Context(), searchParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -231,7 +231,7 @@ func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 	limitParam := r.URL.Query().Get("limit")
 	recentParam := r.URL.Query().Get("recent")
 
-	rows, err := database.SelectAllTracks(randomParam, limitParam, recentParam)
+	rows, err := database.SelectAllTracks(r.Context(), randomParam, limitParam, recentParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -248,7 +248,7 @@ func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
 
-	row, err := database.SelectTrack(musicBrainzTrackId)
+	row, err := database.SelectTrack(r.Context(), musicBrainzTrackId)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -263,7 +263,7 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandlePostScan(w http.ResponseWriter, r *http.Request) {
-	scanResult := scanner.RunScan()
+	scanResult := scanner.RunScan(r.Context())
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
 		log.Println("Error encoding database response:", err)
@@ -274,7 +274,7 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("search")
 
-	rows, err := database.SearchMetadata(searchQuery)
+	rows, err := database.SearchMetadata(r.Context(), searchQuery)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)

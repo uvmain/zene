@@ -12,11 +12,12 @@ import (
 	"strings"
 
 	"zene/core/database"
+	"zene/core/logic"
 )
 
 func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
 	fileId := r.PathValue("fileId")
-	file, err := database.SelectFileByFileId(fileId)
+	file, err := database.SelectFileByFileId(r.Context(), fileId)
 
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)
@@ -29,6 +30,11 @@ func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer f.Close()
+
+	if err := logic.CheckContext(r.Context()); err != nil {
+		http.Error(w, "context error", http.StatusInternalServerError)
+		return
+	}
 
 	fi, err := f.Stat()
 	if err != nil {

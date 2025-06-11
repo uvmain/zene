@@ -3,38 +3,39 @@ package database
 import (
 	"context"
 	"log"
+	"zene/core/logic"
 
 	"zombiezen.com/go/sqlite/sqlitex"
 )
 
-func createFts() {
-	createFtsMetadataTable()
-	createFtsMetadataTriggers()
-	insertFtsMetadataData()
-	createFtsArtistsTable()
-	createFtsArtistsTriggers()
-	insertFtsArtistsData()
+func createFts(ctx context.Context) {
+	createFtsMetadataTable(ctx)
+	createFtsMetadataTriggers(ctx)
+	insertFtsMetadataData(ctx)
+	createFtsArtistsTable(ctx)
+	createFtsArtistsTriggers(ctx)
+	insertFtsArtistsData(ctx)
 }
 
-func createFtsMetadataTable() {
+func createFtsMetadataTable(ctx context.Context) {
 	tableName := "track_metadata_fts"
 	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS track_metadata_fts USING fts5(file_id, filename, title, artist, album, album_artist, genre, release_date, label, tokenize="trigram remove_diacritics 1");`
-	createTable(tableName, schema)
+	createTable(ctx, tableName, schema)
 }
 
-func createFtsMetadataTriggers() {
-	createTriggerIfNotExists("after_insert_fts", `CREATE TRIGGER after_insert_fts AFTER INSERT ON track_metadata
+func createFtsMetadataTriggers(ctx context.Context) {
+	createTriggerIfNotExists(ctx, "after_insert_fts", `CREATE TRIGGER after_insert_fts AFTER INSERT ON track_metadata
         BEGIN
             INSERT INTO track_metadata_fts (file_id, filename, title, artist, album, album_artist, genre, release_date, label)
             VALUES (new.file_id, new.filename, new.title, new.artist, new.album, new.album_artist, new.genre, new.release_date, new.label);
         END;`)
 
-	createTriggerIfNotExists("after_delete_fts", `CREATE TRIGGER after_delete_fts AFTER DELETE ON track_metadata
+	createTriggerIfNotExists(ctx, "after_delete_fts", `CREATE TRIGGER after_delete_fts AFTER DELETE ON track_metadata
     BEGIN
         DELETE FROM track_metadata_fts WHERE file_id = old.file_id;
     END;`)
 
-	createTriggerIfNotExists("after_update_fts", `CREATE TRIGGER after_update_fts AFTER UPDATE ON track_metadata
+	createTriggerIfNotExists(ctx, "after_update_fts", `CREATE TRIGGER after_update_fts AFTER UPDATE ON track_metadata
     BEGIN
         UPDATE track_metadata_fts SET
 						file_id = new.file_id,
@@ -50,7 +51,7 @@ func createFtsMetadataTriggers() {
     END;`)
 }
 
-func insertFtsMetadataData() {
+func insertFtsMetadataData(ctx context.Context) {
 	const query = `
 		INSERT INTO track_metadata_fts (
 			file_id, filename, title, artist, album, album_artist, genre, release_date, label
@@ -59,7 +60,9 @@ func insertFtsMetadataData() {
 			file_id, filename, title, artist, album, album_artist, genre, release_date, label 
 		FROM track_metadata;`
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
 	conn, err := DbPool.Take(ctx)
 	defer DbPool.Put(conn)
 
@@ -71,37 +74,41 @@ func insertFtsMetadataData() {
 	}
 }
 
-func createFtsArtistsTable() {
+func createFtsArtistsTable(ctx context.Context) {
 	tableName := "artists_fts"
 	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS artists_fts USING fts5(file_id, artist, tokenize="trigram remove_diacritics 1");`
-	createTable(tableName, schema)
+	createTable(ctx, tableName, schema)
 }
 
-func createFtsArtistsTriggers() {
-	createTriggerIfNotExists("after_insert_artists_fts", `CREATE TRIGGER after_insert_artists_fts AFTER INSERT ON track_metadata
+func createFtsArtistsTriggers(ctx context.Context) {
+	createTriggerIfNotExists(ctx, "after_insert_artists_fts", `CREATE TRIGGER after_insert_artists_fts AFTER INSERT ON track_metadata
         BEGIN
             INSERT INTO artists_fts (file_id, artist) VALUES (new.file_id, new.artist);
         END;`)
 
-	createTriggerIfNotExists("after_delete_artists_fts", `CREATE TRIGGER after_delete_artists_fts AFTER DELETE ON track_metadata
+	createTriggerIfNotExists(ctx, "after_delete_artists_fts", `CREATE TRIGGER after_delete_artists_fts AFTER DELETE ON track_metadata
     BEGIN
         DELETE FROM artists_fts WHERE file_id = old.file_id;
     END;`)
 
-	createTriggerIfNotExists("after_update_artists_fts", `CREATE TRIGGER after_update_artists_fts AFTER UPDATE ON track_metadata
+	createTriggerIfNotExists(ctx, "after_update_artists_fts", `CREATE TRIGGER after_update_artists_fts AFTER UPDATE ON track_metadata
     BEGIN
         UPDATE artists_fts SET file_id = new.file_id, artist = new.artist WHERE file_id = old.file_id;
     END;`)
 }
 
-func insertFtsArtistsData() {
+func insertFtsArtistsData(ctx context.Context) {
 	query := `INSERT INTO artists_fts (file_id, artist)
 		SELECT file_id, artist FROM track_metadata;`
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
 	conn, err := DbPool.Take(ctx)
 	defer DbPool.Put(conn)
-
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
 	err = sqlitex.ExecuteTransient(conn, query, nil)
 	if err != nil {
 		log.Printf("Error inserting data into artists_fts table: %s", err)

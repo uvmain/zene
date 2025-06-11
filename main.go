@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io"
 	"path"
 	"strings"
@@ -20,14 +21,16 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
+
 	config.LoadConfig()
 
-	database.Initialise()
+	database.Initialise(ctx)
 	defer database.CloseDatabase()
 
 	art.Initialise()
 
-	go scanner.RunScan()
+	go scanner.RunScan(ctx)
 
 	StartServer()
 }

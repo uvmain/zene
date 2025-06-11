@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
-func createScansTable() {
+func createScansTable(ctx context.Context) {
 	tableName := "scans"
 	schema := `CREATE TABLE IF NOT EXISTS scans (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,14 +16,16 @@ func createScansTable() {
 		file_count INTEGER NOT NULL,
 		date_modified TEXT NOT NULL
 	);`
-	createTable(tableName, schema)
+	createTable(ctx, tableName, schema)
 }
 
-func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
+func InsertScanRow(ctx context.Context, scanDate string, fileCount int, dateModified string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -35,6 +38,10 @@ func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
 	stmt.SetInt64("$file_count", int64(fileCount))
 	stmt.SetText("$date_modified", dateModified)
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
+
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to insert Scans row: %v", err)
@@ -42,11 +49,13 @@ func InsertScanRow(scanDate string, fileCount int, dateModified string) error {
 	return nil
 }
 
-func SelectLastScan() (types.ScanRow, error) {
+func SelectLastScan(ctx context.Context) (types.ScanRow, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return types.ScanRow{}, err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -57,6 +66,10 @@ func SelectLastScan() (types.ScanRow, error) {
 	defer stmt.Finalize()
 
 	hasRow, err := stmt.Step()
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return types.ScanRow{}, err
+	}
 
 	if err != nil {
 		return types.ScanRow{}, err

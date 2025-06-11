@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ import (
 	"zene/core/types"
 )
 
-func RunScan() types.ScanResponse {
+func RunScan(ctx context.Context) types.ScanResponse {
 	if globals.IsScanning == true {
 		return types.ScanResponse{
 			Success: false,
@@ -26,7 +27,7 @@ func RunScan() types.ScanResponse {
 	globals.IsScanning = true
 	log.Printf("Starting scan of music dir")
 
-	lastScan, err := database.SelectLastScan()
+	lastScan, err := database.SelectLastScan(ctx)
 	if err != nil {
 		log.Printf("Failed to retrieve last scanned info: %v", err)
 		return types.ScanResponse{
@@ -41,7 +42,7 @@ func RunScan() types.ScanResponse {
 		log.Printf("Falling back to lastModified of %v: %v", lastModified, err)
 	}
 
-	files, err := getFiles(lastModified)
+	files, err := getFiles(ctx, lastModified)
 	if err != nil {
 		log.Printf("Error scanning music directory: %v", err)
 		return types.ScanResponse{
@@ -50,7 +51,7 @@ func RunScan() types.ScanResponse {
 		}
 	}
 
-	err = cleanFiles(files)
+	err = cleanFiles(ctx, files)
 	if err != nil {
 		log.Printf("Error cleaning file rows: %v", err)
 		return types.ScanResponse{
@@ -59,7 +60,7 @@ func RunScan() types.ScanResponse {
 		}
 	}
 
-	err = getAlbumArtwork()
+	err = getAlbumArtwork(ctx)
 	if err != nil {
 		log.Printf("Error getting album artwork: %v", err)
 		return types.ScanResponse{
@@ -68,7 +69,7 @@ func RunScan() types.ScanResponse {
 		}
 	}
 
-	err = getArtistArtwork()
+	err = getArtistArtwork(ctx)
 	if err != nil {
 		log.Printf("Error getting artist artwork: %v", err)
 		return types.ScanResponse{
@@ -86,11 +87,11 @@ func RunScan() types.ScanResponse {
 	}
 }
 
-func getFiles(lastModified time.Time) (map[string]struct{}, error) {
+func getFiles(ctx context.Context, lastModified time.Time) (map[string]struct{}, error) {
 	log.Printf("Scanning directory: %s", config.MusicDir)
 	filesystemFilePaths := make(map[string]struct{})
 
-	dbFileModTimes, err := database.SelectAllFilePathsAndModTimes()
+	dbFileModTimes, err := database.SelectAllFilePathsAndModTimes(ctx)
 	if err != nil {
 		log.Printf("Failed to retrieve file modification times from database: %v", err)
 		return filesystemFilePaths, err
@@ -144,7 +145,7 @@ func getFiles(lastModified time.Time) (map[string]struct{}, error) {
 			}
 
 			fileCount += 1
-			fileRowId, err := database.InsertIntoFiles(filepath.Dir(path), info.Name(), path, time.Now().Format(time.RFC3339Nano), fsModTime.Format(time.RFC3339Nano))
+			fileRowId, err := database.InsertIntoFiles(ctx, filepath.Dir(path), info.Name(), path, time.Now().Format(time.RFC3339Nano), fsModTime.Format(time.RFC3339Nano))
 			if err != nil {
 				log.Printf("Error inserting files row for %s: %v", path, err)
 				return err
@@ -157,7 +158,7 @@ func getFiles(lastModified time.Time) (map[string]struct{}, error) {
 					return err
 				}
 
-				err = database.InsertTrackMetadataRow(fileRowId, trackMetadata)
+				err = database.InsertTrackMetadataRow(ctx, fileRowId, trackMetadata)
 				if err != nil {
 					log.Printf("Error inserting metadata for %s: %v", path, err)
 					return err
@@ -167,7 +168,7 @@ func getFiles(lastModified time.Time) (map[string]struct{}, error) {
 		return nil
 	})
 
-	database.InsertScanRow(time.Now().Format(time.RFC3339Nano), fileCount, newModified.Format(time.RFC3339Nano))
+	database.InsertScanRow(ctx, time.Now().Format(time.RFC3339Nano), fileCount, newModified.Format(time.RFC3339Nano))
 	log.Printf("Music directory scan completed, found %d new files", fileCount)
 
 	if scanError != nil {
@@ -176,7 +177,7 @@ func getFiles(lastModified time.Time) (map[string]struct{}, error) {
 	return filesystemFilePaths, scanError
 }
 
-func cleanFiles(filesystemFilePaths map[string]struct{}) error {
+func cleanFiles(ctx context.Context, filesystemFilePaths map[string]struct{}) error {
 	log.Println("Cleaning orphan files")
 
 	if filesystemFilePaths == nil || len(filesystemFilePaths) == 0 {
@@ -184,43 +185,44 @@ func cleanFiles(filesystemFilePaths map[string]struct{}) error {
 		return nil
 	}
 
-	filesFromDB, err := database.SelectAllFiles()
+	filesFromDB, err := database.SelectAllFiles(ctx)
+
 	if err != nil {
 		return err
 	}
 	for _, fileFromDB := range filesFromDB {
 		if _, exists := filesystemFilePaths[fileFromDB.FilePath]; !exists {
 			log.Printf("Deleting files row %d for %s (not found on filesystem)", fileFromDB.Id, fileFromDB.FilePath)
-			database.DeleteFileById(fileFromDB.Id)
+			database.DeleteFileById(ctx, fileFromDB.Id)
 		}
 	}
 	return nil
 }
 
-func getAlbumArtwork() error {
+func getAlbumArtwork(ctx context.Context) error {
 	log.Println("Getting album artwork")
-	albums, err := database.SelectAllAlbums("false", "", "")
+	albums, err := database.SelectAllAlbums(ctx, "false", "", "")
 	if err != nil {
 		log.Printf("Error fetching albums from database: %v", err)
 		return err
 	}
 	for _, album := range albums {
-		art.ImportArtForAlbum(album.MusicBrainzAlbumID, album.Album)
+		art.ImportArtForAlbum(ctx, album.MusicBrainzAlbumID, album.Album)
 	}
 	return nil
 }
 
-func getArtistArtwork() error {
+func getArtistArtwork(ctx context.Context) error {
 	log.Println("Getting artist artwork")
 
-	albumArtists, err := database.SelectAlbumArtists("", "false", "", "", "")
+	albumArtists, err := database.SelectAlbumArtists(ctx, "", "false", "", "", "")
 
 	if err != nil {
 		log.Printf("Error fetching artists from database: %v", err)
 		return err
 	}
 	for _, artist := range albumArtists {
-		art.ImportArtForAlbumArtist(artist.MusicBrainzArtistID, artist.Artist)
+		art.ImportArtForAlbumArtist(ctx, artist.MusicBrainzArtistID, artist.Artist)
 	}
 
 	return nil

@@ -5,21 +5,24 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"zene/core/logic"
 )
 
-func CreateSessionsTable() {
+func CreateSessionsTable(ctx context.Context) {
 	tableName := "sessions"
 	schema := `CREATE TABLE IF NOT EXISTS sessions (
 		token TEXT PRIMARY KEY,
 		expires TEXT NOT NULL
 	);`
-	createTable(tableName, schema)
+	createTable(ctx, tableName, schema)
 }
 
-func SaveSessionToken(token string, duration time.Duration) (int, error) {
+func SaveSessionToken(ctx context.Context, token string, duration time.Duration) (int, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return 0, err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -32,6 +35,10 @@ func SaveSessionToken(token string, duration time.Duration) (int, error) {
 	stmt.SetText("$token", token)
 	stmt.SetText("$expires", expiresAt.Format(time.RFC3339Nano))
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return 0, err
+	}
+
 	_, err = stmt.Step()
 	if err != nil {
 		return 0, fmt.Errorf("failed to save session token: %v", err)
@@ -41,12 +48,14 @@ func SaveSessionToken(token string, duration time.Duration) (int, error) {
 	return rowId, nil
 }
 
-func IsSessionValid(token string) bool {
+func IsSessionValid(ctx context.Context, token string) bool {
 	var expiresAt time.Time
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return false
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -56,6 +65,10 @@ func IsSessionValid(token string) bool {
 	stmt := conn.Prep(`SELECT expires FROM sessions WHERE token = $token`)
 	defer stmt.Finalize()
 	stmt.SetText("$token", token)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return false
+	}
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return false
@@ -71,11 +84,13 @@ func IsSessionValid(token string) bool {
 	}
 }
 
-func DeleteSessionToken(token string) error {
+func DeleteSessionToken(ctx context.Context, token string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -86,6 +101,10 @@ func DeleteSessionToken(token string) error {
 	defer stmt.Finalize()
 	stmt.SetText("$token", token)
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
+
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to delete session for token %s: %v", token, err)
@@ -94,11 +113,13 @@ func DeleteSessionToken(token string) error {
 	return nil
 }
 
-func CleanupExpiredSessions() {
+func CleanupExpiredSessions(ctx context.Context) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -109,6 +130,10 @@ func CleanupExpiredSessions() {
 	defer stmt.Finalize()
 	stmt.SetText("$expiry", time.Now().Format(time.RFC3339Nano))
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
+
 	_, err = stmt.Step()
 	if err != nil {
 		log.Printf("failed to run session cleanup: %v", err)
@@ -116,12 +141,12 @@ func CleanupExpiredSessions() {
 	log.Printf("Session cleanup finished")
 }
 
-func StartSessionCleanupRoutine() {
+func StartSessionCleanupRoutine(ctx context.Context) {
 	log.Println("Starting session cleanup routine")
 	go func() {
 		for {
 			time.Sleep(1 * time.Hour)
-			CleanupExpiredSessions()
+			CleanupExpiredSessions(ctx)
 		}
 	}()
 }

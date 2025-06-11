@@ -6,10 +6,11 @@ import (
 	"log"
 	"sort"
 	"strings"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
-func createMetadataTable() {
+func createMetadataTable(ctx context.Context) {
 	tableName := "track_metadata"
 	schema := `CREATE TABLE IF NOT EXISTS track_metadata (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,21 +35,23 @@ func createMetadataTable() {
 		musicbrainz_track_id TEXT,
 		label TEXT
 	);`
-	createTable(tableName, schema)
+	createTable(ctx, tableName, schema)
 }
 
-func createMetadataTriggers() {
-	createTriggerIfNotExists("track_metadata_after_delete_album_art", `CREATE TRIGGER track_metadata_after_delete_album_art AFTER DELETE ON track_metadata
+func createMetadataTriggers(ctx context.Context) {
+	createTriggerIfNotExists(ctx, "track_metadata_after_delete_album_art", `CREATE TRIGGER track_metadata_after_delete_album_art AFTER DELETE ON track_metadata
 	BEGIN
 			DELETE FROM album_art WHERE musicbrainz_album_id = old.musicbrainz_album_id;
 	END;`)
 }
 
-func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
+func InsertTrackMetadataRow(ctx context.Context, fileRowId int, metadata types.TrackMetadata) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -86,6 +89,10 @@ func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
 	stmt.SetText("$musicbrainz_track_id", metadata.MusicBrainzTrackID)
 	stmt.SetText("$label", metadata.Label)
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
+
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to insert metadata row: %v", err)
@@ -94,11 +101,13 @@ func InsertTrackMetadataRow(fileRowId int, metadata types.TrackMetadata) error {
 	return nil
 }
 
-func DeleteMetadataByFileId(file_id int) error {
+func DeleteMetadataByFileId(ctx context.Context, file_id int) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -109,6 +118,10 @@ func DeleteMetadataByFileId(file_id int) error {
 	defer stmt.Finalize()
 	stmt.SetInt64("$file_id", int64(file_id))
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
+
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to delete metadata row for file_id %d: %v", file_id, err)
@@ -117,11 +130,13 @@ func DeleteMetadataByFileId(file_id int) error {
 	return nil
 }
 
-func SelectDistinctGenres(searchParam string) ([]types.GenreResponse, error) {
+func SelectDistinctGenres(ctx context.Context, searchParam string) ([]types.GenreResponse, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return []types.GenreResponse{}, err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -134,6 +149,9 @@ func SelectDistinctGenres(searchParam string) ([]types.GenreResponse, error) {
 	var genres []string
 
 	for {
+		if err := logic.CheckContext(ctx); err != nil {
+			return []types.GenreResponse{}, err
+		}
 		if hasRow, err := stmt.Step(); err != nil {
 			return []types.GenreResponse{}, err
 		} else if !hasRow {

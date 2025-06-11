@@ -5,31 +5,34 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
-func createAlbumArtTable() {
+func createAlbumArtTable(ctx context.Context) {
 	tableName := "album_art"
 	schema := `CREATE TABLE IF NOT EXISTS album_art (
 		musicbrainz_album_id TEXT PRIMARY KEY,
 		date_modified TEXT NOT NULL
 	);`
-	createTable(tableName, schema)
+	createTable(ctx, tableName, schema)
 }
 
-func createArtistArtTable() {
+func createArtistArtTable(ctx context.Context) {
 	tableName := "artist_art"
 	schema := `CREATE TABLE IF NOT EXISTS artist_art (
 		musicbrainz_artist_id TEXT PRIMARY KEY,
 		date_modified TEXT NOT NULL
 	);`
-	createTable(tableName, schema)
+	createTable(ctx, tableName, schema)
 }
 
-func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumArtRow, error) {
+func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return types.AlbumArtRow{}, err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -39,6 +42,10 @@ func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumA
 	stmt := conn.Prep(`SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = $musicbrainz_album_id;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return types.AlbumArtRow{}, err
+	}
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.AlbumArtRow{}, err
@@ -52,10 +59,12 @@ func SelectAlbumArtByMusicBrainzAlbumId(musicbrainzAlbumId string) (types.AlbumA
 	}
 }
 
-func InsertAlbumArtRow(musicbrainzAlbumId string, dateModified string) error {
+func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModified string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -69,6 +78,9 @@ func InsertAlbumArtRow(musicbrainzAlbumId string, dateModified string) error {
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
 	stmt.SetText("$date_modified", time.Now().Format(time.RFC3339Nano))
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 
 	_, err = stmt.Step()
 	if err != nil {
@@ -77,10 +89,12 @@ func InsertAlbumArtRow(musicbrainzAlbumId string, dateModified string) error {
 	return nil
 }
 
-func SelectArtistSubDirectories(musicbrainzArtistId string) ([]string, error) {
+func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string) ([]string, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return []string{}, err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -94,6 +108,9 @@ func SelectArtistSubDirectories(musicbrainzArtistId string) ([]string, error) {
 	var rows []string
 
 	for {
+		if err := logic.CheckContext(ctx); err != nil {
+			return []string{}, err
+		}
 		hasRow, err := stmt.Step()
 		if err != nil {
 			return []string{}, err
@@ -106,10 +123,12 @@ func SelectArtistSubDirectories(musicbrainzArtistId string) ([]string, error) {
 	return rows, nil
 }
 
-func SelectArtistArtByMusicBrainzArtistId(musicbrainzArtistId string) (types.ArtistArtRow, error) {
+func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.ArtistArtRow, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return types.ArtistArtRow{}, err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -119,6 +138,10 @@ func SelectArtistArtByMusicBrainzArtistId(musicbrainzArtistId string) (types.Art
 	stmt := conn.Prep(`SELECT musicbrainz_artist_id, date_modified FROM artist_art WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return types.ArtistArtRow{}, err
+	}
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.ArtistArtRow{}, err
@@ -132,10 +155,12 @@ func SelectArtistArtByMusicBrainzArtistId(musicbrainzArtistId string) (types.Art
 	}
 }
 
-func InsertArtistArtRow(musicbrainzArtistId string, dateModified string) error {
+func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateModified string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -149,6 +174,9 @@ func InsertArtistArtRow(musicbrainzArtistId string, dateModified string) error {
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 	stmt.SetText("$date_modified", time.Now().Format(time.RFC3339Nano))
+	if err := logic.CheckContext(ctx); err != nil {
+		return err
+	}
 
 	_, err = stmt.Step()
 	if err != nil {

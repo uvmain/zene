@@ -4,14 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
-func SearchMetadata(searchQuery string) ([]types.TrackMetadata, error) {
+func SearchMetadata(ctx context.Context, searchQuery string) ([]types.TrackMetadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return []types.TrackMetadata{}, err
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -34,6 +37,9 @@ func SearchMetadata(searchQuery string) ([]types.TrackMetadata, error) {
 
 	var rows []types.TrackMetadata
 	for {
+		if err := logic.CheckContext(ctx); err != nil {
+			return []types.TrackMetadata{}, err
+		}
 		hasRow, err := stmt.Step()
 		if err != nil {
 			return []types.TrackMetadata{}, err
@@ -65,6 +71,10 @@ func SearchMetadata(searchQuery string) ([]types.TrackMetadata, error) {
 			Label:               stmt.GetText("label"),
 		}
 		rows = append(rows, row)
+	}
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return []types.TrackMetadata{}, err
 	}
 
 	if rows == nil {

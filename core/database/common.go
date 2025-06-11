@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"zene/core/logic"
 
 	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
@@ -27,11 +28,13 @@ func doesTableExist(tableName string, conn *sqlite.Conn) (bool, error) {
 
 }
 
-func createTable(tableName string, createSql string) {
+func createTable(ctx context.Context, tableName string, createSql string) {
 	log.Printf("creating table %s", tableName)
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -42,6 +45,10 @@ func createTable(tableName string, createSql string) {
 
 	if err != nil {
 		log.Printf("Error checking if %s table exists: %s", tableName, err)
+	}
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return
 	}
 	if !tableExists {
 		stmt := createSql
@@ -56,10 +63,12 @@ func createTable(tableName string, createSql string) {
 	}
 }
 
-func createTriggerIfNotExists(triggerName string, triggerSQL string) {
+func createTriggerIfNotExists(ctx context.Context, triggerName string, triggerSQL string) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	ctx := context.Background()
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Println("failed to take a db conn from the pool")
@@ -72,6 +81,10 @@ func createTriggerIfNotExists(triggerName string, triggerSQL string) {
 	}
 	defer stmt.Finalize()
 	stmt.SetText("$triggername", triggerName)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return
+	}
 
 	hasRow, err := stmt.Step()
 	if hasRow {

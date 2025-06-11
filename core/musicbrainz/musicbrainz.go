@@ -1,6 +1,7 @@
 package musicbrainz
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -51,8 +53,12 @@ func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbReleas
 	return data, nil
 }
 
-func GetAlbumArtUrl(musicBrainzAlbumId string) (string, error) {
+func GetAlbumArtUrl(ctx context.Context, musicBrainzAlbumId string) (string, error) {
 	url := fmt.Sprintf("https://coverartarchive.org/release/%s", musicBrainzAlbumId)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return "", err
+	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -62,11 +68,19 @@ func GetAlbumArtUrl(musicBrainzAlbumId string) (string, error) {
 
 	addUserAgentHeaderToRequest(req)
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return "", err
+	}
+
 	res, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("HTTP error: %w", err)
 	}
 	defer res.Body.Close()
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return "", err
+	}
 
 	if res.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected status: %s", res.Status)
@@ -82,11 +96,19 @@ func GetAlbumArtUrl(musicBrainzAlbumId string) (string, error) {
 		return "", err
 	}
 
+	if err := logic.CheckContext(ctx); err != nil {
+		return "", err
+	}
+
 	return data.Images[0].Image, nil
 }
 
-func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
+func GetArtistArtUrl(ctx context.Context, musicBrainzArtistId string) (string, error) {
 	url := fmt.Sprintf("http://musicbrainz.org/ws/2/artist/%s?inc=url-rels&fmt=json", musicBrainzArtistId)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return "", err
+	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
@@ -95,6 +117,10 @@ func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
 	}
 
 	addUserAgentHeaderToRequest(req)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return "", err
+	}
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -119,6 +145,9 @@ func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
 	var entityId string
 
 	for _, relation := range data.Relations {
+		if err := logic.CheckContext(ctx); err != nil {
+			return "", err
+		}
 		if strings.Contains(relation.URL.Resource, "wikidata") {
 			var splitStrings = strings.Split(relation.URL.Resource, "/")
 			entityId = splitStrings[len(splitStrings)-1]
@@ -139,6 +168,10 @@ func GetArtistArtUrl(musicBrainzArtistId string) (string, error) {
 	}
 
 	addUserAgentHeaderToRequest(req)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return "", err
+	}
 
 	res, err = client.Do(req)
 	if err != nil {

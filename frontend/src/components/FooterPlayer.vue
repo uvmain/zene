@@ -187,9 +187,9 @@ onUnmounted(() => {
     :class="{ 'animate-pulse-bg': currentlyPlayingTrack && isPlaying }"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
   >
-    <div class="flex flex-row items-center px-4 backdrop-blur-xl backdrop-contrast-50 space-x-2">
+    <div class="flex flex-row items-center border-0 border-t-1 border-white/20 border-solid px-4 backdrop-blur-2xl backdrop-contrast-30 space-x-2">
       <div
-        class="mb-8 h-full w-full flex flex-grow flex-col items-center justify-center space-y-2"
+        class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2"
       >
         <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
         <div class="">
@@ -277,6 +277,6 @@ onUnmounted(() => {
 }
 
 .animate-pulse-bg {
-  animation: pulse-bg 60s infinite ease-in-out;
+  animation: pulse-bg 120s infinite ease-in-out;
 }
 </style>

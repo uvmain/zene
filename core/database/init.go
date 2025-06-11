@@ -1,11 +1,13 @@
 package database
 
 import (
+	"context"
 	"log"
 	"path/filepath"
 	"sync"
 	"zene/core/config"
 	"zene/core/io"
+	"zene/core/logic"
 
 	"zombiezen.com/go/sqlite/sqlitex"
 )
@@ -14,22 +16,22 @@ var dbFile = "sqlite.db"
 var DbPool *sqlitex.Pool
 var dbMutex sync.RWMutex
 
-func Initialise() {
+func Initialise(ctx context.Context) {
 	io.CreateDir(config.DatabaseDirectory)
-	openDatabase()
-	createScansTable()
-	createFilesTable()
-	createFilesTriggers()
-	createMetadataTable()
-	createMetadataTriggers()
-	createAlbumArtTable()
-	createArtistArtTable()
-	createFts()
-	CreateSessionsTable()
-	StartSessionCleanupRoutine()
+	openDatabase(ctx)
+	createScansTable(ctx)
+	createFilesTable(ctx)
+	createFilesTriggers(ctx)
+	createMetadataTable(ctx)
+	createMetadataTriggers(ctx)
+	createAlbumArtTable(ctx)
+	createArtistArtTable(ctx)
+	createFts(ctx)
+	CreateSessionsTable(ctx)
+	StartSessionCleanupRoutine(ctx)
 }
 
-func openDatabase() {
+func openDatabase(ctx context.Context) {
 	dbFile := filepath.Join(config.DatabaseDirectory, dbFile)
 
 	if io.FileExists(dbFile) {
@@ -49,6 +51,10 @@ func openDatabase() {
 		log.Fatalf("Failed to open database pool: %v", err)
 	} else {
 		log.Println("Database pool opened")
+	}
+
+	if err := logic.CheckContext(ctx); err != nil {
+		CloseDatabase()
 	}
 }
 

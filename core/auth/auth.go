@@ -21,6 +21,7 @@ func generateToken() (string, error) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	username := os.Getenv("ADMIN_USER")
 	password := os.Getenv("ADMIN_PASSWORD")
 	passedUsername := r.FormValue("username")
@@ -33,7 +34,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-		database.SaveSessionToken(token, time.Hour*24*7)
+		database.SaveSessionToken(ctx, token, time.Hour*24*7)
 		http.SetCookie(w, &http.Cookie{
 			Name:     "appSession",
 			Value:    token,
@@ -62,7 +63,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("appSession")
-		if err != nil || !database.IsSessionValid(cookie.Value) {
+		if err != nil || !database.IsSessionValid(r.Context(), cookie.Value) {
 			log.Println("Unauthorized access attempt")
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -75,7 +76,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("User logging out")
 	cookie, err := r.Cookie("appSession")
 	if err == nil {
-		database.DeleteSessionToken(cookie.Value)
+		database.DeleteSessionToken(r.Context(), cookie.Value)
 		http.SetCookie(w, &http.Cookie{
 			Name:   "appSession",
 			Value:  "",
@@ -98,7 +99,7 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	cookie, err := r.Cookie("appSession")
 	if err == nil {
-		if database.IsSessionValid(cookie.Value) {
+		if database.IsSessionValid(r.Context(), cookie.Value) {
 			sessionCheck.LoggedIn = true
 		}
 	}
