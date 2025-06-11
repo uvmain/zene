@@ -6,7 +6,6 @@ import (
 	"log"
 	"sort"
 	"strings"
-	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -49,12 +48,10 @@ func InsertTrackMetadataRow(ctx context.Context, fileRowId int, metadata types.T
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in InsertTrackMetadataRow: %v", err)
+		return err
 	}
 	defer DbPool.Put(conn)
 
@@ -89,10 +86,6 @@ func InsertTrackMetadataRow(ctx context.Context, fileRowId int, metadata types.T
 	stmt.SetText("$musicbrainz_track_id", metadata.MusicBrainzTrackID)
 	stmt.SetText("$label", metadata.Label)
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
-
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to insert metadata row: %v", err)
@@ -105,22 +98,16 @@ func DeleteMetadataByFileId(ctx context.Context, file_id int) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in DeleteMetadataByFileId: %v", err)
+		return err
 	}
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`delete FROM track_metadata WHERE file_id = $file_id;`)
 	defer stmt.Finalize()
 	stmt.SetInt64("$file_id", int64(file_id))
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 
 	_, err = stmt.Step()
 	if err != nil {
@@ -134,12 +121,10 @@ func SelectDistinctGenres(ctx context.Context, searchParam string) ([]types.Genr
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.GenreResponse{}, err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectDistinctGenres: %v", err)
+		return []types.GenreResponse{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -149,9 +134,6 @@ func SelectDistinctGenres(ctx context.Context, searchParam string) ([]types.Genr
 	var genres []string
 
 	for {
-		if err := logic.CheckContext(ctx); err != nil {
-			return []types.GenreResponse{}, err
-		}
 		if hasRow, err := stmt.Step(); err != nil {
 			return []types.GenreResponse{}, err
 		} else if !hasRow {

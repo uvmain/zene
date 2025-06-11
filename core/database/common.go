@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"zene/core/logic"
 
 	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
@@ -32,12 +31,10 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 	log.Printf("creating table %s", tableName)
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	if err := logic.CheckContext(ctx); err != nil {
-		return
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in createTable: %v", err)
+		return
 	}
 	defer DbPool.Put(conn)
 
@@ -45,11 +42,10 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 
 	if err != nil {
 		log.Printf("Error checking if %s table exists: %s", tableName, err)
+		// It might be prudent to return here if table check failed,
+		// but sticking to original logic flow for now.
 	}
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return
-	}
 	if !tableExists {
 		stmt := createSql
 		err := sqlitex.ExecuteTransient(conn, stmt, nil)
@@ -66,25 +62,19 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 func createTriggerIfNotExists(ctx context.Context, triggerName string, triggerSQL string) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	if err := logic.CheckContext(ctx); err != nil {
-		return
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in createTriggerIfNotExists: %v", err)
+		return
 	}
 	defer DbPool.Put(conn)
 
 	stmt, err := conn.Prepare("SELECT name FROM sqlite_master WHERE type='trigger' AND name=$triggername")
 	if err != nil {
-		log.Fatalf("Failed to prepare stmtCreateTriggerIfNotExists: %v", err)
+		log.Fatalf("Failed to prepare stmtCreateTriggerIfNotExists: %v", err) // Original code uses log.Fatalf
 	}
 	defer stmt.Finalize()
 	stmt.SetText("$triggername", triggerName)
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return
-	}
 
 	hasRow, err := stmt.Step()
 	if hasRow {

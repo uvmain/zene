@@ -119,7 +119,7 @@ func getArtFromInternet(ctx context.Context, musicBrainzAlbumId string) {
 	}
 }
 
-func GetArtForAlbum(musicBrainzAlbumId string, size string) ([]byte, error) {
+func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size string) ([]byte, error) {
 	filename := strings.Join([]string{musicBrainzAlbumId, size}, "_")
 	filename = strings.Join([]string{filename, "jpg"}, ".")
 	filePath, _ := filepath.Abs(filepath.Join(config.AlbumArtFolder, filename))

@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"log"
-	"zene/core/logic"
 
 	"zombiezen.com/go/sqlite/sqlitex"
 )
@@ -60,10 +59,11 @@ func insertFtsMetadataData(ctx context.Context) {
 			file_id, filename, title, artist, album, album_artist, genre, release_date, label 
 		FROM track_metadata;`
 
-	if err := logic.CheckContext(ctx); err != nil {
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Printf("failed to take a db conn from the pool in insertFtsMetadataData: %v", err)
 		return
 	}
-	conn, err := DbPool.Take(ctx)
 	defer DbPool.Put(conn)
 
 	err = sqlitex.ExecuteTransient(conn, query, nil)
@@ -101,14 +101,12 @@ func insertFtsArtistsData(ctx context.Context) {
 	query := `INSERT INTO artists_fts (file_id, artist)
 		SELECT file_id, artist FROM track_metadata;`
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return
-	}
 	conn, err := DbPool.Take(ctx)
-	defer DbPool.Put(conn)
-	if err := logic.CheckContext(ctx); err != nil {
+	if err != nil {
+		log.Printf("failed to take a db conn from the pool in insertFtsArtistsData: %v", err)
 		return
 	}
+	defer DbPool.Put(conn)
 	err = sqlitex.ExecuteTransient(conn, query, nil)
 	if err != nil {
 		log.Printf("Error inserting data into artists_fts table: %s", err)

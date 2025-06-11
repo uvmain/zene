@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -34,13 +33,10 @@ func SelectAllFiles(ctx context.Context) ([]types.FilesRow, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.FilesRow{}, err
-	}
-
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectAllFiles: %v", err)
+		return []types.FilesRow{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -50,9 +46,6 @@ func SelectAllFiles(ctx context.Context) ([]types.FilesRow, error) {
 	var rows []types.FilesRow
 
 	for {
-		if err := logic.CheckContext(ctx); err != nil {
-			return []types.FilesRow{}, err
-		}
 		if hasRow, err := stmt.Step(); err != nil {
 			return []types.FilesRow{}, err
 		} else if !hasRow {
@@ -75,13 +68,10 @@ func SelectFileByFileId(ctx context.Context, fileId string) (types.FilesRow, err
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return types.FilesRow{}, err
-	}
-
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectFileByFileId: %v", err)
+		return types.FilesRow{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -106,19 +96,11 @@ func SelectFileByFileId(ctx context.Context, fileId string) (types.FilesRow, err
 }
 
 func GetFileBlob(ctx context.Context, fileId string) ([]byte, error) {
-	if err := logic.CheckContext(ctx); err != nil {
-		return nil, err
-	}
-
 	row, err := SelectFileByFileId(ctx, fileId)
 	if err != nil {
 		return []byte{}, err
 	}
 	filePath, _ := filepath.Abs(row.FilePath)
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return nil, err
-	}
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		log.Printf("File does not exist: %s:  %s", filePath, err)
@@ -130,10 +112,6 @@ func GetFileBlob(ctx context.Context, fileId string) ([]byte, error) {
 		return nil, err
 	}
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return nil, err
-	}
-
 	return blob, nil
 }
 
@@ -141,23 +119,16 @@ func DeleteFileById(ctx context.Context, id int) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
-
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in DeleteFileById: %v", err)
+		return err
 	}
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`delete FROM files WHERE id = $id;`)
 	defer stmt.Finalize()
 	stmt.SetInt64("$id", int64(id))
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 
 	_, err = stmt.Step()
 	if err != nil {
@@ -170,13 +141,10 @@ func InsertIntoFiles(ctx context.Context, dirPath string, fileName string, fileP
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return 0, err
-	}
-
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in InsertIntoFiles: %v", err)
+		return 0, err
 	}
 	defer DbPool.Put(conn)
 
@@ -191,10 +159,6 @@ func InsertIntoFiles(ctx context.Context, dirPath string, fileName string, fileP
 	stmt.SetText("$date_added", dateAdded)
 	stmt.SetText("$date_modified", dateModified)
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return 0, err
-	}
-
 	_, err = stmt.Step()
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert file: %v", err)
@@ -208,13 +172,9 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return nil, err
-	}
-
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
 		return nil, err
 	}
 	defer DbPool.Put(conn)
@@ -224,14 +184,7 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 
 	fileModTimes := make(map[string]string)
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return nil, err
-	}
-
 	for {
-		if err := logic.CheckContext(ctx); err != nil {
-			return nil, err
-		}
 		if hasRow, err := stmt.Step(); err != nil {
 			return nil, err
 		} else if !hasRow {

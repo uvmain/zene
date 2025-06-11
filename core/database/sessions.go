@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"zene/core/logic"
 )
 
 func CreateSessionsTable(ctx context.Context) {
@@ -20,12 +19,10 @@ func CreateSessionsTable(ctx context.Context) {
 func SaveSessionToken(ctx context.Context, token string, duration time.Duration) (int, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
-	if err := logic.CheckContext(ctx); err != nil {
-		return 0, err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SaveSessionToken: %v", err)
+		return 0, err
 	}
 	defer DbPool.Put(conn)
 
@@ -34,10 +31,6 @@ func SaveSessionToken(ctx context.Context, token string, duration time.Duration)
 	defer stmt.Finalize()
 	stmt.SetText("$token", token)
 	stmt.SetText("$expires", expiresAt.Format(time.RFC3339Nano))
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return 0, err
-	}
 
 	_, err = stmt.Step()
 	if err != nil {
@@ -53,22 +46,16 @@ func IsSessionValid(ctx context.Context, token string) bool {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return false
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in IsSessionValid: %v", err)
+		return false
 	}
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT expires FROM sessions WHERE token = $token`)
 	defer stmt.Finalize()
 	stmt.SetText("$token", token)
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return false
-	}
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return false
@@ -88,22 +75,16 @@ func DeleteSessionToken(ctx context.Context, token string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in DeleteSessionToken: %v", err)
+		return err
 	}
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`DELETE FROM sessions WHERE token = $token`)
 	defer stmt.Finalize()
 	stmt.SetText("$token", token)
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 
 	_, err = stmt.Step()
 	if err != nil {
@@ -117,22 +98,16 @@ func CleanupExpiredSessions(ctx context.Context) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in CleanupExpiredSessions: %v", err)
+		return
 	}
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`DELETE FROM sessions WHERE expires < $expiry`)
 	defer stmt.Finalize()
 	stmt.SetText("$expiry", time.Now().Format(time.RFC3339Nano))
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return
-	}
 
 	_, err = stmt.Step()
 	if err != nil {

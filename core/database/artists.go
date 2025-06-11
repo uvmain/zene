@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"zene/core/logic"
 	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
@@ -15,22 +14,16 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return types.ArtistResponse{}, err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectArtistByMusicBrainzArtistId: %v", err)
+		return types.ArtistResponse{}, err
 	}
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	where musicbrainz_artist_id = $musicbrainz_artist_id limit 1;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return types.ArtistResponse{}, err
-	}
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.ArtistResponse{}, err
@@ -49,12 +42,10 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.TrackMetadata{}, err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectTracksByArtistId: %v", err)
+		return []types.TrackMetadata{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -80,10 +71,6 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	stmt = conn.Prep(stmtText)
 	defer stmt.Finalize()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.TrackMetadata{}, err
-	}
-
 	stmt.SetText("$musicbrainz_artist_id", musicbrainz_artist_id)
 
 	if limit != "" {
@@ -103,9 +90,6 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 
 	var rows []types.TrackMetadata
 	for {
-		if err := logic.CheckContext(ctx); err != nil {
-			return []types.TrackMetadata{}, err
-		}
 		hasRow, err := stmt.Step()
 		if err != nil {
 			return []types.TrackMetadata{}, err
@@ -149,13 +133,10 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.ArtistResponse{}, err
-	}
-
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectAlbumArtists: %v", err)
+		return []types.ArtistResponse{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -188,10 +169,6 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	stmt = conn.Prep(stmtText)
 	defer stmt.Finalize()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.ArtistResponse{}, err
-	}
-
 	if searchParam != "" {
 		stmt.SetText("$searchQuery", searchParam)
 	}
@@ -213,9 +190,6 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	var artists []types.ArtistResponse
 
 	for {
-		if err := logic.CheckContext(ctx); err != nil {
-			return []types.ArtistResponse{}, err
-		}
 		if hasRow, err := stmt.Step(); err != nil {
 			return []types.ArtistResponse{}, err
 		} else if !hasRow {

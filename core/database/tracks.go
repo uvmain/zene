@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"strconv"
-	"zene/core/logic"
 	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
@@ -14,12 +13,10 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.TrackMetadata{}, err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
+		return []types.TrackMetadata{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -53,15 +50,8 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 
 	defer stmt.Finalize()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return []types.TrackMetadata{}, err
-	}
-
 	var rows []types.TrackMetadata
 	for {
-		if err := logic.CheckContext(ctx); err != nil {
-			return []types.TrackMetadata{}, err
-		}
 		hasRow, err := stmt.Step()
 		if err != nil {
 			return []types.TrackMetadata{}, err
@@ -105,12 +95,10 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.TrackMet
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return types.TrackMetadata{}, err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectTrack: %v", err)
+		return types.TrackMetadata{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -121,10 +109,6 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.TrackMet
 	stmt.SetText("$musicbrainz_track_id", musicBrainzTrackId)
 
 	var row types.TrackMetadata
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return types.TrackMetadata{}, err
-	}
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.TrackMetadata{}, err

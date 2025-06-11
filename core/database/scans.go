@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -23,12 +22,10 @@ func InsertScanRow(ctx context.Context, scanDate string, fileCount int, dateModi
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in InsertScanRow: %v", err)
+		return err
 	}
 	defer DbPool.Put(conn)
 
@@ -37,10 +34,6 @@ func InsertScanRow(ctx context.Context, scanDate string, fileCount int, dateModi
 	stmt.SetText("$scan_date", scanDate)
 	stmt.SetInt64("$file_count", int64(fileCount))
 	stmt.SetText("$date_modified", dateModified)
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return err
-	}
 
 	_, err = stmt.Step()
 	if err != nil {
@@ -53,12 +46,10 @@ func SelectLastScan(ctx context.Context) (types.ScanRow, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
-	if err := logic.CheckContext(ctx); err != nil {
-		return types.ScanRow{}, err
-	}
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Println("failed to take a db conn from the pool")
+		log.Printf("failed to take a db conn from the pool in SelectLastScan: %v", err)
+		return types.ScanRow{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -66,10 +57,6 @@ func SelectLastScan(ctx context.Context) (types.ScanRow, error) {
 	defer stmt.Finalize()
 
 	hasRow, err := stmt.Step()
-
-	if err := logic.CheckContext(ctx); err != nil {
-		return types.ScanRow{}, err
-	}
 
 	if err != nil {
 		return types.ScanRow{}, err
