@@ -5,8 +5,16 @@ import (
 	"time"
 )
 
-func enableCdnCaching(w http.ResponseWriter) {
-	expiryDate := time.Now().AddDate(1, 0, 0)
-	w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
-	w.Header().Set("Expires", expiryDate.String())
+func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified time.Time) bool {
+	w.Header().Set("Last-Modified", lastModified.Truncate(time.Second).UTC().Format(http.TimeFormat))
+	w.Header().Set("Cache-Control", "public, max-age=0, must-revalidate")
+	ifModifiedSince := r.Header.Get("If-Modified-Since")
+	if ifModifiedSince != "" {
+		ifTime, err := time.Parse(http.TimeFormat, ifModifiedSince)
+		if err == nil && !lastModified.Truncate(time.Second).After(ifTime) {
+			w.WriteHeader(http.StatusNotModified)
+			return true
+		}
+	}
+	return false
 }

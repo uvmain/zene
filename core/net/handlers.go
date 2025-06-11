@@ -58,7 +58,6 @@ func HandleDownloadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mimeType := http.DetectContentType(fileBlob)
-	enableCdnCaching(w)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(fileBlob)
@@ -151,7 +150,6 @@ func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mimeType := http.DetectContentType(imageBlob)
-	enableCdnCaching(w)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(imageBlob)
@@ -301,7 +299,6 @@ func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	mimeType := http.DetectContentType(imageBlob)
-	enableCdnCaching(w)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(imageBlob)

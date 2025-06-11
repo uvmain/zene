@@ -128,6 +128,7 @@ func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size string)
 		log.Printf("Image file does not exist: %s:  %s", filePath, err)
 		return nil, err
 	}
+
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Printf("Error reading image for filename %s: %s", filename, err)
