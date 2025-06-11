@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { currentlyPlayingTrack, resetCurrentlyPlayingTrack, setCurrentlyPlayingTrack } from '../composables/globalState'
 import { formatTime } from '../composables/logic'
-import { getRandomTrack } from '../composables/randomTrack'
+import { getNextTrack, getPreviousTrack, getRandomTrack } from '../composables/tracks'
 
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -142,6 +142,27 @@ onMounted(() => {
   })
 })
 
+async function playPrevious() {
+  const audio = audioRef.value
+  if (!audio)
+    return
+
+  audio.pause()
+  audio.removeAttribute('src')
+  currentTime.value = 0
+  const track = await getPreviousTrack()
+  setCurrentlyPlayingTrack(track)
+  audio.addEventListener(
+    'canplay',
+    () => {
+      audio.play()
+    },
+    { once: true },
+  )
+  audio.src = trackUrl.value
+  audio.load()
+}
+
 async function playNext() {
   const audio = audioRef.value
   if (!audio)
@@ -150,8 +171,8 @@ async function playNext() {
   audio.pause()
   audio.removeAttribute('src')
   currentTime.value = 0
-  const randomTrack = await getRandomTrack()
-  setCurrentlyPlayingTrack(randomTrack)
+  const nextTrack = await getNextTrack()
+  setCurrentlyPlayingTrack(nextTrack)
   audio.addEventListener(
     'canplay',
     () => {
@@ -218,7 +239,7 @@ onUnmounted(() => {
             <button id="shuffle" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="togglePlayback()">
               <icon-tabler-arrows-shuffle class="text-xl" />
             </button>
-            <button id="back" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="togglePlayback()">
+            <button id="back" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="playPrevious()">
               <icon-tabler-player-skip-back class="text-xl" />
             </button>
             <button

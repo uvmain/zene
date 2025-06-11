@@ -13,7 +13,6 @@ function onImageError(event: Event) {
 
 <template>
   <div v-if="currentlyPlayingTrack" class="flex flex-col gap-2">
-    <img :src="currentlyPlayingTrack?.image_url" class="w-full cursor-pointer rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.musicbrainz_album_id}`)">
     <RouterLink
       class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
       :to="getTrackUrl(currentlyPlayingTrack.musicbrainz_track_id)"
@@ -32,5 +31,6 @@ function onImageError(event: Event) {
     >
       {{ currentlyPlayingTrack?.album }}
     </RouterLink>
+    <img :src="currentlyPlayingTrack?.image_url" class="w-full cursor-pointer rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.musicbrainz_album_id}`)">
   </div>
 </template>

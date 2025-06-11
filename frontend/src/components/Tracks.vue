@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TrackMetadata, TrackMetadataWithImageUrl } from '../types'
+import { currentlyPlayingTrack, currentPlaylist } from '../composables/globalState'
 import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
 import { play } from '../composables/play'
 
@@ -7,10 +8,15 @@ defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<TrackMetadata[] | TrackMetadataWithImageUrl[]>, required: true },
 })
+
+function isTrackPlaying(trackId: string): boolean {
+  return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.musicbrainz_track_id === trackId) ?? false
+}
 </script>
 
 <template>
   <div class="rounded-lg bg-black/20 p-4">
+    {{ currentPlaylist?.position }} {{ currentPlaylist?.tracks.length }}
     <table class="w-full table-auto text-left">
       <thead>
         <tr class="text-lg text-white/70">
@@ -39,7 +45,7 @@ defineProps({
           v-for="track, index in tracks"
           :key="track.title"
           class="group transition-colors duration-200 ease-out hover:bg-zene-200/20"
-          :class="{ 'bg-white/02': index % 2 === 0 }"
+          :class="{ 'bg-white/02': index % 2 === 0, 'bg-white/40': isTrackPlaying(track.musicbrainz_track_id) }"
         >
           <td
             class="w-15 cursor-pointer text-center"
