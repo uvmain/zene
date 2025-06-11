@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { currentlyPlayingTrack } from '../composables/globalState'
 import { getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
+import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
+const { currentlyPlayingTrack } = usePlaybackQueue()
 const router = useRouter()
 
 function onImageError(event: Event) {

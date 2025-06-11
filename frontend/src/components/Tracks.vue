@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import type { TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import { currentlyPlayingTrack, currentPlaylist } from '../composables/globalState'
 import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
-import { play } from '../composables/play'
+import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
 defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<TrackMetadata[] | TrackMetadataWithImageUrl[]>, required: true },
 })
+
+const { currentlyPlayingTrack, currentPlaylist, play } = usePlaybackQueue()
 
 function isTrackPlaying(trackId: string): boolean {
   return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.musicbrainz_track_id === trackId) ?? false

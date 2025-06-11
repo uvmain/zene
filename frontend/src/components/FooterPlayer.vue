@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
-import { currentlyPlayingTrack, resetCurrentlyPlayingTrack, setCurrentlyPlayingTrack } from '../composables/globalState'
 import { formatTime } from '../composables/logic'
-import { getNextTrack, getPreviousTrack, getRandomTrack } from '../composables/tracks'
+import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+
+const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTrack } = usePlaybackQueue()
 
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -86,8 +86,8 @@ async function randomTrack() {
   audioRef.value.pause()
   audioRef.value.removeAttribute('src')
   currentTime.value = 0
-  const randomTrack = await getRandomTrack()
-  setCurrentlyPlayingTrack(randomTrack)
+  await getRandomTrack() // This now also sets the currentlyPlayingTrack
+  // setCurrentlyPlayingTrack(randomTrack) // No longer needed
   audioRef.value.addEventListener(
     'canplay',
     () => {
@@ -150,8 +150,8 @@ async function playPrevious() {
   audio.pause()
   audio.removeAttribute('src')
   currentTime.value = 0
-  const track = await getPreviousTrack()
-  setCurrentlyPlayingTrack(track)
+  await getPreviousTrack() // This now also sets the currentlyPlayingTrack
+  // setCurrentlyPlayingTrack(track) // No longer needed
   audio.addEventListener(
     'canplay',
     () => {
@@ -171,8 +171,8 @@ async function playNext() {
   audio.pause()
   audio.removeAttribute('src')
   currentTime.value = 0
-  const nextTrack = await getNextTrack()
-  setCurrentlyPlayingTrack(nextTrack)
+  await getNextTrack() // This now also sets the currentlyPlayingTrack
+  // setCurrentlyPlayingTrack(nextTrack) // No longer needed
   audio.addEventListener(
     'canplay',
     () => {

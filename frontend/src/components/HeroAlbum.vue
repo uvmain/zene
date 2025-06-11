@@ -63,7 +63,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="albumArray.length" class="h-80 overflow-hidden rounded-lg">
+  <section v-if="albumArray.length" class="h-65 overflow-hidden rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${albumArray[index].image_url})` }"

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { AlbumMetadata } from '../types'
-import * as globalState from '../composables/globalState'
 
 const props = defineProps({
   album: { type: Object as PropType<AlbumMetadata>, required: true },
