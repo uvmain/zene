@@ -98,3 +98,8 @@ export interface TrackMetadataWithImageUrl {
   label: string
   image_url: string
 }
+
+export interface Playlist {
+  tracks: TrackMetadataWithImageUrl[]
+  position: number
+}
