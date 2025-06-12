@@ -6,7 +6,7 @@ import Artists from './ArtistsRoute.vue'
 import Genres from './GenresRoute.vue'
 import Home from './HomeRoute.vue'
 import Login from './LoginRoute.vue'
-import Playlist from './Playlist.vue'
+import Queue from './Queue.vue'
 import Track from './TrackRoute.vue'
 import Tracks from './TracksRoute.vue'
 
@@ -57,8 +57,8 @@ export const routes: RouteRecordRaw[] = [
     component: Login as Component,
   },
   {
-    path: '/playlist',
-    name: 'Playlist',
-    component: Playlist as Component,
+    path: '/queue',
+    name: 'Queue',
+    component: Queue as Component,
   },
 ]

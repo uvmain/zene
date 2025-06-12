@@ -99,7 +99,7 @@ export interface TrackMetadataWithImageUrl {
   image_url: string
 }
 
-export interface Playlist {
+export interface Queue {
   tracks: TrackMetadataWithImageUrl[]
   position: number
 }

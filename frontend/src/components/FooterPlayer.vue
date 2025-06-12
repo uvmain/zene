@@ -2,7 +2,7 @@
 import { formatTime } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
-const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentPlaylist } = usePlaybackQueue()
+const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue } = usePlaybackQueue()
 const router = useRouter()
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -81,7 +81,7 @@ function volumeInput(event: Event) {
 
 async function handleGetRandomTracks() {
   await getRandomTracks()
-  router.push('/playlist')
+  router.push('/queue')
 }
 
 watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
@@ -118,7 +118,7 @@ onMounted(() => {
   audio.addEventListener('pause', updateIsPlaying)
   audio.addEventListener('timeupdate', updateProgress)
   audio.addEventListener('ended', () => {
-    if (currentPlaylist.value && currentPlaylist.value.tracks.length > 0) {
+    if (currentQueue.value && currentQueue.value.tracks.length > 0) {
       getNextTrack()
     }
     else {
@@ -136,7 +136,7 @@ onUnmounted(() => {
   audio.removeEventListener('pause', updateIsPlaying)
   audio.removeEventListener('timeupdate', updateProgress)
   audio.removeEventListener('ended', () => {
-    if (currentPlaylist.value && currentPlaylist.value.tracks.length > 0) {
+    if (currentQueue.value && currentQueue.value.tracks.length > 0) {
       getNextTrack()
     }
     else {

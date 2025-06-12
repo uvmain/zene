@@ -8,7 +8,7 @@ const props = defineProps({
   tracks: { type: Object as PropType<TrackMetadataWithImageUrl[]>, required: true },
 })
 
-const { currentlyPlayingTrack, currentPlaylist, play, setCurrentlyPlayingTrackInPlaylist } = usePlaybackQueue()
+const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
 
@@ -17,8 +17,8 @@ function isTrackPlaying(trackId: string): boolean {
 }
 
 function handlePlay(track: TrackMetadataWithImageUrl) {
-  if (currentPlaylist.value?.tracks.some(playlistTrack => playlistTrack.musicbrainz_track_id === track.musicbrainz_track_id)) {
-    setCurrentlyPlayingTrackInPlaylist(track)
+  if (currentQueue.value?.tracks.some(queueTrack => queueTrack.musicbrainz_track_id === track.musicbrainz_track_id)) {
+    setCurrentlyPlayingTrackInQueue(track)
   }
   else {
     play(undefined, undefined, track)

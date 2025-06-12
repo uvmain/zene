@@ -2,9 +2,9 @@
 import type { TrackMetadataWithImageUrl } from '../types'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
-const { currentPlaylist } = usePlaybackQueue()
+const { currentQueue } = usePlaybackQueue()
 
-const tracks = computed(() => currentPlaylist?.value?.tracks ?? [] as TrackMetadataWithImageUrl[])
+const tracks = computed(() => currentQueue?.value?.tracks ?? [] as TrackMetadataWithImageUrl[])
 </script>
 
 <template>
