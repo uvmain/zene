@@ -1,17 +1,26 @@
 <script setup lang="ts">
-import type { TrackMetadata, TrackMetadataWithImageUrl } from '../types'
+import type { TrackMetadataWithImageUrl } from '../types'
 import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
 defineProps({
   showAlbum: { type: Boolean, default: false },
-  tracks: { type: Object as PropType<TrackMetadata[] | TrackMetadataWithImageUrl[]>, required: true },
+  tracks: { type: Object as PropType<TrackMetadataWithImageUrl[]>, required: true },
 })
 
-const { currentlyPlayingTrack, currentPlaylist, play } = usePlaybackQueue()
+const { currentlyPlayingTrack, currentPlaylist, play, setCurrentlyPlayingTrackInPlaylist } = usePlaybackQueue()
 
 function isTrackPlaying(trackId: string): boolean {
   return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.musicbrainz_track_id === trackId) ?? false
+}
+
+function handlePlay(track: TrackMetadataWithImageUrl) {
+  if (currentPlaylist.value?.tracks.some(playlistTrack => playlistTrack.musicbrainz_track_id === track.musicbrainz_track_id)) {
+    setCurrentlyPlayingTrackInPlaylist(track)
+  }
+  else {
+    play(undefined, undefined, track)
+  }
 }
 </script>
 
@@ -50,7 +59,7 @@ function isTrackPlaying(trackId: string): boolean {
         >
           <td
             class="w-15 cursor-pointer text-center"
-            @click="play(undefined, undefined, track)"
+            @click="handlePlay(track)"
           >
             <span class="group-hover:hidden">{{ track.track_number }}</span>
             <icon-tabler-player-play-filled class="hidden text-xl group-hover:inline" />

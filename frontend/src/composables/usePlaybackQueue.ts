@@ -11,7 +11,15 @@ export function usePlaybackQueue() {
   }
 
   const setCurrentlyPlayingTrack = (track: TrackMetadata | TrackMetadataWithImageUrl) => {
-    console.log(`setting current track to ${track.filename}`)
+    currentlyPlayingTrack.value = trackWithImageUrl(track)
+  }
+
+  const setCurrentlyPlayingTrackInPlaylist = (track: TrackMetadataWithImageUrl) => {
+    if (!currentPlaylist.value) {
+      return
+    }
+    const index = currentPlaylist.value.tracks.indexOf(track)
+    currentPlaylist.value.position = index
     currentlyPlayingTrack.value = trackWithImageUrl(track)
   }
 
@@ -104,6 +112,7 @@ export function usePlaybackQueue() {
   return {
     currentlyPlayingTrack,
     currentPlaylist,
+    setCurrentlyPlayingTrackInPlaylist,
     resetCurrentlyPlayingTrack,
     setCurrentlyPlayingTrack,
     setCurrentPlaylist,
