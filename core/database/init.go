@@ -23,7 +23,6 @@ func Initialise(ctx context.Context) {
 	createFilesTable(ctx)
 	createFilesTriggers(ctx)
 	createMetadataTable(ctx)
-	createMetadataTriggers(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
 	createFts(ctx)

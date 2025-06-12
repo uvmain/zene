@@ -66,7 +66,6 @@ func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) 
 		return fmt.Errorf("failed to decode image: %w", err)
 	}
 
-	// Resize the image while maintaining aspect ratio
 	resizedImg := resize.Thumbnail(uint(pixelSize), uint(pixelSize), img, resize.Lanczos3)
 
 	outFile, err := os.Create(outputPath)

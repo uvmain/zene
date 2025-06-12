@@ -43,10 +43,10 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           <th class="w-15 text-center">
             #
           </th>
-          <th class="px-1">
+          <th class="px-2">
             Title
           </th>
-          <th v-if="showAlbum" class="px-1">
+          <th v-if="showAlbum" class="px-2">
             Album
           </th>
           <th class="w-15 text-center">
@@ -68,7 +68,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           :key="track.title"
           :ref="el => rowRefs[index] = el"
           class="group transition-colors duration-200 ease-out hover:bg-zene-200/20"
-          :class="{ 'bg-white/02': index % 2 === 0, 'bg-white/40': isTrackPlaying(track.musicbrainz_track_id) }"
+          :class="{ 'bg-white/02': index % 2 === 0, 'bg-zene-200/40': isTrackPlaying(track.musicbrainz_track_id) }"
         >
           <td
             class="w-15 cursor-pointer text-center"
@@ -78,7 +78,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             <icon-tabler-player-play-filled class="hidden text-xl group-hover:inline" />
           </td>
           <td>
-            <div class="flex flex-row cursor-pointer px-1" @click="handlePlay(track)">
+            <div class="flex flex-row cursor-pointer px-2" @click="handlePlay(track)">
               <div class="flex flex-col">
                 <RouterLink
                   class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
@@ -97,7 +97,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           </td>
           <td v-if="showAlbum" class="cursor-pointer" @click="handlePlay(track)">
             <RouterLink
-              class="cursor-pointer px-1 text-sm text-white/80 no-underline hover:underline hover:underline-white"
+              class="cursor-pointer px-2 text-sm text-white/80 no-underline hover:underline hover:underline-white"
               :to="getAlbumUrl(track.musicbrainz_album_id)"
             >
               {{ track.album }}

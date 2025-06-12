@@ -9,7 +9,6 @@ import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
-// import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   plugins: [
@@ -22,45 +21,6 @@ export default defineConfig({
       viteOptimizeDeps: true,
     }),
     vue(),
-    // VitePWA(
-    //   {
-    //     manifest: {
-    //       name: 'Zene',
-    //       short_name: 'Zene',
-    //       icons: [
-    //         {
-    //           src: '/zene.png',
-    //           sizes: '1024x1024',
-    //           type: 'image/png',
-    //           purpose: 'any maskable',
-    //         },
-    //       ],
-    //     },
-    //     includeAssets: [
-    //       '/default-image.jpg',
-    //       '/default-square.png',
-    //       '/favicon.ico',
-    //       '/logo.png',
-    //       '/zene.png',
-    //     ],
-    //     workbox: {
-    //       runtimeCaching: [
-    //         {
-    //           urlPattern: ({ url }) => {
-    //             return url.pathname.startsWith('/api') && !['/api/check-session'].includes(url.pathname)
-    //           },
-    //           handler: 'CacheFirst' as const,
-    //           options: {
-    //             cacheName: 'api-cache',
-    //             cacheableResponse: {
-    //               statuses: [0, 200],
-    //             },
-    //           },
-    //         },
-    //       ],
-    //     },
-    //   },
-    // ),
     Icons(),
     // https://github.com/antfu/unplugin-vue-components
     Components({

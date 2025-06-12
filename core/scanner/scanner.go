@@ -126,7 +126,6 @@ func getFiles(ctx context.Context, lastModified time.Time) (map[string]struct{},
 		} else {
 			dbModTime, err := time.Parse(time.RFC3339Nano, dbModTimeStr)
 			if err != nil {
-				// Consider errors in parsing as a need to process, as the stored time is invalid.
 				log.Printf("Error parsing stored modification time for %s: %v. Reprocessing.", path, err)
 				needsProcessing = true
 			} else if fsModTime.After(dbModTime) {
@@ -134,7 +133,6 @@ func getFiles(ctx context.Context, lastModified time.Time) (map[string]struct{},
 			}
 		}
 
-		// Also consider if the file was modified after the last scan time.
 		if fsModTime.After(lastModified) {
 			needsProcessing = true
 		}

@@ -8,5 +8,10 @@ const tracks = computed(() => currentQueue?.value?.tracks ?? [] as TrackMetadata
 </script>
 
 <template>
-  <Tracks :tracks="tracks" :show-album="true" />
+  <div>
+    <h2 class="px-2 text-lg font-semibold">
+      Queue
+    </h2>
+    <Tracks :tracks="tracks" :show-album="true" />
+  </div>
 </template>

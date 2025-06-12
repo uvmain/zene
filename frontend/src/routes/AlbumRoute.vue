@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { AlbumMetadata, TrackMetadata } from '../types'
+import type { AlbumMetadata, TrackMetadataWithImageUrl } from '../types'
 import { backendFetchRequest } from '../composables/fetchFromBackend'
 
 const route = useRoute()
 const album = ref<AlbumMetadata>()
-const tracks = ref<TrackMetadata[]>()
+const tracks = ref<TrackMetadataWithImageUrl[]>()
 const musicbrainz_album_id = computed(() => `${route.params.musicbrainz_album_id}`)
 
 async function getAlbum() {

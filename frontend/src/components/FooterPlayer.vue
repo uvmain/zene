@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { onKeyStroke } from '@vueuse/core'
+import { getAlbumTracks } from '../composables/fetchFromBackend'
 import { formatTime } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
-const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue } = usePlaybackQueue()
+const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const router = useRouter()
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -21,9 +23,17 @@ const trackUrl = computed<string>(() => {
   return currentlyPlayingTrack.value?.file_id ? `/api/files/${currentlyPlayingTrack.value.file_id}/stream` : ''
 })
 
-function togglePlayback() {
+async function togglePlayback() {
   if (!audioRef.value) {
     return
+  }
+  if (currentRoute.value.startsWith('/albums/') && !currentQueue.value?.tracks?.length) {
+    const musicbrainz_album_id = route.params.musicbrainz_album_id as string
+    const tracks = await getAlbumTracks(musicbrainz_album_id)
+    setCurrentQueue(tracks)
+  }
+  else if (currentQueue.value?.tracks?.length && !currentlyPlayingTrack.value) {
+    setCurrentQueue(currentQueue.value?.tracks)
   }
   if (isPlaying.value) {
     audioRef.value.pause()
@@ -105,6 +115,26 @@ async function handleGetRandomTracks() {
   await getRandomTracks()
   router.push('/queue')
 }
+
+onKeyStroke('MediaPlayPause', (e) => {
+  e.preventDefault()
+  togglePlayback()
+})
+
+onKeyStroke('MediaTrackPrevious', (e) => {
+  e.preventDefault()
+  getPreviousTrack()
+})
+
+onKeyStroke('MediaTrackNext', (e) => {
+  e.preventDefault()
+  getNextTrack()
+})
+
+onKeyStroke('MediaStop', (e) => {
+  e.preventDefault()
+  stopPlayback()
+})
 
 watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
   const audio = audioRef.value

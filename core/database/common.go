@@ -28,7 +28,6 @@ func doesTableExist(tableName string, conn *sqlite.Conn) (bool, error) {
 }
 
 func createTable(ctx context.Context, tableName string, createSql string) {
-	log.Printf("creating table %s", tableName)
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
@@ -42,8 +41,6 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 
 	if err != nil {
 		log.Printf("Error checking if %s table exists: %s", tableName, err)
-		// It might be prudent to return here if table check failed,
-		// but sticking to original logic flow for now.
 	}
 
 	if !tableExists {
@@ -71,7 +68,7 @@ func createTriggerIfNotExists(ctx context.Context, triggerName string, triggerSQ
 
 	stmt, err := conn.Prepare("SELECT name FROM sqlite_master WHERE type='trigger' AND name=$triggername")
 	if err != nil {
-		log.Fatalf("Failed to prepare stmtCreateTriggerIfNotExists: %v", err) // Original code uses log.Fatalf
+		log.Fatalf("Failed to prepare stmtCreateTriggerIfNotExists: %v", err)
 	}
 	defer stmt.Finalize()
 	stmt.SetText("$triggername", triggerName)

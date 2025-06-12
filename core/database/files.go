@@ -126,16 +126,7 @@ func DeleteFileById(ctx context.Context, id int) error {
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`delete FROM track_metadata WHERE file_id = $file_id;`)
-	defer stmt.Finalize()
-	stmt.SetInt64("$file_id", int64(id))
-
-	_, err = stmt.Step()
-	if err != nil {
-		return fmt.Errorf("failed to delete track_metadata row for id %d: %v", id, err)
-	}
-
-	stmt = conn.Prep(`delete FROM files WHERE id = $id;`)
+	stmt := conn.Prep(`delete FROM files WHERE id = $id;`)
 	defer stmt.Finalize()
 	stmt.SetInt64("$id", int64(id))
 
