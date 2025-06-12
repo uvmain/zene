@@ -37,7 +37,6 @@ watch(currentlyPlayingTrack, async (newTrack) => {
 
 <template>
   <div class="rounded-lg bg-black/20 p-4">
-    currentRow: {{ currentRow }}
     <table class="w-full table-auto text-left">
       <thead>
         <tr class="text-lg text-white/70">
