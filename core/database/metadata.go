@@ -13,7 +13,7 @@ func createMetadataTable(ctx context.Context) {
 	tableName := "track_metadata"
 	schema := `CREATE TABLE IF NOT EXISTS track_metadata (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		FOREIGN KEY(file_id) REFERENCES files(id)
+		FOREIGN KEY(file_id) REFERENCES files(id),
 		filename TEXT,
 		format TEXT,
 		duration TEXT,
