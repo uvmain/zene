@@ -7,9 +7,15 @@ const router = useRouter()
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
 const currentTime = ref(0)
+const previousVolume = ref(1)
 const currentVolume = ref(1)
 const isPlayPauseActive = ref(false)
 const debug = ref()
+const route = useRoute()
+
+const currentRoute = computed(() => {
+  return route.path
+})
 
 const trackUrl = computed<string>(() => {
   return currentlyPlayingTrack.value?.file_id ? `/api/files/${currentlyPlayingTrack.value.file_id}/stream` : ''
@@ -34,6 +40,22 @@ function togglePlayback() {
   }
 
   updateIsPlaying()
+}
+
+function toggleMute() {
+  if (!audioRef.value) {
+    return
+  }
+  console.log('Changing volume')
+  if (audioRef.value.volume !== 0) {
+    previousVolume.value = audioRef.value.volume
+    audioRef.value.volume = 0
+    currentVolume.value = 0
+  }
+  else {
+    audioRef.value.volume = previousVolume.value
+    currentVolume.value = previousVolume.value
+  }
 }
 
 async function stopPlayback() {
@@ -215,10 +237,21 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      <div id="volume-range-input" class="flex flex-row items-center gap-2">
-        <icon-tabler-volume v-if="currentVolume > 0.5" class="text-sm" />
-        <icon-tabler-volume-2 v-else-if="currentVolume > 0" class="text-sm" />
-        <icon-tabler-volume-3 v-else class="text-sm" />
+      <div>
+        <RouterLink
+          to="/queue"
+          class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
+          :class="{ 'ml-4': currentRoute === '/' }"
+        >
+          <icon-tabler-playlist />
+        </RouterLink>
+      </div>
+      <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2">
+        <div @click="toggleMute()">
+          <icon-tabler-volume v-if="audioRef.volume > 0.5" class="text-sm" />
+          <icon-tabler-volume-2 v-else-if="audioRef.volume > 0" class="text-sm" />
+          <icon-tabler-volume-3 v-else class="text-sm" />
+        </div>
         <input
           type="range"
           class="h-1 w-30 cursor-pointer bg-white/60 accent-zene-200"
