@@ -13,9 +13,9 @@ import (
 
 func GetOpusTags(audiofilePath string) (types.TrackMetadata, error) {
 	cmd := exec.Command(config.FfprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", audiofilePath)
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error running ffprobe: %v", err)
+		log.Printf("Error running ffprobe: %s", output)
 		return types.TrackMetadata{}, err
 	}
 

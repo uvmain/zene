@@ -12,10 +12,10 @@ import (
 )
 
 func GetCommonTags(audiofilePath string) (types.TrackMetadata, error) {
-	cmd := exec.Command(config.FfprobePath, "-show_format", "-print_format", "json", audiofilePath)
-	output, err := cmd.Output()
+	cmd := exec.Command(config.FfprobePath, "-v", "quiet", "-show_format", "-show_streams", "-print_format", "json", audiofilePath)
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("Error running ffprobe: %v", err)
+		log.Printf("Error running ffprobe: %s", output)
 		return types.TrackMetadata{}, err
 	}
 
@@ -65,7 +65,11 @@ func GetCommonTags(audiofilePath string) (types.TrackMetadata, error) {
 	}
 
 	if parsedReleaseDate == "" {
-		metadata, _ := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
+		metadata, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
+		if err != nil {
+			log.Printf("Error fetching parsedReleaseDate from MusicBrainz: %v", err)
+			return types.TrackMetadata{}, err
+		}
 		parsedReleaseDate = metadata.Date
 	}
 
