@@ -126,13 +126,48 @@ func DeleteFileById(ctx context.Context, id int) error {
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`delete FROM files WHERE id = $id;`)
+	stmt := conn.Prep(`delete FROM track_metadata WHERE file_id = $file_id;`)
+	defer stmt.Finalize()
+	stmt.SetInt64("$file_id", int64(id))
+
+	_, err = stmt.Step()
+	if err != nil {
+		return fmt.Errorf("failed to delete track_metadata row for id %d: %v", id, err)
+	}
+
+	stmt = conn.Prep(`delete FROM files WHERE id = $id;`)
 	defer stmt.Finalize()
 	stmt.SetInt64("$id", int64(id))
 
 	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("failed to delete files row for id %d: %v", id, err)
+	}
+	return nil
+}
+
+func CleanTrackMetadata(ctx context.Context) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Printf("failed to take a db conn from the pool in DeleteFileById: %v", err)
+		return err
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`DELETE FROM track_metadata
+		WHERE NOT EXISTS (
+			SELECT 1
+			FROM files
+			WHERE files.id = track_metadata.file_id
+		);`)
+	defer stmt.Finalize()
+
+	_, err = stmt.Step()
+	if err != nil {
+		return fmt.Errorf("failed to delete track_metadata during clean: %v", err)
 	}
 	return nil
 }

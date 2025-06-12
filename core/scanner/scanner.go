@@ -196,6 +196,9 @@ func cleanFiles(ctx context.Context, filesystemFilePaths map[string]struct{}) er
 			database.DeleteFileById(ctx, fileFromDB.Id)
 		}
 	}
+
+	database.CleanTrackMetadata(ctx)
+
 	return nil
 }
 

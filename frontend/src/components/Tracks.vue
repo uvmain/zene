@@ -33,8 +33,10 @@ function handlePlay(track: TrackMetadataWithImageUrl) {
           <th class="w-15 text-center">
             #
           </th>
-          <th>Title</th>
-          <th v-if="showAlbum">
+          <th class="px-1">
+            Title
+          </th>
+          <th v-if="showAlbum" class="px-1">
             Album
           </th>
           <th class="w-15 text-center">
@@ -64,29 +66,33 @@ function handlePlay(track: TrackMetadataWithImageUrl) {
             <span class="group-hover:hidden">{{ track.track_number }}</span>
             <icon-tabler-player-play-filled class="hidden text-xl group-hover:inline" />
           </td>
-          <td class="flex flex-col">
-            <RouterLink
-              class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
-              :to="getTrackUrl(track.musicbrainz_track_id)"
-            >
-              {{ track.title }}
-            </RouterLink>
-            <RouterLink
-              class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
-              :to="getArtistUrl(track.musicbrainz_artist_id)"
-            >
-              {{ track.artist }}
-            </RouterLink>
+          <td>
+            <div class="flex flex-row cursor-pointer px-1" @click="handlePlay(track)">
+              <div class="flex flex-col">
+                <RouterLink
+                  class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
+                  :to="getTrackUrl(track.musicbrainz_track_id)"
+                >
+                  {{ track.title }}
+                </RouterLink>
+                <RouterLink
+                  class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
+                  :to="getArtistUrl(track.musicbrainz_artist_id)"
+                >
+                  {{ track.artist }}
+                </RouterLink>
+              </div>
+            </div>
           </td>
-          <td v-if="showAlbum">
+          <td v-if="showAlbum" class="cursor-pointer" @click="handlePlay(track)">
             <RouterLink
-              class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
+              class="cursor-pointer px-1 text-sm text-white/80 no-underline hover:underline hover:underline-white"
               :to="getAlbumUrl(track.musicbrainz_album_id)"
             >
               {{ track.album }}
             </RouterLink>
           </td>
-          <td class="w-15 text-center">
+          <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
             {{ formatTime(Number.parseInt(track.duration)) }}
           </td>
         </tr>
