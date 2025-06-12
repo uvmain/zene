@@ -13,7 +13,7 @@ function onImageError(event: Event) {
 </script>
 
 <template>
-  <div class="w-30 flex flex-col gap-2">
+  <div class="w-30 flex flex-col cursor-pointer gap-2" @click="() => router.push(`/artists/${artist.musicbrainz_artist_id}`)">
     <div class="size-30">
       <img
         class="h-full w-full rounded-md object-cover"
