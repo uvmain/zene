@@ -57,7 +57,7 @@ const currentRoute = computed(() => {
           Genres
         </RouterLink>
         <RouterLink
-          to="/genres"
+          to="/playlist"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/playlists' }"
         >

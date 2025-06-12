@@ -49,6 +49,16 @@ export function usePlaybackQueue() {
     }
   }
 
+  const getRandomTracks = async (): Promise<TrackMetadataWithImageUrl[]> => {
+    const response = await backendFetchRequest('tracks?random=true&limit=100')
+    const json = await response.json() as TrackMetadata[]
+    const randomTracks = json.map((randomTrack) => {
+      return trackWithImageUrl(randomTrack)
+    })
+    setCurrentPlaylist(randomTracks)
+    return randomTracks
+  }
+
   const getNextTrack = async (): Promise<TrackMetadataWithImageUrl | undefined> => {
     if (currentPlaylist.value && currentPlaylist.value.tracks.length) {
       const currentIndex = currentPlaylist.value.position
@@ -101,5 +111,6 @@ export function usePlaybackQueue() {
     getNextTrack,
     getPreviousTrack,
     getRandomTrack,
+    getRandomTracks,
   }
 }

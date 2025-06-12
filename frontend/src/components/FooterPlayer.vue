@@ -2,8 +2,8 @@
 import { formatTime } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
-const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTrack } = usePlaybackQueue()
-
+const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentPlaylist } = usePlaybackQueue()
+const router = useRouter()
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
 const currentTime = ref(0)
@@ -79,29 +79,10 @@ function volumeInput(event: Event) {
   currentVolume.value = volume
 }
 
-async function randomTrack() {
-  if (!audioRef.value)
-    return
-
-  audioRef.value.pause()
-  audioRef.value.removeAttribute('src')
-  currentTime.value = 0
-  await getRandomTrack() // This now also sets the currentlyPlayingTrack
-  // setCurrentlyPlayingTrack(randomTrack) // No longer needed
-  audioRef.value.addEventListener(
-    'canplay',
-    () => {
-      audioRef.value?.play()
-    },
-    { once: true },
-  )
-  audioRef.value.src = trackUrl.value
-  audioRef.value.load()
+async function handleGetRandomTracks() {
+  await getRandomTracks()
+  router.push('/playlist')
 }
-
-onBeforeMount(() => {
-  randomTrack()
-})
 
 watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
   const audio = audioRef.value
@@ -133,56 +114,18 @@ onMounted(() => {
   if (!audio) {
     return
   }
-
   audio.addEventListener('play', updateIsPlaying)
   audio.addEventListener('pause', updateIsPlaying)
   audio.addEventListener('timeupdate', updateProgress)
   audio.addEventListener('ended', () => {
-    isPlaying.value = false
+    if (currentPlaylist.value && currentPlaylist.value.tracks.length > 0) {
+      getNextTrack()
+    }
+    else {
+      isPlaying.value = false
+    }
   })
 })
-
-async function playPrevious() {
-  const audio = audioRef.value
-  if (!audio)
-    return
-
-  audio.pause()
-  audio.removeAttribute('src')
-  currentTime.value = 0
-  await getPreviousTrack() // This now also sets the currentlyPlayingTrack
-  // setCurrentlyPlayingTrack(track) // No longer needed
-  audio.addEventListener(
-    'canplay',
-    () => {
-      audio.play()
-    },
-    { once: true },
-  )
-  audio.src = trackUrl.value
-  audio.load()
-}
-
-async function playNext() {
-  const audio = audioRef.value
-  if (!audio)
-    return
-
-  audio.pause()
-  audio.removeAttribute('src')
-  currentTime.value = 0
-  await getNextTrack() // This now also sets the currentlyPlayingTrack
-  // setCurrentlyPlayingTrack(nextTrack) // No longer needed
-  audio.addEventListener(
-    'canplay',
-    () => {
-      audio.play()
-    },
-    { once: true },
-  )
-  audio.src = trackUrl.value
-  audio.load()
-}
 
 onUnmounted(() => {
   const audio = audioRef.value
@@ -193,7 +136,12 @@ onUnmounted(() => {
   audio.removeEventListener('pause', updateIsPlaying)
   audio.removeEventListener('timeupdate', updateProgress)
   audio.removeEventListener('ended', () => {
-    isPlaying.value = false
+    if (currentPlaylist.value && currentPlaylist.value.tracks.length > 0) {
+      getNextTrack()
+    }
+    else {
+      isPlaying.value = false
+    }
   })
 
   audio.pause()
@@ -239,7 +187,7 @@ onUnmounted(() => {
             <button id="shuffle" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="togglePlayback()">
               <icon-tabler-arrows-shuffle class="text-xl" />
             </button>
-            <button id="back" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="playPrevious()">
+            <button id="back" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="getPreviousTrack()">
               <icon-tabler-player-skip-back class="text-xl" />
             </button>
             <button
@@ -251,7 +199,7 @@ onUnmounted(() => {
               <icon-tabler-player-play v-if="!isPlaying" class="text-3xl" />
               <icon-tabler-player-pause v-else class="text-3xl" />
             </button>
-            <button id="forward" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="playNext()">
+            <button id="forward" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="getNextTrack()">
               <icon-tabler-player-skip-forward class="text-xl" />
             </button>
             <button id="repeat" class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none" @click="togglePlayback()">
@@ -260,7 +208,7 @@ onUnmounted(() => {
             <button
               id="shuffle"
               class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none"
-              @click="randomTrack()"
+              @click="handleGetRandomTracks()"
             >
               <icon-tabler-dice-3 class="text-xl" />
             </button>
