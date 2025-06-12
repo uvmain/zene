@@ -3,12 +3,14 @@ import type { TrackMetadataWithImageUrl } from '../types'
 import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
-defineProps({
+const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<TrackMetadataWithImageUrl[]>, required: true },
 })
 
 const { currentlyPlayingTrack, currentPlaylist, play, setCurrentlyPlayingTrackInPlaylist } = usePlaybackQueue()
+const rowRefs = ref<any[]>([])
+const currentRow = ref()
 
 function isTrackPlaying(trackId: string): boolean {
   return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.musicbrainz_track_id === trackId) ?? false
@@ -22,11 +24,20 @@ function handlePlay(track: TrackMetadataWithImageUrl) {
     play(undefined, undefined, track)
   }
 }
+
+watch(currentlyPlayingTrack, async (newTrack) => {
+  if (!newTrack)
+    return
+  await nextTick()
+  const index = props.tracks.findIndex(track => track.musicbrainz_track_id === newTrack.musicbrainz_track_id)
+  currentRow.value = rowRefs.value[index]
+  currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+})
 </script>
 
 <template>
   <div class="rounded-lg bg-black/20 p-4">
-    {{ currentPlaylist?.position }} {{ currentPlaylist?.tracks.length }}
+    currentRow: {{ currentRow }}
     <table class="w-full table-auto text-left">
       <thead>
         <tr class="text-lg text-white/70">
@@ -54,8 +65,9 @@ function handlePlay(track: TrackMetadataWithImageUrl) {
       </thead>
       <tbody>
         <tr
-          v-for="track, index in tracks"
+          v-for="(track, index) in tracks"
           :key="track.title"
+          :ref="el => rowRefs[index] = el"
           class="group transition-colors duration-200 ease-out hover:bg-zene-200/20"
           :class="{ 'bg-white/02': index % 2 === 0, 'bg-white/40': isTrackPlaying(track.musicbrainz_track_id) }"
         >
