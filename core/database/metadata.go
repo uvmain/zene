@@ -13,7 +13,7 @@ func createMetadataTable(ctx context.Context) {
 	tableName := "track_metadata"
 	schema := `CREATE TABLE IF NOT EXISTS track_metadata (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		FOREIGN KEY(file_id) REFERENCES files(id),
+		file_id INTEGER,
 		filename TEXT,
 		format TEXT,
 		duration TEXT,
@@ -32,7 +32,8 @@ func createMetadataTable(ctx context.Context) {
 		musicbrainz_artist_id TEXT,
 		musicbrainz_album_id TEXT,
 		musicbrainz_track_id TEXT,
-		label TEXT
+		label TEXT,
+		FOREIGN KEY (file_id) REFERENCES files (id)
 	);`
 	createTable(ctx, tableName, schema)
 }
