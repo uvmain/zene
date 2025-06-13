@@ -21,6 +21,7 @@ var AlbumArtFolder string
 var ArtistArtFolder string
 var AudioCacheFolder string
 var AudioCacheMaxMB int
+var AudioCacheMaxDays int
 
 func LoadConfig() {
 
@@ -53,6 +54,18 @@ func LoadConfig() {
 			AudioCacheMaxMB = 500
 		} else {
 			AudioCacheMaxMB = audioCacheMaxMbInt
+		}
+	}
+
+	audioCacheMaxDays := os.Getenv("AUDIO_CACHE_MAX_DAYS")
+	if audioCacheMaxDays == "" {
+		AudioCacheMaxDays = 30
+	} else {
+		audioCacheMaxDaysInt, err := strconv.Atoi(audioCacheMaxMB)
+		if err != nil {
+			AudioCacheMaxDays = 30
+		} else {
+			AudioCacheMaxDays = audioCacheMaxDaysInt
 		}
 	}
 

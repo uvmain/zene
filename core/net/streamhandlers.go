@@ -40,7 +40,7 @@ func HandleStreamTrack(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error converting quality parameter to an integer.", 500)
 			return
 		}
-		err = ffmpeg.TranscodeAndStream(w, r, track.FilePath, musicBrainzTrackId, qualityInt)
+		err = ffmpeg.TranscodeAndStream(ctx, w, r, track.FilePath, musicBrainzTrackId, qualityInt)
 		if err != nil {
 			http.Error(w, "Error streaming audio", http.StatusInternalServerError)
 			return

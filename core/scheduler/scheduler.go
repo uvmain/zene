@@ -26,7 +26,7 @@ func startAudioCacheCleanupRoutine(ctx context.Context) {
 	log.Println("Starting audio cache cleanup routine")
 	go func() {
 		for {
-			cleanupAudioCache()
+			cleanupAudioCache(ctx)
 			time.Sleep(1 * time.Hour)
 		}
 	}()

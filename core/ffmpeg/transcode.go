@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"zene/core/config"
+	"zene/core/database"
 )
 
 func TranscodeFile(ctx context.Context, filePath string, trackId string, quality int) (string, error) {
@@ -19,22 +20,23 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 		return "", fmt.Errorf("File does not exist: %s:  %s", filePathAbs, err)
 	}
 
-	cacheLocation := fmt.Sprintf("%s.m4a", filepath.Join(config.AudioCacheFolder, trackId))
+	cacheKey := fmt.Sprintf("%s-%d.aac", trackId, quality)
+	cachePath := filepath.Join(config.AudioCacheFolder, cacheKey)
 
-	if _, err := os.Stat(cacheLocation); err == nil {
-		return cacheLocation, nil
+	if _, err := os.Stat(cachePath); err == nil {
+		return cachePath, nil
 	}
 
-	log.Printf("Transcoding %s at %dk at %s", filePath, quality, cacheLocation)
+	log.Printf("Transcoding %s at %dk at %s", filePath, quality, cachePath)
 
 	cmd := exec.Command("ffmpeg",
+		"-loglevel", "error",
 		"-i", filePathAbs,
 		"-vn",
 		"-c:a", "aac",
 		"-b:a", fmt.Sprintf("%dk", quality),
-		"-movflags", "+faststart",
-		"-f", "mp4",
-		cacheLocation,
+		"-f", "adts",
+		cachePath,
 	)
 
 	output, err := cmd.CombinedOutput()
@@ -44,16 +46,25 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 		log.Printf("Transcoding %s complete", filePath)
 	}
 
-	return cacheLocation, nil
+	err = database.UpsertAudioCacheEntry(ctx, cacheKey)
+	if err != nil {
+		log.Printf("Error upserting audiocache entry for: %s", cacheKey)
+		return "", err
+	}
+
+	return cachePath, nil
 }
 
-func TranscodeAndStream(w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, quality int) error {
+func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, quality int) error {
 	cacheKey := fmt.Sprintf("%s-%d.aac", trackId, quality)
 	cachePath := filepath.Join(config.AudioCacheFolder, cacheKey)
 
 	// serve from cache if it exists
 	if _, err := os.Stat(cachePath); err == nil {
 		log.Printf("Serving transcoded file from cache: %s", cachePath)
+		if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
+			log.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
+		}
 		f, err := os.Open(cachePath)
 		if err != nil {
 			return fmt.Errorf("failed to open cached file: %w", err)
@@ -113,6 +124,11 @@ func TranscodeAndStream(w http.ResponseWriter, r *http.Request, filePathAbs stri
 		return fmt.Errorf("copy failed: %w", err)
 	} else {
 		log.Printf("Transcoding %s complete, cached at %s", filePathAbs, cachePath)
+		err = database.UpsertAudioCacheEntry(ctx, cacheKey)
+		if err != nil {
+			log.Printf("Error upserting audiocache entry for: %s", cacheKey)
+			return err
+		}
 	}
 	if waitErr != nil {
 		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
