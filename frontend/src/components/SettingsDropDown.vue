@@ -1,6 +1,8 @@
 <script setup>
 import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useSettings } from '../composables/useSettings'
 
+const { streamQuality, StreamQualities } = useSettings()
 const open = ref(false)
 const dropdownRef = ref(null)
 
@@ -51,13 +53,21 @@ onBeforeUnmount(() => {
           >
             Run a Scan
           </div>
-          <a
-            href="#item2"
-            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            @click="close"
-          >
-            Item 2
-          </a>
+          <div class="px-4 py-2">
+            <label class="mb-1 block text-sm text-gray-500">Stream Quality</label>
+            <select
+              v-model="streamQuality"
+              class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring focus:ring-blue-200"
+            >
+              <option
+                v-for="quality in StreamQualities"
+                :key="quality"
+                :value="quality"
+              >
+                {{ quality === 'native' ? 'Original Quality' : `${quality} kbps` }}
+              </option>
+            </select>
+          </div>
           <a
             href="#item3"
             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

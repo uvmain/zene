@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import type { ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
-import { backendFetchRequest, getArtistTracks } from '../composables/fetchFromBackend'
+import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
+import dayjs from 'dayjs'
+import { backendFetchRequest, getArtistAlbums, getArtistTracks } from '../composables/fetchFromBackend'
 
 const route = useRoute()
 const artist = ref<ArtistMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()
+const albums = ref<AlbumMetadata[]>()
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 
@@ -15,7 +17,26 @@ async function getArtist() {
 }
 
 async function getTracks() {
-  tracks.value = await getArtistTracks(musicbrainz_artist_id.value)
+  tracks.value = await getArtistTracks(musicbrainz_artist_id.value, 30)
+}
+
+async function getAlbums() {
+  const json = await getArtistAlbums(musicbrainz_artist_id.value)
+  const albumMetadata: AlbumMetadata[] = []
+  json.forEach((metadata: any) => {
+    const metadataInstance = {
+      artist: metadata.artist,
+      album: metadata.album,
+      album_artist: metadata.album_artist,
+      musicbrainz_album_id: metadata.musicbrainz_album_id as string,
+      musicbrainz_artist_id: metadata.musicbrainz_artist_id,
+      genres: metadata.genres.split(';').filter((genre: string) => genre !== ''),
+      release_date: dayjs(metadata.release_date).format('YYYY'),
+      image_url: `/api/albums/${metadata.musicbrainz_album_id}/art?size=xl`,
+    }
+    albumMetadata.push(metadataInstance)
+  })
+  albums.value = albumMetadata
 }
 
 function onImageError(event: Event) {
@@ -30,6 +51,7 @@ onBeforeMount(async () => {
 
 onMounted(async () => {
   await getTracks()
+  await getAlbums()
 })
 </script>
 
@@ -55,5 +77,15 @@ onMounted(async () => {
       </div>
     </div>
   </section>
+  <div>
+    <h2 class="text-lg font-semibold">
+      Albums
+    </h2>
+    <div class="flex flex-wrap gap-6">
+      <div v-for="album in albums" :key="album.album" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+        <Album :album="album" size="lg" />
+      </div>
+    </div>
+  </div>
   <Tracks v-if="tracks" :tracks="tracks" :show-album="true" />
 </template>

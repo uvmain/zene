@@ -37,9 +37,10 @@ func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	searchParam := r.URL.Query().Get("search")
 	randomParam := r.URL.Query().Get("random")
+	recentParam := r.URL.Query().Get("recent")
+	chronoParam := r.URL.Query().Get("chronological")
 	limitParam := r.URL.Query().Get("limit")
 	offsetParam := r.URL.Query().Get("offset")
-	recentParam := r.URL.Query().Get("recent")
 
 	if randomParam != "" && randomParam != "true" && randomParam != "false" {
 		http.Error(w, "Invalid value for 'random' parameter", http.StatusBadRequest)
@@ -57,7 +58,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, limitParam, offsetParam, recentParam)
+	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {
 		log.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
@@ -124,6 +125,28 @@ func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(imageBlob)
+}
+
+func HandleGetArtistAlbums(w http.ResponseWriter, r *http.Request) {
+	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
+	randomParam := r.URL.Query().Get("random")
+	chronoParam := r.URL.Query().Get("chronological")
+	limitParam := r.URL.Query().Get("limit")
+	offsetParam := r.URL.Query().Get("offset")
+	recentParam := r.URL.Query().Get("recent")
+
+	rows, err := database.SelectAlbumsByArtistId(r.Context(), musicBrainzArtistId, randomParam, recentParam, chronoParam, limitParam, offsetParam)
+	if err != nil {
+		log.Printf("Error querying database: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(rows); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
 }
 
 func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {

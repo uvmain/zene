@@ -42,6 +42,7 @@ func StartServer() {
 	router.Handle("GET /api/artists/{musicBrainzArtistId}", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtist)))              // returns types.ArtistResponse
 	router.Handle("GET /api/artists/{musicBrainzArtistId}/tracks", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtistTracks))) // returns []types.Metadata; query params: recent=true, random=false, limit=10, offset=10
 	router.Handle("GET /api/artists/{musicBrainzArtistId}/art", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtistArt)))       // returns image/jpeg blob
+	router.Handle("GET /api/artists/{musicBrainzArtistId}/albums", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetArtistAlbums))) // returns []types.AlbumsResponse
 	router.Handle("GET /api/albums", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetAlbums)))                                     // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
 	router.Handle("GET /api/albums/{musicBrainzAlbumId}", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetAlbum)))                 // returns types.AlbumsResponse
 	router.Handle("GET /api/albums/{musicBrainzAlbumId}/art", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetAlbumArt)))          // returns image/jpeg blob
