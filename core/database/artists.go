@@ -55,7 +55,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	stmtText = "SELECT * FROM metadata where musicbrainz_artist_id = $musicbrainz_artist_id"
 
 	if recent == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY f.date_added desc", stmtText)
+		stmtText = fmt.Sprintf("%s ORDER BY date_added desc", stmtText)
 	} else if random == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
 	}
@@ -154,7 +154,7 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 		stmtText = fmt.Sprintf("%s and artists_fts MATCH $searchQuery", stmtText)
 	}
 	if recent == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY f.date_added desc", stmtText)
+		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
 	} else if random == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
 	}

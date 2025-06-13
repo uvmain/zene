@@ -1,5 +1,12 @@
 import type { TrackMetadata, TrackMetadataWithImageUrl } from '../types'
+import { useSessionStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
+
+const inputText = useSessionStorage<string>('searchInput', '')
+
+export function closeSearch() {
+  inputText.value = ''
+}
 
 export function niceDate(dateString: string): string {
   const date = dayjs(dateString)
