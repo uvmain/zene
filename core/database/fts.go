@@ -92,12 +92,12 @@ func createFtsArtistsTriggers(ctx context.Context) {
 
 	createTrigger(ctx, "tr_metadata_update_artists_fts", `CREATE TRIGGER tr_metadata_update_artists_fts AFTER UPDATE ON metadata
     BEGIN
-        UPDATE artists_fts SET metadata_id = new.file_path, artist = new.artist WHERE metadata_id = old.file_path;
+        UPDATE artists_fts SET artist = new.artist WHERE file_path = old.file_path;
     END;`)
 }
 
 func insertFtsArtistsData(ctx context.Context) {
-	query := `INSERT INTO artists_fts (metadata_id, artist)
+	query := `INSERT INTO artists_fts (file_path, artist)
 		SELECT file_path, artist FROM metadata;`
 
 	conn, err := DbPool.Take(ctx)

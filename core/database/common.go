@@ -95,7 +95,7 @@ func createTrigger(ctx context.Context, triggerName string, triggerSQL string) {
 	}
 }
 
-func createIndex(ctx context.Context, indexName string, indexTable string, indexColumn string, indexUnique bool) {
+func createIndex(ctx context.Context, indexName, indexTable, indexColumn string, indexUnique bool) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
@@ -105,40 +105,42 @@ func createIndex(ctx context.Context, indexName string, indexTable string, index
 	}
 	defer DbPool.Put(conn)
 
-	stmt, err := conn.Prepare("SELECT name FROM sqlite_master WHERE type='index' AND name=$indexName")
+	stmt, err := conn.Prepare("SELECT name FROM sqlite_master WHERE type='index' AND name=?")
 	if err != nil {
 		log.Fatalf("Failed to prepare stmt for createIndex: %v", err)
 	}
 	defer stmt.Finalize()
-	stmt.SetText("$indexName", indexName)
+	stmt.BindText(1, indexName)
 
 	hasRow, err := stmt.Step()
+	if err != nil {
+		log.Printf("Error checking for %s index: %s", indexName, err)
+		return
+	}
 	if hasRow {
 		log.Printf("%s index already exists", indexName)
-	} else if err != nil {
-		log.Printf("Error checking for %s index: %s", indexName, err)
-	} else {
-		var stmt *sqlite.Stmt
-
-		if indexUnique {
-			stmt, err = conn.Prepare("CREATE UNIQUE INDEX $indexName ON $indexTable ($indexColumn);")
-		} else {
-			stmt, err = conn.Prepare("CREATE INDEX $indexName ON $indexTable ($indexColumn);")
-		}
-		if err != nil {
-			log.Printf("Failed to prepare stmt for createIndex: %v", err)
-			return
-		}
-		defer stmt.Finalize()
-		stmt.SetText("$indexName", indexName)
-		stmt.SetText("$indexTable", indexTable)
-		stmt.SetText("$indexColumn", indexColumn)
-
-		_, err = stmt.Step()
-		if err != nil {
-			log.Printf("Error creating %s index: %s", indexName, err)
-			return
-		}
-		log.Printf("%s index created", indexName)
+		return
 	}
+
+	var sql string
+	if indexUnique {
+		sql = fmt.Sprintf("CREATE UNIQUE INDEX %q ON %q (%q);", indexName, indexTable, indexColumn)
+	} else {
+		sql = fmt.Sprintf("CREATE INDEX %q ON %q (%q);", indexName, indexTable, indexColumn)
+	}
+
+	stmt2, err := conn.Prepare(sql)
+	if err != nil {
+		log.Printf("Failed to prepare CREATE INDEX for %s: %v", indexName, err)
+		return
+	}
+	defer stmt2.Finalize()
+
+	_, err = stmt2.Step()
+	if err != nil {
+		log.Printf("Error creating %s index: %s", indexName, err)
+		return
+	}
+
+	log.Printf("%s index created", indexName)
 }
