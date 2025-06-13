@@ -2,7 +2,7 @@ package types
 
 type FfprobeOutput struct {
 	Format struct {
-		Filename   string            `json:"filename"`
+		Filename   string            `json:"file_name"`
 		FormatName string            `json:"format_name"`
 		Tags       map[string]string `json:"tags"`
 		Duration   string            `json:"duration"`
@@ -14,7 +14,7 @@ type FfprobeOutput struct {
 type FfprobeOpusOutput struct {
 	Streams []Stream `json:"streams"`
 	Format  struct {
-		Filename   string `json:"filename"`
+		Filename   string `json:"file_name"`
 		FormatName string `json:"format_name"`
 		Duration   string `json:"duration"`
 		Size       string `json:"size"`

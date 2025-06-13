@@ -9,14 +9,14 @@ import (
 	"zombiezen.com/go/sqlite"
 )
 
-func SelectAllTracks(ctx context.Context, random string, limit string, recent string) ([]types.TrackMetadata, error) {
+func SelectAllTracks(ctx context.Context, random string, limit string, recent string) ([]types.Metadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
-		return []types.TrackMetadata{}, err
+		return []types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
 
@@ -25,44 +25,45 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 	if recent == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT * FROM track_metadata m join files f on m.file_id = f.id ORDER BY f.date_added desc limit $limit;`)
+			stmt = conn.Prep(`SELECT * FROM metadata ORDER BY date_added desc limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT * FROM track_metadata m join files f on m.file_id = f.id ORDER BY f.date_added desc;`)
+			stmt = conn.Prep(`SELECT * FROM metadata ORDER BY date_added desc;`)
 		}
 	} else if random == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT * FROM track_metadata order by random() limit $limit;`)
+			stmt = conn.Prep(`SELECT * FROM metadata order by random() limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT * FROM track_metadata order by random();`)
+			stmt = conn.Prep(`SELECT * FROM metadata order by random();`)
 		}
 	} else {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT * FROM track_metadata ORDER BY id limit $limit;`)
+			stmt = conn.Prep(`SELECT * FROM metadata limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT * FROM track_metadata ORDER BY id;`)
+			stmt = conn.Prep(`SELECT * FROM metadata;`)
 		}
 	}
 
 	defer stmt.Finalize()
 
-	var rows []types.TrackMetadata
+	var rows []types.Metadata
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []types.TrackMetadata{}, err
+			return []types.Metadata{}, err
 		} else if !hasRow {
 			break
 		}
 
-		row := types.TrackMetadata{
-			Id:                  int(stmt.GetInt64("id")),
-			FileId:              int(stmt.GetInt64("file_id")),
-			Filename:            stmt.GetText("filename"),
+		row := types.Metadata{
+			FilePath:            stmt.GetText("file_path"),
+			DateAdded:           stmt.GetText("date_added"),
+			DateModified:        stmt.GetText("date_modified"),
+			FileName:            stmt.GetText("file_name"),
 			Format:              stmt.GetText("format"),
 			Duration:            stmt.GetText("duration"),
 			Size:                stmt.GetText("size"),
@@ -86,38 +87,39 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 	}
 
 	if rows == nil {
-		rows = []types.TrackMetadata{}
+		rows = []types.Metadata{}
 	}
 	return rows, nil
 }
 
-func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.TrackMetadata, error) {
+func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Printf("failed to take a db conn from the pool in SelectTrack: %v", err)
-		return types.TrackMetadata{}, err
+		return types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
 
 	var stmt *sqlite.Stmt
 
-	stmt = conn.Prep(`SELECT * FROM track_metadata where musicbrainz_track_id = $musicbrainz_track_id limit 1;`)
+	stmt = conn.Prep(`SELECT * FROM metadata where musicbrainz_track_id = $musicbrainz_track_id limit 1;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_track_id", musicBrainzTrackId)
 
-	var row types.TrackMetadata
+	var row types.Metadata
 
 	if hasRow, err := stmt.Step(); err != nil {
-		return types.TrackMetadata{}, err
+		return types.Metadata{}, err
 	} else if !hasRow {
-		return types.TrackMetadata{}, nil
+		return types.Metadata{}, nil
 	} else {
-		row.Id = int(stmt.GetInt64("id"))
-		row.FileId = int(stmt.GetInt64("file_id"))
-		row.Filename = stmt.GetText("filename")
+		row.FilePath = stmt.GetText("file_path")
+		row.DateAdded = stmt.GetText("date_added")
+		row.DateModified = stmt.GetText("date_modified")
+		row.FileName = stmt.GetText("file_name")
 		row.Format = stmt.GetText("format")
 		row.Duration = stmt.GetText("duration")
 		row.Size = stmt.GetText("size")
@@ -139,4 +141,40 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.TrackMet
 	}
 
 	return row, nil
+}
+
+func SelectTrackFiles(ctx context.Context) ([]types.File, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		log.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
+		return []types.File{}, err
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT file_path, date_modified FROM metadata;`)
+	defer stmt.Finalize()
+
+	var rows []types.File
+	for {
+		hasRow, err := stmt.Step()
+		if err != nil {
+			return []types.File{}, err
+		} else if !hasRow {
+			break
+		}
+
+		row := types.File{
+			FilePathAbs:  stmt.GetText("file_path"),
+			DateModified: stmt.GetText("date_modified"),
+		}
+		rows = append(rows, row)
+	}
+
+	if rows == nil {
+		rows = []types.File{}
+	}
+	return rows, nil
 }

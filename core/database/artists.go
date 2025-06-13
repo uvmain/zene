@@ -21,7 +21,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM track_metadata	where musicbrainz_artist_id = $musicbrainz_artist_id limit 1;`)
+	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM metadata where musicbrainz_artist_id = $musicbrainz_artist_id limit 1;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 
@@ -38,24 +38,24 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	}
 }
 
-func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, limit string, offset string, recent string) ([]types.TrackMetadata, error) {
+func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, limit string, offset string, recent string) ([]types.Metadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Printf("failed to take a db conn from the pool in SelectTracksByArtistId: %v", err)
-		return []types.TrackMetadata{}, err
+		return []types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
 
 	var stmtText string
 	var stmt *sqlite.Stmt
 
-	stmtText = "SELECT m.* FROM track_metadata m join files f on m.file_id = f.id where m.musicbrainz_artist_id = $musicbrainz_artist_id"
+	stmtText = "SELECT * FROM metadata where musicbrainz_artist_id = $musicbrainz_artist_id"
 
 	if recent == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY f.date_added desc", stmtText)
+		stmtText = fmt.Sprintf("%s ORDER BY date_added desc", stmtText)
 	} else if random == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
 	}
@@ -76,31 +76,32 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	if limit != "" {
 		limitInt, err := strconv.Atoi(limit)
 		if err != nil {
-			return []types.TrackMetadata{}, fmt.Errorf("failed to convert limit to int: %v", err)
+			return []types.Metadata{}, fmt.Errorf("failed to convert limit to int: %v", err)
 		}
 		stmt.SetInt64("$limit", int64(limitInt))
 	}
 	if offset != "" {
 		offsetInt, err := strconv.Atoi(offset)
 		if err != nil {
-			return []types.TrackMetadata{}, fmt.Errorf("failed to convert limit to int: %v", err)
+			return []types.Metadata{}, fmt.Errorf("failed to convert limit to int: %v", err)
 		}
 		stmt.SetInt64("$offset", int64(offsetInt))
 	}
 
-	var rows []types.TrackMetadata
+	var rows []types.Metadata
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []types.TrackMetadata{}, err
+			return []types.Metadata{}, err
 		} else if !hasRow {
 			break
 		}
 
-		row := types.TrackMetadata{
-			Id:                  int(stmt.GetInt64("id")),
-			FileId:              int(stmt.GetInt64("file_id")),
-			Filename:            stmt.GetText("filename"),
+		row := types.Metadata{
+			FilePath:            stmt.GetText("file_path"),
+			DateAdded:           stmt.GetText("date_added"),
+			DateModified:        stmt.GetText("date_modified"),
+			FileName:            stmt.GetText("file_name"),
 			Format:              stmt.GetText("format"),
 			Duration:            stmt.GetText("duration"),
 			Size:                stmt.GetText("size"),
@@ -124,7 +125,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	}
 
 	if rows == nil {
-		rows = []types.TrackMetadata{}
+		rows = []types.Metadata{}
 	}
 	return rows, nil
 }
@@ -143,17 +144,17 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	var stmtText string
 	var stmt *sqlite.Stmt
 
-	stmtText = "select distinct m.album_artist, m.musicbrainz_artist_id FROM track_metadata m"
+	stmtText = "select distinct m.album_artist, m.musicbrainz_artist_id FROM metadata m"
 	if searchParam != "" {
-		stmtText = fmt.Sprintf("%s JOIN artists_fts s ON m.file_id = s.file_id", stmtText)
+		stmtText = fmt.Sprintf("%s JOIN artists_fts f ON m.file_path = f.file_path", stmtText)
 	}
-	stmtText = fmt.Sprintf("%s join files f on f.id = m.file_id where m.album_artist = m.artist", stmtText)
+	stmtText = fmt.Sprintf("%s where m.album_artist = m.artist", stmtText)
 
 	if searchParam != "" {
 		stmtText = fmt.Sprintf("%s and artists_fts MATCH $searchQuery", stmtText)
 	}
 	if recent == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY f.date_added desc", stmtText)
+		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
 	} else if random == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
 	}

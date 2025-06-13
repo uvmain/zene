@@ -7,44 +7,43 @@ import (
 	"zene/core/types"
 )
 
-func SearchMetadata(ctx context.Context, searchQuery string) ([]types.TrackMetadata, error) {
+func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Printf("failed to take a db conn from the pool in SearchMetadata: %v", err)
-		return []types.TrackMetadata{}, err
+		return []types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`select distinct m.file_id, m.filename, m.format, m.duration, m.size, m.bitrate, m.title, m.artist, m.album,
-		m.album_artist, m.genre, m.track_number, m.total_tracks, m.disc_number, m.total_discs, m.release_date,
-		m.musicbrainz_artist_id, m.musicbrainz_album_id, m.musicbrainz_track_id, m.label
-		FROM track_metadata m JOIN track_metadata_fts f ON m.file_id = f.file_id
-		WHERE track_metadata_fts MATCH $searchQuery
-		ORDER BY m.file_id DESC;`)
+	stmt := conn.Prep(`select distinct m.*
+		FROM metadata m JOIN metadata_fts f ON f.file_path = m.file_path
+		WHERE metadata_fts MATCH $searchQuery
+		ORDER BY m.file_path DESC;`)
 	defer stmt.Finalize()
 
 	if searchQuery != "" {
 		stmt.SetText("$searchQuery", searchQuery)
 	} else {
-		return []types.TrackMetadata{}, fmt.Errorf("FTS Query cannot be empty")
+		return []types.Metadata{}, fmt.Errorf("FTS Query cannot be empty")
 	}
 
-	var rows []types.TrackMetadata
+	var rows []types.Metadata
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []types.TrackMetadata{}, err
+			return []types.Metadata{}, err
 		} else if !hasRow {
 			break
 		}
 
-		row := types.TrackMetadata{
-			Id:                  int(stmt.GetInt64("id")),
-			FileId:              int(stmt.GetInt64("file_id")),
-			Filename:            stmt.GetText("filename"),
+		row := types.Metadata{
+			FilePath:            stmt.GetText("file_path"),
+			DateAdded:           stmt.GetText("date_added"),
+			DateModified:        stmt.GetText("date_modified"),
+			FileName:            stmt.GetText("file_name"),
 			Format:              stmt.GetText("format"),
 			Duration:            stmt.GetText("duration"),
 			Size:                stmt.GetText("size"),
@@ -68,7 +67,7 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.TrackMetad
 	}
 
 	if rows == nil {
-		rows = []types.TrackMetadata{}
+		rows = []types.Metadata{}
 	}
 	return rows, nil
 }

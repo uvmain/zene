@@ -2,23 +2,24 @@ package main
 
 import (
 	"context"
-	"zene/core/art"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/io"
 	"zene/core/scanner"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	config.LoadConfig()
-
+	io.CreateDirs()
 	database.Initialise(ctx)
 	defer database.CloseDatabase()
 
-	art.Initialise()
-
-	go scanner.RunScan(ctx)
+	go func() {
+		scanner.RunScan(ctx)
+	}()
 
 	StartServer()
 }

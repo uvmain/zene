@@ -8,50 +8,20 @@ import (
 
 	"zene/core/art"
 	"zene/core/database"
-	"zene/core/scanner"
+	"zene/core/io"
+
+	// "zene/core/scanner"
 	"zene/core/types"
 )
 
-func HandleGetFiles(w http.ResponseWriter, r *http.Request) {
-	rows, err := database.SelectAllFiles(r.Context())
+func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
+	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
+	track, err := database.SelectTrack(r.Context(), musicBrainzTrackId)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
-		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		http.Error(w, "File not found", http.StatusNotFound)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
-		return
-	}
-}
-
-func HandleGetFile(w http.ResponseWriter, r *http.Request) {
-	fileId := r.PathValue("fileId")
-	if fileId == "" {
-		http.Error(w, "Missing fileId parameter", http.StatusBadRequest)
-		return
-	}
-
-	row, err := database.SelectFileByFileId(r.Context(), fileId)
-
-	if err != nil {
-		log.Printf("Error querying database: %v", err)
-		http.Error(w, "Failed to query database", http.StatusInternalServerError)
-		return
-	} else {
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(row); err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-	}
-}
-
-func HandleDownloadFile(w http.ResponseWriter, r *http.Request) {
-	fileId := r.PathValue("fileId")
-	fileBlob, err := database.GetFileBlob(r.Context(), fileId)
+	fileBlob, err := io.GetFileBlob(r.Context(), track.FilePath)
 
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)
@@ -260,14 +230,14 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandlePostScan(w http.ResponseWriter, r *http.Request) {
-	scanResult := scanner.RunScan(r.Context())
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
-		log.Println("Error encoding database response:", err)
-		return
-	}
-}
+// func HandlePostScan(w http.ResponseWriter, r *http.Request) {
+// 	scanResult := scanner.RunScan(r.Context())
+// 	w.Header().Set("Content-Type", "application/json")
+// 	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
+// 		log.Println("Error encoding database response:", err)
+// 		return
+// 	}
+// }
 
 func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("search")

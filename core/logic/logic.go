@@ -34,7 +34,7 @@ func GenerateSlug() string {
 // usage:
 //
 //	if err := logic.CheckContext(ctx); err != nil {
-//		return []types.TrackMetadata{}, err
+//		return []types.Metadata{}, err
 //	}
 func CheckContext(ctx context.Context) error {
 	select {

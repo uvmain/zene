@@ -10,21 +10,20 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
 	"zene/core/database"
 	"zene/core/logic"
 )
 
-func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
-	fileId := r.PathValue("fileId")
-	filesRow, err := database.SelectFileByFileId(r.Context(), fileId)
+func HandleStreamTrack(w http.ResponseWriter, r *http.Request) {
+	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
+	track, err := database.SelectTrack(r.Context(), musicBrainzTrackId)
 
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)
 		return
 	}
 
-	file, err := os.Open(filesRow.FilePath)
+	file, err := os.Open(track.FilePath)
 	if err != nil {
 		http.Error(w, "file not found", http.StatusNotFound)
 		return
@@ -102,7 +101,7 @@ func HandleStreamFile(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
 		w.Header().Set("Content-Length", strconv.FormatInt(contentLength, 10))
 		w.Header().Set("Accept-Ranges", "bytes")
-		contentType := mime.TypeByExtension(filepath.Ext(filesRow.FilePath))
+		contentType := mime.TypeByExtension(filepath.Ext(track.FilePath))
 		if contentType == "" {
 			contentType = "application/octet-stream"
 		}

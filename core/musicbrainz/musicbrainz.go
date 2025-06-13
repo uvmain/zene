@@ -8,10 +8,23 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"zene/core/logic"
 	"zene/core/types"
 )
+
+var (
+	mbCache   = make(map[string]types.MbRelease)
+	mbCacheMu sync.RWMutex
+)
+
+func ClearMbCache() {
+	mbCacheMu.Lock()
+	defer mbCacheMu.Unlock()
+	mbCache = make(map[string]types.MbRelease)
+	log.Println("MusicBrainz album metadata cache cleared")
+}
 
 func addUserAgentHeaderToRequest(req *http.Request) {
 	var userAgent = "zene/core/1.0 (https://github.com/uvmain/zene)"
@@ -19,6 +32,14 @@ func addUserAgentHeaderToRequest(req *http.Request) {
 }
 
 func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbRelease, error) {
+	// check cache first
+	mbCacheMu.RLock()
+	data, found := mbCache[musicBrainzAlbumId]
+	mbCacheMu.RUnlock()
+	if found {
+		return data, nil
+	}
+
 	log.Printf("Fetching metadata from MB for album ID: %s", musicBrainzAlbumId)
 	url := fmt.Sprintf("http://musicbrainz.org/ws/2/release/%s?fmt=json", musicBrainzAlbumId)
 
@@ -45,10 +66,14 @@ func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbReleas
 		return types.MbRelease{}, err
 	}
 
-	var data types.MbRelease
 	if err := json.Unmarshal(body, &data); err != nil {
 		return types.MbRelease{}, err
 	}
+
+	// Store in cache
+	mbCacheMu.Lock()
+	mbCache[musicBrainzAlbumId] = data
+	mbCacheMu.Unlock()
 
 	return data, nil
 }

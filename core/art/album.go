@@ -29,7 +29,7 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 	directories := []string{}
 
 	for _, trackMetadata := range trackMetadataRows {
-		directory := filepath.Dir(trackMetadata.Filename)
+		directory := filepath.Dir(trackMetadata.FileName)
 		if !slices.Contains(directories, directory) {
 			directories = append(directories, directory)
 		}
@@ -120,9 +120,9 @@ func getArtFromInternet(ctx context.Context, musicBrainzAlbumId string) {
 }
 
 func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size string) ([]byte, error) {
-	filename := strings.Join([]string{musicBrainzAlbumId, size}, "_")
-	filename = strings.Join([]string{filename, "jpg"}, ".")
-	filePath, _ := filepath.Abs(filepath.Join(config.AlbumArtFolder, filename))
+	file_name := strings.Join([]string{musicBrainzAlbumId, size}, "_")
+	file_name = strings.Join([]string{file_name, "jpg"}, ".")
+	filePath, _ := filepath.Abs(filepath.Join(config.AlbumArtFolder, file_name))
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		log.Printf("Image file does not exist: %s:  %s", filePath, err)
@@ -131,7 +131,7 @@ func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size string)
 
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Printf("Error reading image for filename %s: %s", filename, err)
+		log.Printf("Error reading image for file_name %s: %s", file_name, err)
 		return nil, err
 	}
 	return blob, nil

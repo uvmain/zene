@@ -134,8 +134,8 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string) {
 }
 
 func GetArtForArtist(ctx context.Context, musicBrainzArtistId string) ([]byte, error) {
-	filename := strings.Join([]string{musicBrainzArtistId, "jpg"}, ".")
-	filePath, _ := filepath.Abs(filepath.Join(config.ArtistArtFolder, filename))
+	file_name := strings.Join([]string{musicBrainzArtistId, "jpg"}, ".")
+	filePath, _ := filepath.Abs(filepath.Join(config.ArtistArtFolder, file_name))
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		log.Printf("Image file does not exist: %s:  %s", filePath, err)
@@ -143,7 +143,7 @@ func GetArtForArtist(ctx context.Context, musicBrainzArtistId string) ([]byte, e
 	}
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Printf("Error reading image for filename %s: %s", filename, err)
+		log.Printf("Error reading image for file_name %s: %s", file_name, err)
 		return nil, err
 	}
 	return blob, nil

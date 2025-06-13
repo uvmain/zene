@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { useSearch } from '../composables/useSearch'
+
 const route = useRoute()
+const { closeSearch } = useSearch()
 
 const currentRoute = computed(() => {
   return route.path
@@ -20,6 +23,7 @@ const currentRoute = computed(() => {
           to="/"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/' }"
+          @click="closeSearch()"
         >
           <icon-tabler-home />
           Home
@@ -28,6 +32,7 @@ const currentRoute = computed(() => {
           to="/albums"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/albums' }"
+          @click="closeSearch()"
         >
           <icon-tabler-vinyl />
           Albums
@@ -36,6 +41,7 @@ const currentRoute = computed(() => {
           to="/tracks"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/tracks' }"
+          @click="closeSearch()"
         >
           <icon-tabler-music />
           Tracks
@@ -44,6 +50,7 @@ const currentRoute = computed(() => {
           to="/artists"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/artists' }"
+          @click="closeSearch()"
         >
           <icon-tabler-users-group />
           Artists
@@ -52,6 +59,7 @@ const currentRoute = computed(() => {
           to="/genres"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/genres' }"
+          @click="closeSearch()"
         >
           <icon-tabler-tags />
           Genres
@@ -60,6 +68,7 @@ const currentRoute = computed(() => {
           to="/playlist"
           class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
           :class="{ 'ml-4': currentRoute === '/playlists' }"
+          @click="closeSearch()"
         >
           <icon-tabler-playlist />
           Playlists
