@@ -96,7 +96,7 @@ func getArtFromFolder(ctx context.Context, musicBrainzAlbumId string, imagePath 
 }
 
 func getArtFromInternet(ctx context.Context, musicBrainzAlbumId string) {
-	log.Printf("fetching art for %s from musicbrainz", musicBrainzAlbumId)
+	log.Printf("Fetching art for %s from musicbrainz", musicBrainzAlbumId)
 	albumArtUrl, err := musicbrainz.GetAlbumArtUrl(ctx, musicBrainzAlbumId)
 	if err != nil {
 		log.Printf("Failed to get album art url for %s from musicbrainz: %v", musicBrainzAlbumId, err)

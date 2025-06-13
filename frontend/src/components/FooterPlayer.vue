@@ -3,8 +3,10 @@ import { onKeyStroke } from '@vueuse/core'
 import { getAlbumTracks } from '../composables/fetchFromBackend'
 import { formatTime } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import { useSettings } from '../composables/useSettings'
 
 const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
+const { streamQuality } = useSettings()
 const router = useRouter()
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -20,7 +22,7 @@ const currentRoute = computed(() => {
 })
 
 const trackUrl = computed<string>(() => {
-  return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream` : ''
+  return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream?quality=${streamQuality.value}` : ''
 })
 
 async function togglePlayback() {

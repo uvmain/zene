@@ -19,6 +19,8 @@ var AudioFileTypes []string
 var ArtworkFolder string
 var AlbumArtFolder string
 var ArtistArtFolder string
+var AudioCacheFolder string
+var AudioCacheMaxMB int
 
 func LoadConfig() {
 
@@ -37,9 +39,22 @@ func LoadConfig() {
 	}
 
 	DatabaseDirectory = filepath.Join(dataPath, "database")
+	AudioCacheFolder = filepath.Join(dataPath, "audio-cache")
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")
+
+	audioCacheMaxMB := os.Getenv("AUDIO_CACHE_MAX_MB")
+	if audioCacheMaxMB == "" {
+		AudioCacheMaxMB = 500
+	} else {
+		audioCacheMaxMbInt, err := strconv.Atoi(audioCacheMaxMB)
+		if err != nil {
+			AudioCacheMaxMB = 500
+		} else {
+			AudioCacheMaxMB = audioCacheMaxMbInt
+		}
+	}
 
 	ffmpegPath := os.Getenv("FFMPEG_PATH")
 	if ffmpegPath == "" {

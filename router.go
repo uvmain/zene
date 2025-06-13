@@ -51,8 +51,8 @@ func StartServer() {
 	router.Handle("GET /api/tracks/{musicBrainzTrackId}/download", auth.AuthMiddleware(http.HandlerFunc(net.HandleDownloadTrack)))   // returns blob
 	router.Handle("GET /api/tracks/{musicBrainzTrackId}/stream", auth.AuthMiddleware(http.HandlerFunc(net.HandleStreamTrack)))       // returns blob range
 	router.Handle("GET /api/genres", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetGenres)))                                     // query params: search=searchTerm
-	// router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(net.HandlePostScan)))                                       //
-	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(net.HandleSearchMetadata))) // query params: search=searchTerm
+	router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(net.HandlePostScan)))                                       //
+	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(net.HandleSearchMetadata)))                                // query params: search=searchTerm
 
 	handler := cors.AllowAll().Handler(router)
 

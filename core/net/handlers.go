@@ -9,6 +9,7 @@ import (
 	"zene/core/art"
 	"zene/core/database"
 	"zene/core/io"
+	"zene/core/scanner"
 
 	// "zene/core/scanner"
 	"zene/core/types"
@@ -230,14 +231,14 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func HandlePostScan(w http.ResponseWriter, r *http.Request) {
-// 	scanResult := scanner.RunScan(r.Context())
-// 	w.Header().Set("Content-Type", "application/json")
-// 	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
-// 		log.Println("Error encoding database response:", err)
-// 		return
-// 	}
-// }
+func HandlePostScan(w http.ResponseWriter, r *http.Request) {
+	scanResult := scanner.RunScan(r.Context())
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
+		log.Println("Error encoding database response:", err)
+		return
+	}
+}
 
 func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
 	searchQuery := r.URL.Query().Get("search")

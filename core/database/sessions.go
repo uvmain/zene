@@ -115,13 +115,3 @@ func CleanupExpiredSessions(ctx context.Context) {
 	}
 	log.Printf("Session cleanup finished")
 }
-
-func StartSessionCleanupRoutine(ctx context.Context) {
-	log.Println("Starting session cleanup routine")
-	go func() {
-		for {
-			time.Sleep(1 * time.Hour)
-			CleanupExpiredSessions(ctx)
-		}
-	}()
-}

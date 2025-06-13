@@ -23,7 +23,6 @@ func Initialise(ctx context.Context) {
 	createArtistArtTable(ctx)
 	createFtsTables(ctx)
 	CreateSessionsTable(ctx)
-	StartSessionCleanupRoutine(ctx)
 }
 
 func openDatabase(ctx context.Context) {

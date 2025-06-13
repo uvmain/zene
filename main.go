@@ -6,6 +6,7 @@ import (
 	"zene/core/database"
 	"zene/core/io"
 	"zene/core/scanner"
+	"zene/core/scheduler"
 )
 
 func main() {
@@ -16,6 +17,8 @@ func main() {
 	io.CreateDirs()
 	database.Initialise(ctx)
 	defer database.CloseDatabase()
+
+	scheduler.Init(ctx)
 
 	go func() {
 		scanner.RunScan(ctx)
