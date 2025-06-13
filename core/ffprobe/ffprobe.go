@@ -7,9 +7,9 @@ import (
 	"zene/core/types"
 )
 
-func GetTags(audiofilePath string) (types.TrackMetadata, error) {
+func GetTags(audiofilePath string) (types.Tags, error) {
 	var err error
-	var result types.TrackMetadata
+	var result types.Tags
 
 	if filepath.Ext(audiofilePath) == ".opus" {
 		result, err = GetOpusTags(audiofilePath)

@@ -8,14 +8,20 @@ import (
 
 	"zene/core/art"
 	"zene/core/database"
+	"zene/core/io"
 
 	// "zene/core/scanner"
 	"zene/core/types"
 )
 
 func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
-	fileId := r.PathValue("fileId")
-	fileBlob, err := database.GetFileBlob(r.Context(), fileId)
+	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
+	track, err := database.SelectTrack(r.Context(), musicBrainzTrackId)
+	if err != nil {
+		http.Error(w, "File not found", http.StatusNotFound)
+		return
+	}
+	fileBlob, err := io.GetFileBlob(r.Context(), track.FilePath)
 
 	if err != nil {
 		http.Error(w, "File not found", http.StatusNotFound)

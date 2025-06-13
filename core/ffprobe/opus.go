@@ -11,12 +11,12 @@ import (
 	"zene/core/types"
 )
 
-func GetOpusTags(audiofilePath string) (types.TrackMetadata, error) {
+func GetOpusTags(audiofilePath string) (types.Tags, error) {
 	cmd := exec.Command(config.FfprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", audiofilePath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error running ffprobe: %s", output)
-		return types.TrackMetadata{}, err
+		return types.Tags{}, err
 	}
 
 	var ffprobeOutput types.FfprobeOpusOutput
@@ -24,7 +24,7 @@ func GetOpusTags(audiofilePath string) (types.TrackMetadata, error) {
 	err = json.Unmarshal(output, &ffprobeOutput)
 	if err != nil {
 		log.Printf("Error parsing ffprobe output: %v", err)
-		return types.TrackMetadata{}, err
+		return types.Tags{}, err
 	}
 
 	tags := ffprobeOutput.Streams[0].Tags
@@ -66,12 +66,11 @@ func GetOpusTags(audiofilePath string) (types.TrackMetadata, error) {
 	}
 
 	if parsedReleaseDate == "" {
-		metadata, _ := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
-		parsedReleaseDate = metadata.Date
+		musicBrainzData, _ := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
+		parsedReleaseDate = musicBrainzData.Date
 	}
 
-	metadata := types.TrackMetadata{
-		Filename:            ffprobeOutput.Format.Filename,
+	parsedTags := types.Tags{
 		Format:              ffprobeOutput.Format.FormatName,
 		Duration:            ffprobeOutput.Format.Duration,
 		Size:                ffprobeOutput.Format.Size,
@@ -92,5 +91,5 @@ func GetOpusTags(audiofilePath string) (types.TrackMetadata, error) {
 		TotalDiscs:          totalDiscs,
 	}
 
-	return metadata, nil
+	return parsedTags, nil
 }

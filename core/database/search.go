@@ -7,41 +7,39 @@ import (
 	"zene/core/types"
 )
 
-func SearchMetadata(ctx context.Context, searchQuery string) ([]types.TrackMetadata, error) {
+func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Printf("failed to take a db conn from the pool in SearchMetadata: %v", err)
-		return []types.TrackMetadata{}, err
+		return []types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`select distinct m.*
-		FROM track_metadata m JOIN track_metadata_fts f ON f.metadata_id = m.id
-		WHERE track_metadata_fts MATCH $searchQuery
-		ORDER BY m.id DESC;`)
+		FROM metadata m JOIN metadata_fts f ON f.file_path = m.file_path
+		WHERE metadata_fts MATCH $searchQuery
+		ORDER BY m.file_path DESC;`)
 	defer stmt.Finalize()
 
 	if searchQuery != "" {
 		stmt.SetText("$searchQuery", searchQuery)
 	} else {
-		return []types.TrackMetadata{}, fmt.Errorf("FTS Query cannot be empty")
+		return []types.Metadata{}, fmt.Errorf("FTS Query cannot be empty")
 	}
 
-	var rows []types.TrackMetadata
+	var rows []types.Metadata
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []types.TrackMetadata{}, err
+			return []types.Metadata{}, err
 		} else if !hasRow {
 			break
 		}
 
-		row := types.TrackMetadata{
-			Id:                  int(stmt.GetInt64("id")),
-			DirPath:             stmt.GetText("dir_path"),
+		row := types.Metadata{
 			FilePath:            stmt.GetText("file_path"),
 			DateAdded:           stmt.GetText("date_added"),
 			DateModified:        stmt.GetText("date_modified"),
@@ -69,7 +67,7 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.TrackMetad
 	}
 
 	if rows == nil {
-		rows = []types.TrackMetadata{}
+		rows = []types.Metadata{}
 	}
 	return rows, nil
 }

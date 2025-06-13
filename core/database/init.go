@@ -21,7 +21,7 @@ func Initialise(ctx context.Context) {
 	createMetadataTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
-	createFts(ctx)
+	createFtsTables(ctx)
 	CreateSessionsTable(ctx)
 	StartSessionCleanupRoutine(ctx)
 }

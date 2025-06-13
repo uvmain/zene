@@ -11,12 +11,12 @@ import (
 	"zene/core/types"
 )
 
-func GetCommonTags(audiofilePath string) (types.TrackMetadata, error) {
+func GetCommonTags(audiofilePath string) (types.Tags, error) {
 	cmd := exec.Command(config.FfprobePath, "-v", "quiet", "-show_format", "-show_streams", "-print_format", "json", audiofilePath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Printf("Error running ffprobe: %s", output)
-		return types.TrackMetadata{}, err
+		return types.Tags{}, err
 	}
 
 	var ffprobeOutput types.FfprobeOutput
@@ -24,7 +24,7 @@ func GetCommonTags(audiofilePath string) (types.TrackMetadata, error) {
 	err = json.Unmarshal(output, &ffprobeOutput)
 	if err != nil {
 		log.Printf("Error parsing ffprobe output: %v", err)
-		return types.TrackMetadata{}, err
+		return types.Tags{}, err
 	}
 
 	tags := ffprobeOutput.Format.Tags
@@ -65,16 +65,15 @@ func GetCommonTags(audiofilePath string) (types.TrackMetadata, error) {
 	}
 
 	if parsedReleaseDate == "" {
-		metadata, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
+		musicBrainzData, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
 		if err != nil {
 			log.Printf("Error fetching parsedReleaseDate from MusicBrainz: %v", err)
-			return types.TrackMetadata{}, err
+			return types.Tags{}, err
 		}
-		parsedReleaseDate = metadata.Date
+		parsedReleaseDate = musicBrainzData.Date
 	}
 
-	metadata := types.TrackMetadata{
-		Filename:            ffprobeOutput.Format.Filename,
+	parsedTags := types.Tags{
 		Format:              ffprobeOutput.Format.FormatName,
 		Duration:            ffprobeOutput.Format.Duration,
 		Size:                ffprobeOutput.Format.Size,
@@ -95,5 +94,5 @@ func GetCommonTags(audiofilePath string) (types.TrackMetadata, error) {
 		TotalDiscs:          totalDiscs,
 	}
 
-	return metadata, nil
+	return parsedTags, nil
 }

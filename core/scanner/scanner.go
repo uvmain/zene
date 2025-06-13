@@ -2,10 +2,9 @@ package scanner
 
 import (
 	"context"
+	"fmt"
 	"log"
-	"os"
 	"path/filepath"
-	"slices"
 	"time"
 	"zene/core/art"
 	"zene/core/config"
@@ -26,180 +25,160 @@ func RunScan(ctx context.Context) types.ScanResponse {
 
 	globals.IsScanning = true
 	log.Printf("Starting scan of music dir")
+	start := time.Now()
+	defer func() { log.Printf("Scan completed in %s", time.Since(start)) }()
+	defer func() { globals.IsScanning = false }()
 
-	// select list of audio files and modified times
-	// select list of track_metadata and modified times
-
-	lastScan, err := database.SelectLastScan(ctx)
+	// get a list of files from the filesystem
+	log.Printf("Scan: Getting list of audio files in the filesystem")
+	audioFiles, err := getAudioFiles(ctx)
 	if err != nil {
-		log.Printf("Failed to retrieve last scanned info: %v", err)
-		return types.ScanResponse{
-			Success: false,
-			Status:  "Error retrieving last scanned info",
+		return scanError("Error scanning music directory for audio files: %v", err)
+	}
+
+	// get a current list of files from the metadata table
+	log.Printf("Scan: Getting list of metadata in the database")
+	metadataFiles, err := database.SelectTrackFiles(ctx)
+	if err != nil {
+		return scanError("Error scanning database for metadata files: %v", err)
+
+	}
+
+	// for each file found, either insert or update a metadata row
+	log.Printf("Scan: Upserting metadata into database")
+	audioFilesToInsert, err := getOutdatedOrMissing(audioFiles, metadataFiles)
+	if err != nil {
+		return scanError("Error getting outdated or missing files: %v", err)
+	}
+	fileCount := 0
+	for _, audioFile := range audioFilesToInsert {
+		err = upsertMetadataForFile(ctx, audioFile)
+		if err != nil {
+			scanError("Error inserting or updating metadata row: %v", err)
+		} else {
+			fileCount += 1
 		}
 	}
+	log.Printf("Scan: %d metadata rows upserted", fileCount)
 
-	lastModified, err := time.Parse(time.RFC3339Nano, lastScan.DateModified)
-	if err != nil {
-		lastModified = time.Now().Add(-(time.Hour * 24 * 365 * 10))
-		log.Printf("Falling back to lastModified of %v: %v", lastModified, err)
-	}
-
-	files, err := getFiles(ctx, lastModified)
-	if err != nil {
-		log.Printf("Error scanning music directory: %v", err)
-		return types.ScanResponse{
-			Success: false,
-			Status:  "Error scanning music directory",
+	// for each metadata row that does not exist in the files list, delete that row
+	log.Printf("Scan: Cleaning orphaned metadata rows")
+	metadataRowsToDelete := filesInSliceOnceNotInSliceTwo(metadataFiles, audioFiles)
+	fileCount = 0
+	for _, metadataRow := range metadataRowsToDelete {
+		err = database.DeleteMetadataRow(ctx, metadataRow.FilePathAbs)
+		if err != nil {
+			scanError("Error deleting orphan metadata row: %v", err)
+		} else {
+			fileCount += 1
 		}
 	}
-
-	err = cleanFiles(ctx, files)
-	if err != nil {
-		log.Printf("Error cleaning file rows: %v", err)
-		return types.ScanResponse{
-			Success: false,
-			Status:  "Error cleaning file rows",
-		}
-	}
+	log.Printf("Scan: %d orphaned metadata rows removed", fileCount)
 
 	err = getAlbumArtwork(ctx)
 	if err != nil {
-		log.Printf("Error getting album artwork: %v", err)
-		return types.ScanResponse{
-			Success: false,
-			Status:  "Error getting album artwork",
-		}
+		return scanError("Error getting album artwork: %v", err)
 	}
 
 	err = getArtistArtwork(ctx)
 	if err != nil {
-		log.Printf("Error getting artist artwork: %v", err)
-		return types.ScanResponse{
-			Success: false,
-			Status:  "Error getting artist artwork",
-		}
+		return scanError("Error getting artist artwork: %v", err)
 	}
 
-	globals.IsScanning = false
-
-	log.Println("Scanner run complete")
 	return types.ScanResponse{
 		Success: true,
-		Status:  "Scan complete",
+		Status:  "Scan run triggered",
 	}
 }
 
-func getFiles(ctx context.Context, lastModified time.Time) (map[string]struct{}, error) {
-	log.Printf("Scanning directory: %s", config.MusicDir)
-	filesystemFilePaths := make(map[string]struct{})
-
-	dbFileModTimes, err := database.SelectAllFilePathsAndModTimes(ctx)
+func getAudioFiles(ctx context.Context) ([]types.File, error) {
+	audioFiles, err := io.GetFiles(ctx, config.AudioFileTypes)
 	if err != nil {
-		log.Printf("Failed to retrieve file modification times from database: %v", err)
-		return filesystemFilePaths, err
+		return []types.File{}, fmt.Errorf("Error getting slice of audio files from the filesystem: %v", err)
 	}
-
-	newModified := lastModified
-	fileCount := 0
-
-	scanError := filepath.WalkDir(config.MusicDir, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			log.Printf("Error scanning directory %s: %v", path, err)
-			return err
-		}
-		if d.IsDir() {
-			return nil
-		}
-		// Add all encountered file paths to the map.
-		filesystemFilePaths[path] = struct{}{}
-
-		info, err := d.Info()
-		if err != nil {
-			log.Printf("Error retrieving file info for %s: %v", path, err)
-			return err
-		}
-
-		fsModTime := io.GetChangedTime(path)
-		dbModTimeStr, fileExistsInMap := dbFileModTimes[path]
-
-		needsProcessing := false
-		if !fileExistsInMap {
-			needsProcessing = true
-		} else {
-			dbModTime, err := time.Parse(time.RFC3339Nano, dbModTimeStr)
-			if err != nil {
-				log.Printf("Error parsing stored modification time for %s: %v. Reprocessing.", path, err)
-				needsProcessing = true
-			} else if fsModTime.After(dbModTime) {
-				needsProcessing = true
-			}
-		}
-
-		if fsModTime.After(lastModified) {
-			needsProcessing = true
-		}
-
-		if needsProcessing {
-			if fsModTime.After(newModified) {
-				newModified = fsModTime
-			}
-
-			fileCount += 1
-			fileRowId, err := database.InsertIntoFiles(ctx, filepath.Dir(path), info.Name(), path, time.Now().Format(time.RFC3339Nano), fsModTime.Format(time.RFC3339Nano))
-			if err != nil {
-				log.Printf("Error inserting files row for %s: %v", path, err)
-				return err
-			}
-
-			if slices.Contains(config.AudioFileTypes, filepath.Ext(path)) {
-				trackMetadata, err := ffprobe.GetTags(path)
-				if err != nil {
-					log.Printf("Error retrieving tags for %s: %v", path, err)
-					return err
-				}
-
-				err = database.InsertTrackMetadataRow(ctx, fileRowId, trackMetadata)
-				if err != nil {
-					log.Printf("Error inserting metadata for %s: %v", path, err)
-					return err
-				}
-			}
-		}
-		return nil
-	})
-
-	database.InsertScanRow(ctx, time.Now().Format(time.RFC3339Nano), fileCount, newModified.Format(time.RFC3339Nano))
-	log.Printf("Music directory scan completed, found %d new files", fileCount)
-
-	if scanError != nil {
-		log.Printf("Error scanning files in music directory: %v", scanError)
-	}
-	return filesystemFilePaths, scanError
+	return audioFiles, nil
 }
 
-func cleanFiles(ctx context.Context, filesystemFilePaths map[string]struct{}) error {
-	log.Println("Cleaning orphan files")
-
-	if filesystemFilePaths == nil || len(filesystemFilePaths) == 0 {
-		log.Println("Skipping file cleaning as the list of filesystem paths is empty or nil.")
-		return nil
+func filesInSliceOnceNotInSliceTwo(slice1, slice2 []types.File) []types.File {
+	slice2Map := make(map[string]bool)
+	for _, f := range slice2 {
+		slice2Map[f.FilePathAbs] = true
 	}
 
-	filesFromDB, err := database.SelectAllFiles(ctx)
-
-	if err != nil {
-		return err
-	}
-	for _, fileFromDB := range filesFromDB {
-		if _, exists := filesystemFilePaths[fileFromDB.FilePath]; !exists {
-			log.Printf("Deleting files row %d for %s (not found on filesystem)", fileFromDB.Id, fileFromDB.FilePath)
-			database.DeleteFileById(ctx, fileFromDB.Id)
+	var diff []types.File
+	for _, f := range slice1 {
+		if !slice2Map[f.FilePathAbs] {
+			diff = append(diff, f)
 		}
 	}
 
-	database.CleanTrackMetadata(ctx)
+	return diff
+}
 
+// takes two slices of types.File
+// returns entries from slice1 where either it does not exist in slice2, or the slice2 date is newer
+func getOutdatedOrMissing(slice1, slice2 []types.File) ([]types.File, error) {
+	slice2Map := make(map[string]string)
+	for _, f := range slice2 {
+		slice2Map[f.FilePathAbs] = f.DateModified
+	}
+
+	var result []types.File
+	for _, file := range slice1 {
+		date2Str, found := slice2Map[file.FilePathAbs]
+		if !found {
+			result = append(result, file)
+			continue
+		}
+
+		date1, err1 := time.Parse(time.RFC3339Nano, file.DateModified)
+		date2, err2 := time.Parse(time.RFC3339Nano, date2Str)
+		if err1 != nil || err2 != nil {
+			return nil, fmt.Errorf("invalid date format: %v, %v", err1, err2)
+		}
+
+		if date1.After(date2) {
+			result = append(result, file)
+		}
+	}
+
+	return result, nil
+}
+
+func upsertMetadataForFile(ctx context.Context, file types.File) error {
+	var metadata types.Metadata
+	tags, err := ffprobe.GetTags(file.FilePathAbs)
+	if err != nil {
+		return fmt.Errorf("Error retrieving tags for %s: %v", file.FilePathAbs, err)
+	}
+
+	metadata.FilePath = file.FilePathAbs
+	metadata.FileName = filepath.Base(file.FilePathAbs)
+	metadata.DateAdded = time.Now().Format(time.RFC3339Nano)
+	metadata.DateModified = file.DateModified
+	metadata.Format = tags.Format
+	metadata.Duration = tags.Duration
+	metadata.Size = tags.Size
+	metadata.Bitrate = tags.Bitrate
+	metadata.Title = tags.Title
+	metadata.Artist = tags.Artist
+	metadata.Album = tags.Album
+	metadata.AlbumArtist = tags.AlbumArtist
+	metadata.Genre = tags.Genre
+	metadata.TrackNumber = tags.TrackNumber
+	metadata.TotalTracks = tags.TotalTracks
+	metadata.DiscNumber = tags.DiscNumber
+	metadata.TotalDiscs = tags.TotalDiscs
+	metadata.ReleaseDate = tags.ReleaseDate
+	metadata.MusicBrainzArtistID = tags.MusicBrainzArtistID
+	metadata.MusicBrainzAlbumID = tags.MusicBrainzAlbumID
+	metadata.MusicBrainzTrackID = tags.MusicBrainzTrackID
+	metadata.Label = tags.Label
+
+	err = database.InsertMetadataRow(ctx, metadata)
+	if err != nil {
+		return fmt.Errorf("Error inserting metadata for %s: %v", file.FilePathAbs, err)
+	}
 	return nil
 }
 
@@ -230,4 +209,9 @@ func getArtistArtwork(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func scanError(msg string, err error) types.ScanResponse {
+	log.Printf("%s: %v", msg, err)
+	return types.ScanResponse{Success: false, Status: msg}
 }

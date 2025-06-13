@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path/filepath"
 	"time"
 	"zene/core/types"
 )
@@ -83,24 +84,30 @@ func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string)
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Printf("failed to take a db conn from the pool in SelectArtistSubDirectories: %v", err)
-		return []string{}, err
+		return nil, err
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT DISTINCT dir_path FROM track_metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
+	stmt := conn.Prep(`SELECT DISTINCT file_path FROM metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 
-	var rows []string
+	uniqueDirectories := make(map[string]struct{})
 
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []string{}, err
+			return nil, err
 		} else if !hasRow {
 			break
 		}
-		rows = append(rows, stmt.GetText("dir_path"))
+		directory := filepath.Dir(stmt.GetText("file_path"))
+		uniqueDirectories[directory] = struct{}{}
+	}
+
+	var rows []string
+	for directory := range uniqueDirectories {
+		rows = append(rows, directory)
 	}
 
 	return rows, nil

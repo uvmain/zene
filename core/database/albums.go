@@ -9,34 +9,35 @@ import (
 	"zombiezen.com/go/sqlite"
 )
 
-func SelectTracksByAlbumID(ctx context.Context, musicbrainz_album_id string) ([]types.TrackMetadata, error) {
+func SelectTracksByAlbumID(ctx context.Context, musicbrainz_album_id string) ([]types.Metadata, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
 		log.Printf("failed to take a db conn from the pool: %v", err)
-		return []types.TrackMetadata{}, err
+		return []types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT * FROM track_metadata where musicbrainz_album_id = $musicbrainz_album_id ORDER BY id;`)
+	stmt := conn.Prep(`SELECT * FROM metadata where musicbrainz_album_id = $musicbrainz_album_id;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_album_id", musicbrainz_album_id)
 
-	var rows []types.TrackMetadata
+	var rows []types.Metadata
 
 	for {
 		if hasRow, err := stmt.Step(); err != nil {
-			return []types.TrackMetadata{}, err
+			return []types.Metadata{}, err
 		} else if !hasRow {
 			break
 		} else {
 
-			row := types.TrackMetadata{
-				Id:                  int(stmt.GetInt64("id")),
-				FileId:              int(stmt.GetInt64("file_id")),
-				Filename:            stmt.GetText("file_name"),
+			row := types.Metadata{
+				FilePath:            stmt.GetText("file_path"),
+				DateAdded:           stmt.GetText("date_added"),
+				DateModified:        stmt.GetText("date_modified"),
+				FileName:            stmt.GetText("file_name"),
 				Format:              stmt.GetText("format"),
 				Duration:            stmt.GetText("duration"),
 				Size:                stmt.GetText("size"),
@@ -60,7 +61,7 @@ func SelectTracksByAlbumID(ctx context.Context, musicbrainz_album_id string) ([]
 		}
 	}
 	if rows == nil {
-		rows = []types.TrackMetadata{}
+		rows = []types.Metadata{}
 	}
 	return rows, nil
 }
@@ -81,26 +82,26 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 	if recent == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata group by album ORDER BY date_added desc limit $limit;`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album ORDER BY date_added desc limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata group by album ORDER BY date_added desc;`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album ORDER BY date_added desc;`)
 		}
 	} else if random == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY random() limit $limit;`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY random() limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY random();`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY random();`)
 		}
 	} else {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY album limit $limit;`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY album limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM track_metadata group by album ORDER BY album;`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY album;`)
 		}
 	}
 
@@ -141,9 +142,9 @@ func SelectAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumsRe
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM track_metadata where musicbrainz_album_id = $musicbrainzAlbumId limit 1;`)
+	stmt := conn.Prep(`SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM metadata where musicbrainz_album_id = $musicbrainz_album_id limit 1;`)
 	defer stmt.Finalize()
-	stmt.SetText("$musicbrainzAlbumId", musicbrainzAlbumId)
+	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
 
 	if hasRow, err := stmt.Step(); err != nil {
 		return types.AlbumsResponse{}, err
