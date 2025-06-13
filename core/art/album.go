@@ -29,7 +29,7 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 	directories := []string{}
 
 	for _, trackMetadata := range trackMetadataRows {
-		directory := filepath.Dir(trackMetadata.FileName)
+		directory := filepath.Dir(trackMetadata.FilePath)
 		if !slices.Contains(directories, directory) {
 			directories = append(directories, directory)
 		}

@@ -149,7 +149,7 @@ func getOutdatedOrMissing(slice1, slice2 []types.File) ([]types.File, error) {
 }
 
 func upsertMetadataForFile(ctx context.Context, file types.File) error {
-	var metadata types.Metadata
+	metadata := types.Metadata{}
 	tags, err := ffprobe.GetTags(ctx, file.FilePathAbs)
 	if err != nil {
 		return fmt.Errorf("Error retrieving tags for %s: %v", file.FilePathAbs, err)
