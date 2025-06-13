@@ -1,6 +1,7 @@
 package ffprobe
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"log"
@@ -11,7 +12,7 @@ import (
 	"zene/core/types"
 )
 
-func GetOpusTags(audiofilePath string) (types.Tags, error) {
+func GetOpusTags(ctx context.Context, audiofilePath string) (types.Tags, error) {
 	cmd := exec.Command(config.FfprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", audiofilePath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {

@@ -84,8 +84,7 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 		musicbrainz_artist_id = excluded.musicbrainz_artist_id,
 		musicbrainz_album_id = excluded.musicbrainz_album_id,
 		musicbrainz_track_id = excluded.musicbrainz_track_id,
-		label = excluded.label;
-	`)
+		label = excluded.label;`)
 
 	defer stmt.Finalize()
 	stmt.SetText("$file_path", metadata.FilePath)

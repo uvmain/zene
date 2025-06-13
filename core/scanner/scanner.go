@@ -12,6 +12,7 @@ import (
 	"zene/core/ffprobe"
 	"zene/core/globals"
 	"zene/core/io"
+	"zene/core/musicbrainz"
 	"zene/core/types"
 )
 
@@ -85,6 +86,8 @@ func RunScan(ctx context.Context) types.ScanResponse {
 		return scanError("Error getting artist artwork: %v", err)
 	}
 
+	musicbrainz.ClearMbCache()
+
 	return types.ScanResponse{
 		Success: true,
 		Status:  "Scan run triggered",
@@ -147,7 +150,7 @@ func getOutdatedOrMissing(slice1, slice2 []types.File) ([]types.File, error) {
 
 func upsertMetadataForFile(ctx context.Context, file types.File) error {
 	var metadata types.Metadata
-	tags, err := ffprobe.GetTags(file.FilePathAbs)
+	tags, err := ffprobe.GetTags(ctx, file.FilePathAbs)
 	if err != nil {
 		return fmt.Errorf("Error retrieving tags for %s: %v", file.FilePathAbs, err)
 	}
