@@ -36,7 +36,7 @@ func SelectTracksByAlbumID(ctx context.Context, musicbrainz_album_id string) ([]
 			row := types.TrackMetadata{
 				Id:                  int(stmt.GetInt64("id")),
 				FileId:              int(stmt.GetInt64("file_id")),
-				Filename:            stmt.GetText("filename"),
+				Filename:            stmt.GetText("file_name"),
 				Format:              stmt.GetText("format"),
 				Duration:            stmt.GetText("duration"),
 				Size:                stmt.GetText("size"),
@@ -81,10 +81,10 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 	if recent == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata m join files f on m.file_id = f.id group by album ORDER BY f.date_added desc limit $limit;`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata group by album ORDER BY date_added desc limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata m join files f on m.file_id = f.id group by album ORDER BY f.date_added desc;`)
+			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM track_metadata group by album ORDER BY date_added desc;`)
 		}
 	} else if random == "true" {
 		if limit != "" {

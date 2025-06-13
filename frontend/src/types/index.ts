@@ -53,7 +53,7 @@ export interface AlbumMetadata {
 export interface TrackMetadata {
   id: number
   file_id: number
-  filename: string
+  file_name: string
   format: string
   duration: string
   size: string
@@ -77,7 +77,7 @@ export interface TrackMetadata {
 export interface TrackMetadataWithImageUrl {
   id: number
   file_id: number
-  filename: string
+  file_name: string
   format: string
   duration: string
   size: string

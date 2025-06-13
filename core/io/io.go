@@ -17,7 +17,6 @@ func FileExists(absoluteFilePath string) bool {
 
 func CreateDir(directoryPath string) {
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
-		log.Printf("Creating directory: %s", directoryPath)
 		err := os.MkdirAll(directoryPath, 0755)
 		if err != nil {
 			log.Printf("Error creating directory%s: %s", directoryPath, err)

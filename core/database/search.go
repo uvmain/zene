@@ -18,12 +18,10 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.TrackMetad
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`select distinct m.file_id, m.filename, m.format, m.duration, m.size, m.bitrate, m.title, m.artist, m.album,
-		m.album_artist, m.genre, m.track_number, m.total_tracks, m.disc_number, m.total_discs, m.release_date,
-		m.musicbrainz_artist_id, m.musicbrainz_album_id, m.musicbrainz_track_id, m.label
-		FROM track_metadata m JOIN track_metadata_fts f ON m.file_id = f.file_id
+	stmt := conn.Prep(`select distinct m.*
+		FROM track_metadata m JOIN track_metadata_fts f ON f.metadata_id = m.id
 		WHERE track_metadata_fts MATCH $searchQuery
-		ORDER BY m.file_id DESC;`)
+		ORDER BY m.id DESC;`)
 	defer stmt.Finalize()
 
 	if searchQuery != "" {
@@ -43,8 +41,11 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.TrackMetad
 
 		row := types.TrackMetadata{
 			Id:                  int(stmt.GetInt64("id")),
-			FileId:              int(stmt.GetInt64("file_id")),
-			Filename:            stmt.GetText("filename"),
+			DirPath:             stmt.GetText("dir_path"),
+			FilePath:            stmt.GetText("file_path"),
+			DateAdded:           stmt.GetText("date_added"),
+			DateModified:        stmt.GetText("date_modified"),
+			FileName:            stmt.GetText("file_name"),
 			Format:              stmt.GetText("format"),
 			Duration:            stmt.GetText("duration"),
 			Size:                stmt.GetText("size"),

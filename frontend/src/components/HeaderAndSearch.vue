@@ -23,7 +23,7 @@ async function search() {
     const metadataInstance = {
       id: metadata.id,
       file_id: metadata.file_id,
-      filename: metadata.filename,
+      file_name: metadata.file_name,
       format: metadata.format,
       duration: metadata.duration,
       size: metadata.size,

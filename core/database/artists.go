@@ -52,7 +52,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	var stmtText string
 	var stmt *sqlite.Stmt
 
-	stmtText = "SELECT m.* FROM track_metadata m join files f on m.file_id = f.id where m.musicbrainz_artist_id = $musicbrainz_artist_id"
+	stmtText = "SELECT * FROM track_metadata where musicbrainz_artist_id = $musicbrainz_artist_id"
 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY f.date_added desc", stmtText)
@@ -100,7 +100,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 		row := types.TrackMetadata{
 			Id:                  int(stmt.GetInt64("id")),
 			FileId:              int(stmt.GetInt64("file_id")),
-			Filename:            stmt.GetText("filename"),
+			Filename:            stmt.GetText("file_name"),
 			Format:              stmt.GetText("format"),
 			Duration:            stmt.GetText("duration"),
 			Size:                stmt.GetText("size"),
@@ -147,7 +147,7 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	if searchParam != "" {
 		stmtText = fmt.Sprintf("%s JOIN artists_fts s ON m.file_id = s.file_id", stmtText)
 	}
-	stmtText = fmt.Sprintf("%s join files f on f.id = m.file_id where m.album_artist = m.artist", stmtText)
+	stmtText = fmt.Sprintf("%s where m.album_artist = m.artist", stmtText)
 
 	if searchParam != "" {
 		stmtText = fmt.Sprintf("%s and artists_fts MATCH $searchQuery", stmtText)

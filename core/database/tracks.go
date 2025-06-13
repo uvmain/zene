@@ -25,10 +25,10 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 	if recent == "true" {
 		if limit != "" {
 			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT * FROM track_metadata m join files f on m.file_id = f.id ORDER BY f.date_added desc limit $limit;`)
+			stmt = conn.Prep(`SELECT * FROM track_metadata ORDER BY date_added desc limit $limit;`)
 			stmt.SetInt64("$limit", int64(limitInt))
 		} else {
-			stmt = conn.Prep(`SELECT * FROM track_metadata m join files f on m.file_id = f.id ORDER BY f.date_added desc;`)
+			stmt = conn.Prep(`SELECT * FROM track_metadata ORDER BY date_added desc;`)
 		}
 	} else if random == "true" {
 		if limit != "" {
@@ -62,7 +62,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 		row := types.TrackMetadata{
 			Id:                  int(stmt.GetInt64("id")),
 			FileId:              int(stmt.GetInt64("file_id")),
-			Filename:            stmt.GetText("filename"),
+			Filename:            stmt.GetText("file_name"),
 			Format:              stmt.GetText("format"),
 			Duration:            stmt.GetText("duration"),
 			Size:                stmt.GetText("size"),
@@ -117,7 +117,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.TrackMet
 	} else {
 		row.Id = int(stmt.GetInt64("id"))
 		row.FileId = int(stmt.GetInt64("file_id"))
-		row.Filename = stmt.GetText("filename")
+		row.Filename = stmt.GetText("file_name")
 		row.Format = stmt.GetText("format")
 		row.Duration = stmt.GetText("duration")
 		row.Size = stmt.GetText("size")

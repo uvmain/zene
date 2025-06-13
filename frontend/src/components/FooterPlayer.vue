@@ -20,7 +20,7 @@ const currentRoute = computed(() => {
 })
 
 const trackUrl = computed<string>(() => {
-  return currentlyPlayingTrack.value?.file_id ? `/api/files/${currentlyPlayingTrack.value.file_id}/stream` : ''
+  return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream` : ''
 })
 
 async function togglePlayback() {
@@ -141,7 +141,7 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
   if (!audio) {
     return
   }
-  if (newTrack && newTrack.file_id !== oldTrack?.file_id) {
+  if (newTrack && newTrack.musicbrainz_track_id !== oldTrack?.musicbrainz_track_id) {
     audio.pause()
     audio.load()
     audio.addEventListener(

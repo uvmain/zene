@@ -1,25 +1,12 @@
 package types
 
-type ScanRow = struct {
-	Id           int    `json:"id"`
-	ScanDate     string `json:"scan_date"`
-	FileCount    string `json:"file_count"`
-	DateModified string `json:"date_modified"`
-}
-
-type FilesRow = struct {
-	Id           int    `json:"id"`
-	DirPath      string `json:"directory"`
-	Filename     string `json:"filename"`
-	FilePath     string `json:"file_path"`
-	DateAdded    string `json:"date_added"`
-	DateModified string `json:"date_modified"`
-}
-
 type TrackMetadata struct {
 	Id                  int    `json:"id"`
-	FileId              int    `json:"file_id"`
-	Filename            string `json:"filename"`
+	DirPath             string `json:"dir_path"`
+	FilePath            string `json:"file_path"`
+	FileName            string `json:"file_name"`
+	DateAdded           string `json:"date_added"`
+	DateModified        string `json:"date_modified"`
 	Format              string `json:"format"`
 	Duration            string `json:"duration"`
 	Size                string `json:"size"`

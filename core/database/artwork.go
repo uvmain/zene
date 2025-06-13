@@ -87,7 +87,7 @@ func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string)
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT DISTINCT f.dir_path FROM track_metadata m JOIN files f ON f.id = m.file_id WHERE m.musicbrainz_artist_id = $musicbrainz_artist_id;`)
+	stmt := conn.Prep(`SELECT DISTINCT dir_path FROM track_metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
 

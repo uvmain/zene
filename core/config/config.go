@@ -36,8 +36,7 @@ func LoadConfig() {
 		dataPath = "./data"
 	}
 
-	DatabaseDirectory, _ = filepath.Abs(dataPath)
-
+	DatabaseDirectory = filepath.Join(dataPath, "database")
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")

@@ -27,6 +27,9 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	globals.IsScanning = true
 	log.Printf("Starting scan of music dir")
 
+	// select list of audio files and modified times
+	// select list of track_metadata and modified times
+
 	lastScan, err := database.SelectLastScan(ctx)
 	if err != nil {
 		log.Printf("Failed to retrieve last scanned info: %v", err)

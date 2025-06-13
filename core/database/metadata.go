@@ -13,8 +13,11 @@ func createMetadataTable(ctx context.Context) {
 	tableName := "track_metadata"
 	schema := `CREATE TABLE IF NOT EXISTS track_metadata (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		file_id INTEGER,
-		filename TEXT,
+		dir_path TEXT NOT NULL,
+		file_path TEXT NOT NULL UNIQUE,
+		file_name TEXT NOT NULL,
+		date_added TEXT NOT NULL,
+		date_modified TEXT NOT NULL,
 		format TEXT,
 		duration TEXT,
 		size TEXT,
@@ -32,10 +35,12 @@ func createMetadataTable(ctx context.Context) {
 		musicbrainz_artist_id TEXT,
 		musicbrainz_album_id TEXT,
 		musicbrainz_track_id TEXT,
-		label TEXT,
-		FOREIGN KEY (file_id) REFERENCES files (id)
+		label TEXT
 	);`
 	createTable(ctx, tableName, schema)
+	createIndex(ctx, "idx_metadata_track_id", "track_metadata", "musicbrainz_track_id", false)
+	createIndex(ctx, "idx_metadata_album_id", "track_metadata", "musicbrainz_album_id", false)
+	createIndex(ctx, "idx_metadata_artist_id", "track_metadata", "musicbrainz_artist_id", false)
 }
 
 func InsertTrackMetadataRow(ctx context.Context, fileRowId int, metadata types.TrackMetadata) error {
@@ -50,17 +55,21 @@ func InsertTrackMetadataRow(ctx context.Context, fileRowId int, metadata types.T
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`INSERT INTO track_metadata (
-		file_id, filename, format, duration, size, bitrate, title, artist, album,
+		id, dir_path, file_path, date_added, date_modified, file_name, format, duration, size, bitrate, title, artist, album,
 		album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
 		musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
 	) VALUES (
-	  $file_id, $filename, $format, $duration, $size, $bitrate, $title, $artist, $album,
+	  $id, $dir_path, $file_path, $date_added, $date_modified, $file_name, $format, $duration, $size, $bitrate, $title, $artist, $album,
 		$album_artist, $genre, $track_number, $total_tracks, $disc_number, $total_discs, $release_date,
 		$musicbrainz_artist_id, $musicbrainz_album_id, $musicbrainz_track_id, $label
 	 )`)
 	defer stmt.Finalize()
-	stmt.SetInt64("$file_id", int64(fileRowId))
-	stmt.SetText("$filename", metadata.Filename)
+	stmt.SetInt64("$id", int64(metadata.Id))
+	stmt.SetText("$dir_path", metadata.DirPath)
+	stmt.SetText("$file_path", metadata.FilePath)
+	stmt.SetText("$date_added", metadata.DateAdded)
+	stmt.SetText("$date_modified", metadata.DateModified)
+	stmt.SetText("$file_name", metadata.FileName)
 	stmt.SetText("$format", metadata.Format)
 	stmt.SetText("$duration", metadata.Duration)
 	stmt.SetText("$size", metadata.Size)

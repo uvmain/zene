@@ -17,11 +17,7 @@ var DbPool *sqlitex.Pool
 var dbMutex sync.RWMutex
 
 func Initialise(ctx context.Context) {
-	io.CreateDir(config.DatabaseDirectory)
 	openDatabase(ctx)
-	createScansTable(ctx)
-	createFilesTable(ctx)
-	createFilesTriggers(ctx)
 	createMetadataTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
@@ -36,7 +32,7 @@ func openDatabase(ctx context.Context) {
 	if io.FileExists(dbFile) {
 		log.Println("Database already exists")
 	} else {
-		log.Println("Creating database file")
+		log.Println("Creating new database file")
 	}
 
 	poolOptions := sqlitex.PoolOptions{}
