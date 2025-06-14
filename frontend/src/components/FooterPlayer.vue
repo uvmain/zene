@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
-import { getAlbumTracks } from '../composables/fetchFromBackend'
 import { formatTime } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
 
-const { currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
+const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
+const { routeTracks } = useRouteTracks()
 const router = useRouter()
+
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
 const currentTime = ref(0)
@@ -29,10 +31,8 @@ async function togglePlayback() {
   if (!audioRef.value) {
     return
   }
-  if (currentRoute.value.startsWith('/albums/') && !currentQueue.value?.tracks?.length) {
-    const musicbrainz_album_id = route.params.musicbrainz_album_id as string
-    const tracks = await getAlbumTracks(musicbrainz_album_id)
-    setCurrentQueue(tracks)
+  if (!currentQueue.value?.tracks?.length && routeTracks.value.length) {
+    setCurrentQueue(routeTracks.value)
   }
   else if (currentQueue.value?.tracks?.length && !currentlyPlayingTrack.value) {
     setCurrentQueue(currentQueue.value?.tracks)
@@ -75,6 +75,7 @@ async function stopPlayback() {
     return
   if (audioRef.value.currentTime < 1) {
     resetCurrentlyPlayingTrack()
+    clearQueue()
   }
   audioRef.value.pause()
   audioRef.value.load()

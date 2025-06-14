@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import type { AlbumMetadata, TrackMetadataWithImageUrl } from '../types'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { backendFetchRequest, getAlbumTracks } from '../composables/fetchFromBackend'
+import { useRouteTracks } from '../composables/useRouteTracks'
 
 const route = useRoute()
+const { routeTracks, clearRouteTracks } = useRouteTracks()
+
 const album = ref<AlbumMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()
 const musicbrainz_album_id = computed(() => `${route.params.musicbrainz_album_id}`)
@@ -22,21 +25,23 @@ async function getAlbum() {
   }
 }
 
-async function getAlbumTracks() {
-  const response = await backendFetchRequest(`albums/${musicbrainz_album_id.value}/tracks`)
-  const json = await response.json()
-  tracks.value = json
+async function getAlbumTracksAndRouteTracks() {
+  const response = await getAlbumTracks(musicbrainz_album_id.value)
+  tracks.value = response
+  routeTracks.value = response
 }
 
 watch(() => route.params.musicbrainz_album_id, async () => {
   getAlbum()
-  getAlbumTracks()
+  getAlbumTracksAndRouteTracks()
 })
 
 onBeforeMount(async () => {
   await getAlbum()
-  await getAlbumTracks()
+  await getAlbumTracksAndRouteTracks()
 })
+
+onUnmounted(() => clearRouteTracks())
 </script>
 
 <template>

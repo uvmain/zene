@@ -2,8 +2,11 @@
 import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
 import dayjs from 'dayjs'
 import { backendFetchRequest, getArtistAlbums, getArtistTracks } from '../composables/fetchFromBackend'
+import { useRouteTracks } from '../composables/useRouteTracks'
 
 const route = useRoute()
+const { routeTracks } = useRouteTracks()
+
 const artist = ref<ArtistMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()
 const albums = ref<AlbumMetadata[]>()
@@ -17,7 +20,9 @@ async function getArtist() {
 }
 
 async function getTracks() {
-  tracks.value = await getArtistTracks(musicbrainz_artist_id.value, 30)
+  const response = await getArtistTracks(musicbrainz_artist_id.value, 30)
+  tracks.value = response
+  routeTracks.value = response
 }
 
 async function getAlbums() {

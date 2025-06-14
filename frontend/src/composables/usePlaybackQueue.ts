@@ -33,6 +33,10 @@ export function usePlaybackQueue() {
     }
   }
 
+  const clearQueue = () => {
+    currentQueue.value = undefined
+  }
+
   const getRandomTrack = async (): Promise<TrackMetadataWithImageUrl> => {
     const response = await backendFetchRequest('tracks?random=true&limit=1')
     const json = await response.json() as TrackMetadata[]
@@ -112,6 +116,7 @@ export function usePlaybackQueue() {
   return {
     currentlyPlayingTrack,
     currentQueue,
+    clearQueue,
     setCurrentlyPlayingTrackInQueue,
     resetCurrentlyPlayingTrack,
     setCurrentlyPlayingTrack,

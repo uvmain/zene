@@ -2,6 +2,7 @@
 import type { TrackMetadataWithImageUrl } from '../types'
 import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import { useRouteTracks } from '../composables/useRouteTracks'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
@@ -9,6 +10,8 @@ const props = defineProps({
 })
 
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
+const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
+
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
 
@@ -19,6 +22,9 @@ function isTrackPlaying(trackId: string): boolean {
 function handlePlay(track: TrackMetadataWithImageUrl) {
   if (currentQueue.value?.tracks.some(queueTrack => queueTrack.musicbrainz_track_id === track.musicbrainz_track_id)) {
     setCurrentlyPlayingTrackInQueue(track)
+  }
+  else if (routeTracks.value?.some(queueTrack => queueTrack.musicbrainz_track_id === track.musicbrainz_track_id)) {
+    setCurrentlyPlayingTrackInRouteTracks(track)
   }
   else {
     play(undefined, undefined, track)
