@@ -39,8 +39,8 @@
     "concurrently": "^9.1.2",
     "cpy-cli": "^5.0.0",
     "cross-env": "^7.0.3",
-    "ffmpeg-baron": "^1.0.1",
-    "ffprobe-baron": "^1.0.0",
+    "ffmpeg-baron": "^2.0.3",
+    "ffprobe-baron": "^2.0.3",
     "node-mkcert-binary": "^2.1.9",
     "rimraf": "^6.0.1"
   }

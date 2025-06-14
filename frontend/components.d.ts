@@ -10,7 +10,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     Album: typeof import('./src/components/Album.vue')['default']
     ArtistThumb: typeof import('./src/components/ArtistThumb.vue')['default']
-    copy: typeof import('./src/components/RecentlyAddedAlbums copy.vue')['default']
     FooterPlayer: typeof import('./src/components/FooterPlayer.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
