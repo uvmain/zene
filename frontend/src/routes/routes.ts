@@ -1,4 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
+import type { Component } from 'vue' // Ensure Component is imported if used for casting
 import Album from './AlbumRoute.vue'
 import Albums from './AlbumsRoute.vue'
 import Artist from './ArtistRoute.vue'
@@ -9,6 +10,7 @@ import Login from './LoginRoute.vue'
 import Queue from './Queue.vue'
 import Track from './TrackRoute.vue'
 import Tracks from './TracksRoute.vue'
+import ManageUsers from './ManageUsers.vue' // Import the new component
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -60,5 +62,10 @@ export const routes: RouteRecordRaw[] = [
     path: '/queue',
     name: 'Queue',
     component: Queue as Component,
+  },
+  { // New route for ManageUsers
+    path: '/manage-users',
+    name: 'ManageUsers',
+    component: ManageUsers as Component,
   },
 ]

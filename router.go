@@ -9,10 +9,11 @@ import (
 	"path"
 	"strings"
 	"time"
-	"zene/core/auth"
-	"zene/core/config"
-	"zene/core/logic"
-	"zene/core/net"
+	// Assuming the project's module path is github.com/ollama/ollama
+	"github.com/ollama/ollama/core/auth"
+	"github.com/ollama/ollama/core/config"
+	"github.com/ollama/ollama/core/logic"
+	"github.com/ollama/ollama/core/net"
 
 	"github.com/rs/cors"
 )
@@ -54,6 +55,16 @@ func StartServer() {
 	router.Handle("GET /api/genres", auth.AuthMiddleware(http.HandlerFunc(net.HandleGetGenres)))                                     // query params: search=searchTerm
 	router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(net.HandlePostScan)))                                       //
 	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(net.HandleSearchMetadata)))                                // query params: search=searchTerm
+
+	// User Management Routes
+	// Get current user
+	router.Handle("GET /api/me", auth.AuthMiddleware(http.HandlerFunc(net.GetCurrentUserHandler)))
+	// Admin routes for user management
+	router.Handle("GET /api/users", auth.AuthMiddleware(http.HandlerFunc(net.GetUsersHandler)))
+	router.Handle("POST /api/users", auth.AuthMiddleware(http.HandlerFunc(net.CreateUserHandler)))
+	router.Handle("PUT /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(net.UpdateUserHandler)))    // Go 1.22+ http.ServeMux path parameters
+	router.Handle("DELETE /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(net.DeleteUserHandler))) // Go 1.22+ http.ServeMux path parameters
+	// End User Management Routes
 
 	handler := cors.AllowAll().Handler(router)
 

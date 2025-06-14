@@ -21,6 +21,7 @@ function handleClickOutside(event) {
 }
 
 async function runScan() {
+  close() // Close dropdown after click
   const response = await backendFetchRequest('scan', {
     method: 'POST',
   })
@@ -58,6 +59,7 @@ onBeforeUnmount(() => {
             <select
               v-model="streamQuality"
               class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring focus:ring-blue-200"
+              @change="close"
             >
               <option
                 v-for="quality in StreamQualities"
@@ -68,13 +70,13 @@ onBeforeUnmount(() => {
               </option>
             </select>
           </div>
-          <a
-            href="#item3"
+          <router-link
+            to="/manage-users"
             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             @click="close"
           >
-            Item 3
-          </a>
+            Manage Users
+          </router-link>
         </div>
       </div>
     </transition>

@@ -68,9 +68,25 @@ type File struct {
 }
 
 type User struct {
-	Id           int64  `json:"id"`
+	Id           int    `json:"id"` // Changed to int for consistency
 	Username     string `json:"username"`
-	PasswordHash string `json:"password_hash"`
+	PasswordHash string `json:"-"` // Prevent password hash from being sent in JSON responses
 	CreatedAt    string `json:"created_at"`
 	IsAdmin      bool   `json:"is_admin"`
+}
+
+// HttpError represents an error with an HTTP status code and a message.
+type HttpError struct {
+	Code    int    `json:"-"` // The HTTP status code (e.g., http.StatusNotFound)
+	Message string `json:"message"` // The error message to be sent to the client
+}
+
+// Error makes HttpError satisfy the error interface.
+func (e *HttpError) Error() string {
+	return e.Message
+}
+
+// NewHttpError creates a new HttpError.
+func NewHttpError(code int, message string) *HttpError {
+	return &HttpError{Code: code, Message: message}
 }
