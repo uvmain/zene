@@ -66,3 +66,11 @@ type File struct {
 	FilePathAbs  string `json:"file_path_absolute"`
 	DateModified string `json:"date_modified"`
 }
+
+type User struct {
+	Id           int64  `json:"id"`
+	Username     string `json:"username"`
+	PasswordHash string `json:"password_hash"`
+	CreatedAt    string `json:"created_at"`
+	IsAdmin      bool   `json:"is_admin"`
+}

@@ -64,12 +64,12 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 				return
 			} else {
 				// if row is older, getArtFromFolder()
-				log.Printf("local album art for %s is newer, re-importing", albumName)
+				log.Printf("Scan: local album art for %s is newer, re-importing", albumName)
 				getArtFromFolder(ctx, musicBrainzAlbumId, foundFile)
 			}
 		} else {
 			// file hasn't been imported yet
-			log.Printf("Found new album art for %s, importing", albumName)
+			log.Printf("Scan: Found new album art for %s, importing", albumName)
 			getArtFromFolder(ctx, musicBrainzAlbumId, foundFile)
 		}
 	} else {
@@ -78,7 +78,7 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 			return
 		} else {
 			// no local image, download from internet
-			log.Printf("No album artwork found for %s, downloading", albumName)
+			log.Printf("Scan: No album artwork found for %s, downloading", albumName)
 			getArtFromInternet(ctx, musicBrainzAlbumId)
 		}
 	}
@@ -91,7 +91,7 @@ func getArtFromFolder(ctx context.Context, musicBrainzAlbumId string, imagePath 
 	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
 	err := database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
-		log.Printf("Error inserting album art row: %v", err)
+		log.Printf("Database: Error inserting album art row: %v", err)
 	}
 }
 

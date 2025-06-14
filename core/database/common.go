@@ -24,7 +24,6 @@ func doesTableExist(tableName string, conn *sqlite.Conn) (bool, error) {
 	} else {
 		return true, nil
 	}
-
 }
 
 func createTable(ctx context.Context, tableName string, createSql string) {
@@ -32,7 +31,7 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in createTable: %v", err)
+		log.Printf("Database: failed to take a db conn from the pool in createTable: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -40,19 +39,19 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 	tableExists, err := doesTableExist(tableName, conn)
 
 	if err != nil {
-		log.Printf("Error checking if %s table exists: %s", tableName, err)
+		log.Printf("Database: Error checking if %s table exists: %s", tableName, err)
 	}
 
 	if !tableExists {
 		stmt := createSql
 		err := sqlitex.ExecuteTransient(conn, stmt, nil)
 		if err != nil {
-			log.Fatalf("Failed to create %s table: %v", tableName, err)
+			log.Fatalf("Database: Failed to create %s table: %v", tableName, err)
 		} else {
-			log.Printf("%s table created", tableName)
+			log.Printf("Database: %s table created", tableName)
 		}
 	} else {
-		log.Printf("%s table already exists", tableName)
+		log.Printf("Database: %s table already exists", tableName)
 	}
 }
 
@@ -114,11 +113,11 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 
 	hasRow, err := stmt.Step()
 	if err != nil {
-		log.Printf("Error checking for %s index: %s", indexName, err)
+		log.Printf("Database: Error checking for %s index: %s", indexName, err)
 		return
 	}
 	if hasRow {
-		log.Printf("%s index already exists", indexName)
+		log.Printf("Database: %s index already exists", indexName)
 		return
 	}
 
@@ -131,16 +130,16 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 
 	stmt2, err := conn.Prepare(sql)
 	if err != nil {
-		log.Printf("Failed to prepare CREATE INDEX for %s: %v", indexName, err)
+		log.Printf("Database: Failed to prepare CREATE INDEX for %s: %v", indexName, err)
 		return
 	}
 	defer stmt2.Finalize()
 
 	_, err = stmt2.Step()
 	if err != nil {
-		log.Printf("Error creating %s index: %s", indexName, err)
+		log.Printf("Database: Error creating %s index: %s", indexName, err)
 		return
 	}
 
-	log.Printf("%s index created", indexName)
+	log.Printf("Database: %s index created", indexName)
 }

@@ -9,6 +9,7 @@ import (
 	"zene/core/io"
 	"zene/core/logic"
 
+	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
 )
 
@@ -18,6 +19,7 @@ var dbMutex sync.RWMutex
 
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
+	CreateUsersTable(ctx)
 	createMetadataTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
@@ -35,7 +37,15 @@ func openDatabase(ctx context.Context) {
 		log.Println("Creating new database file")
 	}
 
-	poolOptions := sqlitex.PoolOptions{}
+	poolOptions := sqlitex.PoolOptions{
+		PrepareConn: func(conn *sqlite.Conn) error {
+			err := sqlitex.ExecuteTransient(conn, `PRAGMA foreign_keys = on;`, nil)
+			if err != nil {
+				log.Printf("Prepare internal error: %v", err)
+			}
+			return err
+		},
+	}
 	poolOptions.Flags = 0
 	poolOptions.PoolSize = 10
 

@@ -45,3 +45,10 @@ func CheckContext(ctx context.Context) error {
 		return nil
 	}
 }
+
+func BoolToInt64(b bool) int64 {
+	if b {
+		return 1
+	}
+	return 0
+}
