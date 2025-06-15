@@ -54,14 +54,15 @@ func StartServer() {
 	router.Handle("GET /api/tracks/{musicBrainzTrackId}/stream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStreamTrack)))       // returns blob range
 	router.Handle("GET /api/genres", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))                                     // query params: search=searchTerm
 	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
+	router.Handle("GET /api/user", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))                             // return types.User - current user
 
 	// admin routes
-	router.Handle("POST /api/scan", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                 // triggers a scan of the music library if one is not already running
-	router.Handle("GET /api/user", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))            // return types.User - current user
-	router.Handle("GET /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))              // return []types.User - all users
-	router.Handle("GET /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))     // return types.User - user by ID
-	router.Handle("PATCH /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById))) // return userId int64
-	router.Handle("POST /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))             // return userId int64
+	router.Handle("POST /api/scan", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                   // triggers a scan of the music library if one is not already running
+	router.Handle("GET /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))                // return []types.User - all users
+	router.Handle("POST /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))               // return userId int64
+	router.Handle("GET /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))       // return types.User - user by ID
+	router.Handle("PATCH /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))   // return userId int64
+	router.Handle("DELETE /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById))) // return { Status: string }
 
 	handler := cors.AllowAll().Handler(router)
 

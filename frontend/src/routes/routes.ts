@@ -1,4 +1,5 @@
 import type { RouteRecordRaw } from 'vue-router'
+import Admin from './AdminRoute.vue'
 import Album from './AlbumRoute.vue'
 import Albums from './AlbumsRoute.vue'
 import Artist from './ArtistRoute.vue'
@@ -15,6 +16,11 @@ export const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'Home',
     component: Home as Component,
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Admin as Component,
   },
   {
     path: '/albums',

@@ -141,7 +141,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 	return newId, nil
 }
 
-func DeleteUser(ctx context.Context, username string) error {
+func DeleteUserByUsername(ctx context.Context, username string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
@@ -155,6 +155,29 @@ func DeleteUser(ctx context.Context, username string) error {
 	defer stmt.Finalize()
 
 	stmt.SetText("$username", username)
+
+	_, err = stmt.Step()
+	if err != nil {
+		return fmt.Errorf("failed to delete user: %v", err)
+	}
+
+	return nil
+}
+
+func DeleteUserById(ctx context.Context, id int64) error {
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
+
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to take a db conn from the pool in DeleteUser: %v", err)
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`DELETE FROM users WHERE id = $id`)
+	defer stmt.Finalize()
+
+	stmt.SetInt64("$id", id)
 
 	_, err = stmt.Step()
 	if err != nil {

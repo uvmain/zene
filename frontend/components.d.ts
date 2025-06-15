@@ -55,5 +55,6 @@ declare module 'vue' {
     SettingsDropDown: typeof import('./src/components/SettingsDropDown.vue')['default']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']
+    UserManagement: typeof import('./src/components/UserManagement.vue')['default']
   }
 }

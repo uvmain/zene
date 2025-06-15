@@ -68,13 +68,13 @@ onBeforeUnmount(() => {
               </option>
             </select>
           </div>
-          <a
-            href="#item3"
+          <router-link
+            to="/admin"
             class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             @click="close"
           >
-            Item 3
-          </a>
+            Manage Users
+          </router-link>
         </div>
       </div>
     </transition>

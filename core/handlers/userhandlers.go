@@ -140,3 +140,52 @@ func HandlePatchUserById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func HandleDeleteUserById(w http.ResponseWriter, r *http.Request) {
+	userIdString := r.PathValue("userId")
+	userIdInt, err := strconv.ParseInt(userIdString, 10, 64)
+	if err != nil {
+		log.Printf("Failed to get parse user ID: %v", err)
+		http.Error(w, "Failed to get parse user ID", http.StatusInternalServerError)
+		return
+	}
+
+	user, err := database.GetUserById(r.Context(), userIdInt)
+	if err != nil {
+		log.Printf("Failed to validate user ID: %v", err)
+		http.Error(w, "Failed to validate user ID", http.StatusInternalServerError)
+		return
+	}
+
+	allUsers, err := database.GetAllUsers(r.Context())
+	if err != nil {
+		log.Printf("Failed to getUsers from database: %v", err)
+		http.Error(w, "Failed to getUsers from database", http.StatusInternalServerError)
+		return
+	}
+
+	if len(allUsers) <= 1 {
+		log.Printf("Cannot delete last user: %v", err)
+		http.Error(w, "Cannot delete last user", http.StatusInternalServerError)
+		return
+	}
+
+	err = database.DeleteUserById(r.Context(), user.Id)
+	if err != nil {
+		log.Printf("Failed to delete user from database: %v", err)
+		http.Error(w, "Failed to delete user from database", http.StatusInternalServerError)
+		return
+	}
+
+	var response struct {
+		Status string `json:"status"`
+	}
+
+	response.Status = "success"
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
+		return
+	}
+}
