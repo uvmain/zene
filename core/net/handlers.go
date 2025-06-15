@@ -68,6 +68,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -88,6 +89,7 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(row); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -109,6 +111,7 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -145,6 +148,7 @@ func HandleGetArtistAlbums(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -164,6 +168,7 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -181,6 +186,7 @@ func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -198,6 +204,7 @@ func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -214,6 +221,7 @@ func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -233,6 +241,7 @@ func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -250,6 +259,7 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(row); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -259,6 +269,7 @@ func HandlePostScan(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(scanResult); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
@@ -276,6 +287,7 @@ func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
 		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
 }
