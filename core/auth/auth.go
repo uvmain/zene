@@ -115,7 +115,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -187,7 +189,9 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -206,10 +210,13 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("Error encoding database response:", err)
+		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
+		return
 	}
 }
 
+// returns types.User, isValidSession bool, error
 func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
 	cookie, err := r.Cookie("appSession")
 	if err == nil {

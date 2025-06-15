@@ -1,4 +1,4 @@
-package net
+package handlers
 
 import (
 	"fmt"

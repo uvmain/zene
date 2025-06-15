@@ -14,7 +14,7 @@ func CreateUsersTable(ctx context.Context) {
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		is_admin BOOLEAN NOT NULL
+		is_admin BOOLEAN NOT NULL DEFAULT FALSE
 	);`
 	createTable(ctx, tableName, schema)
 }
@@ -75,6 +75,39 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 		row.PasswordHash = stmt.GetText("password_hash")
 		return row, nil
 	}
+}
+
+func GetAllUsers(ctx context.Context) ([]types.User, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		return []types.User{}, fmt.Errorf("failed to take a db conn from the pool in GetUserByUsername: %v", err)
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT id, username, created_at, is_admin, password_hash FROM users ORDER BY id ASC`)
+	defer stmt.Finalize()
+
+	var users []types.User
+	for {
+		hasRow, err := stmt.Step()
+		if err != nil {
+			return []types.User{}, fmt.Errorf("failed to step through users: %w", err)
+		}
+		if !hasRow {
+			break
+		}
+		var row types.User
+		row.Id = stmt.GetInt64("id")
+		row.Username = stmt.GetText("username")
+		row.CreatedAt = stmt.GetText("created_at")
+		row.IsAdmin = stmt.GetInt64("is_admin") != 0
+		row.PasswordHash = stmt.GetText("password_hash")
+		users = append(users, row)
+	}
+	return users, nil
 }
 
 func UpsertUser(ctx context.Context, user types.User) error {
