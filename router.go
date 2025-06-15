@@ -56,9 +56,12 @@ func StartServer() {
 	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
 
 	// admin routes
-	router.Handle("POST /api/scan", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))             //
-	router.Handle("GET /api/user", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))        // return types.User for current user
-	router.Handle("GET /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById))) // return types.User for current user
+	router.Handle("POST /api/scan", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                 // triggers a scan of the music library if one is not already running
+	router.Handle("GET /api/user", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))            // return types.User - current user
+	router.Handle("GET /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))              // return []types.User - all users
+	router.Handle("GET /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))     // return types.User - user by ID
+	router.Handle("PATCH /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById))) // return userId int64
+	router.Handle("POST /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))             // return userId int64
 
 	handler := cors.AllowAll().Handler(router)
 

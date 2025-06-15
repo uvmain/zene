@@ -110,13 +110,13 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	return users, nil
 }
 
-func UpsertUser(ctx context.Context, user types.User) error {
+func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to take a db conn from the pool in UpsertUser: %v", err)
+		return 0, fmt.Errorf("failed to take a db conn from the pool in UpsertUser: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -135,9 +135,10 @@ func UpsertUser(ctx context.Context, user types.User) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("failed to upsert user: %v", err)
+		return 0, fmt.Errorf("failed to upsert user: %v", err)
 	}
-	return nil
+	newId := conn.LastInsertRowID()
+	return newId, nil
 }
 
 func DeleteUser(ctx context.Context, username string) error {

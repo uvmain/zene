@@ -58,7 +58,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-		err = database.UpsertUser(ctx, types.User{
+		newId, err := database.UpsertUser(ctx, types.User{
 			Username:     passedUsername,
 			PasswordHash: hashedPassword,
 			IsAdmin:      true,
@@ -68,7 +68,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-		log.Println("Initial admin user created")
+		log.Printf("Initial admin user created: ID %d", newId)
 		user, err = database.GetUserByUsername(ctx, passedUsername)
 		if err != nil {
 			log.Printf("Error fetching new admin user details from database: %v", err)
