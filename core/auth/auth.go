@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -121,21 +121,41 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("appSession")
+		_, isValidSession, err := GetUserFromRequest(r)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		userId, valid, err := database.GetUserIDFromSession(r.Context(), cookie.Value)
-		if err != nil || !valid {
-			log.Println("Unauthorized access attempt:", err)
+		if err != nil || !isValidSession {
+			log.Printf("Unauthorized access attempt, invalid session: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func AdminAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, isValidSession, err := GetUserFromRequest(r)
+		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "userId", userId)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		if !user.IsAdmin {
+			log.Printf("Unauthorized access attempt, user is not an admin: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		if !isValidSession {
+			log.Printf("Unauthorized access attempt, invalid session: %v", err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -190,7 +210,16 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetUserIdFromContext(ctx context.Context) (int, bool) {
-	id, ok := ctx.Value("userId").(int)
-	return id, ok
+func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
+	cookie, err := r.Cookie("appSession")
+	if err == nil {
+		id, isValid, err := database.GetUserIDFromSession(r.Context(), cookie.Value)
+		if err == nil && isValid {
+			user, err := database.GetUserById(r.Context(), id)
+			if err == nil && user.Username != "" {
+				return user, isValid, nil
+			}
+		}
+	}
+	return types.User{}, false, fmt.Errorf("failed to get user from request: %v", err)
 }

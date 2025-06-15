@@ -70,7 +70,7 @@ type File struct {
 type User struct {
 	Id           int64  `json:"id"`
 	Username     string `json:"username"`
-	PasswordHash string `json:"password_hash"`
+	PasswordHash string `json:"-"`
 	CreatedAt    string `json:"created_at"`
 	IsAdmin      bool   `json:"is_admin"`
 }

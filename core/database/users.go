@@ -48,6 +48,35 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 	}
 }
 
+func GetUserById(ctx context.Context, id int64) (types.User, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		return types.User{}, fmt.Errorf("failed to take a db conn from the pool in GetUserByUsername: %v", err)
+	}
+	defer DbPool.Put(conn)
+
+	stmt := conn.Prep(`SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = $id`)
+	defer stmt.Finalize()
+	stmt.SetInt64("$id", id)
+
+	if hasRow, err := stmt.Step(); err != nil {
+		return types.User{}, fmt.Errorf("failed to select user from users: %v", err)
+	} else if !hasRow {
+		return types.User{}, fmt.Errorf("User not found")
+	} else {
+		var row types.User
+		row.Id = stmt.GetInt64("id")
+		row.Username = stmt.GetText("username")
+		row.CreatedAt = stmt.GetText("created_at")
+		row.IsAdmin = stmt.GetInt64("is_admin") != 0
+		row.PasswordHash = stmt.GetText("password_hash")
+		return row, nil
+	}
+}
+
 func UpsertUser(ctx context.Context, user types.User) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
