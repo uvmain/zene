@@ -1,5 +1,5 @@
 import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import type { User } from '../types/auth'
+import type { User, UsersResponse } from '../types/auth'
 import { trackWithImageUrl } from '../composables/logic'
 
 export async function backendFetchRequest(path: string, options = {}): Promise<Response> {
@@ -46,6 +46,6 @@ export async function getCurrentUser(): Promise<User> {
 
 export async function getUsers(): Promise<User[]> {
   const response = await backendFetchRequest('users')
-  const json = await response.json() as User[]
-  return json
+  const json = await response.json() as UsersResponse
+  return json.users
 }

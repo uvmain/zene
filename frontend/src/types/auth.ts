@@ -8,3 +8,8 @@ export interface User {
   is_admin: boolean
   created_at: string
 }
+
+export interface UsersResponse {
+  users: User[]
+  status: string
+}

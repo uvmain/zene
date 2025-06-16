@@ -24,3 +24,9 @@ type GenreResponse struct {
 	Genre string `json:"genre"`
 	Count int    `json:"count"`
 }
+
+type IdResponse struct {
+	Id     int64  `json:"Id"`
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+}
