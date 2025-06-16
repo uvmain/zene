@@ -1,9 +1,11 @@
 import type { AlbumMetadata, ArtistMetadata, GenreMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
 import { useSessionStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
-import { backendFetchRequest } from './fetchFromBackend'
+import { useBackendFetch } from './useBackendFetch'
 
 const searchInput = useSessionStorage<string>('searchInput', '')
+const { backendFetchRequest } = useBackendFetch()
+
 const searchResults = ref<TrackMetadataWithImageUrl[]>([])
 const searchResultsGenres = ref<any[]>([])
 const searchResultsArtists = ref<ArtistMetadata[]>([])

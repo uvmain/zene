@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
+
+const { backendFetchRequest } = useBackendFetch()
 
 const topGenres = ref<any[]>([])
 

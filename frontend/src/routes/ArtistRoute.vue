@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
 import dayjs from 'dayjs'
-import { backendFetchRequest, getArtistAlbums, getArtistTracks } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()
+const { backendFetchRequest, getArtistAlbums, getArtistTracks } = useBackendFetch()
 
 const artist = ref<ArtistMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()

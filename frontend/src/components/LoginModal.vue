@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { onClickOutside } from '@vueuse/core'
-import { userLoginState } from '../composables/auth'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useAuth } from '../composables/useAuth'
+import { useBackendFetch } from '../composables/useBackendFetch'
 
 defineProps({
   isOpen: Boolean,
 })
 
 const emits = defineEmits(['modalClose'])
+
+const { backendFetchRequest } = useBackendFetch()
+const { userLoginState } = useAuth()
 
 const username = ref('')
 const password = ref('')

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import dayjs from 'dayjs'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
 
 const props = defineProps({
   limit: { type: Number, default: 30 },
 })
+
+const { backendFetchRequest } = useBackendFetch()
 
 const recentlyAddedAlbums = ref()
 const refreshed = ref(false)

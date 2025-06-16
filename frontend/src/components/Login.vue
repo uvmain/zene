@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { SessionCheck } from '../types/auth'
-import { checkIfLoggedIn, userLoginState } from '../composables/auth'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useAuth } from '../composables/useAuth'
+import { useBackendFetch } from '../composables/useBackendFetch'
 
 const router = useRouter()
+const { backendFetchRequest } = useBackendFetch()
+const { checkIfLoggedIn, userLoginState } = useAuth()
 
 async function login(username: string, password: string) {
   const formData = new FormData()

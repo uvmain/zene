@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { ArtistMetadata } from '../types'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
 
 const router = useRouter()
+const { backendFetchRequest } = useBackendFetch()
+
 const artists = ref<ArtistMetadata[]>()
 
 async function getArtists() {

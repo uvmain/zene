@@ -1,8 +1,10 @@
 <script setup>
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
 import { useSettings } from '../composables/useSettings'
 
 const { streamQuality, StreamQualities } = useSettings()
+const { backendFetchRequest } = useBackendFetch()
+
 const open = ref(false)
 const dropdownRef = ref(null)
 

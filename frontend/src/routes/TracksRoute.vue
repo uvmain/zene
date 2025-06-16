@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '../types'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
 const { routeTracks, clearRouteTracks } = useRouteTracks()
+const { backendFetchRequest } = useBackendFetch()
 
 const tracks = ref<TrackMetadataWithImageUrl[]>([])
 const loading = ref(true)

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { User } from '../types/auth'
-import { backendFetchRequest, getCurrentUser, getUsers } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
+
+const { backendFetchRequest, getCurrentUser, getUsers } = useBackendFetch()
 
 const users = ref<User[]>([])
 const currentUser = ref<User | null>(null)

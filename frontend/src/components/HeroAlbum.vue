@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { AlbumMetadata } from '../types'
 import dayjs from 'dayjs'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
+import { useBackendFetch } from '../composables/useBackendFetch'
 
+const { backendFetchRequest } = useBackendFetch()
 const METADATA_COUNT = 20
 const isShaking = ref(false)
 const albumArray = ref<AlbumMetadata[]>([])

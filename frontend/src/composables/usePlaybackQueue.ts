@@ -1,6 +1,8 @@
 import type { AlbumMetadata, ArtistMetadata, Queue, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import { backendFetchRequest, getAlbumTracks, getArtistTracks } from './fetchFromBackend'
 import { trackWithImageUrl } from './logic'
+import { useBackendFetch } from './useBackendFetch'
+
+const { backendFetchRequest, getAlbumTracks, getArtistTracks } = useBackendFetch()
 
 const currentlyPlayingTrack = ref<TrackMetadataWithImageUrl | undefined>()
 const currentQueue = ref<Queue | undefined>()

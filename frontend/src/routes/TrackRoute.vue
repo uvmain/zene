@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '../types'
-import { backendFetchRequest } from '../composables/fetchFromBackend'
 import { formatTime, getAlbumUrl, getArtistUrl } from '../composables/logic'
+import { useBackendFetch } from '../composables/useBackendFetch'
 
 const route = useRoute()
+const { backendFetchRequest } = useBackendFetch()
+
 const track = ref<TrackMetadataWithImageUrl | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
