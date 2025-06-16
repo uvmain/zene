@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"zene/core/logger"
 
 	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
@@ -31,7 +32,7 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("Database: failed to take a db conn from the pool in createTable: %v", err)
+		logger.Printf("Database: failed to take a db conn from the pool in createTable: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -39,7 +40,7 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 	tableExists, err := doesTableExist(tableName, conn)
 
 	if err != nil {
-		log.Printf("Database: Error checking if %s table exists: %s", tableName, err)
+		logger.Printf("Database: Error checking if %s table exists: %s", tableName, err)
 	}
 
 	if !tableExists {
@@ -48,10 +49,10 @@ func createTable(ctx context.Context, tableName string, createSql string) {
 		if err != nil {
 			log.Fatalf("Database: Failed to create %s table: %v", tableName, err)
 		} else {
-			log.Printf("Database: %s table created", tableName)
+			logger.Printf("Database: %s table created", tableName)
 		}
 	} else {
-		log.Printf("Database: %s table already exists", tableName)
+		logger.Printf("Database: %s table already exists", tableName)
 	}
 }
 
@@ -60,7 +61,7 @@ func createTrigger(ctx context.Context, triggerName string, triggerSQL string) {
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in createTrigger: %v", err)
+		logger.Printf("failed to take a db conn from the pool in createTrigger: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -74,23 +75,23 @@ func createTrigger(ctx context.Context, triggerName string, triggerSQL string) {
 
 	hasRow, err := stmt.Step()
 	if hasRow {
-		log.Printf("%s trigger already exists", triggerName)
+		logger.Printf("%s trigger already exists", triggerName)
 	} else if err != nil {
-		log.Printf("Error checking for %s trigger: %s", triggerName, err)
+		logger.Printf("Error checking for %s trigger: %s", triggerName, err)
 	} else {
 		stmt, err := conn.Prepare(triggerSQL)
 		if err != nil {
-			log.Printf("Error preparing %s trigger: %s", triggerName, err)
+			logger.Printf("Error preparing %s trigger: %s", triggerName, err)
 			return
 		}
 		defer stmt.Finalize()
 
 		_, err = stmt.Step()
 		if err != nil {
-			log.Printf("Error creating %s trigger: %s", triggerName, err)
+			logger.Printf("Error creating %s trigger: %s", triggerName, err)
 			return
 		}
-		log.Printf("%s trigger created", triggerName)
+		logger.Printf("%s trigger created", triggerName)
 	}
 }
 
@@ -99,7 +100,7 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in createIndex: %v", err)
+		logger.Printf("failed to take a db conn from the pool in createIndex: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -113,11 +114,11 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 
 	hasRow, err := stmt.Step()
 	if err != nil {
-		log.Printf("Database: Error checking for %s index: %s", indexName, err)
+		logger.Printf("Database: Error checking for %s index: %s", indexName, err)
 		return
 	}
 	if hasRow {
-		log.Printf("Database: %s index already exists", indexName)
+		logger.Printf("Database: %s index already exists", indexName)
 		return
 	}
 
@@ -130,16 +131,16 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 
 	stmt2, err := conn.Prepare(sql)
 	if err != nil {
-		log.Printf("Database: Failed to prepare CREATE INDEX for %s: %v", indexName, err)
+		logger.Printf("Database: Failed to prepare CREATE INDEX for %s: %v", indexName, err)
 		return
 	}
 	defer stmt2.Finalize()
 
 	_, err = stmt2.Step()
 	if err != nil {
-		log.Printf("Database: Error creating %s index: %s", indexName, err)
+		logger.Printf("Database: Error creating %s index: %s", indexName, err)
 		return
 	}
 
-	log.Printf("Database: %s index created", indexName)
+	logger.Printf("Database: %s index created", indexName)
 }

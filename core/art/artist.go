@@ -2,7 +2,6 @@ package art
 
 import (
 	"context"
-	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -11,6 +10,7 @@ import (
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/io"
+	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/musicbrainz"
 	"zene/core/types"
@@ -19,24 +19,24 @@ import (
 func ImportArtForArtists(ctx context.Context, artists []types.ArtistResponse) {
 	for _, artist := range artists {
 		if artist.MusicBrainzArtistID == "" {
-			log.Printf("Skipping artist with empty MusicBrainz ID: %s", artist.Artist)
+			logger.Printf("Skipping artist with empty MusicBrainz ID: %s", artist.Artist)
 			continue
 		}
-		log.Printf("Importing art for artist: %s (%s)", artist.Artist, artist.MusicBrainzArtistID)
+		logger.Printf("Importing art for artist: %s (%s)", artist.Artist, artist.MusicBrainzArtistID)
 		getArtistArtFromInternet(ctx, artist.MusicBrainzArtistID)
 	}
-	log.Println("Finished importing art for artists")
+	logger.Println("Finished importing art for artists")
 }
 
 func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, artistName string) {
 	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)
 	if err != nil {
-		log.Printf("Error getting artist subdirectories from database: %v", err)
+		logger.Printf("Error getting artist subdirectories from database: %v", err)
 	}
 
 	existingRow, err := database.SelectArtistArtByMusicBrainzArtistId(ctx, musicBrainzArtistId)
 	if err != nil {
-		log.Printf("Error getting artist art data from database: %v", err)
+		logger.Printf("Error getting artist art data from database: %v", err)
 	}
 	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
 
@@ -84,12 +84,12 @@ func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, ar
 				return
 			} else {
 				// if row is older, getArtFromFolder()
-				log.Printf("local artist art for %s is newer, re-importing", artistName)
+				logger.Printf("local artist art for %s is newer, re-importing", artistName)
 				getArtistArtFromFolder(ctx, musicBrainzArtistId, foundFile)
 			}
 		} else {
 			// file hasn't been imported yet
-			log.Printf("Found new artist art for %s, importing", artistName)
+			logger.Printf("Found new artist art for %s, importing", artistName)
 			getArtistArtFromFolder(ctx, musicBrainzArtistId, foundFile)
 		}
 	} else {
@@ -98,7 +98,7 @@ func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, ar
 			return
 		} else {
 			// no local image, download from internet
-			log.Printf("No artist artwork found for %s, downloading", artistName)
+			logger.Printf("No artist artwork found for %s, downloading", artistName)
 			getArtistArtFromInternet(ctx, musicBrainzArtistId)
 		}
 	}
@@ -108,28 +108,28 @@ func getArtistArtFromFolder(ctx context.Context, musicBrainzArtistId string, ima
 	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
 	err := database.InsertArtistArtRow(ctx, musicBrainzArtistId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
-		log.Printf("Error inserting artist art row: %v", err)
+		logger.Printf("Error inserting artist art row: %v", err)
 	}
 }
 
 func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string) {
-	log.Printf("fetching art for %s from musicbrainz", musicBrainzArtistId)
+	logger.Printf("fetching art for %s from musicbrainz", musicBrainzArtistId)
 	artistArtUrl, err := musicbrainz.GetArtistArtUrl(ctx, musicBrainzArtistId)
 	if err != nil {
-		log.Printf("Failed to get artist art url for %s from musicbrainz: %v", musicBrainzArtistId, err)
+		logger.Printf("Failed to get artist art url for %s from musicbrainz: %v", musicBrainzArtistId, err)
 		return
 	}
 
 	img, err := getImageFromInternet(artistArtUrl)
 	if err != nil {
-		log.Printf("Failed to get artist art image for %s from %s: %v", musicBrainzArtistId, artistArtUrl, err)
+		logger.Printf("Failed to get artist art image for %s from %s: %v", musicBrainzArtistId, artistArtUrl, err)
 		return
 	}
 	go resizeImageAndSaveAsJPG(img, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
 
 	err = database.InsertArtistArtRow(ctx, musicBrainzArtistId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
-		log.Printf("Error inserting artist art row: %v", err)
+		logger.Printf("Error inserting artist art row: %v", err)
 	}
 }
 
@@ -138,12 +138,12 @@ func GetArtForArtist(ctx context.Context, musicBrainzArtistId string) ([]byte, e
 	filePath, _ := filepath.Abs(filepath.Join(config.ArtistArtFolder, file_name))
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		log.Printf("Image file does not exist: %s:  %s", filePath, err)
+		logger.Printf("Image file does not exist: %s:  %s", filePath, err)
 		return nil, err
 	}
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Printf("Error reading image for file_name %s: %s", file_name, err)
+		logger.Printf("Error reading image for file_name %s: %s", file_name, err)
 		return nil, err
 	}
 	return blob, nil

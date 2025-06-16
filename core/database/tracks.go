@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
-	"log"
 	"strconv"
+	"zene/core/logger"
 	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
@@ -15,7 +15,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
 		return []types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
@@ -98,7 +98,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectTrack: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectTrack: %v", err)
 		return types.Metadata{}, err
 	}
 	defer DbPool.Put(conn)
@@ -149,7 +149,7 @@ func SelectTrackFiles(ctx context.Context) ([]types.File, error) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
 		return []types.File{}, err
 	}
 	defer DbPool.Put(conn)

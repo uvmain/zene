@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
 
+	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
 )
@@ -23,7 +23,7 @@ func ClearMbCache() {
 	mbCacheMu.Lock()
 	defer mbCacheMu.Unlock()
 	mbCache = make(map[string]types.MbRelease)
-	log.Println("MusicBrainz album metadata cache cleared")
+	logger.Println("MusicBrainz album metadata cache cleared")
 }
 
 func addUserAgentHeaderToRequest(req *http.Request) {
@@ -40,7 +40,7 @@ func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbReleas
 		return data, nil
 	}
 
-	log.Printf("Fetching metadata from MB for album ID: %s", musicBrainzAlbumId)
+	logger.Printf("Fetching metadata from MB for album ID: %s", musicBrainzAlbumId)
 	url := fmt.Sprintf("http://musicbrainz.org/ws/2/release/%s?fmt=json", musicBrainzAlbumId)
 
 	client := &http.Client{}

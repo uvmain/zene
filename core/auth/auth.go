@@ -5,10 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 	"zene/core/database"
+	"zene/core/logger"
 	"zene/core/types"
 
 	"golang.org/x/crypto/bcrypt"
@@ -41,7 +41,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	passedPassword := r.FormValue("password")
 	var user types.User
 
-	log.Println("User logging in")
+	logger.Println("User logging in")
 
 	// Check if users exist
 	usersExist, err := database.AnyUsersExist(ctx)
@@ -54,7 +54,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		// create first admin user
 		hashedPassword, err := hashPassword(passedPassword)
 		if err != nil {
-			log.Printf("Error hashing password: %v", err)
+			logger.Printf("Error hashing password: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -64,14 +64,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			IsAdmin:      true,
 		})
 		if err != nil {
-			log.Printf("Error creating initial admin user: %v", err)
+			logger.Printf("Error creating initial admin user: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-		log.Printf("Initial admin user created: ID %d", newId)
+		logger.Printf("Initial admin user created: ID %d", newId)
 		user, err = database.GetUserByUsername(ctx, passedUsername)
 		if err != nil {
-			log.Printf("Error fetching new admin user details from database: %v", err)
+			logger.Printf("Error fetching new admin user details from database: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -79,7 +79,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		// normal login flow: verify credentials
 		user, err = database.GetUserByUsername(ctx, passedUsername)
 		if err != nil || !checkPasswordHash(passedPassword, user.PasswordHash) {
-			log.Println("Login unsuccessful, invalid credentials")
+			logger.Println("Login unsuccessful, invalid credentials")
 			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 			return
 		}
@@ -88,14 +88,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	// Generate token, save session, set cookie as before
 	token, err := generateToken()
 	if err != nil {
-		log.Println("Error generating token:", err)
+		logger.Println("Error generating token:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	err = database.SaveSessionToken(ctx, user.Id, token, time.Hour*24*7)
 	if err != nil {
-		log.Println("Error saving session token:", err)
+		logger.Println("Error saving session token:", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -115,7 +115,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -130,7 +130,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		if err != nil || !isValidSession {
-			log.Printf("Unauthorized access attempt, invalid session: %v", err)
+			logger.Printf("Unauthorized access attempt, invalid session: %v", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -147,13 +147,13 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		if !user.IsAdmin {
-			log.Printf("Unauthorized access attempt, user is not an admin: %v", err)
+			logger.Printf("Unauthorized access attempt, user is not an admin: %v", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
 		if !isValidSession {
-			log.Printf("Unauthorized access attempt, invalid session: %v", err)
+			logger.Printf("Unauthorized access attempt, invalid session: %v", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -162,12 +162,12 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("User logging out")
+	logger.Println("User logging out")
 	cookie, err := r.Cookie("appSession")
 	if err == nil {
 		err := database.DeleteSessionToken(r.Context(), cookie.Value)
 		if err != nil {
-			log.Printf("Error deleting session token: %v", err)
+			logger.Printf("Error deleting session token: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -189,7 +189,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -210,7 +210,7 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}

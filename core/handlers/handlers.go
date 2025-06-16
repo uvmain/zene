@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -85,7 +85,7 @@ type SuccessResponse interface {
 }
 
 func handleErrorResponse[T ErrorResponse](w http.ResponseWriter, response T, message string, err error, statusCode int) {
-	log.Printf("%s: %v", message, err)
+	logger.Printf("%s: %v", message, err)
 	w.Header().Set("Content-Type", "application/json")
 	response.SetError(message)
 	w.WriteHeader(statusCode)

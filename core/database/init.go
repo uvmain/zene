@@ -7,6 +7,7 @@ import (
 	"sync"
 	"zene/core/config"
 	"zene/core/io"
+	"zene/core/logger"
 	"zene/core/logic"
 
 	"zombiezen.com/go/sqlite"
@@ -32,16 +33,16 @@ func openDatabase(ctx context.Context) {
 	dbFile := filepath.Join(config.DatabaseDirectory, dbFile)
 
 	if io.FileExists(dbFile) {
-		log.Println("Database already exists")
+		logger.Println("Database already exists")
 	} else {
-		log.Println("Creating new database file")
+		logger.Println("Creating new database file")
 	}
 
 	poolOptions := sqlitex.PoolOptions{
 		PrepareConn: func(conn *sqlite.Conn) error {
 			err := sqlitex.ExecuteTransient(conn, `PRAGMA foreign_keys = on;`, nil)
 			if err != nil {
-				log.Printf("Prepare internal error: %v", err)
+				logger.Printf("Prepare internal error: %v", err)
 			}
 			return err
 		},
@@ -55,7 +56,7 @@ func openDatabase(ctx context.Context) {
 	if err != nil {
 		log.Fatalf("Failed to open database pool: %v", err)
 	} else {
-		log.Println("Database pool opened")
+		logger.Println("Database pool opened")
 	}
 
 	if err := logic.CheckContext(ctx); err != nil {

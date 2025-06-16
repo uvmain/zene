@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
+	"zene/core/logger"
 )
 
 func CreateSessionsTable(ctx context.Context) {
@@ -89,7 +89,7 @@ func DeleteSessionToken(ctx context.Context, token string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete session for token %s: %v", token, err)
 	}
-	log.Printf("Deleted session for token %s", token)
+	logger.Printf("Deleted session for token %s", token)
 	return nil
 }
 
@@ -99,7 +99,7 @@ func CleanupExpiredSessions(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in CleanupExpiredSessions: %v", err)
+		logger.Printf("failed to take a db conn from the pool in CleanupExpiredSessions: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -110,9 +110,9 @@ func CleanupExpiredSessions(ctx context.Context) {
 
 	_, err = stmt.Step()
 	if err != nil {
-		log.Printf("failed to run session cleanup: %v", err)
+		logger.Printf("failed to run session cleanup: %v", err)
 	}
-	log.Printf("Session cleanup finished")
+	logger.Printf("Session cleanup finished")
 }
 
 func DeleteAllSessionsForUserId(ctx context.Context, userId int) error {

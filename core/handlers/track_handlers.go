@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"zene/core/database"
 	"zene/core/io"
+	"zene/core/logger"
 )
 
 func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
@@ -34,14 +34,14 @@ func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAllTracks(r.Context(), randomParam, limitParam, recentParam)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -52,14 +52,14 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 
 	row, err := database.SelectTrack(r.Context(), musicBrainzTrackId)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(row); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -70,14 +70,14 @@ func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SearchMetadata(r.Context(), searchQuery)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}

@@ -2,10 +2,10 @@ package logic
 
 import (
 	"context"
-	"log"
 	"strconv"
 	"sync"
 	"time"
+	"zene/core/logger"
 )
 
 var (
@@ -39,7 +39,7 @@ func GenerateSlug() string {
 func CheckContext(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
-		log.Printf("Context Done: %s", ctx.Err().Error())
+		logger.Printf("Context Done: %s", ctx.Err().Error())
 		return ctx.Err()
 	default:
 		return nil

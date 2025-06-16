@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"log"
+	"zene/core/logger"
 
 	"zombiezen.com/go/sqlite/sqlitex"
 )
@@ -60,16 +60,16 @@ func insertFtsMetadataData(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in insertFtsMetadataData: %v", err)
+		logger.Printf("failed to take a db conn from the pool in insertFtsMetadataData: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
 
 	err = sqlitex.ExecuteTransient(conn, query, nil)
 	if err != nil {
-		log.Printf("Error inserting data into metadata_fts table: %s", err)
+		logger.Printf("Error inserting data into metadata_fts table: %s", err)
 	} else {
-		log.Println("Data inserted into metadata_fts table")
+		logger.Println("Data inserted into metadata_fts table")
 	}
 }
 
@@ -102,14 +102,14 @@ func insertFtsArtistsData(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in insertFtsArtistsData: %v", err)
+		logger.Printf("failed to take a db conn from the pool in insertFtsArtistsData: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
 	err = sqlitex.ExecuteTransient(conn, query, nil)
 	if err != nil {
-		log.Printf("Error inserting data into artists_fts table: %s", err)
+		logger.Printf("Error inserting data into artists_fts table: %s", err)
 	} else {
-		log.Println("Data inserted into artists_fts table")
+		logger.Println("Data inserted into artists_fts table")
 	}
 }

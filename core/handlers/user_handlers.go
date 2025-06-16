@@ -3,11 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"zene/core/auth"
 	"zene/core/database"
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -21,7 +21,7 @@ func HandleGetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewEncoder(w).Encode(user); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}

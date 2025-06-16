@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"zene/core/art"
 	"zene/core/database"
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -36,14 +36,14 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -57,14 +57,14 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	row, err = database.SelectArtistByMusicBrainzArtistId(r.Context(), musicBrainzArtistId)
 
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(row); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -79,14 +79,14 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectTracksByArtistId(r.Context(), musicBrainzArtistId, randomParam, limitParam, offsetParam, recentParam)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -116,14 +116,14 @@ func HandleGetArtistAlbums(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAlbumsByArtistId(r.Context(), musicBrainzArtistId, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}

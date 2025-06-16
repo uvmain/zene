@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"zene/core/art"
 	"zene/core/database"
+	"zene/core/logger"
 )
 
 func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
@@ -15,14 +15,14 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAllAlbums(r.Context(), randomParam, limitParam, recentParam)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -33,14 +33,14 @@ func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAlbum(r.Context(), musicBrainzAlbumId)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
@@ -51,14 +51,14 @@ func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectTracksByAlbumID(r.Context(), musicBrainzAlbumId)
 	if err != nil {
-		log.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		log.Println("Error encoding database response:", err)
+		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}

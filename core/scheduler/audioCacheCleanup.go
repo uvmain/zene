@@ -2,13 +2,13 @@ package scheduler
 
 import (
 	"context"
-	"log"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/logger"
 )
 
 func maxCacheSizeBytes() int64 {
@@ -23,28 +23,28 @@ func cleanupAudioCache(ctx context.Context) {
 
 	staleKeys, err := database.SelectStaleAudioCacheEntries(ctx, maxAge)
 	if err != nil {
-		log.Printf("Error selecting stale audio cache entries: %v", err)
+		logger.Printf("Error selecting stale audio cache entries: %v", err)
 	}
 
 	for _, key := range staleKeys {
 		fullPath := filepath.Join(dir, key)
 		err := os.Remove(fullPath)
 		if err != nil {
-			log.Printf("Failed to delete stale cache file %s: %v", fullPath, err)
+			logger.Printf("Failed to delete stale cache file %s: %v", fullPath, err)
 			continue
 		}
-		log.Printf("Deleted stale cache file: %s", key)
+		logger.Printf("Deleted stale cache file: %s", key)
 
 		err = database.DeleteAudioCacheEntry(ctx, key)
 		if err != nil {
-			log.Printf("Failed to delete DB entry for %s: %v", key, err)
+			logger.Printf("Failed to delete DB entry for %s: %v", key, err)
 		}
 	}
 
 	// enforce config.AudioCacheMaxMB
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		log.Printf("Failed to read audio cache directory: %v", err)
+		logger.Printf("Failed to read audio cache directory: %v", err)
 		return
 	}
 
@@ -64,7 +64,7 @@ func cleanupAudioCache(ctx context.Context) {
 		fullPath := filepath.Join(dir, entry.Name())
 		info, err := entry.Info()
 		if err != nil {
-			log.Printf("Skipping file %s: %v", entry.Name(), err)
+			logger.Printf("Skipping file %s: %v", entry.Name(), err)
 			continue
 		}
 		totalSize += info.Size()
@@ -79,7 +79,7 @@ func cleanupAudioCache(ctx context.Context) {
 		return
 	}
 
-	log.Printf("Audio cache is %d bytes, cleaning up based on size...", totalSize)
+	logger.Printf("Audio cache is %d bytes, cleaning up based on size...", totalSize)
 
 	// Sort by mod time (oldest first)
 	sort.Slice(infos, func(i, j int) bool {
@@ -89,16 +89,16 @@ func cleanupAudioCache(ctx context.Context) {
 	for _, fi := range infos {
 		err := os.Remove(fi.path)
 		if err != nil {
-			log.Printf("Failed to delete cache file %s: %v", fi.path, err)
+			logger.Printf("Failed to delete cache file %s: %v", fi.path, err)
 			continue
 		}
 		totalSize -= fi.size
-		log.Printf("Deleted %s (%d bytes)", filepath.Base(fi.path), fi.size)
+		logger.Printf("Deleted %s (%d bytes)", filepath.Base(fi.path), fi.size)
 
 		cacheKey := filepath.Base(fi.path)
 		err = database.DeleteAudioCacheEntry(ctx, cacheKey)
 		if err != nil {
-			log.Printf("Failed to delete cache row from audio_cache %s: %v", fi.path, err)
+			logger.Printf("Failed to delete cache row from audio_cache %s: %v", fi.path, err)
 			continue
 		}
 

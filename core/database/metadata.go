@@ -3,11 +3,11 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"reflect"
 	"sort"
 	"strings"
 	"time"
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -49,7 +49,7 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in InsertTrackMetadataRow: %v", err)
+		logger.Printf("failed to take a db conn from the pool in InsertTrackMetadataRow: %v", err)
 		return err
 	}
 	defer DbPool.Put(conn)
@@ -124,7 +124,7 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in UpdateMetadataRow: %v", err)
+		logger.Printf("failed to take a db conn from the pool in UpdateMetadataRow: %v", err)
 		return err
 	}
 	defer DbPool.Put(conn)
@@ -175,7 +175,7 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 		return fmt.Errorf("failed to update metadata for %s: %w", metadata.FilePath, err)
 	}
 
-	log.Printf("Updated metadata for %s", metadata.FilePath)
+	logger.Printf("Updated metadata for %s", metadata.FilePath)
 	return nil
 }
 
@@ -197,7 +197,7 @@ func DeleteMetadataRow(ctx context.Context, filepath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to delete metadata row %s: %v", filepath, err)
 	}
-	log.Printf("Deleted metadata row %s", filepath)
+	logger.Printf("Deleted metadata row %s", filepath)
 	return nil
 }
 
@@ -207,7 +207,7 @@ func SelectDistinctGenres(ctx context.Context, searchParam string) ([]types.Genr
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectDistinctGenres: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectDistinctGenres: %v", err)
 		return []types.GenreResponse{}, err
 	}
 	defer DbPool.Put(conn)
@@ -266,7 +266,7 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
 		return nil, err
 	}
 	defer DbPool.Put(conn)

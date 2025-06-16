@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"zene/core/database"
+	"zene/core/logger"
 )
 
 var FirstUserAllowed bool
@@ -16,6 +17,6 @@ func Initialise(ctx context.Context) {
 
 	FirstUserAllowed = !exists
 	if FirstUserAllowed {
-		log.Println("No users found, first login will create admin user")
+		logger.Println("No users found, first login will create admin user")
 	}
 }

@@ -12,6 +12,7 @@ import (
 	"zene/core/auth"
 	"zene/core/config"
 	"zene/core/handlers"
+	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/net"
 
@@ -69,10 +70,10 @@ func StartServer() {
 	var serverAddress string
 	if config.IsLocalDevEnv() {
 		serverAddress = "localhost:8080"
-		log.Println("Application running at http://localhost:8080")
+		logger.Println("Application running at http://localhost:8080")
 	} else {
 		serverAddress = ":8080"
-		log.Println("Application running at :8080")
+		logger.Println("Application running at :8080")
 	}
 
 	http.ListenAndServe(serverAddress, handler)

@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/logger"
 )
 
 func TranscodeFile(ctx context.Context, filePath string, trackId string, quality int) (string, error) {
@@ -27,7 +27,7 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 		return cachePath, nil
 	}
 
-	log.Printf("Transcoding %s at %dk at %s", filePath, quality, cachePath)
+	logger.Printf("Transcoding %s at %dk at %s", filePath, quality, cachePath)
 
 	cmd := exec.Command("ffmpeg",
 		"-loglevel", "error",
@@ -43,12 +43,12 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 	if err != nil {
 		return "", fmt.Errorf("Error running ffprobe: %s", output)
 	} else {
-		log.Printf("Transcoding %s complete", filePath)
+		logger.Printf("Transcoding %s complete", filePath)
 	}
 
 	err = database.UpsertAudioCacheEntry(ctx, cacheKey)
 	if err != nil {
-		log.Printf("Error upserting audiocache entry for: %s", cacheKey)
+		logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
 		return "", err
 	}
 
@@ -61,9 +61,9 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	// serve from cache if it exists
 	if _, err := os.Stat(cachePath); err == nil {
-		log.Printf("Serving transcoded file from cache: %s", cachePath)
+		logger.Printf("Serving transcoded file from cache: %s", cachePath)
 		if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
-			log.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
+			logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
 		}
 		f, err := os.Open(cachePath)
 		if err != nil {
@@ -75,7 +75,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	log.Printf("Transcoding %s to stream at %dk", filePathAbs, quality)
+	logger.Printf("Transcoding %s to stream at %dk", filePathAbs, quality)
 
 	cmd := exec.Command("ffmpeg",
 		"-loglevel", "error",
@@ -103,7 +103,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	go func() {
 		slurp, _ := io.ReadAll(stderr)
 		if len(slurp) > 0 {
-			log.Printf("ffmpeg stderr: %s", slurp)
+			logger.Printf("ffmpeg stderr: %s", slurp)
 		}
 	}()
 
@@ -123,10 +123,10 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return fmt.Errorf("copy failed: %w", err)
 	} else {
-		log.Printf("Transcoding %s complete, cached at %s", filePathAbs, cachePath)
+		logger.Printf("Transcoding %s complete, cached at %s", filePathAbs, cachePath)
 		err = database.UpsertAudioCacheEntry(ctx, cacheKey)
 		if err != nil {
-			log.Printf("Error upserting audiocache entry for: %s", cacheKey)
+			logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
 			return err
 		}
 	}

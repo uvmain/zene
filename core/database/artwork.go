@@ -3,9 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"path/filepath"
 	"time"
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -32,7 +32,7 @@ func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId 
 	defer dbMutex.RUnlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectAlbumArtByMusicBrainzAlbumId: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectAlbumArtByMusicBrainzAlbumId: %v", err)
 		return types.AlbumArtRow{}, err
 	}
 	defer DbPool.Put(conn)
@@ -58,7 +58,7 @@ func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModif
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in InsertAlbumArtRow: %v", err)
+		logger.Printf("failed to take a db conn from the pool in InsertAlbumArtRow: %v", err)
 		return err
 	}
 	defer DbPool.Put(conn)
@@ -83,7 +83,7 @@ func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string)
 	defer dbMutex.RUnlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectArtistSubDirectories: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectArtistSubDirectories: %v", err)
 		return nil, err
 	}
 	defer DbPool.Put(conn)
@@ -118,7 +118,7 @@ func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtist
 	defer dbMutex.RUnlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in SelectArtistArtByMusicBrainzArtistId: %v", err)
+		logger.Printf("failed to take a db conn from the pool in SelectArtistArtByMusicBrainzArtistId: %v", err)
 		return types.ArtistArtRow{}, err
 	}
 	defer DbPool.Put(conn)
@@ -144,7 +144,7 @@ func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateMod
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		log.Printf("failed to take a db conn from the pool in InsertArtistArtRow: %v", err)
+		logger.Printf("failed to take a db conn from the pool in InsertArtistArtRow: %v", err)
 		return err
 	}
 	defer DbPool.Put(conn)

@@ -3,7 +3,6 @@ package scanner
 import (
 	"context"
 	"fmt"
-	"log"
 	"path/filepath"
 	"time"
 	"zene/core/art"
@@ -12,6 +11,7 @@ import (
 	"zene/core/ffprobe"
 	"zene/core/globals"
 	"zene/core/io"
+	"zene/core/logger"
 	"zene/core/musicbrainz"
 	"zene/core/types"
 )
@@ -25,20 +25,20 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	}
 
 	globals.IsScanning = true
-	log.Printf("Starting scan of music dir")
+	logger.Printf("Starting scan of music dir")
 	start := time.Now()
-	defer func() { log.Printf("Scan completed in %s", time.Since(start)) }()
+	defer func() { logger.Printf("Scan completed in %s", time.Since(start)) }()
 	defer func() { globals.IsScanning = false }()
 
 	// get a list of files from the filesystem
-	log.Printf("Scan: Getting list of audio files in the filesystem")
+	logger.Printf("Scan: Getting list of audio files in the filesystem")
 	audioFiles, err := getAudioFiles(ctx)
 	if err != nil {
 		return scanError("Error scanning music directory for audio files: %v", err)
 	}
 
 	// get a current list of files from the metadata table
-	log.Printf("Scan: Getting list of metadata in the database")
+	logger.Printf("Scan: Getting list of metadata in the database")
 	metadataFiles, err := database.SelectTrackFiles(ctx)
 	if err != nil {
 		return scanError("Error scanning database for metadata files: %v", err)
@@ -46,7 +46,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	}
 
 	// for each file found, either insert or update a metadata row
-	log.Printf("Scan: Upserting metadata into database")
+	logger.Printf("Scan: Upserting metadata into database")
 	audioFilesToInsert, err := getOutdatedOrMissing(audioFiles, metadataFiles)
 	if err != nil {
 		return scanError("Error getting outdated or missing files: %v", err)
@@ -60,10 +60,10 @@ func RunScan(ctx context.Context) types.ScanResponse {
 			fileCount += 1
 		}
 	}
-	log.Printf("Scan: %d metadata rows upserted", fileCount)
+	logger.Printf("Scan: %d metadata rows upserted", fileCount)
 
 	// for each metadata row that does not exist in the files list, delete that row
-	log.Printf("Scan: Cleaning orphaned metadata rows")
+	logger.Printf("Scan: Cleaning orphaned metadata rows")
 	metadataRowsToDelete := filesInSliceOnceNotInSliceTwo(metadataFiles, audioFiles)
 	fileCount = 0
 	for _, metadataRow := range metadataRowsToDelete {
@@ -74,7 +74,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 			fileCount += 1
 		}
 	}
-	log.Printf("Scan: %d orphaned metadata rows removed", fileCount)
+	logger.Printf("Scan: %d orphaned metadata rows removed", fileCount)
 
 	err = getAlbumArtwork(ctx)
 	if err != nil {
@@ -186,10 +186,10 @@ func upsertMetadataForFile(ctx context.Context, file types.File) error {
 }
 
 func getAlbumArtwork(ctx context.Context) error {
-	log.Println("Getting album artwork")
+	logger.Println("Getting album artwork")
 	albums, err := database.SelectAllAlbums(ctx, "false", "", "")
 	if err != nil {
-		log.Printf("Error fetching albums from database: %v", err)
+		logger.Printf("Error fetching albums from database: %v", err)
 		return err
 	}
 	for _, album := range albums {
@@ -199,12 +199,12 @@ func getAlbumArtwork(ctx context.Context) error {
 }
 
 func getArtistArtwork(ctx context.Context) error {
-	log.Println("Getting artist artwork")
+	logger.Println("Getting artist artwork")
 
 	albumArtists, err := database.SelectAlbumArtists(ctx, "", "", "", "", "", "")
 
 	if err != nil {
-		log.Printf("Error fetching artists from database: %v", err)
+		logger.Printf("Error fetching artists from database: %v", err)
 		return err
 	}
 	for _, artist := range albumArtists {
@@ -215,6 +215,6 @@ func getArtistArtwork(ctx context.Context) error {
 }
 
 func scanError(msg string, err error) types.ScanResponse {
-	log.Printf("%s: %v", msg, err)
+	logger.Printf("%s: %v", msg, err)
 	return types.ScanResponse{Success: false, Status: msg}
 }

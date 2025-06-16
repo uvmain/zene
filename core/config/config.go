@@ -1,12 +1,12 @@
 package config
 
 import (
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"zene/core/logger"
 
 	"github.com/joho/godotenv"
 )
@@ -32,7 +32,7 @@ func LoadConfig() {
 		musicDir = "./music"
 	}
 	MusicDir, _ = filepath.Abs(musicDir)
-	log.Printf("Using music directory: %s", MusicDir)
+	logger.Printf("Using music directory: %s", MusicDir)
 
 	dataPath := os.Getenv("DATA_PATH")
 	if dataPath == "" {
@@ -76,12 +76,12 @@ func LoadConfig() {
 		FfmpegPath, _ = filepath.Abs(ffmpegPath)
 	}
 
-	log.Printf("FFMPEG_PATH: %s", FfmpegPath)
+	logger.Printf("FFMPEG_PATH: %s", FfmpegPath)
 	version, err := exec.Command(FfmpegPath, "-version").Output()
 	if err != nil {
-		log.Printf("ffmpeg not found at %s", FfmpegPath)
+		logger.Printf("ffmpeg not found at %s", FfmpegPath)
 	} else {
-		log.Printf("ffmpeg version is %v", strings.Split(string(version), "\n")[0])
+		logger.Printf("ffmpeg version is %v", strings.Split(string(version), "\n")[0])
 	}
 
 	ffprobePath := os.Getenv("FFPROBE_PATH")
@@ -91,12 +91,12 @@ func LoadConfig() {
 		FfprobePath, _ = filepath.Abs(ffprobePath)
 	}
 
-	log.Printf("FFPROBE_PATH: %s", FfprobePath)
+	logger.Printf("FFPROBE_PATH: %s", FfprobePath)
 	version, err = exec.Command(FfprobePath, "-version").Output()
 	if err != nil {
-		log.Printf("ffprobe not found at %s: %v", FfprobePath, err)
+		logger.Printf("ffprobe not found at %s: %v", FfprobePath, err)
 	} else {
-		log.Printf("ffprobe version is %v", strings.Split(string(version), "\n")[0])
+		logger.Printf("ffprobe version is %v", strings.Split(string(version), "\n")[0])
 	}
 
 	audioFileTypesEnv := os.Getenv("AUDIO_FILE_TYPES")
@@ -110,7 +110,7 @@ func LoadConfig() {
 			AudioFileTypes[i] = strings.TrimSpace(ext)
 		}
 	}
-	log.Printf("Audio file types: %v", AudioFileTypes)
+	logger.Printf("Audio file types: %v", AudioFileTypes)
 }
 
 func IsLocalDevEnv() bool {
