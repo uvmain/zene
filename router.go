@@ -57,7 +57,7 @@ func StartServer() {
 	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
 	router.Handle("GET /api/user", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))                             // return types.User - current user
 	router.Handle("GET /api/playcounts", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                        // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
-	router.Handle("POST /api/playcounts", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleUpsertPlaycount)))                     // return handlers.StandardResponse; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
+	router.Handle("POST /api/playcounts", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleUpsertPlaycount)))                     // return handlers.StandardResponse; form body: user_id=1, musicbrainz_track_id=musicBrainzTrackId
 
 	// admin routes
 	router.Handle("POST /api/scan", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                   // triggers a scan of the music library if one is not already running

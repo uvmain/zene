@@ -19,7 +19,7 @@ import (
 func ImportArtForArtists(ctx context.Context, artists []types.ArtistResponse) {
 	for _, artist := range artists {
 		if artist.MusicBrainzArtistID == "" {
-			logger.Printf("Skipping artist with empty MusicBrainz ID: %s", artist.Artist)
+			logger.Printf("Skipping artist with empty musicbrainz ID: %s", artist.Artist)
 			continue
 		}
 		logger.Printf("Importing art for artist: %s (%s)", artist.Artist, artist.MusicBrainzArtistID)

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"zene/core/auth"
 	"zene/core/database"
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -34,8 +35,8 @@ func HandleGetPlaycounts(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleUpsertPlaycount(w http.ResponseWriter, r *http.Request) {
-	userIdParam := r.URL.Query().Get("user_id")
-	musicbrainzTrackId := r.URL.Query().Get("musicbrainz_track_id")
+	userIdParam := r.FormValue("user_id")
+	musicbrainzTrackId := r.FormValue("musicbrainz_track_id")
 
 	response := &StandardResponse{}
 
@@ -48,6 +49,8 @@ func HandleUpsertPlaycount(w http.ResponseWriter, r *http.Request) {
 			userId = user.Id
 		}
 	}
+
+	logger.Printf("upserting playcount for user_id: %v, musicbrainz_track_id: %s", userId, musicbrainzTrackId)
 
 	err = database.UpsertPlaycount(r.Context(), userId, musicbrainzTrackId)
 	if err != nil {

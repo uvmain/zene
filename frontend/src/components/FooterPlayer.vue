@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
 import { formatTime } from '../composables/logic'
+import { useBackendFetch } from '../composables/useBackendFetch'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
@@ -8,10 +9,12 @@ import { useSettings } from '../composables/useSettings'
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
+const { postPlaycount } = useBackendFetch()
 const router = useRouter()
 
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
+const playcountPosted = ref(false)
 const currentTime = ref(0)
 const previousVolume = ref(1)
 const currentVolume = ref(1)
@@ -93,9 +96,23 @@ function updateProgress() {
     debug.value = 'no audioref'
     return
   }
-  debug.value = `updating currentTime to ${currentTime.value}`
+
   currentTime.value = audioRef.value.currentTime
+
+  if (currentlyPlayingTrack.value && !playcountPosted.value) {
+    const halfwayPoint = Number.parseFloat(currentlyPlayingTrack.value.duration) / 2
+    if (currentTime.value >= halfwayPoint) {
+      postPlaycount(currentlyPlayingTrack.value.musicbrainz_track_id)
+      playcountPosted.value = true
+    }
+  }
 }
+
+watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
+  if (newTrack !== oldTrack) {
+    playcountPosted.value = false
+  }
+})
 
 function seek(event: Event) {
   if (!audioRef.value)

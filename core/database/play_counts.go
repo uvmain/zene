@@ -35,7 +35,7 @@ func UpsertPlaycount(ctx context.Context, userId int64, musicbrainzTrackId strin
 	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`INSERT INTO play_counts (user_id, musicbrainz_track_id, play_count, last_played)
-		VALUES ($user_id, $musicbrainz_track_id, 1, last_played)
+		VALUES ($user_id, $musicbrainz_track_id, 1, $last_played)
 		ON CONFLICT(user_id, musicbrainz_track_id)
 		DO UPDATE SET play_count = play_count + 1, last_played = excluded.last_played;`)
 	defer stmt.Finalize()
@@ -97,7 +97,7 @@ func GetPlaycounts(ctx context.Context, musicbrainzTrackId string, userId int64)
 			Id:                 stmt.GetInt64("id"),
 			UserId:             stmt.GetInt64("user_id"),
 			MusicBrainzTrackID: stmt.GetText("musicbrainz_track_id"),
-			PlayCount:          stmt.GetInt64("last_played"),
+			PlayCount:          stmt.GetInt64("play_count"),
 			LastPlayed:         stmt.GetText("last_played"),
 		}
 		rows = append(rows, row)

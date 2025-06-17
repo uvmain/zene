@@ -34,9 +34,9 @@ func GetCommonTags(audiofilePath string) (types.Tags, error) {
 	parsedAlbum := getTagStringValue(tags, []string{"album"})
 	parsedGenre := getTagStringValue(tags, []string{"genre"})
 	parsedReleaseDate := getTagStringValue(tags, []string{"date", "release_date"})
-	musicBrainzAlbumId := getTagStringValue(tags, []string{"MUSICBRAINZ_ALBUMID", "MusicBrainz Album Id"})
-	musicBrainzArtistId := getTagStringValue(tags, []string{"MUSICBRAINZ_ARTISTID", "MusicBrainz Artist Id"})
-	musicBrainzTrackId := getTagStringValue(tags, []string{"MUSICBRAINZ_TRACKID", "MusicBrainz Release Track Id"})
+	musicBrainzAlbumId := getTagStringValue(tags, []string{"MUSICBRAINZ_ALBUMID", "MusicBrainz Album Id", "musicbrainz Album Id"})
+	musicBrainzArtistId := getTagStringValue(tags, []string{"MUSICBRAINZ_ARTISTID", "MusicBrainz Artist Id", "musicbrainz Artist Id"})
+	musicBrainzTrackId := getTagStringValue(tags, []string{"MUSICBRAINZ_TRACKID", "MusicBrainz Release Track Id", "musicbrainz Release Track Id"})
 	totalTracks := getTagStringValue(tags, []string{"TOTALTRACKS"})
 	trackNumber := getTagStringValue(tags, []string{"track"})
 	totalDiscs := getTagStringValue(tags, []string{"TOTALDISCS"})
@@ -67,7 +67,7 @@ func GetCommonTags(audiofilePath string) (types.Tags, error) {
 	if parsedReleaseDate == "" {
 		musicBrainzData, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
 		if err != nil {
-			logger.Printf("Error fetching parsedReleaseDate from MusicBrainz: %v", err)
+			logger.Printf("Error fetching parsedReleaseDate from musicbrainz: %v", err)
 			return types.Tags{}, err
 		}
 		parsedReleaseDate = musicBrainzData.Date
