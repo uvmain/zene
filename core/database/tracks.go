@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"strconv"
-	"zene/core/logger"
 	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
@@ -15,8 +15,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
-		return []types.Metadata{}, err
+		return []types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAllTracks: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -98,8 +97,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in SelectTrack: %v", err)
-		return types.Metadata{}, err
+		return types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in t: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -143,14 +141,13 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 	return row, nil
 }
 
-func SelectTrackFiles(ctx context.Context) ([]types.File, error) {
+func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in SelectAllTracks: %v", err)
-		return []types.File{}, err
+		return []types.File{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTrackFilesForScanner: %v", err)
 	}
 	defer DbPool.Put(conn)
 

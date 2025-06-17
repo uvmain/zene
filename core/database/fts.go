@@ -60,7 +60,7 @@ func insertFtsMetadataData(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in insertFtsMetadataData: %v", err)
+		logger.Printf("Failed to take a db conn from the pool in insertFtsMetadataData: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -102,7 +102,7 @@ func insertFtsArtistsData(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in insertFtsArtistsData: %v", err)
+		logger.Printf("Failed to take a db conn from the pool in insertFtsArtistsData: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)

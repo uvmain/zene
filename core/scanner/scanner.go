@@ -39,7 +39,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 
 	// get a current list of files from the metadata table
 	logger.Printf("Scan: Getting list of metadata in the database")
-	metadataFiles, err := database.SelectTrackFiles(ctx)
+	metadataFiles, err := database.SelectTrackFilesForScanner(ctx)
 	if err != nil {
 		return scanError("Error scanning database for metadata files: %v", err)
 

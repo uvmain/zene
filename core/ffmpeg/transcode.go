@@ -67,7 +67,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		}
 		f, err := os.Open(cachePath)
 		if err != nil {
-			return fmt.Errorf("failed to open cached file: %w", err)
+			return fmt.Errorf("Failed to open cached file: %w", err)
 		}
 		defer f.Close()
 		w.Header().Set("Content-Type", "audio/aac")
@@ -89,15 +89,15 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("failed to get ffmpeg stdout: %w", err)
+		return fmt.Errorf("Failed to get ffmpeg stdout: %w", err)
 	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return fmt.Errorf("failed to get ffmpeg stderr: %w", err)
+		return fmt.Errorf("Failed to get ffmpeg stderr: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start ffmpeg: %w", err)
+		return fmt.Errorf("Failed to start ffmpeg: %w", err)
 	}
 
 	go func() {
@@ -111,7 +111,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	cacheFile, err := os.Create(cachePath)
 	if err != nil {
-		return fmt.Errorf("failed to create cache file: %w", err)
+		return fmt.Errorf("Failed to create cache file: %w", err)
 	}
 	defer cacheFile.Close()
 

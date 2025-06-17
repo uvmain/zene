@@ -2,8 +2,8 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"strconv"
-	"zene/core/logger"
 	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
@@ -15,8 +15,7 @@ func SelectTracksByAlbumID(ctx context.Context, musicbrainz_album_id string) ([]
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool: %v", err)
-		return []types.Metadata{}, err
+		return []types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByAlbumID: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -72,8 +71,7 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool: %v", err)
-		return []types.AlbumsResponse{}, err
+		return []types.AlbumsResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAllAlbums: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -137,8 +135,7 @@ func SelectAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumsRe
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool: %v", err)
-		return types.AlbumsResponse{}, err
+		return types.AlbumsResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAlbum: %v", err)
 	}
 	defer DbPool.Put(conn)
 

@@ -202,7 +202,7 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("appSession")
 	if err == nil {
-		_, isValid, err := database.GetUserIDFromSession(r.Context(), cookie.Value)
+		_, isValid, err := database.GetUserIdFromSession(r.Context(), cookie.Value)
 		if err == nil && isValid {
 			sessionCheck.LoggedIn = true
 		}
@@ -220,7 +220,7 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
 	cookie, err := r.Cookie("appSession")
 	if err == nil {
-		id, isValid, err := database.GetUserIDFromSession(r.Context(), cookie.Value)
+		id, isValid, err := database.GetUserIdFromSession(r.Context(), cookie.Value)
 		if err == nil && isValid {
 			user, err := database.GetUserById(r.Context(), id)
 			if err == nil && user.Username != "" {
@@ -228,5 +228,5 @@ func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
 			}
 		}
 	}
-	return types.User{}, false, fmt.Errorf("failed to get user from request: %v", err)
+	return types.User{}, false, fmt.Errorf("Failed to get user from request: %v", err)
 }

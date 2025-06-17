@@ -74,3 +74,11 @@ type User struct {
 	CreatedAt    string `json:"created_at"`
 	IsAdmin      bool   `json:"is_admin"`
 }
+
+type Playcount struct {
+	Id                 int64  `json:"id"`
+	UserId             int64  `json:"user_id"`
+	MusicBrainzTrackID string `json:"musicbrainz_track_id"`
+	PlayCount          int64  `json:"play_count"`
+	LastPlayed         string `json:"last_played"`
+}

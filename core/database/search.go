@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -13,8 +12,7 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, 
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in SearchMetadata: %v", err)
-		return []types.Metadata{}, err
+		return []types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in SearchMetadata: %v", err)
 	}
 	defer DbPool.Put(conn)
 
