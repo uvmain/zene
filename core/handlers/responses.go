@@ -76,6 +76,20 @@ func (r *UsersResponse) SetSuccess() {
 	r.Status = "success"
 }
 
+type PlaycountsResponse struct {
+	Playcounts []*types.Playcount `json:"playcounts"`
+	StandardResponse
+}
+
+func (r *PlaycountsResponse) SetError(msg string) {
+	r.Status = "error"
+	r.Error = msg
+}
+
+func (r *PlaycountsResponse) SetSuccess() {
+	r.Status = "success"
+}
+
 type ErrorResponse interface {
 	SetError(string)
 }
