@@ -11,7 +11,7 @@ func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 	searchParam := r.URL.Query().Get("search")
 	rows, err := database.SelectDistinctGenres(r.Context(), searchParam)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectDistinctGenres: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}

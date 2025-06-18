@@ -31,10 +31,11 @@ func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 	randomParam := r.URL.Query().Get("random")
 	limitParam := r.URL.Query().Get("limit")
 	recentParam := r.URL.Query().Get("recent")
+	chronoParam := r.URL.Query().Get("chronological")
 
-	rows, err := database.SelectAllTracks(r.Context(), randomParam, limitParam, recentParam)
+	rows, err := database.SelectAllTracks(r.Context(), randomParam, limitParam, recentParam, chronoParam)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectAllTracks: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -52,7 +53,7 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 
 	row, err := database.SelectTrack(r.Context(), musicBrainzTrackId)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectTrack: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -70,7 +71,7 @@ func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SearchMetadata(r.Context(), searchQuery)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SearchMetadata: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

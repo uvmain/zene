@@ -5,7 +5,11 @@ import (
 	"fmt"
 	"time"
 	"zene/core/logger"
+
+	"github.com/patrickmn/go-cache"
 )
+
+var sessionCache = cache.New(5*time.Minute, 10*time.Minute)
 
 func createSessionsTable(ctx context.Context) {
 	tableName := "sessions"
@@ -136,7 +140,17 @@ func DeleteAllSessionsForUserId(ctx context.Context, userId int) error {
 	return nil
 }
 
+type cachedSession struct {
+	UserID    int64
+	ExpiresAt time.Time
+}
+
 func GetUserIdFromSession(ctx context.Context, token string) (int64, bool, error) {
+	if cachedVal, found := sessionCache.Get(token); found {
+		entry := cachedVal.(cachedSession)
+		return entry.UserID, time.Now().Before(entry.ExpiresAt), nil
+	}
+
 	var userID int64
 	var expiresAt time.Time
 
@@ -164,6 +178,14 @@ func GetUserIdFromSession(ctx context.Context, token string) (int64, bool, error
 	expiresAt, err = time.Parse(time.RFC3339Nano, stmt.GetText("expires"))
 	if err != nil {
 		return 0, false, fmt.Errorf("Error parsing session expiry: %v", err)
+	}
+
+	ttl := time.Until(expiresAt)
+	if ttl > 0 {
+		sessionCache.Set(token, cachedSession{
+			UserID:    userID,
+			ExpiresAt: expiresAt,
+		}, ttl)
 	}
 
 	return userID, time.Now().Before(expiresAt), nil

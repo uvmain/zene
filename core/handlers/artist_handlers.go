@@ -36,7 +36,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectAlbumArtists: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -57,7 +57,7 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	row, err = database.SelectArtistByMusicBrainzArtistId(r.Context(), musicBrainzArtistId)
 
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectArtistByMusicBrainzArtistId: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -79,7 +79,7 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectTracksByArtistId(r.Context(), musicBrainzArtistId, randomParam, limitParam, offsetParam, recentParam)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectTracksByArtistId: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -116,7 +116,7 @@ func HandleGetArtistAlbums(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAlbumsByArtistId(r.Context(), musicBrainzArtistId, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectAlbumsByArtistId: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}

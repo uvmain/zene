@@ -4,35 +4,40 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"zene/core/logic"
 	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
 )
 
-func SelectTracksByAlbumID(ctx context.Context, musicbrainz_album_id string) ([]types.Metadata, error) {
+func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]types.MetadataWithPlaycounts, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByAlbumID: %v", err)
+		return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByAlbumId: %v", err)
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT * FROM metadata where musicbrainz_album_id = $musicbrainz_album_id;`)
+	userId, _ := logic.GetUserIdFromContext(ctx)
+	stmtText := getMetadataWithPlaycountsSql(userId)
+
+	stmtText = fmt.Sprintf("%s where musicbrainz_album_id = $musicbrainz_album_id;", stmtText)
+
+	stmt := conn.Prep(stmtText)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_album_id", musicbrainz_album_id)
 
-	var rows []types.Metadata
+	var rows []types.MetadataWithPlaycounts
 
 	for {
 		if hasRow, err := stmt.Step(); err != nil {
-			return []types.Metadata{}, err
+			return []types.MetadataWithPlaycounts{}, err
 		} else if !hasRow {
 			break
 		} else {
-
-			row := types.Metadata{
+			row := types.MetadataWithPlaycounts{
 				FilePath:            stmt.GetText("file_path"),
 				DateAdded:           stmt.GetText("date_added"),
 				DateModified:        stmt.GetText("date_modified"),
@@ -55,12 +60,14 @@ func SelectTracksByAlbumID(ctx context.Context, musicbrainz_album_id string) ([]
 				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
 				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
 				Label:               stmt.GetText("label"),
+				UserPlayCount:       stmt.GetInt64("user_play_count"),
+				GlobalPlayCount:     stmt.GetInt64("global_play_count"),
 			}
 			rows = append(rows, row)
 		}
 	}
 	if rows == nil {
-		rows = []types.Metadata{}
+		rows = []types.MetadataWithPlaycounts{}
 	}
 	return rows, nil
 }

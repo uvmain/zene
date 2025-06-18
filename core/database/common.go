@@ -124,9 +124,9 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 
 	var sql string
 	if indexUnique {
-		sql = fmt.Sprintf("CREATE UNIQUE INDEX %q ON %q (%q);", indexName, indexTable, indexColumn)
+		sql = fmt.Sprintf("CREATE UNIQUE INDEX %q ON %q (%s);", indexName, indexTable, indexColumn)
 	} else {
-		sql = fmt.Sprintf("CREATE INDEX %q ON %q (%q);", indexName, indexTable, indexColumn)
+		sql = fmt.Sprintf("CREATE INDEX %q ON %q (%s);", indexName, indexTable, indexColumn)
 	}
 
 	stmt2, err := conn.Prepare(sql)

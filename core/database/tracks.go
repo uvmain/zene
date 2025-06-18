@@ -4,61 +4,54 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"zene/core/logic"
 	"zene/core/types"
-
-	"zombiezen.com/go/sqlite"
 )
 
-func SelectAllTracks(ctx context.Context, random string, limit string, recent string) ([]types.Metadata, error) {
+func SelectAllTracks(ctx context.Context, random string, limit string, recent string, chronological string) ([]types.MetadataWithPlaycounts, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAllTracks: %v", err)
+		return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAllTracks: %v", err)
 	}
 	defer DbPool.Put(conn)
 
-	var stmt *sqlite.Stmt
+	userId, _ := logic.GetUserIdFromContext(ctx)
+	stmtText := getMetadataWithPlaycountsSql(userId)
 
 	if recent == "true" {
-		if limit != "" {
-			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT * FROM metadata ORDER BY date_added desc limit $limit;`)
-			stmt.SetInt64("$limit", int64(limitInt))
-		} else {
-			stmt = conn.Prep(`SELECT * FROM metadata ORDER BY date_added desc;`)
-		}
+		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
 	} else if random == "true" {
-		if limit != "" {
-			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT * FROM metadata order by random() limit $limit;`)
-			stmt.SetInt64("$limit", int64(limitInt))
-		} else {
-			stmt = conn.Prep(`SELECT * FROM metadata order by random();`)
-		}
-	} else {
-		if limit != "" {
-			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT * FROM metadata limit $limit;`)
-			stmt.SetInt64("$limit", int64(limitInt))
-		} else {
-			stmt = conn.Prep(`SELECT * FROM metadata;`)
-		}
+		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
+	} else if chronological == "true" {
+		stmtText = fmt.Sprintf("%s ORDER BY m.release_date desc", stmtText)
 	}
+
+	if limit != "" {
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Invalid limit value: %v", err)
+		}
+		stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
+	}
+
+	stmtText = fmt.Sprintf("%s;", stmtText)
+	stmt := conn.Prep(stmtText)
 
 	defer stmt.Finalize()
 
-	var rows []types.Metadata
+	var rows []types.MetadataWithPlaycounts
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []types.Metadata{}, err
+			return []types.MetadataWithPlaycounts{}, err
 		} else if !hasRow {
 			break
 		}
 
-		row := types.Metadata{
+		row := types.MetadataWithPlaycounts{
 			FilePath:            stmt.GetText("file_path"),
 			DateAdded:           stmt.GetText("date_added"),
 			DateModified:        stmt.GetText("date_modified"),
@@ -81,38 +74,42 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 			MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
 			MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
 			Label:               stmt.GetText("label"),
+			UserPlayCount:       stmt.GetInt64("user_play_count"),
+			GlobalPlayCount:     stmt.GetInt64("global_play_count"),
 		}
 		rows = append(rows, row)
 	}
 
 	if rows == nil {
-		rows = []types.Metadata{}
+		rows = []types.MetadataWithPlaycounts{}
 	}
 	return rows, nil
 }
 
-func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata, error) {
+func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.MetadataWithPlaycounts, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in t: %v", err)
+		return types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in t: %v", err)
 	}
 	defer DbPool.Put(conn)
 
-	var stmt *sqlite.Stmt
+	userId, _ := logic.GetUserIdFromContext(ctx)
 
-	stmt = conn.Prep(`SELECT * FROM metadata where musicbrainz_track_id = $musicbrainz_track_id limit 1;`)
+	stmtText := getMetadataWithPlaycountsSql(userId)
+	stmtText = fmt.Sprintf("%s where m.musicbrainz_track_id = $musicbrainz_track_id limit 1;", stmtText)
+	stmt := conn.Prep(stmtText)
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_track_id", musicBrainzTrackId)
 
-	var row types.Metadata
+	var row types.MetadataWithPlaycounts
 
 	if hasRow, err := stmt.Step(); err != nil {
-		return types.Metadata{}, err
+		return types.MetadataWithPlaycounts{}, err
 	} else if !hasRow {
-		return types.Metadata{}, nil
+		return types.MetadataWithPlaycounts{}, nil
 	} else {
 		row.FilePath = stmt.GetText("file_path")
 		row.DateAdded = stmt.GetText("date_added")
@@ -136,6 +133,8 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 		row.MusicBrainzAlbumID = stmt.GetText("musicbrainz_album_id")
 		row.MusicBrainzTrackID = stmt.GetText("musicbrainz_track_id")
 		row.Label = stmt.GetText("label")
+		row.UserPlayCount = stmt.GetInt64("user_play_count")
+		row.GlobalPlayCount = stmt.GetInt64("global_play_count")
 	}
 
 	return row, nil

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 	"zene/core/logger"
+	"zene/core/types"
 )
 
 var (
@@ -51,4 +52,20 @@ func BoolToInt64(b bool) int64 {
 		return 1
 	}
 	return 0
+}
+
+func FilesInSliceOnceNotInSliceTwo(slice1, slice2 []types.File) []types.File {
+	slice2Map := make(map[string]bool)
+	for _, f := range slice2 {
+		slice2Map[f.FilePathAbs] = true
+	}
+
+	var diff []types.File
+	for _, f := range slice1 {
+		if !slice2Map[f.FilePathAbs] {
+			diff = append(diff, f)
+		}
+	}
+
+	return diff
 }

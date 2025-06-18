@@ -55,6 +55,12 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           <th v-if="showAlbum" class="px-2">
             Album
           </th>
+          <th class="text-center">
+            My Plays
+          </th>
+          <th class="text-center">
+            All Plays
+          </th>
           <th class="w-15 text-center">
             <icon-tabler-clock-hour-3 class="inline" />
           </th>
@@ -65,6 +71,8 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           <td v-if="showAlbum">
             <hr class="border-1 border-white/40 border-solid" />
           </td>
+          <td><hr class="border-1 border-white/40 border-solid" /></td>
+          <td><hr class="border-1 border-white/40 border-solid" /></td>
           <td><hr class="border-1 border-white/40 border-solid" /></td>
         </tr>
       </thead>
@@ -108,6 +116,12 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             >
               {{ track.album }}
             </RouterLink>
+          </td>
+          <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
+            {{ track.user_play_count }}
+          </td>
+          <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
+            {{ track.global_play_count }}
           </td>
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
             {{ formatTime(Number.parseInt(track.duration)) }}

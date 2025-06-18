@@ -12,6 +12,7 @@ import (
 	"zene/core/globals"
 	"zene/core/io"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/musicbrainz"
 	"zene/core/types"
 )
@@ -64,7 +65,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 
 	// for each metadata row that does not exist in the files list, delete that row
 	logger.Printf("Scan: Cleaning orphaned metadata rows")
-	metadataRowsToDelete := filesInSliceOnceNotInSliceTwo(metadataFiles, audioFiles)
+	metadataRowsToDelete := logic.FilesInSliceOnceNotInSliceTwo(metadataFiles, audioFiles)
 	fileCount = 0
 	for _, metadataRow := range metadataRowsToDelete {
 		err = database.DeleteMetadataRow(ctx, metadataRow.FilePathAbs)
@@ -95,27 +96,11 @@ func RunScan(ctx context.Context) types.ScanResponse {
 }
 
 func getAudioFiles(ctx context.Context) ([]types.File, error) {
-	audioFiles, err := io.GetFiles(ctx, config.AudioFileTypes)
+	audioFiles, err := io.GetFiles(ctx, config.MusicDir, config.AudioFileTypes)
 	if err != nil {
 		return []types.File{}, fmt.Errorf("Error getting slice of audio files from the filesystem: %v", err)
 	}
 	return audioFiles, nil
-}
-
-func filesInSliceOnceNotInSliceTwo(slice1, slice2 []types.File) []types.File {
-	slice2Map := make(map[string]bool)
-	for _, f := range slice2 {
-		slice2Map[f.FilePathAbs] = true
-	}
-
-	var diff []types.File
-	for _, f := range slice1 {
-		if !slice2Map[f.FilePathAbs] {
-			diff = append(diff, f)
-		}
-	}
-
-	return diff
 }
 
 // takes two slices of types.File

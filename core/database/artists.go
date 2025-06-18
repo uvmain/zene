@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"zene/core/logic"
 	"zene/core/types"
 
 	"zombiezen.com/go/sqlite"
@@ -42,7 +43,7 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.AlbumsResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByArtistId: %w", err)
+		return []types.AlbumsResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAlbumsByArtistId: %w", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -114,20 +115,23 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	return rows, nil
 }
 
-func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, limit string, offset string, recent string) ([]types.Metadata, error) {
+func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, limit string, offset string, recent string) ([]types.MetadataWithPlaycounts, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByArtistId: %v", err)
+		return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByArtistId: %v", err)
 	}
 	defer DbPool.Put(conn)
 
 	var stmtText string
 	var stmt *sqlite.Stmt
 
-	stmtText = "SELECT * FROM metadata where musicbrainz_artist_id = $musicbrainz_artist_id"
+	userId, _ := logic.GetUserIdFromContext(ctx)
+	stmtText = getMetadataWithPlaycountsSql(userId)
+
+	stmtText = fmt.Sprintf("%s where musicbrainz_artist_id = $musicbrainz_artist_id", stmtText)
 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY date_added desc", stmtText)
@@ -151,28 +155,28 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	if limit != "" {
 		limitInt, err := strconv.Atoi(limit)
 		if err != nil {
-			return []types.Metadata{}, fmt.Errorf("Failed to convert limit to int: %v", err)
+			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to convert limit to int: %v", err)
 		}
 		stmt.SetInt64("$limit", int64(limitInt))
 	}
 	if offset != "" {
 		offsetInt, err := strconv.Atoi(offset)
 		if err != nil {
-			return []types.Metadata{}, fmt.Errorf("Failed to convert limit to int: %v", err)
+			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to convert limit to int: %v", err)
 		}
 		stmt.SetInt64("$offset", int64(offsetInt))
 	}
 
-	var rows []types.Metadata
+	var rows []types.MetadataWithPlaycounts
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []types.Metadata{}, err
+			return []types.MetadataWithPlaycounts{}, err
 		} else if !hasRow {
 			break
 		}
 
-		row := types.Metadata{
+		row := types.MetadataWithPlaycounts{
 			FilePath:            stmt.GetText("file_path"),
 			DateAdded:           stmt.GetText("date_added"),
 			DateModified:        stmt.GetText("date_modified"),
@@ -195,12 +199,14 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 			MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
 			MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
 			Label:               stmt.GetText("label"),
+			UserPlayCount:       stmt.GetInt64("user_play_count"),
+			GlobalPlayCount:     stmt.GetInt64("global_play_count"),
 		}
 		rows = append(rows, row)
 	}
 
 	if rows == nil {
-		rows = []types.Metadata{}
+		rows = []types.MetadataWithPlaycounts{}
 	}
 	return rows, nil
 }

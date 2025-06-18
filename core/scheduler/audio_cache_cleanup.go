@@ -2,13 +2,17 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"time"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/io"
 	"zene/core/logger"
+	"zene/core/logic"
+	"zene/core/types"
 )
 
 func maxCacheSizeBytes() int64 {
@@ -16,6 +20,9 @@ func maxCacheSizeBytes() int64 {
 }
 
 func cleanupAudioCache(ctx context.Context) {
+
+	removeOrphanCache(ctx)
+
 	dir := config.AudioCacheFolder
 
 	// enforce config.AudioCacheMaxDays
@@ -106,4 +113,37 @@ func cleanupAudioCache(ctx context.Context) {
 			break
 		}
 	}
+}
+
+func removeOrphanCache(ctx context.Context) error {
+	cacheFiles, err := io.GetFiles(ctx, config.AudioCacheFolder, []string{})
+	if err != nil {
+		return fmt.Errorf("Error getting audio cache files from filesystem: %v", err)
+	}
+
+	audioCacheRows, err := database.SelectAllAudioCacheEntries(ctx)
+	if err != nil {
+		return fmt.Errorf("Error getting audio cache files from database: %v", err)
+	}
+
+	databaseFiles := []types.File{}
+	for _, row := range audioCacheRows {
+		filePathAbs := filepath.Join(config.AudioCacheFolder, row.CacheKey)
+		databaseFiles = append(databaseFiles, types.File{
+			FilePathAbs:  filePathAbs,
+			DateModified: row.LastAccessed.Format(time.RFC3339Nano),
+		})
+	}
+
+	orphanFiles := logic.FilesInSliceOnceNotInSliceTwo(cacheFiles, databaseFiles)
+
+	for _, file := range orphanFiles {
+		err = io.DeleteFile(file.FilePathAbs)
+		if err != nil {
+			logger.Printf("Error deleting orphan cache file %s: %v", file.FilePathAbs, err)
+			continue
+		}
+	}
+
+	return nil
 }

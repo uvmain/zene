@@ -20,11 +20,12 @@ func createPlayCountsTable(ctx context.Context) {
 		UNIQUE (user_id, musicbrainz_track_id)
 	);`
 	createTable(ctx, tableName, schema)
-	createIndex(ctx, "idx_play_counts_track_id", "play_counts", "musicbrainz_track_id", false)
-	createIndex(ctx, "idx_play_counts_user_id", "play_counts", "user_id", false)
+	createIndex(ctx, "idx_playcounts_user_track ", "play_counts", "user_id, musicbrainz_track_id", false)
+	createIndex(ctx, "idx_playcounts_track ", "play_counts", "musicbrainz_track_id", false)
+	createIndex(ctx, "idx_play_counts_user", "play_counts", "user_id", false)
 }
 
-func UpsertPlaycount(ctx context.Context, userId int64, musicbrainzTrackId string) error {
+func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
@@ -51,7 +52,7 @@ func UpsertPlaycount(ctx context.Context, userId int64, musicbrainzTrackId strin
 	return nil
 }
 
-func GetPlaycounts(ctx context.Context, musicbrainzTrackId string, userId int64) ([]types.Playcount, error) {
+func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int64) ([]types.Playcount, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 

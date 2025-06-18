@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"slices"
 	"time"
-	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
 
@@ -71,9 +70,9 @@ func GetFileBlob(ctx context.Context, filePath string) ([]byte, error) {
 	return blob, nil
 }
 
-func GetFiles(ctx context.Context, extensions []string) ([]types.File, error) {
+func GetFiles(ctx context.Context, directoryPath string, extensions []string) ([]types.File, error) {
 	files := []types.File{}
-	scanError := filepath.WalkDir(config.MusicDir, func(path string, d os.DirEntry, err error) error {
+	scanError := filepath.WalkDir(directoryPath, func(path string, d os.DirEntry, err error) error {
 
 		if err != nil {
 			logger.Printf("Error scanning file path %s: %v", path, err)
@@ -83,7 +82,7 @@ func GetFiles(ctx context.Context, extensions []string) ([]types.File, error) {
 			return nil
 		}
 
-		if !slices.Contains(extensions, filepath.Ext(path)) {
+		if len(extensions) > 0 && !slices.Contains(extensions, filepath.Ext(path)) {
 			return nil
 		}
 
@@ -108,4 +107,18 @@ func GetFiles(ctx context.Context, extensions []string) ([]types.File, error) {
 	}
 
 	return files, nil
+}
+
+func DeleteFile(filePath string) error {
+	filePathAbs, _ := filepath.Abs(filePath)
+
+	if _, err := os.Stat(filePathAbs); os.IsNotExist(err) {
+		return fmt.Errorf("Error deleting file - file does not exist: %s:  %s", filePathAbs, err)
+	} else {
+		err := os.Remove(filePathAbs)
+		if err != nil {
+			return fmt.Errorf("Error deleting file %s: %s", filePathAbs, err)
+		}
+	}
+	return nil
 }
