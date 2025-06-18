@@ -2,7 +2,7 @@ package database
 
 import "fmt"
 
-func getMetadataWithPlaycountsSql(userId int64) string {
+func getUnendedMetadataWithPlaycountsSql(userId int64) string {
 	return fmt.Sprintf("SELECT "+
 		"m.*, "+
 		"IFNULL(up.play_count, 0) AS user_play_count, "+
@@ -18,4 +18,31 @@ func getMetadataWithPlaycountsSql(userId int64) string {
 		"FROM play_counts "+
 		"GROUP BY musicbrainz_track_id "+
 		") AS gp ON m.musicbrainz_track_id = gp.musicbrainz_track_id", userId)
+}
+
+func getMetadataWithGenresSql(userId int64, genres []string, condition string, limit int64, random string) string {
+	stmt := getUnendedMetadataWithPlaycountsSql(userId)
+	for index, genre := range genres {
+		if genre == "" {
+			continue
+		}
+		if index != 0 {
+			if condition == "or" {
+				stmt += " OR "
+			} else {
+				stmt += " AND "
+			}
+		} else {
+			stmt += " WHERE "
+		}
+		stmt += fmt.Sprintf("(genre LIKE '%s;%%' OR genre LIKE '%%;%s;%%' OR genre LIKE '%%;%s' OR genre = '%s' )", genre, genre, genre, genre)
+	}
+	if random == "true" {
+		stmt += fmt.Sprintf(" order by random()")
+	}
+	if limit > 0 {
+		return fmt.Sprintf("%s limit %d;", stmt, limit)
+	} else {
+		return fmt.Sprintf("%s;", stmt)
+	}
 }

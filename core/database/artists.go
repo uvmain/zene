@@ -129,7 +129,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	var stmt *sqlite.Stmt
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
-	stmtText = getMetadataWithPlaycountsSql(userId)
+	stmtText = getUnendedMetadataWithPlaycountsSql(userId)
 
 	stmtText = fmt.Sprintf("%s where musicbrainz_artist_id = $musicbrainz_artist_id", stmtText)
 

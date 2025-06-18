@@ -4,6 +4,7 @@ import Album from './AlbumRoute.vue'
 import Albums from './AlbumsRoute.vue'
 import Artist from './ArtistRoute.vue'
 import Artists from './ArtistsRoute.vue'
+import Genre from './GenreRoute.vue'
 import Genres from './GenresRoute.vue'
 import Home from './HomeRoute.vue'
 import Login from './LoginRoute.vue'
@@ -46,6 +47,11 @@ export const routes: RouteRecordRaw[] = [
     path: '/genres',
     name: 'Genres',
     component: Genres as Component,
+  },
+  {
+    path: '/genres/:genre',
+    name: 'Genre',
+    component: Genre as Component,
   },
   {
     path: '/tracks',
