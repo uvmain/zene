@@ -21,7 +21,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 	defer DbPool.Put(conn)
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
-	stmtText := getMetadataWithPlaycountsSql(userId)
+	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
 
 	stmtText = fmt.Sprintf("%s where musicbrainz_album_id = $musicbrainz_album_id;", stmtText)
 

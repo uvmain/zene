@@ -51,12 +51,18 @@ export function useBackendFetch() {
     return json.users
   }
 
+  const getGenreTracks = async (genre: string, limit = 0, random = false): Promise<TrackMetadataWithImageUrl[]> => {
+    const response = await backendFetchRequest(`genres/tracks?genres=${genre}&limit=${limit}&random=${random}`)
+    return await response.json() as TrackMetadataWithImageUrl[]
+  }
+
   return {
     backendFetchRequest,
     getAlbumTracks,
     getArtistTracks,
     getArtistAlbums,
     getCurrentUser,
+    getGenreTracks,
     getUsers,
   }
 }

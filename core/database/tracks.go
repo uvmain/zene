@@ -19,7 +19,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 	defer DbPool.Put(conn)
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
-	stmtText := getMetadataWithPlaycountsSql(userId)
+	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
@@ -98,7 +98,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
 
-	stmtText := getMetadataWithPlaycountsSql(userId)
+	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
 	stmtText = fmt.Sprintf("%s where m.musicbrainz_track_id = $musicbrainz_track_id limit 1;", stmtText)
 	stmt := conn.Prep(stmtText)
 	defer stmt.Finalize()

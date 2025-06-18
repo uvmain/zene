@@ -1,11 +1,21 @@
 <script setup lang="ts">
-defineProps({
+import { useSearch } from '../composables/useSearch'
+
+const props = defineProps({
   genre: { type: String, required: true },
 })
+
+const { closeSearch } = useSearch()
+const router = useRouter()
+
+function navigateToGenre() {
+  closeSearch()
+  router.push(`/genres/${props.genre}`)
+}
 </script>
 
 <template>
-  <span class="rounded-full bg-zene-400 px-3 py-1 text-sm text-white">
+  <button class="cursor-pointer rounded-full border-none bg-zene-400 px-3 py-1 text-sm text-white outline-none" @click="navigateToGenre()">
     {{ genre }}
-  </span>
+  </button>
 </template>
