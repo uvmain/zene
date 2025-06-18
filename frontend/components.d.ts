@@ -10,7 +10,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     Album: typeof import('./src/components/Album.vue')['default']
     ArtistThumb: typeof import('./src/components/ArtistThumb.vue')['default']
-    copy: typeof import('./src/components/SettingsDropDown copy.vue')['default']
     FooterPlayer: typeof import('./src/components/FooterPlayer.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
@@ -56,7 +55,6 @@ declare module 'vue' {
     SettingsDropDown: typeof import('./src/components/SettingsDropDown.vue')['default']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']
-    UserDropDown: typeof import('./src/components/UserDropDown.vue')['default']
     UserManagement: typeof import('./src/components/UserManagement.vue')['default']
   }
 }

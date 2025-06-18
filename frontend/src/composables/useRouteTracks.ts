@@ -9,6 +9,7 @@ export function useRouteTracks() {
   const clearRouteTracks = () => {
     routeTracks.value = [] as TrackMetadataWithImageUrl[]
   }
+
   const setCurrentlyPlayingTrackInRouteTracks = (track: TrackMetadataWithImageUrl) => {
     setCurrentQueue(routeTracks.value)
     setCurrentlyPlayingTrackInQueue(track)

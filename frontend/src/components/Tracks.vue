@@ -55,13 +55,13 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           <th v-if="showAlbum" class="px-2">
             Album
           </th>
-          <th class="text-center">
+          <th class="w-16 text-center text-sm">
             My Plays
           </th>
-          <th class="text-center">
+          <th class="w-16 text-center text-sm">
             All Plays
           </th>
-          <th class="w-15 text-center">
+          <th class="w-16 text-center">
             <icon-tabler-clock-hour-3 class="inline" />
           </th>
         </tr>

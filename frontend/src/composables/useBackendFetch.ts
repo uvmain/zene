@@ -1,4 +1,4 @@
-import type { AlbumMetadata, StandardResponse, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
+import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
 import type { User, UsersResponse } from '../types/auth'
 import { trackWithImageUrl } from '../composables/logic'
 
@@ -51,19 +51,6 @@ export function useBackendFetch() {
     return json.users
   }
 
-  const postPlaycount = async (musicbrainz_track_id: string): Promise<StandardResponse> => {
-    const formData = new FormData()
-    formData.append('musicbrainz_track_id', musicbrainz_track_id)
-
-    const response = await backendFetchRequest('playcounts', {
-      body: formData,
-      method: 'POST',
-    })
-
-    const json = await response.json() as StandardResponse
-    return json
-  }
-
   return {
     backendFetchRequest,
     getAlbumTracks,
@@ -71,6 +58,5 @@ export function useBackendFetch() {
     getArtistAlbums,
     getCurrentUser,
     getUsers,
-    postPlaycount,
   }
 }
