@@ -15,7 +15,7 @@ import (
 )
 
 func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName string) {
-	trackMetadataRows, err := database.SelectTracksByAlbumID(ctx, musicBrainzAlbumId)
+	trackMetadataRows, err := database.SelectTracksByAlbumId(ctx, musicBrainzAlbumId)
 	if err != nil {
 		logger.Printf("Error getting track data from database: %v", err)
 	}

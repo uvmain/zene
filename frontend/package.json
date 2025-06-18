@@ -8,7 +8,6 @@
     "dev": "vite",
     "build": "vite-ssg build",
     "preview": "vite preview",
-    "test": "vitest",
     "cspell": "cspell \"**/*.{ts,js,vue}\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

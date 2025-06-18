@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -9,6 +10,7 @@ import (
 	"time"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/types"
 
 	"golang.org/x/crypto/bcrypt"
@@ -123,17 +125,17 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, isValidSession, err := GetUserFromRequest(r)
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
+		user, isValidSession, err := GetUserFromRequest(r)
 		if err != nil || !isValidSession {
 			logger.Printf("Unauthorized access attempt, invalid session: %v", err)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, logic.UserIdKey, user.Id)
+		ctx = context.WithValue(ctx, logic.UsernameKey, user.Username)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -157,6 +159,11 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, logic.UserIdKey, user.Id)
+		ctx = context.WithValue(ctx, logic.UsernameKey, user.Username)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -202,7 +209,7 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("appSession")
 	if err == nil {
-		_, isValid, err := database.GetUserIDFromSession(r.Context(), cookie.Value)
+		_, isValid, err := database.GetUserIdFromSession(r.Context(), cookie.Value)
 		if err == nil && isValid {
 			sessionCheck.LoggedIn = true
 		}
@@ -220,7 +227,7 @@ func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
 func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
 	cookie, err := r.Cookie("appSession")
 	if err == nil {
-		id, isValid, err := database.GetUserIDFromSession(r.Context(), cookie.Value)
+		id, isValid, err := database.GetUserIdFromSession(r.Context(), cookie.Value)
 		if err == nil && isValid {
 			user, err := database.GetUserById(r.Context(), id)
 			if err == nil && user.Username != "" {
@@ -228,5 +235,5 @@ func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
 			}
 		}
 	}
-	return types.User{}, false, fmt.Errorf("failed to get user from request: %v", err)
+	return types.User{}, false, fmt.Errorf("Failed to get user from request: %v", err)
 }

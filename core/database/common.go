@@ -13,7 +13,7 @@ import (
 func doesTableExist(tableName string, conn *sqlite.Conn) (bool, error) {
 	stmt, err := conn.Prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = $table_name;`)
 	if err != nil {
-		return false, fmt.Errorf("error preparing stmt for doesTableExist: %v", err)
+		return false, fmt.Errorf("Error preparing stmt for doesTableExist: %v", err)
 	}
 	defer stmt.Finalize()
 	stmt.SetText("$table_name", tableName)
@@ -61,7 +61,7 @@ func createTrigger(ctx context.Context, triggerName string, triggerSQL string) {
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in createTrigger: %v", err)
+		logger.Printf("Failed to take a db conn from the pool in createTrigger: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -100,7 +100,7 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in createIndex: %v", err)
+		logger.Printf("Failed to take a db conn from the pool in createIndex: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -124,9 +124,9 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 
 	var sql string
 	if indexUnique {
-		sql = fmt.Sprintf("CREATE UNIQUE INDEX %q ON %q (%q);", indexName, indexTable, indexColumn)
+		sql = fmt.Sprintf("CREATE UNIQUE INDEX %q ON %q (%s);", indexName, indexTable, indexColumn)
 	} else {
-		sql = fmt.Sprintf("CREATE INDEX %q ON %q (%q);", indexName, indexTable, indexColumn)
+		sql = fmt.Sprintf("CREATE INDEX %q ON %q (%s);", indexName, indexTable, indexColumn)
 	}
 
 	stmt2, err := conn.Prepare(sql)

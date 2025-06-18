@@ -73,35 +73,20 @@ export interface TrackMetadata {
   musicbrainz_album_id: string
   musicbrainz_track_id: string
   label: string
+  user_play_count: number
+  global_play_count: number
 }
 
-export interface TrackMetadataWithImageUrl {
-  file_path: string
-  file_name: string
-  date_added: string
-  date_modified: string
-  format: string
-  duration: string
-  size: string
-  bitrate: string
-  title: string
-  artist: string
-  album: string
-  album_artist: string
-  genres: string[]
-  track_number: string
-  total_tracks: string
-  disc_number: string
-  total_discs: string
-  release_date: string
-  musicbrainz_artist_id: string
-  musicbrainz_album_id: string
-  musicbrainz_track_id: string
-  label: string
+export interface TrackMetadataWithImageUrl extends TrackMetadata {
   image_url: string
 }
 
 export interface Queue {
   tracks: TrackMetadataWithImageUrl[]
   position: number
+}
+
+export interface StandardResponse {
+  status: string
+  error?: string
 }

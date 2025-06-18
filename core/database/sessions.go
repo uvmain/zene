@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"time"
 	"zene/core/logger"
+
+	"github.com/patrickmn/go-cache"
 )
 
-func CreateSessionsTable(ctx context.Context) {
+var sessionCache = cache.New(5*time.Minute, 10*time.Minute)
+
+func createSessionsTable(ctx context.Context) {
 	tableName := "sessions"
 	schema := `CREATE TABLE IF NOT EXISTS sessions (
 		token TEXT PRIMARY KEY,
@@ -23,7 +27,7 @@ func SaveSessionToken(ctx context.Context, userId int64, token string, duration 
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to take a db conn from the pool in SaveSessionToken: %v", err)
+		return fmt.Errorf("Failed to take a db conn from the pool in SaveSessionToken: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -36,7 +40,7 @@ func SaveSessionToken(ctx context.Context, userId int64, token string, duration 
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("failed to save session token: %v", err)
+		return fmt.Errorf("Failed to save session token: %v", err)
 	}
 
 	return nil
@@ -49,7 +53,7 @@ func IsSessionValid(ctx context.Context, userId int, token string) (bool, error)
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return false, fmt.Errorf("failed to take a db conn from the pool in IsSessionValid: %v", err)
+		return false, fmt.Errorf("Failed to take a db conn from the pool in IsSessionValid: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -59,7 +63,7 @@ func IsSessionValid(ctx context.Context, userId int, token string) (bool, error)
 	stmt.SetText("$token", token)
 
 	if hasRow, err := stmt.Step(); err != nil {
-		return false, fmt.Errorf("failed to take a db conn from the pool in IsSessionValid: %v", err)
+		return false, fmt.Errorf("Failed to take a db conn from the pool in IsSessionValid: %v", err)
 	} else if !hasRow {
 		return false, nil
 	} else {
@@ -77,7 +81,7 @@ func DeleteSessionToken(ctx context.Context, token string) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to take a db conn from the pool in DeleteSessionToken: %v", err)
+		return fmt.Errorf("Failed to take a db conn from the pool in DeleteSessionToken: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -87,7 +91,7 @@ func DeleteSessionToken(ctx context.Context, token string) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("failed to delete session for token %s: %v", token, err)
+		return fmt.Errorf("Failed to delete session for token %s: %v", token, err)
 	}
 	logger.Printf("Deleted session for token %s", token)
 	return nil
@@ -99,7 +103,7 @@ func CleanupExpiredSessions(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in CleanupExpiredSessions: %v", err)
+		logger.Printf("Failed to take a db conn from the pool in CleanupExpiredSessions: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -110,7 +114,7 @@ func CleanupExpiredSessions(ctx context.Context) {
 
 	_, err = stmt.Step()
 	if err != nil {
-		logger.Printf("failed to run session cleanup: %v", err)
+		logger.Printf("Failed to run session cleanup: %v", err)
 	}
 	logger.Printf("Session cleanup finished")
 }
@@ -121,7 +125,7 @@ func DeleteAllSessionsForUserId(ctx context.Context, userId int) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to take a db conn from the pool in DeleteAllUserSessions: %v", err)
+		return fmt.Errorf("Failed to take a db conn from the pool in DeleteAllUserSessions: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -131,12 +135,22 @@ func DeleteAllSessionsForUserId(ctx context.Context, userId int) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("failed to delete all sessions for user %d: %v", userId, err)
+		return fmt.Errorf("Failed to delete all sessions for user %d: %v", userId, err)
 	}
 	return nil
 }
 
-func GetUserIDFromSession(ctx context.Context, token string) (int64, bool, error) {
+type cachedSession struct {
+	UserID    int64
+	ExpiresAt time.Time
+}
+
+func GetUserIdFromSession(ctx context.Context, token string) (int64, bool, error) {
+	if cachedVal, found := sessionCache.Get(token); found {
+		entry := cachedVal.(cachedSession)
+		return entry.UserID, time.Now().Before(entry.ExpiresAt), nil
+	}
+
 	var userID int64
 	var expiresAt time.Time
 
@@ -145,7 +159,7 @@ func GetUserIDFromSession(ctx context.Context, token string) (int64, bool, error
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return 0, false, fmt.Errorf("failed to get DB conn: %v", err)
+		return 0, false, fmt.Errorf("Failed to get DB conn: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -155,7 +169,7 @@ func GetUserIDFromSession(ctx context.Context, token string) (int64, bool, error
 
 	hasRow, err := stmt.Step()
 	if err != nil {
-		return 0, false, fmt.Errorf("failed to query session: %v", err)
+		return 0, false, fmt.Errorf("Failed to query session: %v", err)
 	} else if !hasRow {
 		return 0, false, nil
 	}
@@ -163,7 +177,15 @@ func GetUserIDFromSession(ctx context.Context, token string) (int64, bool, error
 	userID = stmt.GetInt64("user_id")
 	expiresAt, err = time.Parse(time.RFC3339Nano, stmt.GetText("expires"))
 	if err != nil {
-		return 0, false, fmt.Errorf("error parsing session expiry: %v", err)
+		return 0, false, fmt.Errorf("Error parsing session expiry: %v", err)
+	}
+
+	ttl := time.Until(expiresAt)
+	if ttl > 0 {
+		sessionCache.Set(token, cachedSession{
+			UserID:    userID,
+			ExpiresAt: expiresAt,
+		}, ttl)
 	}
 
 	return userID, time.Now().Before(expiresAt), nil

@@ -20,13 +20,14 @@ var dbMutex sync.RWMutex
 
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
-	CreateUsersTable(ctx)
+	createUsersTable(ctx)
+	createSessionsTable(ctx)
 	createMetadataTable(ctx)
+	createPlayCountsTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
 	createFtsTables(ctx)
-	CreateSessionsTable(ctx)
-	CreateAudioCacheTable(ctx)
+	createAudioCacheTable(ctx)
 }
 
 func openDatabase(ctx context.Context) {

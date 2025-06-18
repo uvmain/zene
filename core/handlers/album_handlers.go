@@ -15,7 +15,7 @@ func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAllAlbums(r.Context(), randomParam, limitParam, recentParam)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectAllAlbums: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -33,7 +33,7 @@ func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := database.SelectAlbum(r.Context(), musicBrainzAlbumId)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectAlbum: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}
@@ -49,9 +49,9 @@ func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
 	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
 
-	rows, err := database.SelectTracksByAlbumID(r.Context(), musicBrainzAlbumId)
+	rows, err := database.SelectTracksByAlbumId(r.Context(), musicBrainzAlbumId)
 	if err != nil {
-		logger.Printf("Error querying database: %v", err)
+		logger.Printf("Error querying database in SelectTracksByAlbumId: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)
 		return
 	}

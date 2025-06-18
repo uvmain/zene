@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { userLoginState } from './composables/auth'
+import { useAuth } from './composables/useAuth'
+
+const { checkIfLoggedIn, userLoginState } = useAuth()
+
+onBeforeMount(() => {
+  checkIfLoggedIn()
+})
 </script>
 
 <template>

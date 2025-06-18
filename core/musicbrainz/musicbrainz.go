@@ -23,7 +23,7 @@ func ClearMbCache() {
 	mbCacheMu.Lock()
 	defer mbCacheMu.Unlock()
 	mbCache = make(map[string]types.MbRelease)
-	logger.Println("MusicBrainz album metadata cache cleared")
+	logger.Println("musicbrainz album metadata cache cleared")
 }
 
 func addUserAgentHeaderToRequest(req *http.Request) {

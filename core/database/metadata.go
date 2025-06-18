@@ -32,9 +32,9 @@ func createMetadataTable(ctx context.Context) {
 		disc_number TEXT,
 		total_discs TEXT,
 		release_date TEXT,
-		musicbrainz_artist_id TEXT,
-		musicbrainz_album_id TEXT,
-		musicbrainz_track_id TEXT,
+		musicbrainz_artist_id TEXT NOT NULL,
+		musicbrainz_album_id TEXT NOT NULL,
+		musicbrainz_track_id TEXT NOT NULL UNIQUE,
 		label TEXT
 	);`
 	createTable(ctx, tableName, schema)
@@ -49,8 +49,7 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in InsertTrackMetadataRow: %v", err)
-		return err
+		return fmt.Errorf("Failed to take a db conn from the pool in InsertMetadataRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -112,7 +111,7 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("failed to insert metadata row: %v", err)
+		return fmt.Errorf("Failed to insert metadata row: %v", err)
 	}
 
 	return nil
@@ -124,8 +123,7 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in UpdateMetadataRow: %v", err)
-		return err
+		return fmt.Errorf("Failed to take a db conn from the pool in UpdateMetadataRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -172,7 +170,7 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("failed to update metadata for %s: %w", metadata.FilePath, err)
+		return fmt.Errorf("Failed to update metadata for %s: %w", metadata.FilePath, err)
 	}
 
 	logger.Printf("Updated metadata for %s", metadata.FilePath)
@@ -185,7 +183,7 @@ func DeleteMetadataRow(ctx context.Context, filepath string) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to take a db conn from the pool in DeleteMetadataRow: %v", err)
+		return fmt.Errorf("Failed to take a db conn from the pool in DeleteMetadataRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -195,7 +193,7 @@ func DeleteMetadataRow(ctx context.Context, filepath string) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("failed to delete metadata row %s: %v", filepath, err)
+		return fmt.Errorf("Failed to delete metadata row %s: %v", filepath, err)
 	}
 	logger.Printf("Deleted metadata row %s", filepath)
 	return nil
@@ -207,8 +205,7 @@ func SelectDistinctGenres(ctx context.Context, searchParam string) ([]types.Genr
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in SelectDistinctGenres: %v", err)
-		return []types.GenreResponse{}, err
+		return []types.GenreResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectDistinctGenres: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -266,8 +263,7 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("failed to take a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("Failed to take a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
 	}
 	defer DbPool.Put(conn)
 
