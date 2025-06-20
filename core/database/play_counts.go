@@ -16,7 +16,6 @@ func createPlayCountsTable(ctx context.Context) {
 		play_count INTEGER NOT NULL DEFAULT 0,
 		last_played TEXT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-		FOREIGN KEY (musicbrainz_track_id) REFERENCES metadata(musicbrainz_track_id) ON DELETE CASCADE,
 		UNIQUE (user_id, musicbrainz_track_id)
 	);`
 	createTable(ctx, tableName, schema)

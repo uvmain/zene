@@ -34,7 +34,7 @@ func createMetadataTable(ctx context.Context) {
 		release_date TEXT,
 		musicbrainz_artist_id TEXT NOT NULL,
 		musicbrainz_album_id TEXT NOT NULL,
-		musicbrainz_track_id TEXT NOT NULL UNIQUE,
+		musicbrainz_track_id TEXT NOT NULL,
 		label TEXT
 	);`
 	createTable(ctx, tableName, schema)
