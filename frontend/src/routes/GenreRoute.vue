@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '../types'
+import { trackWithImageUrl } from '../composables/logic'
 import { useBackendFetch } from '../composables/useBackendFetch'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
@@ -12,8 +13,13 @@ const tracks = ref<TrackMetadataWithImageUrl[]>()
 const genre = computed(() => `${route.params.genre}`)
 
 onMounted(async () => {
-  routeTracks.value = await getGenreTracks(genre.value, 30, true)
-  tracks.value = routeTracks.value
+  const genreTracks = await getGenreTracks(genre.value, 30, true)
+  const tracksWithImages = genreTracks.map((element) => {
+    const newElement = trackWithImageUrl(element, 'sm')
+    return newElement
+  })
+  routeTracks.value = tracksWithImages
+  tracks.value = tracksWithImages
 })
 </script>
 

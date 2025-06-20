@@ -31,6 +31,12 @@ function handlePlay(track: TrackMetadataWithImageUrl) {
   }
 }
 
+function onImageError(event: Event) {
+  const target = event.target as HTMLImageElement
+  target.onerror = null
+  target.src = '/default-square.png'
+}
+
 watch(currentlyPlayingTrack, async (newTrack) => {
   if (!newTrack)
     return
@@ -109,14 +115,19 @@ watch(currentlyPlayingTrack, async (newTrack) => {
               </div>
             </div>
           </td>
+
           <td v-if="showAlbum" class="cursor-pointer" @click="handlePlay(track)">
             <RouterLink
-              class="cursor-pointer px-2 text-sm text-white/80 no-underline hover:underline hover:underline-white"
+              class="flex flex-wrap items-center gap-2 px-2 text-sm text-white/80 no-underline hover:underline hover:underline-white"
               :to="getAlbumUrl(track.musicbrainz_album_id)"
             >
-              {{ track.album }}
+              <img class="size-10 cursor-pointer rounded-lg rounded-md object-cover" :src="track.image_url" alt="Album Cover" @error="onImageError" />
+              <div>
+                {{ track.album }}
+              </div>
             </RouterLink>
           </td>
+
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
             {{ track.user_play_count }}
           </td>

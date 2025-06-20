@@ -30,10 +30,11 @@ func GetCommonTags(audiofilePath string) (types.Tags, error) {
 	tags := ffprobeOutput.Format.Tags
 
 	parsedArtist := getTagStringValue(tags, []string{"artist", "album_artist"})
+	parsedAlbumArtist := getTagStringValue(tags, []string{"album_artist", "album-artist", "albumartist"})
 	parsedTitle := getTagStringValue(tags, []string{"title"})
 	parsedAlbum := getTagStringValue(tags, []string{"album"})
 	parsedGenre := getTagStringValue(tags, []string{"genre"})
-	parsedReleaseDate := getTagStringValue(tags, []string{"date", "release_date"})
+	parsedReleaseDate := getTagStringValue(tags, []string{"date", "release_date", "ORIGINAL_DATE"})
 	musicBrainzAlbumId := getTagStringValue(tags, []string{"MUSICBRAINZ_ALBUMID", "MusicBrainz Album Id", "musicbrainz Album Id"})
 	musicBrainzArtistId := getTagStringValue(tags, []string{"MUSICBRAINZ_ARTISTID", "MusicBrainz Artist Id", "musicbrainz Artist Id"})
 	musicBrainzTrackId := getTagStringValue(tags, []string{"MUSICBRAINZ_TRACKID", "MusicBrainz Release Track Id", "musicbrainz Release Track Id"})
@@ -81,7 +82,7 @@ func GetCommonTags(audiofilePath string) (types.Tags, error) {
 		Title:               parsedTitle,
 		Artist:              parsedArtist,
 		Album:               parsedAlbum,
-		AlbumArtist:         ffprobeOutput.Format.Tags["album_artist"],
+		AlbumArtist:         parsedAlbumArtist,
 		Genre:               parsedGenre,
 		TrackNumber:         trackNumber,
 		DiscNumber:          discNumber,
