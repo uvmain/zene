@@ -23,7 +23,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
 
-	stmtText = fmt.Sprintf("%s where musicbrainz_album_id = $musicbrainz_album_id order by track_number;", stmtText)
+	stmtText = fmt.Sprintf("%s where musicbrainz_album_id = $musicbrainz_album_id order by cast(track_number AS INTEGER);", stmtText)
 
 	stmt := conn.Prep(stmtText)
 	defer stmt.Finalize()
