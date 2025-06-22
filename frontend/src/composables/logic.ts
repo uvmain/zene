@@ -42,3 +42,7 @@ export function getAlbumUrl(musicbrainz_album_id: string) {
 export function getTrackUrl(musicbrainz_track_id: string) {
   return `/tracks/${musicbrainz_track_id}`
 }
+
+export function getRandomInteger(): number {
+  return Math.floor(Math.random() * 1000000)
+}

@@ -135,8 +135,11 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY date_added desc", stmtText)
-	} else if random == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
+	} else if random != "" {
+		randomInteger, err := strconv.Atoi(random)
+		if err == nil {
+			stmtText += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInteger)
+		}
 	}
 	if limit != "" {
 		stmtText = fmt.Sprintf("%s limit $limit", stmtText)

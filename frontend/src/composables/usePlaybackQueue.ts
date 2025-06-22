@@ -1,11 +1,13 @@
 import type { AlbumMetadata, ArtistMetadata, Queue, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import { trackWithImageUrl } from './logic'
+import { useSessionStorage } from '@vueuse/core'
+import { getRandomInteger, trackWithImageUrl } from './logic'
 import { useBackendFetch } from './useBackendFetch'
 
 const { backendFetchRequest, getAlbumTracks, getArtistTracks } = useBackendFetch()
 
 const currentlyPlayingTrack = ref<TrackMetadataWithImageUrl | undefined>()
 const currentQueue = ref<Queue | undefined>()
+const randomSeed = useSessionStorage<number>('randomSeed', 0)
 
 export function usePlaybackQueue() {
   const resetCurrentlyPlayingTrack = () => {
@@ -40,7 +42,8 @@ export function usePlaybackQueue() {
   }
 
   const getRandomTrack = async (): Promise<TrackMetadataWithImageUrl> => {
-    const response = await backendFetchRequest('tracks?random=true&limit=1')
+    const seed = getRandomInteger()
+    const response = await backendFetchRequest(`tracks?random=${seed}&limit=1`)
     const json = await response.json() as TrackMetadata[]
     const randomTrack = trackWithImageUrl(json[0])
     setCurrentlyPlayingTrack(randomTrack)
@@ -63,8 +66,22 @@ export function usePlaybackQueue() {
     }
   }
 
+  const refreshRandomSeed = () => {
+    randomSeed.value = getRandomInteger()
+  }
+
+  const getRandomSeed = (): number => {
+    if (randomSeed.value === 0) {
+      randomSeed.value = getRandomInteger()
+    }
+    return randomSeed.value
+  }
+
   const getRandomTracks = async (): Promise<TrackMetadataWithImageUrl[]> => {
-    const response = await backendFetchRequest('tracks?random=true&limit=100')
+    if (randomSeed.value === 0) {
+      randomSeed.value = getRandomInteger()
+    }
+    const response = await backendFetchRequest(`tracks?random=${randomSeed.value}&limit=100`)
     const json = await response.json() as TrackMetadata[]
     const randomTracks = json.map((randomTrack) => {
       return trackWithImageUrl(randomTrack)
@@ -128,5 +145,8 @@ export function usePlaybackQueue() {
     getPreviousTrack,
     getRandomTrack,
     getRandomTracks,
+    randomSeed,
+    refreshRandomSeed,
+    getRandomSeed,
   }
 }

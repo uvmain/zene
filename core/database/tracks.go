@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
 )
@@ -23,8 +24,13 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
-	} else if random == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
+	} else if random != "" {
+		randomInteger, err := strconv.Atoi(random)
+		if err == nil {
+			stmtText += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInteger)
+		} else {
+			logger.Printf("Error setting randomness: %v", err)
+		}
 	} else if chronological == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY m.release_date desc", stmtText)
 	}

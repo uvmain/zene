@@ -1,6 +1,9 @@
 import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
 import type { User, UsersResponse } from '../types/auth'
 import { trackWithImageUrl } from '../composables/logic'
+import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+
+const { getRandomSeed } = usePlaybackQueue()
 
 export function useBackendFetch() {
   const backendFetchRequest = async (path: string, options = {}): Promise<Response> => {
@@ -20,7 +23,8 @@ export function useBackendFetch() {
   }
 
   const getArtistTracks = async (musicbrainz_artist_id: string, limit = 0): Promise<TrackMetadataWithImageUrl[]> => {
-    let url = `artists/${musicbrainz_artist_id}/tracks?random=true`
+    const randomSeed = getRandomSeed()
+    let url = `artists/${musicbrainz_artist_id}/tracks?random=${randomSeed}`
     if (limit > 0) {
       url = `${url}&limit=${limit}`
     }

@@ -2,8 +2,11 @@
 import type { AlbumMetadata } from '../types'
 import dayjs from 'dayjs'
 import { useBackendFetch } from '../composables/useBackendFetch'
+import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
 const { backendFetchRequest } = useBackendFetch()
+const { getRandomSeed } = usePlaybackQueue()
+
 const METADATA_COUNT = 20
 const isShaking = ref(false)
 const albumArray = ref<AlbumMetadata[]>([])
@@ -26,7 +29,8 @@ function prevIndex() {
 }
 
 async function getRandomAlbums(limit: number): Promise<AlbumMetadata[]> {
-  const response = await backendFetchRequest(`albums?random=true&limit=${limit}`)
+  const randomSeed = getRandomSeed()
+  const response = await backendFetchRequest(`albums?random=${randomSeed}&limit=${limit}`)
   const json = await response.json()
   const albumMetadata: AlbumMetadata[] = []
   json.forEach((metadata: any) => {
