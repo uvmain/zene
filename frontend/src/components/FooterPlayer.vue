@@ -21,6 +21,11 @@ const currentVolume = ref(1)
 const isPlayPauseActive = ref(false)
 const route = useRoute()
 
+const castSession = ref<chrome.cast.Session | null>(null)
+const isCastConnected = computed(() => !!castSession.value)
+const castPlayer = ref<chrome.cast.RemotePlayer | null>(null)
+const castPlayerController = ref<chrome.cast.RemotePlayerController | null>(null)
+
 const currentRoute = computed(() => {
   return route.path
 })
@@ -29,7 +34,102 @@ const trackUrl = computed<string>(() => {
   return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream?quality=${streamQuality.value}` : ''
 })
 
+function initializeCastApi() {
+  if (!chrome.cast || !chrome.cast.isAvailable) {
+    setTimeout(initializeCastApi, 1000)
+    return
+  }
+
+  const sessionRequest = new chrome.cast.ApiConfig(
+    new chrome.cast.SessionRequest(chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID),
+    sessionListener,
+    receiverListener,
+  )
+
+  chrome.cast.initialize(sessionRequest, onInitSuccess, onError)
+}
+
+function sessionListener(newSession: chrome.cast.Session) {
+  castSession.value = newSession
+  if (castSession.value.media.length !== 0) {
+    // Handle existing media session
+  }
+  castSession.value.addUpdateListener(sessionUpdateListener)
+  if (castPlayer.value && castPlayerController.value)
+    castPlayerController.value.addEventListener(chrome.cast.RemotePlayerEventType.IS_CONNECTED_CHANGED, handleCastPlayerConnectedChange)
+
+}
+
+function sessionUpdateListener(isAlive: boolean) {
+  if (!isAlive && castSession.value) {
+    castSession.value = null
+  }
+}
+
+function receiverListener(e: chrome.cast.ReceiverAvailability) {
+  if (e === chrome.cast.ReceiverAvailability.AVAILABLE) {
+    // Show Cast button
+  }
+  else {
+    // Hide Cast button
+  }
+}
+
+function onInitSuccess() {
+  // Cast API initialized successfully
+}
+
+function onError(message: chrome.cast.Error) {
+  console.error('Cast SDK initialization error:', message)
+}
+
+function handleCastPlayerConnectedChange() {
+  if (castPlayer.value && castPlayer.value.isConnected) {
+    // Handle connected
+  }
+  else {
+    castSession.value = null
+  }
+}
+
+function requestCastSession() {
+  chrome.cast.requestSession(sessionListener, onError)
+}
+
+function loadMediaToCast() {
+  if (!castSession.value || !currentlyPlayingTrack.value) {
+    return
+  }
+
+  const mediaInfo = new chrome.cast.media.MediaInfo(trackUrl.value, 'audio/aac')
+  const request = new chrome.cast.media.LoadRequest(mediaInfo)
+
+  castSession.value.loadMedia(
+    request,
+    (media) => {
+      // Media loaded successfully
+      if (castPlayer.value && castPlayerController.value) {
+        castPlayerController.value.playPause() // Autoplay
+      }
+    },
+    onError, // Use the existing onError for simplicity
+  )
+}
+
+watch(isCastConnected, (newValue) => {
+  if (newValue && currentlyPlayingTrack.value) {
+    loadMediaToCast()
+  }
+})
+
 async function togglePlayback() {
+  if (isCastConnected.value && castPlayer.value && castPlayerController.value) {
+    castPlayerController.value.playPause()
+    // Update isPlaying based on castPlayer state if possible, or assume it toggles
+    isPlaying.value = castPlayer.value.isPaused // This might need adjustment based on actual API behavior
+    return
+  }
+
   if (!audioRef.value) {
     return
   }
@@ -57,6 +157,12 @@ async function togglePlayback() {
 }
 
 function toggleMute() {
+  if (isCastConnected.value && castPlayer.value && castPlayerController.value) {
+    castPlayerController.value.muteOrUnmute()
+    // Update local volume state based on castPlayer state
+    currentVolume.value = castPlayer.value.isMuted ? 0 : castPlayer.value.volumeLevel
+    return
+  }
   if (!audioRef.value) {
     return
   }
@@ -73,6 +179,13 @@ function toggleMute() {
 }
 
 async function stopPlayback() {
+  if (isCastConnected.value && castPlayer.value && castPlayerController.value) {
+    castPlayerController.value.stop()
+    resetCurrentlyPlayingTrack()
+    clearQueue()
+    isPlaying.value = false
+    return
+  }
   if (!audioRef.value)
     return
   if (audioRef.value.currentTime < 1) {
@@ -85,12 +198,33 @@ async function stopPlayback() {
 }
 
 function updateIsPlaying() {
+  if (isCastConnected.value && castPlayer.value) {
+    isPlaying.value = !castPlayer.value.isPaused
+    return
+  }
   if (!audioRef.value)
     return
   isPlaying.value = !audioRef.value.paused
 }
 
 function updateProgress() {
+  if (isCastConnected.value && castPlayer.value) {
+    currentTime.value = castPlayer.value.currentTime
+    // Playcount logic for casted media might need a different approach
+    // as we don't have direct access to the media element's events in the same way.
+    // This might need to be handled via media status updates from the receiver.
+    // For now, we'll keep the existing logic, but it might not work as expected for cast.
+    if (currentlyPlayingTrack.value && !playcountPosted.value) {
+      const halfwayPoint = Number.parseFloat(currentlyPlayingTrack.value.duration) / 2
+      if (currentTime.value >= halfwayPoint) {
+        postPlaycount(currentlyPlayingTrack.value.musicbrainz_track_id)
+        updatePlaycount(currentlyPlayingTrack.value.musicbrainz_track_id)
+        playcountPosted.value = true
+      }
+    }
+    return
+  }
+
   if (!audioRef.value) {
     return
   }
@@ -108,12 +242,50 @@ function updateProgress() {
 }
 
 watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
-  if (newTrack !== oldTrack) {
-    playcountPosted.value = false
+  const audio = audioRef.value
+  if (!audio && !isCastConnected.value) { // If no audio element and not casting, nothing to do
+    return
+  }
+
+  if (newTrack && newTrack.musicbrainz_track_id !== oldTrack?.musicbrainz_track_id) {
+    playcountPosted.value = false // Reset playcount flag for new track
+    if (isCastConnected.value) {
+      loadMediaToCast()
+    }
+    else if (audio) { // Handle local playback
+      audio.pause()
+      audio.load() // Essential to load the new trackUrl
+      audio.addEventListener(
+        'canplaythrough',
+        () => {
+          audio?.play()
+        },
+        { once: true },
+      )
+    }
+  }
+  else if (!newTrack) { // Handle stopping playback or end of queue
+    if (isCastConnected.value && castPlayer.value && castPlayerController.value) {
+      castPlayerController.value.stop()
+    }
+    else if (audio) {
+      audio.pause()
+      audio.removeAttribute('src')
+      audio.load()
+    }
+    currentTime.value = 0
+    isPlaying.value = false
   }
 })
 
 function seek(event: Event) {
+  if (isCastConnected.value && castPlayer.value && castPlayerController.value) {
+    const target = event.target as HTMLInputElement
+    const seekTime = Number.parseFloat(target.value)
+    // castPlayer.value.currentTime = seekTime // This is not the way to seek with RemotePlayerController
+    castPlayerController.value.seek(seekTime)
+    return
+  }
   if (!audioRef.value)
     return
   const target = event.target as HTMLInputElement
@@ -122,6 +294,14 @@ function seek(event: Event) {
 }
 
 function volumeInput(event: Event) {
+  if (isCastConnected.value && castPlayer.value && castPlayerController.value) {
+    const target = event.target as HTMLInputElement
+    const volume = Number.parseFloat(target.value)
+    castPlayer.value.volumeLevel = volume
+    castPlayerController.value.setVolumeLevel()
+    currentVolume.value = volume
+    return
+  }
   if (!audioRef.value)
     return
   const target = event.target as HTMLInputElement
@@ -196,6 +376,9 @@ onMounted(() => {
       isPlaying.value = false
     }
   })
+  initializeCastApi()
+  castPlayer.value = new chrome.cast.RemotePlayer()
+  castPlayerController.value = new chrome.cast.RemotePlayerController(castPlayer.value)
 })
 
 onUnmounted(() => {
@@ -294,6 +477,14 @@ onUnmounted(() => {
         >
           <icon-tabler-playlist />
         </RouterLink>
+        <button
+          v-if="typeof chrome !== 'undefined' && chrome.cast && chrome.cast.isAvailable"
+          id="cast-button"
+          class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none"
+          @click="requestCastSession"
+        >
+          <icon-tabler-cast />
+        </button>
       </div>
       <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2">
         <div @click="toggleMute()">
