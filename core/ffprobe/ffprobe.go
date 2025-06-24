@@ -121,6 +121,10 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 		}
 	}
 
+	if discNumber == "" {
+		discNumber = "1"
+	}
+
 	if parsedReleaseDate == "" {
 		musicBrainzData, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
 		if err != nil {
