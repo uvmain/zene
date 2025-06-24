@@ -6,7 +6,7 @@ import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
 
-const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
+const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, refreshRandomSeed, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount, updatePlaycount } = usePlaycounts()
@@ -131,6 +131,7 @@ function volumeInput(event: Event) {
 }
 
 async function handleGetRandomTracks() {
+  refreshRandomSeed()
   await getRandomTracks()
   router.push('/queue')
 }

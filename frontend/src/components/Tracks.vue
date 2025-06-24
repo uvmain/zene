@@ -49,7 +49,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
 
 <template>
   <div class="rounded-lg bg-black/20 p-4">
-    <table class="w-full table-auto text-left">
+    <table class="h-full w-full table-auto text-left">
       <thead>
         <tr class="text-lg text-white/70">
           <th class="w-15 text-center">
@@ -57,6 +57,9 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           </th>
           <th class="px-2">
             Title
+          </th>
+          <th v-if="showAlbum" class="w-16 text-center">
+            Track
           </th>
           <th v-if="showAlbum" class="px-2">
             Album
@@ -77,6 +80,9 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           <td v-if="showAlbum">
             <hr class="border-1 border-white/40 border-solid" />
           </td>
+          <td v-if="showAlbum">
+            <hr class="border-1 border-white/40 border-solid" />
+          </td>
           <td><hr class="border-1 border-white/40 border-solid" /></td>
           <td><hr class="border-1 border-white/40 border-solid" /></td>
           <td><hr class="border-1 border-white/40 border-solid" /></td>
@@ -91,11 +97,16 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           :class="{ 'bg-white/02': index % 2 === 0, 'bg-zene-200/40': isTrackPlaying(track.musicbrainz_track_id) }"
         >
           <td
-            class="w-15 cursor-pointer text-center"
+            class="relative h-full w-15 flex cursor-pointer items-center justify-center"
             @click="handlePlay(track)"
           >
-            <span class="group-hover:hidden">{{ track.track_number }}</span>
-            <icon-tabler-player-play-filled class="hidden text-xl group-hover:inline" />
+            <div class="translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
+              <span v-if="!showAlbum">{{ track.track_number }}</span>
+              <span v-else>{{ index }}</span>
+            </div>
+            <icon-tabler-player-play-filled
+              class="absolute m-auto translate-x-[-1rem] text-xl opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+            />
           </td>
           <td>
             <div class="flex flex-row cursor-pointer px-2" @click="handlePlay(track)">
@@ -113,6 +124,12 @@ watch(currentlyPlayingTrack, async (newTrack) => {
                   {{ track.artist }}
                 </RouterLink>
               </div>
+            </div>
+          </td>
+
+          <td v-if="showAlbum">
+            <div class="w-15 cursor-pointer text-center">
+              {{ track.track_number }}
             </div>
           </td>
 
@@ -142,3 +159,13 @@ watch(currentlyPlayingTrack, async (newTrack) => {
     </table>
   </div>
 </template>
+
+<style scoped>
+.rotate-in {
+  transform: rotate(-90deg);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.group:hover .rotate-in {
+  transform: rotate(0deg);
+}
+</style>
