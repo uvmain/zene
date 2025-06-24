@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '../types'
+import { useIntersectionObserver } from '@vueuse/core'
 import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { useRouteTracks } from '../composables/useRouteTracks'
@@ -7,13 +8,30 @@ import { useRouteTracks } from '../composables/useRouteTracks'
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<TrackMetadataWithImageUrl[]>, required: true },
+  canLoadMore: { type: Boolean, default: true },
 })
+
+const emits = defineEmits(['loadMore'])
 
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
+
+const observer = ref<HTMLDivElement>()
+const observerIndex = computed(() => {
+  return props.tracks.length ? props.tracks.length - 3 : 0
+})
+
+useIntersectionObserver(
+  observer,
+  ([entry], _) => {
+    if (entry?.isIntersecting && props.canLoadMore) {
+      emits('loadMore')
+    }
+  },
+)
 
 function isTrackPlaying(trackId: string): boolean {
   return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.musicbrainz_track_id === trackId) ?? false
@@ -96,6 +114,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           class="group transition-colors duration-200 ease-out hover:bg-zene-200/20"
           :class="{ 'bg-white/02': index % 2 === 0, 'bg-zene-200/40': isTrackPlaying(track.musicbrainz_track_id) }"
         >
+          <div v-if="canLoadMore && index === observerIndex" ref="observer" class="invisible" />
           <td
             class="relative h-full w-15 flex cursor-pointer items-center justify-center"
             @click="handlePlay(track)"
@@ -112,7 +131,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             <div class="flex flex-row cursor-pointer px-2" @click="handlePlay(track)">
               <div class="flex flex-col">
                 <RouterLink
-                  class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
+                  class="cursor-pointer text-ellipsis text-lg text-white/80 no-underline hover:underline hover:underline-white"
                   :to="getTrackUrl(track.musicbrainz_track_id)"
                 >
                   {{ track.title }}
@@ -133,9 +152,9 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             </div>
           </td>
 
-          <td v-if="showAlbum" class="cursor-pointer" @click="handlePlay(track)">
+          <td v-if="showAlbum" class="cursor-pointer lg:w-40%" @click="handlePlay(track)">
             <RouterLink
-              class="flex flex-wrap items-center gap-2 px-2 text-sm text-white/80 no-underline hover:underline hover:underline-white"
+              class="flex items-center gap-2 px-2 text-sm text-white/80 no-underline hover:underline hover:underline-white"
               :to="getAlbumUrl(track.musicbrainz_album_id)"
             >
               <img class="size-10 cursor-pointer rounded-lg rounded-md object-cover" :src="track.image_url" alt="Album Cover" @error="onImageError" />

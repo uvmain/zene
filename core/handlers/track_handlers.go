@@ -30,10 +30,11 @@ func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
 func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 	randomParam := r.URL.Query().Get("random")
 	limitParam := r.URL.Query().Get("limit")
+	offsetParam := r.URL.Query().Get("offset")
 	recentParam := r.URL.Query().Get("recent")
 	chronoParam := r.URL.Query().Get("chronological")
 
-	rows, err := database.SelectAllTracks(r.Context(), randomParam, limitParam, recentParam, chronoParam)
+	rows, err := database.SelectAllTracks(r.Context(), randomParam, limitParam, offsetParam, recentParam, chronoParam)
 	if err != nil {
 		logger.Printf("Error querying database in SelectAllTracks: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)

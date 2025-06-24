@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func SelectAllTracks(ctx context.Context, random string, limit string, recent string, chronological string) ([]types.MetadataWithPlaycounts, error) {
+func SelectAllTracks(ctx context.Context, random string, limit string, offset string, recent string, chronological string) ([]types.MetadataWithPlaycounts, error) {
 	dbMutex.RLock()
 	defer dbMutex.RUnlock()
 
@@ -41,6 +41,14 @@ func SelectAllTracks(ctx context.Context, random string, limit string, recent st
 			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Invalid limit value: %v", err)
 		}
 		stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
+	}
+
+	if offset != "" {
+		offsetInt, err := strconv.Atoi(offset)
+		if err != nil {
+			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Invalid offset value: %v", err)
+		}
+		stmtText = fmt.Sprintf("%s offset %d", stmtText, offsetInt)
 	}
 
 	stmtText = fmt.Sprintf("%s;", stmtText)

@@ -105,6 +105,10 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 	discNumber := getTagStringValue(ffprobeOutput.Tags, []string{"disc"})
 	label := getTagStringValue(ffprobeOutput.Tags, []string{"label", "publisher"})
 
+	if musicBrainzArtistId == "" || musicBrainzAlbumId == "" || musicBrainzTrackId == "" {
+		return types.Tags{}, fmt.Errorf("Unable to parse musicbrainz metadata from file")
+	}
+
 	if strings.Contains(trackNumber, "/") {
 		splitValue := strings.Split(trackNumber, "/")
 		trackNumber = splitValue[0]
@@ -132,10 +136,6 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 			return types.Tags{}, err
 		}
 		parsedReleaseDate = musicBrainzData.Date
-	}
-
-	if musicBrainzArtistId == "" || musicBrainzAlbumId == "" || musicBrainzTrackId == "" {
-		return types.Tags{}, fmt.Errorf("Unable to parse musicbrainz metadata from file")
 	}
 
 	parsedTags := types.Tags{
