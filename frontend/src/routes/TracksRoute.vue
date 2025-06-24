@@ -9,7 +9,7 @@ const { routeTracks, clearRouteTracks } = useRouteTracks()
 const { backendFetchRequest } = useBackendFetch()
 const { getRandomSeed } = usePlaybackQueue()
 
-const LIMIT = 10 as const
+const LIMIT = 100 as const
 const offset = ref(0)
 const error = ref<string | null>(null)
 const canLoadMore = ref(true)
