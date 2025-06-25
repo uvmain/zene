@@ -121,9 +121,9 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             <div v-if="canLoadMore && index === observerIndex" ref="observer" class="invisible" />
             <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
               <div v-if="!showAlbum">
-                <span v-if="Number.parseInt(track.total_discs) > 1" class="absolute left-[-1rem] top-0 text-xs opacity-50">
+                <div v-if="Number.parseInt(track.total_discs) > 1" class="absolute bottom-0 text-xs opacity-50 -left-3">
                   {{ track.disc_number }}
-                </span>
+                </div>
                 <span>{{ track.track_number }}</span>
               </div>
               <span v-else>{{ index }}</span>
@@ -133,8 +133,8 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             />
           </td>
           <td>
-            <div class="px-2">
-              <div class="flex flex-col">
+            <div class="flex shrink">
+              <div class="flex flex-col px-2">
                 <RouterLink
                   class="text-ellipsis text-lg text-white/80 no-underline hover:underline hover:underline-white"
                   :to="getTrackUrl(track.musicbrainz_track_id)"
@@ -152,7 +152,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
           </td>
 
           <td v-if="showAlbum" class="relative w-15 flex items-center justify-center">
-            <div v-if="Number.parseInt(track.total_discs) > 1" class="absolute left-3 top-0 text-xs opacity-50">
+            <div v-if="Number.parseInt(track.total_discs) > 1" class="absolute bottom-0 left-3 text-xs opacity-50">
               {{ track.disc_number }}
             </div>
             <div>
