@@ -109,18 +109,23 @@ watch(currentlyPlayingTrack, async (newTrack) => {
       <tbody>
         <tr
           v-for="(track, index) in tracks"
-          :key="track.title"
+          :key="track.file_name"
           :ref="el => rowRefs[index] = el"
-          class="group transition-colors duration-200 ease-out hover:bg-zene-200/20"
+          class="group cursor-pointer transition-colors duration-200 ease-out hover:bg-zene-200/20"
           :class="{ 'bg-white/02': index % 2 === 0, 'bg-zene-200/40': isTrackPlaying(track.musicbrainz_track_id) }"
+          @click="handlePlay(track)"
         >
-          <div v-if="canLoadMore && index === observerIndex" ref="observer" class="invisible" />
           <td
-            class="relative h-full w-15 flex cursor-pointer items-center justify-center"
-            @click="handlePlay(track)"
+            class="relative h-full w-15 flex items-center justify-center"
           >
-            <div class="translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
-              <span v-if="!showAlbum">{{ track.track_number }}</span>
+            <div v-if="canLoadMore && index === observerIndex" ref="observer" class="invisible" />
+            <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
+              <div v-if="!showAlbum">
+                <span v-if="Number.parseInt(track.total_discs) > 1" class="absolute left-[-1rem] top-0 text-xs opacity-50">
+                  {{ track.disc_number }}
+                </span>
+                <span>{{ track.track_number }}</span>
+              </div>
               <span v-else>{{ index }}</span>
             </div>
             <icon-tabler-player-play-filled
@@ -128,16 +133,16 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             />
           </td>
           <td>
-            <div class="flex flex-row cursor-pointer px-2" @click="handlePlay(track)">
+            <div class="px-2">
               <div class="flex flex-col">
                 <RouterLink
-                  class="cursor-pointer text-ellipsis text-lg text-white/80 no-underline hover:underline hover:underline-white"
+                  class="text-ellipsis text-lg text-white/80 no-underline hover:underline hover:underline-white"
                   :to="getTrackUrl(track.musicbrainz_track_id)"
                 >
                   {{ track.title }}
                 </RouterLink>
                 <RouterLink
-                  class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
+                  class="text-sm text-white/80 no-underline hover:underline hover:underline-white"
                   :to="getArtistUrl(track.musicbrainz_artist_id)"
                 >
                   {{ track.artist }}
@@ -146,22 +151,30 @@ watch(currentlyPlayingTrack, async (newTrack) => {
             </div>
           </td>
 
-          <td v-if="showAlbum">
-            <div class="w-15 cursor-pointer text-center">
+          <td v-if="showAlbum" class="relative w-15 flex items-center justify-center">
+            <div v-if="Number.parseInt(track.total_discs) > 1" class="absolute left-3 top-0 text-xs opacity-50">
+              {{ track.disc_number }}
+            </div>
+            <div>
               {{ track.track_number }}
             </div>
           </td>
 
-          <td v-if="showAlbum" class="cursor-pointer lg:w-40%" @click="handlePlay(track)">
-            <RouterLink
-              class="flex items-center gap-2 px-2 text-sm text-white/80 no-underline hover:underline hover:underline-white"
-              :to="getAlbumUrl(track.musicbrainz_album_id)"
-            >
-              <img class="size-10 cursor-pointer rounded-lg rounded-md object-cover" :src="track.image_url" alt="Album Cover" @error="onImageError" />
-              <div>
+          <td v-if="showAlbum">
+            <div class="flex flex-row items-center gap-2 px-1">
+              <RouterLink
+                :to="getAlbumUrl(track.musicbrainz_album_id)"
+                class="flex items-center"
+              >
+                <img class="size-10 rounded-lg rounded-md object-cover" :src="track.image_url" alt="Album Cover" @error="onImageError" />
+              </RouterLink>
+              <RouterLink
+                class="text-white/80 no-underline hover:underline hover:underline-white"
+                :to="getAlbumUrl(track.musicbrainz_album_id)"
+              >
                 {{ track.album }}
-              </div>
-            </RouterLink>
+              </RouterLink>
+            </div>
           </td>
 
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
