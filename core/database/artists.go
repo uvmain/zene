@@ -53,18 +53,27 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	stmtText = "SELECT DISTINCT musicbrainz_album_id, album, musicbrainz_artist_id, artist, genre, release_date FROM metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id GROUP BY musicbrainz_album_id"
 
 	if recent == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY date_added desc", stmtText)
-	} else if random == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
+		stmtText += " ORDER BY date_added desc"
+	} else if random != "" {
+		integer, err := strconv.Atoi(random)
+		if err == nil {
+			stmtText += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", integer)
+		}
 	} else if chronological == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY release_date desc", stmtText)
+		stmtText += " ORDER BY release_date desc"
 	}
 
 	if limit != "" {
-		stmtText = fmt.Sprintf("%s limit $limit", stmtText)
+		integer, err := strconv.Atoi(limit)
+		if err == nil {
+			stmtText = fmt.Sprintf("%s limit %d", stmtText, integer)
+		}
 	}
 	if offset != "" {
-		stmtText = fmt.Sprintf("%s offset $offset", stmtText)
+		integer, err := strconv.Atoi(offset)
+		if err == nil {
+			stmtText = fmt.Sprintf("%s offset %d", stmtText, integer)
+		}
 	}
 
 	stmtText = fmt.Sprintf("%s;", stmtText)
@@ -73,21 +82,6 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	defer stmt.Finalize()
 
 	stmt.SetText("$musicbrainz_artist_id", musicbrainz_artist_id)
-
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err != nil {
-			return []types.AlbumsResponse{}, fmt.Errorf("Failed to convert limit to int: %v", err)
-		}
-		stmt.SetInt64("$limit", int64(limitInt))
-	}
-	if offset != "" {
-		offsetInt, err := strconv.Atoi(offset)
-		if err != nil {
-			return []types.AlbumsResponse{}, fmt.Errorf("Failed to convert limit to int: %v", err)
-		}
-		stmt.SetInt64("$offset", int64(offsetInt))
-	}
 
 	var rows []types.AlbumsResponse
 	for {
@@ -138,14 +132,20 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	} else if random != "" {
 		randomInteger, err := strconv.Atoi(random)
 		if err == nil {
-			stmtText += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInteger)
+			stmtText += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", randomInteger)
 		}
 	}
 	if limit != "" {
-		stmtText = fmt.Sprintf("%s limit $limit", stmtText)
+		integer, err := strconv.Atoi(limit)
+		if err == nil {
+			stmtText = fmt.Sprintf("%s limit %d", stmtText, integer)
+		}
 	}
 	if offset != "" {
-		stmtText = fmt.Sprintf("%s offset $offset", stmtText)
+		integer, err := strconv.Atoi(offset)
+		if err == nil {
+			stmtText = fmt.Sprintf("%s offset %d", stmtText, integer)
+		}
 	}
 
 	stmtText = fmt.Sprintf("%s;", stmtText)
@@ -154,21 +154,6 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	defer stmt.Finalize()
 
 	stmt.SetText("$musicbrainz_artist_id", musicbrainz_artist_id)
-
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err != nil {
-			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to convert limit to int: %v", err)
-		}
-		stmt.SetInt64("$limit", int64(limitInt))
-	}
-	if offset != "" {
-		offsetInt, err := strconv.Atoi(offset)
-		if err != nil {
-			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to convert limit to int: %v", err)
-		}
-		stmt.SetInt64("$offset", int64(offsetInt))
-	}
 
 	var rows []types.MetadataWithPlaycounts
 	for {
@@ -239,17 +224,26 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
-	} else if random == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY random()", stmtText)
+	} else if random != "" {
+		integer, err := strconv.Atoi(random)
+		if err == nil {
+			stmtText += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", integer)
+		}
 	} else if chronological == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY m.release_date desc", stmtText)
 	}
 
 	if limit != "" {
-		stmtText = fmt.Sprintf("%s limit $limit", stmtText)
+		integer, err := strconv.Atoi(limit)
+		if err == nil {
+			stmtText = fmt.Sprintf("%s limit %d", stmtText, integer)
+		}
 	}
 	if offset != "" {
-		stmtText = fmt.Sprintf("%s offset $offset", stmtText)
+		integer, err := strconv.Atoi(offset)
+		if err == nil {
+			stmtText = fmt.Sprintf("%s offset %d", stmtText, integer)
+		}
 	}
 
 	stmtText = fmt.Sprintf("%s;", stmtText)
@@ -259,20 +253,6 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 
 	if searchParam != "" {
 		stmt.SetText("$searchQuery", searchParam)
-	}
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err != nil {
-			return []types.ArtistResponse{}, fmt.Errorf("Failed to convert limit to int: %v", err)
-		}
-		stmt.SetInt64("$limit", int64(limitInt))
-	}
-	if offset != "" {
-		offsetInt, err := strconv.Atoi(offset)
-		if err != nil {
-			return []types.ArtistResponse{}, fmt.Errorf("Failed to convert limit to int: %v", err)
-		}
-		stmt.SetInt64("$offset", int64(offsetInt))
 	}
 
 	var artists []types.ArtistResponse

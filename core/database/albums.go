@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"zene/core/logic"
 	"zene/core/types"
-
-	"zombiezen.com/go/sqlite"
 )
 
 func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]types.MetadataWithPlaycounts, error) {
@@ -82,33 +80,28 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 	}
 	defer DbPool.Put(conn)
 
-	var stmt *sqlite.Stmt
+	stmtText := "SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album"
 
 	if recent == "true" {
-		if limit != "" {
-			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album ORDER BY date_added desc limit $limit;`)
-			stmt.SetInt64("$limit", int64(limitInt))
-		} else {
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album ORDER BY date_added desc;`)
-		}
-	} else if random == "true" {
-		if limit != "" {
-			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY random() limit $limit;`)
-			stmt.SetInt64("$limit", int64(limitInt))
-		} else {
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY random();`)
+		stmtText += " ORDER BY date_added desc"
+	} else if random != "" {
+		integer, err := strconv.Atoi(random)
+		if err == nil {
+			stmtText += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", integer)
 		}
 	} else {
-		if limit != "" {
-			limitInt, _ := strconv.Atoi(limit)
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY album limit $limit;`)
-			stmt.SetInt64("$limit", int64(limitInt))
-		} else {
-			stmt = conn.Prep(`SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date FROM metadata group by album ORDER BY album;`)
+		stmtText += " ORDER BY album"
+	}
+
+	if limit != "" {
+		integer, err := strconv.Atoi(random)
+		if err == nil {
+			stmtText += fmt.Sprintf(" limit %d", integer)
 		}
 	}
+
+	stmtText += ";"
+	stmt := conn.Prep(stmtText)
 
 	defer stmt.Finalize()
 

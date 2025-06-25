@@ -66,8 +66,9 @@ export function usePlaybackQueue() {
     }
   }
 
-  const refreshRandomSeed = () => {
+  const refreshRandomSeed = (): number => {
     randomSeed.value = getRandomInteger()
+    return randomSeed.value
   }
 
   const getRandomSeed = (): number => {

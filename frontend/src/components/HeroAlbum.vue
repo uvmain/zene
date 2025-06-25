@@ -5,7 +5,7 @@ import { useBackendFetch } from '../composables/useBackendFetch'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
 const { backendFetchRequest } = useBackendFetch()
-const { getRandomSeed } = usePlaybackQueue()
+const { refreshRandomSeed } = usePlaybackQueue()
 
 const METADATA_COUNT = 20
 const isShaking = ref(false)
@@ -29,7 +29,7 @@ function prevIndex() {
 }
 
 async function getRandomAlbums(limit: number): Promise<AlbumMetadata[]> {
-  const randomSeed = getRandomSeed()
+  const randomSeed = refreshRandomSeed()
   const response = await backendFetchRequest(`albums?random=${randomSeed}&limit=${limit}`)
   const json = await response.json()
   const albumMetadata: AlbumMetadata[] = []
@@ -84,7 +84,7 @@ onBeforeMount(async () => {
           <icon-tabler-dice-6
             class="cursor-pointer text-3xl opacity-80 active:opacity-100"
             :class="{ shake: isShaking }"
-            @click="handleDiceClick"
+            @click="handleDiceClick()"
           />
           <icon-tabler-chevron-right
             class="cursor-pointer text-3xl opacity-80 active:opacity-100"
