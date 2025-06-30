@@ -138,12 +138,14 @@ watch(currentlyPlayingTrack, async (newTrack) => {
                 <RouterLink
                   class="text-ellipsis text-lg text-white/80 no-underline hover:underline hover:underline-white"
                   :to="getTrackUrl(track.musicbrainz_track_id)"
+                  @click.stop
                 >
                   {{ track.title }}
                 </RouterLink>
                 <RouterLink
                   class="text-sm text-white/80 no-underline hover:underline hover:underline-white"
                   :to="getArtistUrl(track.musicbrainz_artist_id)"
+                  @click.stop
                 >
                   {{ track.artist }}
                 </RouterLink>
@@ -165,12 +167,14 @@ watch(currentlyPlayingTrack, async (newTrack) => {
               <RouterLink
                 :to="getAlbumUrl(track.musicbrainz_album_id)"
                 class="flex items-center"
+                @click.stop
               >
                 <img class="size-10 rounded-lg rounded-md object-cover" :src="track.image_url" alt="Album Cover" @error="onImageError" />
               </RouterLink>
               <RouterLink
                 class="text-white/80 no-underline hover:underline hover:underline-white"
                 :to="getAlbumUrl(track.musicbrainz_album_id)"
+                @click.stop
               >
                 {{ track.album }}
               </RouterLink>
