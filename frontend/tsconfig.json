@@ -23,6 +23,7 @@
     "uno.config.ts",
     "components.d.ts",
     "auto-imports.d.ts",
+    "cast.d.ts",
     "src/**/*"
   ],
   "ts-node": {
