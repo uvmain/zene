@@ -13,3 +13,8 @@ export interface UsersResponse {
   users: User[]
   status: string
 }
+
+export interface TokenResponse {
+  token: string
+  expires_at: string
+}

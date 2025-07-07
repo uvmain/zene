@@ -14,7 +14,7 @@ import (
 
 type TemporaryToken struct {
 	Token     string `json:"token"`
-	ExpiresAt string `json:"expiresAt"`
+	ExpiresAt string `json:"expires_at"`
 }
 
 func GetTemporaryTokenHandler(w http.ResponseWriter, r *http.Request) {

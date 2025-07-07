@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import type { TokenResponse } from '../types/auth'
+import { useBackendFetch } from '../composables/useBackendFetch'
+
+const { getTemporaryToken } = useBackendFetch()
+
 const audioUrl = ref('https://zene.ianbaron.com/api/tracks/c4750da7-7e37-4347-aad8-0beb2ac84ad1/stream?quality=160')
 const audioEl = ref<HTMLAudioElement | null>(null)
 const error = ref<string | null>(null)
 const session = ref<cast.framework.CastSession | null>(null)
+const temporaryToken = ref<TokenResponse | null>(null)
 
 const DEFAULT_APP_ID = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
 
@@ -20,7 +26,7 @@ function castAudio() {
     return
   }
 
-  const mediaInfo = new chrome.cast.media.MediaInfo(audioUrl.value, 'audio/aac')
+  const mediaInfo = new chrome.cast.media.MediaInfo(`${audioUrl.value}&token=${temporaryToken.value?.token}`, 'audio/aac')
   const request = new chrome.cast.media.LoadRequest(mediaInfo)
 
   session.value
@@ -38,7 +44,8 @@ function initializeCast() {
   console.log('CastContext initialized')
 }
 
-onMounted(() => {
+onMounted(async () => {
+  temporaryToken.value = await getTemporaryToken()
   console.log('Waiting for Cast SDK...')
 
   // Hook for when the SDK becomes available (in case it's not already)
