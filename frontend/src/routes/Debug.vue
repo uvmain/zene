@@ -6,9 +6,6 @@ const session = ref<cast.framework.CastSession | null>(null)
 
 const DEFAULT_APP_ID = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
 
-let player = new cast.framework.RemotePlayer()
-let playerController = new cast.framework.RemotePlayerController(player)
-
 function castAudio() {
   const context = cast.framework.CastContext.getInstance()
   session.value = context.getCurrentSession()
@@ -30,8 +27,6 @@ function castAudio() {
     .loadMedia(request)
     .then(() => console.log('Media loaded to cast device'))
     .catch(err => console.error('Error loading media:', err))
-
-  playerController.playOrPause()
 }
 
 function initializeCast() {

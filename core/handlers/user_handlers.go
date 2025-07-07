@@ -40,7 +40,6 @@ func HandleGetUserById(w http.ResponseWriter, r *http.Request) {
 
 	response.User = toUserPointer(user)
 	handleSuccessResponse(w, response)
-	return
 }
 
 func HandleGetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +53,6 @@ func HandleGetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	response.Users = toUsersPointers(users)
 	handleSuccessResponse(w, response)
-	return
 }
 
 func HandlePostNewUser(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +73,6 @@ func HandlePostNewUser(w http.ResponseWriter, r *http.Request) {
 
 	response.Id = userId
 	handleSuccessResponse(w, response)
-	return
 }
 
 func HandlePatchUserById(w http.ResponseWriter, r *http.Request) {
@@ -114,7 +111,6 @@ func HandlePatchUserById(w http.ResponseWriter, r *http.Request) {
 
 	response.Id = userId
 	handleSuccessResponse(w, response)
-	return
 }
 
 func HandleDeleteUserById(w http.ResponseWriter, r *http.Request) {
@@ -151,5 +147,4 @@ func HandleDeleteUserById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handleSuccessResponse(w, response)
-	return
 }
