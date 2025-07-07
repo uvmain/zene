@@ -51,9 +51,6 @@ export default defineConfig({
   ssgOptions: {
     script: 'async',
     formatting: 'minify',
-    beastiesOptions: {
-      reduceInlineStyles: false,
-    },
   },
   optimizeDeps: {
     include: [
