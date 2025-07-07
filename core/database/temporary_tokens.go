@@ -42,27 +42,28 @@ func SaveTemporaryToken(ctx context.Context, userId int64, temporary_token strin
 	return expiresAt, nil
 }
 
-func ExtendTemporaryToken(ctx context.Context, temporary_token string, duration time.Duration) error {
+func ExtendTemporaryToken(ctx context.Context, userId int64, temporary_token string, duration time.Duration) (string, error) {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in SaveTemporaryToken: %v", err)
+		return "", fmt.Errorf("Failed to take a db conn from the pool in ExtendTemporaryToken: %v", err)
 	}
 	defer DbPool.Put(conn)
 
-	expiresAt := time.Now().Add(duration)
-	stmt := conn.Prep("Update temporary_tokens set expires = $expires where temporary_token = $temporary_token;")
+	expiresAt := time.Now().Add(duration).Format(time.RFC3339Nano)
+	stmt := conn.Prep("Update temporary_tokens set expires = $expires where temporary_token = $temporary_token and user_id = $user_id;")
 	defer stmt.Finalize()
 	stmt.SetText("$temporary_token", temporary_token)
-	stmt.SetText("$expires", expiresAt.Format(time.RFC3339Nano))
+	stmt.SetInt64("$user_id", userId)
+	stmt.SetText("$expires", expiresAt)
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to save temporary token: %v", err)
+		return "", fmt.Errorf("Failed to extend temporary token: %v", err)
 	}
 
-	return nil
+	return expiresAt, nil
 }
 
 func IsTemporaryTokenValid(ctx context.Context, temporary_token string) (bool, error) {
