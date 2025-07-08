@@ -4,15 +4,26 @@ import { useBackendFetch } from '../composables/useBackendFetch'
 
 const { getTemporaryToken } = useBackendFetch()
 
-const audioUrl = ref('https://zene.ianbaron.com/api/tracks/c4750da7-7e37-4347-aad8-0beb2ac84ad1/stream?quality=160')
+const audioUrl = ref('https://static.ianbaron.com/dc2b0ca2-ff9c-41ec-9672-58a96f5e58bd-160.aac')
 const audioEl = ref<HTMLAudioElement | null>(null)
 const error = ref<string | null>(null)
 const session = ref<cast.framework.CastSession | null>(null)
 const temporaryToken = ref<TokenResponse | null>(null)
 
-const DEFAULT_APP_ID = chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+async function getMimeType(): Promise<string> {
+  await fetch(audioUrl.value, { method: 'HEAD' })
+    .then((response) => {
+      const contentType = response.headers.get('content-type') ?? ''
+      console.log(contentType)
+      return contentType
+    })
+    .catch((err) => {
+      console.log(`fetch failed: ${err}`)
+    })
+  return ''
+}
 
-function castAudio() {
+async function castAudio() {
   const context = cast.framework.CastContext.getInstance()
   session.value = context.getCurrentSession()
 
@@ -26,7 +37,16 @@ function castAudio() {
     return
   }
 
-  const mediaInfo = new chrome.cast.media.MediaInfo(`${audioUrl.value}&token=${temporaryToken.value?.token}`, 'audio/aac')
+  const contentType = await (getMimeType())
+
+  let requestUrl: string
+  if (audioUrl.value.includes('?')) {
+    requestUrl = `${audioUrl.value}&token=${temporaryToken.value?.token}`
+  }
+  else {
+    requestUrl = `${audioUrl.value}?token=${temporaryToken.value?.token}`
+  }
+  const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
   const request = new chrome.cast.media.LoadRequest(mediaInfo)
 
   session.value
@@ -38,7 +58,7 @@ function castAudio() {
 function initializeCast() {
   const context = cast.framework.CastContext.getInstance()
   context.setOptions({
-    receiverApplicationId: DEFAULT_APP_ID,
+    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
   console.log('CastContext initialized')
@@ -69,6 +89,7 @@ onMounted(async () => {
   <div class="p-4 space-y-4">
     <input
       v-model="audioUrl"
+      name="audio url"
       type="text"
       placeholder="Enter audio URL"
       class="w-full border rounded px-2 py-1"
@@ -83,7 +104,7 @@ onMounted(async () => {
     <!-- Cast button -->
     <div class="flex items-center space-x-2">
       <div class="inline-block size-24px">
-        <google-cast-launcher />
+        <google-cast-launcher style="inline-block" />
       </div>
       <button class="rounded bg-blue-600 px-4 py-2 text-white" @click="castAudio">
         Cast to Device
