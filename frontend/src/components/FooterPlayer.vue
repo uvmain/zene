@@ -197,7 +197,14 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
 })
 
 async function getMimeType(): Promise<string> {
-  await fetch(trackUrl.value, { method: 'HEAD' })
+  let requestUrl = trackUrl.value
+  if (trackUrl.value.includes('?')) {
+    requestUrl = `${trackUrl.value}&token=${temporaryToken.value?.token}`
+  }
+  else {
+    requestUrl = `${trackUrl.value}?token=${temporaryToken.value?.token}`
+  }
+  await fetch(requestUrl, { method: 'HEAD' })
     .then((response) => {
       const contentType = response.headers.get('content-type') ?? ''
       console.log(contentType)
