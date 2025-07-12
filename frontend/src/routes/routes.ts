@@ -4,11 +4,11 @@ import Album from './AlbumRoute.vue'
 import Albums from './AlbumsRoute.vue'
 import Artist from './ArtistRoute.vue'
 import Artists from './ArtistsRoute.vue'
-import Debug from './Debug.vue'
 import Genre from './GenreRoute.vue'
 import Genres from './GenresRoute.vue'
 import Home from './HomeRoute.vue'
 import Login from './LoginRoute.vue'
+import Playlists from './PlaylistsRoute.vue'
 import Queue from './Queue.vue'
 import Track from './TrackRoute.vue'
 import Tracks from './TracksRoute.vue'
@@ -75,8 +75,8 @@ export const routes: RouteRecordRaw[] = [
     component: Queue as Component,
   },
   {
-    path: '/debug',
-    name: 'Debug',
-    component: Debug as Component,
+    path: '/playlists',
+    name: 'Playlists',
+    component: Playlists as Component,
   },
 ]
