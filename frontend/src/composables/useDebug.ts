@@ -1,6 +1,6 @@
-import { useSessionStorage } from '@vueuse/core'
+import { useLocalStorage } from '@vueuse/core'
 
-const useDebugBool = useSessionStorage('useDebugBool', false)
+const useDebugBool = useLocalStorage('useDebugBool', false)
 
 export function useDebug() {
   const toggleDebug = (): boolean => {
