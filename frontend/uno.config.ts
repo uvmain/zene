@@ -13,7 +13,17 @@ function getSafelist(): string[] {
 }
 
 export default defineConfig({
-  shortcuts: {},
+  shortcuts: {
+    // Mobile-friendly touch targets
+    'touch-target': 'min-h-11 min-w-11 flex items-center justify-center',
+    'touch-button': 'touch-target cursor-pointer transition-colors duration-200',
+    // Mobile-first responsive grid
+    'mobile-grid': 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+    // Standard mobile spacing
+    'mobile-padding': 'p-3 md:p-6',
+    'mobile-margin': 'm-3 md:m-6',
+    'mobile-gap': 'gap-3 md:gap-6',
+  },
   theme: {
     colors: {
       zene: {
