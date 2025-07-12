@@ -66,12 +66,19 @@ declare global {
       DEFAULT_MEDIA_RECEIVER_APP_ID: string
       MediaInfo: typeof MediaInfo
       LoadRequest: typeof LoadRequest
+      PlayerState: {
+        IDLE: string
+        PLAYING: string
+        PAUSED: string
+        BUFFERING: string
+      }
     }
   }
 
   // cast.framework types
   namespace cast.framework {
     function getCastContext(): CastContext
+
     class CastContext {
       static getInstance(): CastContext
       setOptions(options: {
@@ -79,10 +86,82 @@ declare global {
         autoJoinPolicy: chrome.cast.AutoJoinPolicy
       }): void
       getCurrentSession(): CastSession | null
+      addEventListener(eventType: string, listener: (event: any) => void): void
+      removeEventListener(eventType: string, listener: (event: any) => void): void
     }
 
     interface CastSession {
       loadMedia: (request: chrome.cast.media.LoadRequest) => Promise<any>
+      getMediaSession: () => any
+      addUpdateListener: (listener: (isAlive: boolean) => void) => void
+      removeUpdateListener: (listener: (isAlive: boolean) => void) => void
+    }
+
+    enum CastContextEventType {
+      CAST_STATE_CHANGED = 'caststatechanged',
+      SESSION_STATE_CHANGED = 'sessionstatechanged',
+    }
+
+    enum CastState {
+      NO_DEVICES_AVAILABLE = 'NO_DEVICES_AVAILABLE',
+      NOT_CONNECTED = 'NOT_CONNECTED',
+      CONNECTING = 'CONNECTING',
+      CONNECTED = 'CONNECTED',
+    }
+
+    enum SessionState {
+      NO_SESSION = 'NO_SESSION',
+      SESSION_STARTING = 'SESSION_STARTING',
+      SESSION_STARTED = 'SESSION_STARTED',
+      SESSION_START_FAILED = 'SESSION_START_FAILED',
+      SESSION_ENDING = 'SESSION_ENDING',
+      SESSION_ENDED = 'SESSION_ENDED',
+      SESSION_RESUMED = 'SESSION_RESUMED',
+    }
+
+    class RemotePlayer {
+      canControlVolume: boolean
+      canPause: boolean
+      canSeek: boolean
+      currentTime: number
+      displayName: string
+      duration: number
+      imageUrl: string
+      isConnected: boolean
+      isMuted: boolean
+      isPaused: boolean
+      playerState: string
+      title: string
+      volumeLevel: number
+      constructor()
+    }
+
+    class RemotePlayerController {
+      constructor(player: RemotePlayer)
+      addEventListener(eventType: string, listener: (event: any) => void): void
+      removeEventListener(eventType: string, listener: (event: any) => void): void
+      playOrPause(): void
+      stop(): void
+      seek(): void
+      previousTrack(): void
+      nextTrack(): void
+      setVolumeLevel(): void
+      muteOrUnmute(): void
+      getSeekPosition(currentTime: number, duration: number): number
+      getSeekTime(currentTime: number, duration: number): number
+    }
+
+    enum RemotePlayerEventType {
+      CURRENT_TIME_CHANGED = 'currentTimeChanged',
+      DURATION_CHANGED = 'durationChanged',
+      IS_CONNECTED_CHANGED = 'isConnectedChanged',
+      IS_MUTED_CHANGED = 'isMutedChanged',
+      IS_PAUSED_CHANGED = 'isPausedChanged',
+      PLAYER_STATE_CHANGED = 'playerStateChanged',
+      VOLUME_LEVEL_CHANGED = 'volumeLevelChanged',
+      CAN_CONTROL_VOLUME_CHANGED = 'canControlVolumeChanged',
+      CAN_PAUSE_CHANGED = 'canPauseChanged',
+      CAN_SEEK_CHANGED = 'canSeekChanged',
     }
   }
 
