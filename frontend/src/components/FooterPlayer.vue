@@ -3,13 +3,14 @@ import type { TokenResponse } from '../types/auth'
 import { onKeyStroke } from '@vueuse/core'
 import { formatTime } from '../composables/logic'
 import { useBackendFetch } from '../composables/useBackendFetch'
+import { useDebug } from '../composables/useDebug'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
 
 const { getMimeType, getTemporaryToken } = useBackendFetch()
-
+const { debugLog } = useDebug()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, refreshRandomSeed, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
@@ -53,7 +54,7 @@ async function togglePlayback() {
     const context = cast.framework.CastContext.getInstance()
     session.value = context.getCurrentSession()
     if (session.value) {
-      console.log('Casting audio')
+      debugLog('Casting audio')
       await castAudio()
       return
     }
@@ -76,7 +77,7 @@ function toggleMute() {
   if (!audioRef.value) {
     return
   }
-  console.log('Changing volume')
+  debugLog('Changing volume')
   if (audioRef.value.volume !== 0) {
     previousVolume.value = audioRef.value.volume
     audioRef.value.volume = 0
@@ -231,13 +232,13 @@ async function castAudio() {
     return
   }
 
-  console.log(`Casting URL: ${requestUrl} with content type: ${contentType}`)
+  debugLog(`Casting URL: ${requestUrl} with content type: ${contentType}`)
   const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
   const request = new chrome.cast.media.LoadRequest(mediaInfo)
 
   session.value
     .loadMedia(request)
-    .then(() => console.log('Media loaded to cast device'))
+    .then(() => debugLog('Media loaded to cast device'))
     .catch(err => console.error('Error loading media:', err))
 }
 
@@ -247,16 +248,16 @@ function initializeCast() {
     receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
-  console.log('CastContext initialized')
+  debugLog('CastContext initialized')
 }
 
 onMounted(async () => {
   temporaryToken.value = await getTemporaryToken()
-  console.log('Waiting for Cast SDK...')
+  debugLog('Waiting for Cast SDK...')
 
   // Hook for when the SDK becomes available (in case it's not already)
   window.__onGCastApiAvailable = (isAvailable: boolean) => {
-    console.log('Cast API available (async):', isAvailable)
+    debugLog(`Cast API available (async):', ${isAvailable}`)
     if (isAvailable)
       initializeCast()
     else console.warn('Cast API not available')
@@ -265,7 +266,7 @@ onMounted(async () => {
   // 🔥 If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
   // we have to check manually and initialize right now
   if ((window.cast && window.cast.isAvailable) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
-    console.log('Cast API already available (sync)')
+    debugLog('Cast API already available (sync)')
     initializeCast()
   }
 })
