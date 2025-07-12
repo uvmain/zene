@@ -4,11 +4,15 @@ import { useAuth } from './composables/useAuth'
 const { checkIfLoggedIn, userLoginState } = useAuth()
 const router = useRouter()
 
+// Temporarily set to true for development/testing UI responsiveness
+userLoginState.value = true
+
 onBeforeMount(async () => {
-  const loggedIn = checkIfLoggedIn()
-  if (!loggedIn) {
-    router.push('/login')
-  }
+  // Skip auth check for now
+  // const loggedIn = checkIfLoggedIn()
+  // if (!loggedIn) {
+  //   router.push('/login')
+  // }
 })
 </script>
 
