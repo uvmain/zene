@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useSearch } from '../composables/useSearch'
 import { useNavbar } from '../composables/useNavbar'
+import { useSearch } from '../composables/useSearch'
 
 const route = useRoute()
 const { closeSearch } = useSearch()
@@ -10,7 +10,7 @@ const currentRoute = computed(() => {
   return route.path
 })
 
-const handleLinkClick = () => {
+function handleLinkClick() {
   closeSearch()
   closeMobileNav()
 }
@@ -18,29 +18,27 @@ const handleLinkClick = () => {
 
 <template>
   <!-- Mobile overlay backdrop -->
-  <div 
+  <div
     v-if="isMobileNavOpen"
-    class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+    class="fixed inset-0 z-40 bg-black bg-opacity-50 md:hidden"
     @click="closeMobileNav"
   />
-  
+
   <!-- Navbar -->
-  <aside 
-    class="flex flex-col justify-between from-zene-600 to-zene-700 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out
-           fixed inset-y-0 left-0 z-50 w-64 md:w-auto md:relative md:translate-x-0
-           md:flex -translate-x-full"
+  <aside
+    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col from-zene-600 to-zene-700 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
     :class="{
       'translate-x-0': isMobileNavOpen,
-      '-translate-x-full md:translate-x-0': !isMobileNavOpen
+      '-translate-x-full md:translate-x-0': !isMobileNavOpen,
     }"
   >
     <!-- Mobile close button -->
-    <div class="flex justify-end mb-4 md:hidden">
-      <button @click="closeMobileNav" class="p-2 text-white hover:text-zene-200 transition-colors">
-        <icon-tabler-x class="text-2xl" />
+    <div class="mb-4 flex justify-end md:hidden">
+      <button class="p-2" @click="closeMobileNav">
+        <icon-tabler-x class="text-2xl text-white transition-colors hover:text-zene-200" />
       </button>
     </div>
-    
+
     <div class="flex flex-col space-y-6">
       <div class="flex items-center justify-center gap-x-2">
         <img class="size-12 rounded-full" src="/logo.png" alt="Logo" />

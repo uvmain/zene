@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
-import { useSearch } from '../composables/useSearch'
 import { useNavbar } from '../composables/useNavbar'
+import { useSearch } from '../composables/useSearch'
 
 const { search, searchInput } = useSearch()
 const { toggleMobileNav } = useNavbar()
@@ -15,11 +15,11 @@ const toggleDark = useToggle(isDark)
     <div class="flex p-2">
       <!-- Mobile hamburger menu -->
       <div class="flex items-center md:hidden">
-        <button @click="toggleMobileNav()" class="p-2 text-white hover:text-zene-200 transition-colors">
+        <button class="p-2 text-white transition-colors hover:text-zene-200" @click="toggleMobileNav()">
           <icon-tabler-menu-2 class="text-2xl" />
         </button>
       </div>
-      
+
       <div class="flex flex-grow justify-center">
         <div class="relative w-1/2">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
