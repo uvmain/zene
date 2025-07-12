@@ -48,7 +48,7 @@ function onImageError(event: Event) {
 </script>
 
 <template>
-  <div class="mx-auto p-4 container">
+  <div class="container mx-auto p-4">
     <div v-if="loading" class="text-center">
       Loading track details...
     </div>

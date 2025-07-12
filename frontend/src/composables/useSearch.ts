@@ -65,9 +65,11 @@ export function useSearch() {
         musicbrainz_album_id: metadata.musicbrainz_album_id,
         musicbrainz_track_id: metadata.musicbrainz_track_id,
         label: metadata.label,
-        genres: metadata.genre.split(';').filter((genre: string) => genre !== ''),
+        genre: metadata.genre,
         release_date: dayjs(metadata.release_date).format('YYYY'),
         image_url: `/api/albums/${metadata.musicbrainz_album_id}/art?size=lg`,
+        user_play_count: metadata.user_play_count,
+        global_play_count: metadata.global_play_count,
       }
       albumMetadata.push(metadataInstance)
     })
@@ -86,7 +88,7 @@ export function useSearch() {
           album: album.album,
           musicbrainz_album_id: album.musicbrainz_album_id,
           musicbrainz_artist_id: album.musicbrainz_artist_id,
-          genres: album.genres,
+          genres: album.genre.split(';').filter((genre: string) => genre !== ''),
           release_date: album.release_date,
           image_url: album.image_url,
         })
