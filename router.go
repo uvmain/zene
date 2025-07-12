@@ -57,6 +57,8 @@ func StartServer() {
 	router.Handle("GET /api/genres/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracksByGenre)))                       // query params: genres=genre1,genre2 condition=and|or
 	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
 	router.Handle("GET /api/user", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))                                  // return types.User - current user
+	router.Handle("GET /api/temporary_token", auth.AuthMiddleware(http.HandlerFunc(auth.GetTemporaryTokenHandler)))                       // returns an expiresAt string; query params: duration=30
+	router.Handle("POST /api/temporary_token", auth.AuthMiddleware(http.HandlerFunc(auth.ExtendTemporaryTokenDurationHandler)))           // returns an expiresAt string; query params: duration=30
 	router.Handle("GET /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                             // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
 	router.Handle("POST /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpsertPlaycount)))                          // return handlers.StandardResponse; form body: user_id=1, musicbrainz_track_id=musicBrainzTrackId
 

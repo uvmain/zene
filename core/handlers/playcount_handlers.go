@@ -31,7 +31,6 @@ func HandleGetPlaycounts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handleSuccessResponse(w, response)
-	return
 }
 
 func HandleUpsertPlaycount(w http.ResponseWriter, r *http.Request) {

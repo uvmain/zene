@@ -1,16 +1,21 @@
 <script setup lang="ts">
+import type { TokenResponse } from '../types/auth'
 import { onKeyStroke } from '@vueuse/core'
 import { formatTime } from '../composables/logic'
+import { useBackendFetch } from '../composables/useBackendFetch'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
+
+const { getTemporaryToken } = useBackendFetch()
 
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, refreshRandomSeed, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount, updatePlaycount } = usePlaycounts()
 const router = useRouter()
+const route = useRoute()
 
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -19,7 +24,8 @@ const currentTime = ref(0)
 const previousVolume = ref(1)
 const currentVolume = ref(1)
 const isPlayPauseActive = ref(false)
-const route = useRoute()
+const session = ref<cast.framework.CastSession | null>(null)
+const temporaryToken = ref<TokenResponse | null>(null)
 
 const currentRoute = computed(() => {
   return route.path
@@ -43,7 +49,16 @@ async function togglePlayback() {
     audioRef.value.pause()
   }
   else {
-    audioRef.value.play()
+    const context = cast.framework.CastContext.getInstance()
+    session.value = context.getCurrentSession()
+    if (session.value) {
+      console.log('Casting audio')
+      await castAudio()
+      return
+    }
+    else {
+      audioRef.value.play()
+    }
   }
 
   if (!isPlayPauseActive.value) {
@@ -181,6 +196,78 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
   }
 })
 
+async function getMimeType(): Promise<string> {
+  await fetch(trackUrl.value, { method: 'HEAD' })
+    .then((response) => {
+      const contentType = response.headers.get('content-type') ?? ''
+      console.log(contentType)
+      return contentType
+    })
+    .catch((err) => {
+      console.log(`fetch failed: ${err}`)
+    })
+  return ''
+}
+
+async function castAudio() {
+  const context = cast.framework.CastContext.getInstance()
+  session.value = context.getCurrentSession()
+
+  if (!session.value) {
+    return
+  }
+
+  if (!trackUrl.value) {
+    return
+  }
+
+  const contentType = await (getMimeType())
+
+  let requestUrl: string
+  if (trackUrl.value.includes('?')) {
+    requestUrl = `${trackUrl.value}&token=${temporaryToken.value?.token}`
+  }
+  else {
+    requestUrl = `${trackUrl.value}?token=${temporaryToken.value?.token}`
+  }
+  const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
+  const request = new chrome.cast.media.LoadRequest(mediaInfo)
+
+  session.value
+    .loadMedia(request)
+    .then(() => console.log('Media loaded to cast device'))
+    .catch(err => console.error('Error loading media:', err))
+}
+
+function initializeCast() {
+  const context = cast.framework.CastContext.getInstance()
+  context.setOptions({
+    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+  })
+  console.log('CastContext initialized')
+}
+
+onMounted(async () => {
+  temporaryToken.value = await getTemporaryToken()
+  console.log('Waiting for Cast SDK...')
+
+  // Hook for when the SDK becomes available (in case it's not already)
+  window.__onGCastApiAvailable = (isAvailable: boolean) => {
+    console.log('Cast API available (async):', isAvailable)
+    if (isAvailable)
+      initializeCast()
+    else console.warn('Cast API not available')
+  }
+
+  // 🔥 If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
+  // we have to check manually and initialize right now
+  if ((window.cast && window.cast.isAvailable) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
+    console.log('Cast API already available (sync)')
+    initializeCast()
+  }
+})
+
 onMounted(() => {
   const audio = audioRef.value
   if (!audio) {
@@ -287,6 +374,12 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
+
+      <!-- Cast button -->
+      <div class="inline-block size-24px flex cursor-pointer items-center">
+        <google-cast-launcher />
+      </div>
+
       <div>
         <RouterLink
           to="/queue"
@@ -330,5 +423,18 @@ onUnmounted(() => {
 
 .animate-pulse-bg {
   animation: pulse-bg 120s infinite ease-in-out;
+}
+
+:global(google-cast-launcher .cast_caf_state_c) {
+  fill: rgb(101, 199, 117);
+  opacity: 100;
+}
+:global(google-cast-launcher .cast_caf_state_d) {
+  fill: rgb(250, 250, 250);
+  opacity: 100;
+}
+:global(google-cast-launcher .cast_caf_state_h) {
+  fill: rgb(250, 250, 250);
+  opacity: 50;
 }
 </style>

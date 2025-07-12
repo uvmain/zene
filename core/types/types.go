@@ -114,5 +114,5 @@ type Playcount struct {
 
 type AudioCacheEntry struct {
 	CacheKey     string    `json:"cache_key"`
-	LastAccessed time.Time `json:"lastAccessed"`
+	LastAccessed time.Time `json:"last_accessed"`
 }
