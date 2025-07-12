@@ -1,5 +1,5 @@
 import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import type { User, UsersResponse } from '../types/auth'
+import type { TokenResponse, User, UsersResponse } from '../types/auth'
 import { trackWithImageUrl } from '../composables/logic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 
@@ -60,6 +60,11 @@ export function useBackendFetch() {
     return await response.json() as TrackMetadataWithImageUrl[]
   }
 
+  const getTemporaryToken = async (duration = 30): Promise<TokenResponse> => {
+    const response = await backendFetchRequest(`temporary_token?duration=${duration}`)
+    return await response.json() as TokenResponse
+  }
+
   return {
     backendFetchRequest,
     getAlbumTracks,
@@ -68,5 +73,6 @@ export function useBackendFetch() {
     getCurrentUser,
     getGenreTracks,
     getUsers,
+    getTemporaryToken,
   }
 }

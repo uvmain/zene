@@ -125,18 +125,30 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, isValidSession, err := GetUserFromRequest(r)
-		if err != nil || !isValidSession {
-			logger.Printf("Unauthorized access attempt, invalid session: %v", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
+		token := r.URL.Query().Get("token")
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, logic.UserIdKey, user.Id)
-		ctx = context.WithValue(ctx, logic.UsernameKey, user.Username)
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
+
+		if token != "" {
+			isValidToken, err := ValidateToken(ctx, token)
+			logger.Printf("%s accessed with temporary token", r.RequestURI)
+			if err != nil || !isValidToken {
+				logger.Printf("Unauthorized access attempt, invalid token: %v", err)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			next.ServeHTTP(w, r)
+		} else {
+			user, isValidSession, err := GetUserFromRequest(r)
+			if err != nil || !isValidSession {
+				logger.Printf("Unauthorized access attempt, invalid session: %v", err)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			ctx = context.WithValue(ctx, logic.UserIdKey, user.Id)
+			ctx = context.WithValue(ctx, logic.UsernameKey, user.Username)
+			r = r.WithContext(ctx)
+			next.ServeHTTP(w, r)
+		}
 	})
 }
 

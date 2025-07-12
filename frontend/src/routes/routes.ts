@@ -8,6 +8,7 @@ import Genre from './GenreRoute.vue'
 import Genres from './GenresRoute.vue'
 import Home from './HomeRoute.vue'
 import Login from './LoginRoute.vue'
+import Playlists from './PlaylistsRoute.vue'
 import Queue from './Queue.vue'
 import Track from './TrackRoute.vue'
 import Tracks from './TracksRoute.vue'
@@ -72,5 +73,10 @@ export const routes: RouteRecordRaw[] = [
     path: '/queue',
     name: 'Queue',
     component: Queue as Component,
+  },
+  {
+    path: '/playlists',
+    name: 'Playlists',
+    component: Playlists as Component,
   },
 ]

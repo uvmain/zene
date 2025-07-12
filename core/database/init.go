@@ -28,6 +28,7 @@ func Initialise(ctx context.Context) {
 	createArtistArtTable(ctx)
 	createFtsTables(ctx)
 	createAudioCacheTable(ctx)
+	createTemporaryTokensTable(ctx)
 }
 
 func openDatabase(ctx context.Context) {
