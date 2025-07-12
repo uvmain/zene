@@ -15,7 +15,6 @@ const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount, updatePlaycount } = usePlaycounts()
 const router = useRouter()
-const route = useRoute()
 
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -26,10 +25,6 @@ const currentVolume = ref(1)
 const isPlayPauseActive = ref(false)
 const session = ref<cast.framework.CastSession | null>(null)
 const temporaryToken = ref<TokenResponse | null>(null)
-
-const currentRoute = computed(() => {
-  return route.path
-})
 
 const trackUrl = computed<string>(() => {
   return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream?quality=${streamQuality.value}` : ''
@@ -377,34 +372,39 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Cast button -->
-      <div class="inline-block size-20px flex cursor-pointer items-center sm:size-24px">
-        <google-cast-launcher />
-      </div>
-
-      <div>
-        <RouterLink
-          to="/queue"
-          class="block flex gap-x-1 rounded-lg px-2 py-1 text-white no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
-          :class="{ 'ml-2 sm:ml-4': currentRoute === '/' }"
-        >
-          <icon-tabler-playlist class="text-lg sm:text-xl" />
-        </RouterLink>
-      </div>
-      <div v-if="audioRef" id="volume-range-input" class="hidden flex-row cursor-pointer items-center gap-1 sm:flex md:gap-2">
-        <div @click="toggleMute()">
-          <icon-tabler-volume v-if="audioRef.volume > 0.5" class="text-xs sm:text-sm" />
-          <icon-tabler-volume-2 v-else-if="audioRef.volume > 0" class="text-xs sm:text-sm" />
-          <icon-tabler-volume-3 v-else class="text-xs sm:text-sm" />
+      <!-- Cast button, Playlist button, and Volume controls in a row -->
+      <div class="flex flex-row items-center gap-x-2 md:gap-x-4">
+        <!-- Cast button -->
+        <div class="inline-block size-20px flex cursor-pointer items-center sm:size-24px">
+          <google-cast-launcher />
         </div>
-        <input
-          type="range"
-          class="h-1 w-20 cursor-pointer bg-white/60 accent-zene-200 md:w-30 sm:w-24"
-          max="1"
-          step="0.01"
-          :value="currentVolume"
-          @input="volumeInput"
-        />
+
+        <!-- Playlist button -->
+        <div>
+          <RouterLink
+            to="/queue"
+            class="block flex gap-x-1 rounded-lg px-2 py-1 text-white no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
+          >
+            <icon-tabler-playlist class="text-lg sm:text-xl" />
+          </RouterLink>
+        </div>
+
+        <!-- Volume controls -->
+        <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-1 md:gap-2">
+          <div @click="toggleMute()">
+            <icon-tabler-volume v-if="audioRef.volume > 0.5" class="text-xs sm:text-sm" />
+            <icon-tabler-volume-2 v-else-if="audioRef.volume > 0" class="text-xs sm:text-sm" />
+            <icon-tabler-volume-3 v-else class="text-xs sm:text-sm" />
+          </div>
+          <input
+            type="range"
+            class="h-1 w-20 cursor-pointer bg-white/60 accent-zene-200 md:w-30 sm:w-24"
+            max="1"
+            step="0.01"
+            :value="currentVolume"
+            @input="volumeInput"
+          />
+        </div>
       </div>
     </div>
   </footer>
