@@ -237,6 +237,12 @@ async function castAudio() {
   else {
     requestUrl = `${trackUrl.value}?token=${temporaryToken.value?.token}`
   }
+  // prefix base url to requestUrl
+  if (window) {
+    const protocol = window.location.protocol
+    const host = window.location.host
+    requestUrl = `${protocol}://${host}${requestUrl}`
+  }
   const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
   const request = new chrome.cast.media.LoadRequest(mediaInfo)
 
