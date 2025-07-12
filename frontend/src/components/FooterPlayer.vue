@@ -25,6 +25,10 @@ const previousVolume = ref(1)
 const currentVolume = ref(1)
 const isPlayPauseActive = ref(false)
 const session = ref<cast.framework.CastSession | null>(null)
+const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
+const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
+const isCasting = ref(false)
+const castProgressInterval = ref<NodeJS.Timeout | null>(null)
 const temporaryToken = ref<TokenResponse | null>(null)
 
 const trackUrl = computed<string>(() => {
@@ -36,22 +40,34 @@ async function togglePlayback() {
     console.error('Audio element not found')
     return
   }
+
   if (!currentQueue.value?.tracks?.length && routeTracks.value.length) {
     setCurrentQueue(routeTracks.value)
   }
   else if (currentQueue.value?.tracks?.length && !currentlyPlayingTrack.value) {
     setCurrentQueue(currentQueue.value?.tracks)
   }
-  if (isPlaying.value) {
-    audioRef.value.pause()
+
+  // Handle casting
+  const context = cast.framework.CastContext.getInstance()
+  session.value = context.getCurrentSession()
+
+  if (session.value && isCasting.value) {
+    // Control cast playback
+    if (castPlayerController.value) {
+      castPlayerController.value.playOrPause()
+    }
+  }
+  else if (session.value && !isCasting.value) {
+    // Start casting
+    debugLog('Starting cast session')
+    await castAudio()
+    return
   }
   else {
-    const context = cast.framework.CastContext.getInstance()
-    session.value = context.getCurrentSession()
-    if (session.value) {
-      debugLog('Casting audio')
-      await castAudio()
-      return
+    // Control local playback
+    if (isPlaying.value) {
+      audioRef.value.pause()
     }
     else {
       audioRef.value.play()
@@ -65,34 +81,46 @@ async function togglePlayback() {
     }, 200)
   }
 
-  updateIsPlaying()
+  if (!isCasting.value) {
+    updateIsPlaying()
+  }
 }
 
 function toggleMute() {
-  if (!audioRef.value) {
-    return
+  if (isCasting.value && castPlayerController.value) {
+    // Control cast device mute
+    castPlayerController.value.muteOrUnmute()
   }
-  debugLog('Changing volume')
-  if (audioRef.value.volume !== 0) {
-    previousVolume.value = audioRef.value.volume
-    audioRef.value.volume = 0
-    currentVolume.value = 0
-  }
-  else {
-    audioRef.value.volume = previousVolume.value
-    currentVolume.value = previousVolume.value
+  else if (audioRef.value) {
+    // Control local audio mute
+    debugLog('Changing volume')
+    if (audioRef.value.volume !== 0) {
+      previousVolume.value = audioRef.value.volume
+      audioRef.value.volume = 0
+      currentVolume.value = 0
+    }
+    else {
+      audioRef.value.volume = previousVolume.value
+      currentVolume.value = previousVolume.value
+    }
   }
 }
 
 async function stopPlayback() {
-  if (!audioRef.value)
-    return
-  if (audioRef.value.currentTime < 1) {
-    resetCurrentlyPlayingTrack()
-    clearQueue()
+  if (isCasting.value && castPlayerController.value) {
+    // Stop cast playback
+    castPlayerController.value.stop()
   }
-  audioRef.value.pause()
-  audioRef.value.load()
+  else if (audioRef.value) {
+    // Stop local playback
+    if (audioRef.value.currentTime < 1) {
+      resetCurrentlyPlayingTrack()
+      clearQueue()
+    }
+    audioRef.value.pause()
+    audioRef.value.load()
+  }
+
   isPlaying.value = false
 }
 
@@ -103,11 +131,16 @@ function updateIsPlaying() {
 }
 
 function updateProgress() {
-  if (!audioRef.value) {
+  // Get progress from cast player if casting, otherwise from local audio
+  if (isCasting.value && castPlayer.value) {
+    currentTime.value = castPlayer.value.currentTime
+  }
+  else if (audioRef.value) {
+    currentTime.value = audioRef.value.currentTime
+  }
+  else {
     return
   }
-
-  currentTime.value = audioRef.value.currentTime
 
   if (currentlyPlayingTrack.value && !playcountPosted.value) {
     const halfwayPoint = Number.parseFloat(currentlyPlayingTrack.value.duration) / 2
@@ -126,20 +159,65 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
 })
 
 function seek(event: Event) {
-  if (!audioRef.value)
-    return
   const target = event.target as HTMLInputElement
   const seekTime = Number.parseFloat(target.value)
-  audioRef.value.currentTime = seekTime
+
+  if (isCasting.value && castPlayer.value && castPlayerController.value) {
+    // Seek cast playback
+    castPlayer.value.currentTime = seekTime
+    castPlayerController.value.seek()
+  }
+  else if (audioRef.value) {
+    // Seek local playback
+    audioRef.value.currentTime = seekTime
+  }
 }
 
 function volumeInput(event: Event) {
-  if (!audioRef.value)
-    return
   const target = event.target as HTMLInputElement
   const volume = Number.parseFloat(target.value)
-  audioRef.value.volume = volume
+
+  if (isCasting.value && castPlayer.value && castPlayerController.value) {
+    // Control cast device volume
+    castPlayer.value.volumeLevel = volume
+    castPlayerController.value.setVolumeLevel()
+  }
+  else if (audioRef.value) {
+    // Control local volume
+    audioRef.value.volume = volume
+  }
+
   currentVolume.value = volume
+}
+
+async function handleNextTrack() {
+  if (isCasting.value && castPlayerController.value) {
+    // For cast, try to use the native next track functionality
+    castPlayerController.value.nextTrack()
+  }
+
+  // Always update the local queue for track management
+  await getNextTrack()
+
+  // If casting, load the new track to the cast device
+  if (isCasting.value && currentlyPlayingTrack.value) {
+    await castAudio()
+  }
+}
+
+async function handlePreviousTrack() {
+  if (isCasting.value && castPlayerController.value) {
+    // For cast, try to use the native previous track functionality
+    castPlayerController.value.previousTrack()
+  }
+
+  // Always update the local queue for track management
+  await getPreviousTrack()
+
+  // If casting, load the new track to the cast device
+  if (isCasting.value && currentlyPlayingTrack.value) {
+    await castAudio()
+  }
 }
 
 async function handleGetRandomTracks() {
@@ -155,12 +233,12 @@ onKeyStroke('MediaPlayPause', (e) => {
 
 onKeyStroke('MediaTrackPrevious', (e) => {
   e.preventDefault()
-  getPreviousTrack()
+  handlePreviousTrack()
 })
 
 onKeyStroke('MediaTrackNext', (e) => {
   e.preventDefault()
-  getNextTrack()
+  handleNextTrack()
 })
 
 onKeyStroke('MediaStop', (e) => {
@@ -229,12 +307,34 @@ async function castAudio() {
 
   debugLog(`Casting URL: ${requestUrl} with content type: ${contentType}`)
   const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
+
+  // Add metadata for better cast experience
+  if (currentlyPlayingTrack.value) {
+    mediaInfo.metadata = {
+      title: currentlyPlayingTrack.value.title,
+      artist: currentlyPlayingTrack.value.artist || currentlyPlayingTrack.value.album_artist || '',
+      images: currentlyPlayingTrack.value.image_url ? [{ url: currentlyPlayingTrack.value.image_url }] : [],
+    }
+  }
+
   const request = new chrome.cast.media.LoadRequest(mediaInfo)
 
-  session.value
-    .loadMedia(request)
-    .then(() => debugLog('Media loaded to cast device'))
-    .catch(err => console.error('Error loading media:', err))
+  try {
+    await session.value.loadMedia(request)
+    debugLog('Media loaded to cast device')
+    isCasting.value = true
+
+    // Pause local audio when casting starts
+    if (audioRef.value) {
+      audioRef.value.pause()
+    }
+
+    // Update cast state
+    updateCastState()
+  }
+  catch (err) {
+    console.error('Error loading media:', err)
+  }
 }
 
 function initializeCast() {
@@ -243,7 +343,107 @@ function initializeCast() {
     receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
+
+  // Listen for cast state changes
+  context.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+  context.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
+
   debugLog('CastContext initialized')
+}
+
+function onCastStateChanged(event: any) {
+  debugLog(`Cast state changed:', ${event.castState}`)
+  updateCastState()
+}
+
+function onSessionStateChanged(event: any) {
+  debugLog(`Session state changed:', ${event.sessionState}`)
+  updateCastState()
+}
+
+function updateCastState() {
+  const context = cast.framework.CastContext.getInstance()
+  session.value = context.getCurrentSession()
+  isCasting.value = !!session.value
+
+  if (session.value) {
+    setupCastPlayer()
+  }
+  else {
+    cleanupCastPlayer()
+  }
+}
+
+function setupCastPlayer() {
+  if (!castPlayer.value) {
+    castPlayer.value = new cast.framework.RemotePlayer()
+    castPlayerController.value = new cast.framework.RemotePlayerController(castPlayer.value)
+
+    // Listen for remote player events
+    castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
+    castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
+    castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
+    castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
+
+    // Start progress tracking for cast
+    startCastProgressTracking()
+  }
+}
+
+function cleanupCastPlayer() {
+  if (castPlayerController.value) {
+    castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
+    castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
+    castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
+    castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
+  }
+
+  stopCastProgressTracking()
+  castPlayer.value = null
+  castPlayerController.value = null
+}
+
+function startCastProgressTracking() {
+  if (castProgressInterval.value) {
+    clearInterval(castProgressInterval.value)
+  }
+
+  castProgressInterval.value = setInterval(() => {
+    if (castPlayer.value && castPlayer.value.isConnected) {
+      updateProgress()
+    }
+  }, 1000) // Update every second
+}
+
+function stopCastProgressTracking() {
+  if (castProgressInterval.value) {
+    clearInterval(castProgressInterval.value)
+    castProgressInterval.value = null
+  }
+}
+
+function onCastPlayerStateChanged() {
+  if (castPlayer.value) {
+    isPlaying.value = !castPlayer.value.isPaused
+  }
+}
+
+function onCastTimeChanged() {
+  if (castPlayer.value) {
+    currentTime.value = castPlayer.value.currentTime
+  }
+}
+
+function onCastVolumeChanged() {
+  if (castPlayer.value) {
+    currentVolume.value = castPlayer.value.volumeLevel
+  }
+}
+
+function onCastMuteChanged() {
+  if (castPlayer.value) {
+    currentVolume.value = castPlayer.value.isMuted ? 0 : castPlayer.value.volumeLevel
+  }
 }
 
 onMounted(async () => {
@@ -252,10 +452,14 @@ onMounted(async () => {
 
   // Hook for when the SDK becomes available (in case it's not already)
   window.__onGCastApiAvailable = (isAvailable: boolean) => {
-    debugLog(`Cast API available (async):', ${isAvailable}`)
-    if (isAvailable)
+    debugLog(`Cast API available (async): ${isAvailable}`)
+    if (isAvailable) {
       initializeCast()
-    else console.warn('Cast API not available')
+      updateCastState() // Initialize cast state
+    }
+    else {
+      console.warn('Cast API not available')
+    }
   }
 
   // 🔥 If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
@@ -263,6 +467,7 @@ onMounted(async () => {
   if ((window.cast && window.cast.isAvailable) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
     debugLog('Cast API already available (sync)')
     initializeCast()
+    updateCastState() // Initialize cast state
   }
 })
 
@@ -276,7 +481,7 @@ onMounted(() => {
   audio.addEventListener('timeupdate', updateProgress)
   audio.addEventListener('ended', () => {
     if (currentQueue.value && currentQueue.value.tracks.length > 0) {
-      getNextTrack()
+      handleNextTrack()
     }
     else {
       isPlaying.value = false
@@ -286,24 +491,33 @@ onMounted(() => {
 
 onUnmounted(() => {
   const audio = audioRef.value
-  if (!audio)
-    return
+  if (audio) {
+    audio.removeEventListener('play', updateIsPlaying)
+    audio.removeEventListener('pause', updateIsPlaying)
+    audio.removeEventListener('timeupdate', updateProgress)
+    audio.removeEventListener('ended', () => {
+      if (currentQueue.value && currentQueue.value.tracks.length > 0) {
+        handleNextTrack()
+      }
+      else {
+        isPlaying.value = false
+      }
+    })
 
-  audio.removeEventListener('play', updateIsPlaying)
-  audio.removeEventListener('pause', updateIsPlaying)
-  audio.removeEventListener('timeupdate', updateProgress)
-  audio.removeEventListener('ended', () => {
-    if (currentQueue.value && currentQueue.value.tracks.length > 0) {
-      getNextTrack()
-    }
-    else {
-      isPlaying.value = false
-    }
-  })
+    audio.pause()
+    audio.removeAttribute('src')
+    audio.load()
+  }
 
-  audio.pause()
-  audio.removeAttribute('src')
-  audio.load()
+  // Clean up cast resources
+  cleanupCastPlayer()
+
+  // Remove cast context listeners
+  const context = cast.framework.CastContext.getInstance()
+  if (context) {
+    context.removeEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+    context.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
+  }
 })
 </script>
 
@@ -344,7 +558,7 @@ onUnmounted(() => {
             <button id="shuffle" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
               <icon-tabler-arrows-shuffle class="text-sm md:text-xl sm:text-lg" />
             </button>
-            <button id="back" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="getPreviousTrack()">
+            <button id="back" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
               <icon-tabler-player-skip-back class="text-sm md:text-xl sm:text-lg" />
             </button>
             <button
@@ -356,7 +570,7 @@ onUnmounted(() => {
               <icon-tabler-player-play v-if="!isPlaying" class="text-xl md:text-3xl sm:text-2xl" />
               <icon-tabler-player-pause v-else class="text-xl md:text-3xl sm:text-2xl" />
             </button>
-            <button id="forward" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="getNextTrack()">
+            <button id="forward" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
               <icon-tabler-player-skip-forward class="text-sm md:text-xl sm:text-lg" />
             </button>
             <button id="repeat" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
