@@ -21,7 +21,7 @@ const toggleDark = useToggle(isDark)
       </div>
 
       <div class="flex flex-grow justify-center">
-        <div class="relative w-1/2">
+        <div class="relative w-full max-w-md md:w-1/2">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
             <icon-tabler-search class="text-xl" />
           </span>
