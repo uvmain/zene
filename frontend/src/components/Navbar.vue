@@ -26,7 +26,7 @@ function handleLinkClick() {
 
   <!-- Navbar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col justify-between from-zene-600 to-zene-700 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
+    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col from-zene-600 to-zene-700 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex md:justify-between"
     :class="{
       'translate-x-0': isMobileNavOpen,
       '-translate-x-full md:translate-x-0': !isMobileNavOpen,
