@@ -9,7 +9,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div v-if="userLoginState" class="grid grid-cols-[250px_1fr] h-screen from-zene-800 to-zene-700 bg-gradient-to-b text-white">
+  <div v-if="userLoginState || true" class="grid grid-cols-[250px_1fr] h-screen from-zene-800 to-zene-700 bg-gradient-to-b text-white">
     <Navbar />
     <main class="flex flex-col overflow-y-auto">
       <div class="flex flex-col overflow-y-auto p-6 space-y-6">
