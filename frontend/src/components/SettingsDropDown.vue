@@ -1,9 +1,11 @@
 <script setup>
 import { useBackendFetch } from '../composables/useBackendFetch'
+import { useDebug } from '../composables/useDebug'
 import { useSettings } from '../composables/useSettings'
 
 const { streamQuality, StreamQualities } = useSettings()
 const { backendFetchRequest } = useBackendFetch()
+const { toggleDebug, debugLog, useDebugBool } = useDebug()
 
 const open = ref(false)
 const dropdownRef = ref(null)
@@ -27,7 +29,7 @@ async function runScan() {
     method: 'POST',
   })
   const json = await response.json()
-  console.log(json)
+  debugLog(JSON.stringify(json))
 }
 
 onMounted(() => {
@@ -54,6 +56,12 @@ onBeforeUnmount(() => {
             @click="runScan"
           >
             Run a Scan
+          </div>
+          <div
+            class="block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            @click="toggleDebug()"
+          >
+            Debug: {{ useDebugBool ? 'On' : 'Off' }}
           </div>
           <div class="px-4 py-2">
             <label class="mb-1 block text-sm text-gray-500">Stream Quality</label>

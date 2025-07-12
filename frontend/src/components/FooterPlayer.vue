@@ -3,13 +3,14 @@ import type { TokenResponse } from '../types/auth'
 import { onKeyStroke } from '@vueuse/core'
 import { formatTime } from '../composables/logic'
 import { useBackendFetch } from '../composables/useBackendFetch'
+import { useDebug } from '../composables/useDebug'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
 
 const { getMimeType, getTemporaryToken } = useBackendFetch()
-
+const { debugLog } = useDebug()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, refreshRandomSeed, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
@@ -64,7 +65,7 @@ async function togglePlayback() {
   }
   else if (session.value && !isCasting.value) {
     // Start casting
-    console.log('Starting cast session')
+    debugLog('Starting cast session')
     await castAudio()
     return
   }
@@ -97,7 +98,7 @@ function toggleMute() {
   }
   else if (audioRef.value) {
     // Control local audio mute
-    console.log('Changing volume')
+    debugLog('Changing volume')
     if (audioRef.value.volume !== 0) {
       previousVolume.value = audioRef.value.volume
       audioRef.value.volume = 0
@@ -309,14 +310,14 @@ async function castAudio() {
     return
   }
 
-  console.log(`Casting URL: ${requestUrl} with content type: ${contentType}`)
+  debugLog(`Casting URL: ${requestUrl} with content type: ${contentType}`)
   const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
 
   // Add metadata for better cast experience
   if (currentlyPlayingTrack.value) {
     mediaInfo.metadata = {
       title: currentlyPlayingTrack.value.title,
-      artist: currentlyPlayingTrack.value.artist_names?.[0] || '',
+      artist: currentlyPlayingTrack.value.artist || currentlyPlayingTrack.value.album_artist || '',
       images: currentlyPlayingTrack.value.image_url ? [{ url: currentlyPlayingTrack.value.image_url }] : [],
     }
   }
@@ -325,7 +326,7 @@ async function castAudio() {
 
   try {
     await session.value.loadMedia(request)
-    console.log('Media loaded to cast device')
+    debugLog('Media loaded to cast device')
     isCasting.value = true
 
     // Pause local audio when casting starts
@@ -352,16 +353,16 @@ function initializeCast() {
   context.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
   context.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
 
-  console.log('CastContext initialized')
+  debugLog('CastContext initialized')
 }
 
 function onCastStateChanged(event: any) {
-  console.log('Cast state changed:', event.castState)
+  debugLog(`Cast state changed:', ${event.castState}`)
   updateCastState()
 }
 
 function onSessionStateChanged(event: any) {
-  console.log('Session state changed:', event.sessionState)
+  debugLog(`Session state changed:', ${event.sessionState}`)
   updateCastState()
 }
 
@@ -452,11 +453,11 @@ function onCastMuteChanged() {
 
 onMounted(async () => {
   temporaryToken.value = await getTemporaryToken()
-  console.log('Waiting for Cast SDK...')
+  debugLog('Waiting for Cast SDK...')
 
   // Hook for when the SDK becomes available (in case it's not already)
   window.__onGCastApiAvailable = (isAvailable: boolean) => {
-    console.log('Cast API available (async):', isAvailable)
+    debugLog(`Cast API available (async): ${isAvailable}`)
     if (isAvailable) {
       initializeCast()
       updateCastState() // Initialize cast state
@@ -469,7 +470,7 @@ onMounted(async () => {
   // 🔥 If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
   // we have to check manually and initialize right now
   if ((window.cast && window.cast.isAvailable) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
-    console.log('Cast API already available (sync)')
+    debugLog('Cast API already available (sync)')
     initializeCast()
     updateCastState() // Initialize cast state
   }

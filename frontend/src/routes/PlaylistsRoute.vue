@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { TokenResponse } from '../types/auth'
 import { useBackendFetch } from '../composables/useBackendFetch'
+import { useDebug } from '../composables/useDebug'
 
 const { getTemporaryToken } = useBackendFetch()
+const { debugLog } = useDebug()
 
 const audioUrl = ref('https://static.ianbaron.com/dc2b0ca2-ff9c-41ec-9672-58a96f5e58bd-160.aac')
 const audioEl = ref<HTMLAudioElement | null>(null)
@@ -14,11 +16,11 @@ async function getMimeType(): Promise<string> {
   await fetch(audioUrl.value, { method: 'HEAD' })
     .then((response) => {
       const contentType = response.headers.get('content-type') ?? ''
-      console.log(contentType)
+      debugLog(contentType)
       return contentType
     })
     .catch((err) => {
-      console.log(`fetch failed: ${err}`)
+      debugLog(`fetch failed: ${err}`)
     })
   return ''
 }
@@ -51,7 +53,7 @@ async function castAudio() {
 
   session.value
     .loadMedia(request)
-    .then(() => console.log('Media loaded to cast device'))
+    .then(() => debugLog('Media loaded to cast device'))
     .catch(err => console.error('Error loading media:', err))
 }
 
@@ -61,25 +63,25 @@ function initializeCast() {
     receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
-  console.log('CastContext initialized')
+  debugLog('CastContext initialized')
 }
 
 onMounted(async () => {
   temporaryToken.value = await getTemporaryToken()
-  console.log('Waiting for Cast SDK...')
+  debugLog('Waiting for Cast SDK...')
 
   // Hook for when the SDK becomes available (in case it's not already)
   window.__onGCastApiAvailable = (isAvailable: boolean) => {
-    console.log('Cast API available (async):', isAvailable)
+    debugLog(`Cast API available (async):', ${isAvailable}`)
     if (isAvailable)
       initializeCast()
     else console.warn('Cast API not available')
   }
 
-  // 🔥 If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
+  // if the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
   // we have to check manually and initialize right now
   if ((window.cast && window.cast.isAvailable) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
-    console.log('Cast API already available (sync)')
+    debugLog('Cast API already available (sync)')
     initializeCast()
   }
 })
