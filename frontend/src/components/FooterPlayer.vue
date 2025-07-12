@@ -8,7 +8,7 @@ import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
 
-const { getTemporaryToken } = useBackendFetch()
+const { getMimeType, getTemporaryToken } = useBackendFetch()
 
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, refreshRandomSeed, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
@@ -37,6 +37,7 @@ const trackUrl = computed<string>(() => {
 
 async function togglePlayback() {
   if (!audioRef.value) {
+    console.error('Audio element not found')
     return
   }
   if (!currentQueue.value?.tracks?.length && routeTracks.value.length) {
@@ -196,39 +197,19 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
   }
 })
 
-async function getMimeType(): Promise<string> {
-  let requestUrl = trackUrl.value
-  if (trackUrl.value.includes('?')) {
-    requestUrl = `${trackUrl.value}&token=${temporaryToken.value?.token}`
-  }
-  else {
-    requestUrl = `${trackUrl.value}?token=${temporaryToken.value?.token}`
-  }
-  await fetch(requestUrl, { method: 'HEAD' })
-    .then((response) => {
-      const contentType = response.headers.get('content-type') ?? ''
-      console.log(contentType)
-      return contentType
-    })
-    .catch((err) => {
-      console.log(`fetch failed: ${err}`)
-    })
-  return ''
-}
-
 async function castAudio() {
   const context = cast.framework.CastContext.getInstance()
   session.value = context.getCurrentSession()
 
   if (!session.value) {
+    console.error('No active cast session found')
     return
   }
 
   if (!trackUrl.value) {
+    console.error('No track URL available for casting')
     return
   }
-
-  const contentType = await (getMimeType())
 
   let requestUrl: string
   if (trackUrl.value.includes('?')) {
@@ -241,8 +222,16 @@ async function castAudio() {
   if (window) {
     const protocol = window.location.protocol
     const host = window.location.host
-    requestUrl = `${protocol}://${host}${requestUrl}`
+    requestUrl = `${protocol}//${host}${requestUrl}`
   }
+
+  const contentType = await getMimeType(requestUrl)
+  if (!contentType) {
+    console.error('Could not determine content type for casting')
+    return
+  }
+
+  console.log(`Casting URL: ${requestUrl} with content type: ${contentType}`)
   const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
   const request = new chrome.cast.media.LoadRequest(mediaInfo)
 

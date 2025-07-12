@@ -65,6 +65,12 @@ export function useBackendFetch() {
     return await response.json() as TokenResponse
   }
 
+  const getMimeType = async (url: string): Promise<string> => {
+    const response = await fetch(url, { method: 'HEAD' })
+    const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type') ?? ''
+    return contentType
+  }
+
   return {
     backendFetchRequest,
     getAlbumTracks,
@@ -74,5 +80,6 @@ export function useBackendFetch() {
     getGenreTracks,
     getUsers,
     getTemporaryToken,
+    getMimeType,
   }
 }
