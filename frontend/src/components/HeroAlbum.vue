@@ -70,26 +70,26 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="albumArray.length" class="h-65 overflow-hidden rounded-lg">
+  <section v-if="albumArray.length" class="overflow-hidden rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${albumArray[index].image_url})` }"
     >
       <div class="h-full w-full flex items-center justify-between backdrop-blur-md">
         <Album :album="albumArray[index]" size="xl" />
-        <div class="m-6 mb-auto flex gap-2 rounded-full bg-zene-800/50 p-2 text-white">
+        <div class="m-3 mb-auto flex gap-2 rounded-full bg-zene-800/50 p-3 text-white md:m-6 md:mb-auto md:p-2">
           <icon-tabler-chevron-left
-            class="cursor-pointer text-3xl opacity-80 active:opacity-100"
+            class="cursor-pointer text-2xl opacity-80 md:text-3xl active:opacity-100"
             :class="{ 'text-gray': index === 0 }"
             @click="prevIndex"
           />
           <icon-tabler-dice-6
-            class="cursor-pointer text-3xl opacity-80 active:opacity-100"
+            class="cursor-pointer text-2xl opacity-80 md:text-3xl active:opacity-100"
             :class="{ shake: isShaking }"
             @click="handleDiceClick()"
           />
           <icon-tabler-chevron-right
-            class="cursor-pointer text-3xl opacity-80 active:opacity-100"
+            class="cursor-pointer text-2xl opacity-80 md:text-3xl active:opacity-100"
             :class="{ 'text-gray': index === indexCount - 1 }"
             @click="nextIndex"
           />

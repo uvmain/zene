@@ -51,6 +51,7 @@ declare module 'vue' {
     PlayButton: typeof import('./src/components/PlayButton.vue')['default']
     RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
     RecentlyUpdatedArtists: typeof import('./src/components/RecentlyUpdatedArtists.vue')['default']
+    RefreshHeader: typeof import('./src/components/RefreshHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchResults: typeof import('./src/components/SearchResults.vue')['default']

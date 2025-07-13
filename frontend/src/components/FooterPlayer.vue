@@ -29,6 +29,7 @@ const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
 const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
 const isCasting = ref(false)
 const castProgressInterval = ref<NodeJS.Timeout | null>(null)
+const castUrl = ref<string | null>()
 const temporaryToken = ref<TokenResponse | null>(null)
 
 const trackUrl = computed<string>(() => {
@@ -285,28 +286,27 @@ async function castAudio() {
     return
   }
 
-  let requestUrl: string
   if (trackUrl.value.includes('?')) {
-    requestUrl = `${trackUrl.value}&token=${temporaryToken.value?.token}`
+    castUrl.value = `${trackUrl.value}&token=${temporaryToken.value?.token}`
   }
   else {
-    requestUrl = `${trackUrl.value}?token=${temporaryToken.value?.token}`
+    castUrl.value = `${trackUrl.value}?token=${temporaryToken.value?.token}`
   }
   // prefix base url to requestUrl
   if (window) {
     const protocol = window.location.protocol
     const host = window.location.host
-    requestUrl = `${protocol}//${host}${requestUrl}`
+    castUrl.value = `${protocol}//${host}${castUrl.value}`
   }
 
-  const contentType = await getMimeType(requestUrl)
+  const contentType = await getMimeType(castUrl.value)
   if (!contentType) {
     console.error('Could not determine content type for casting')
     return
   }
 
-  debugLog(`Casting URL: ${requestUrl} with content type: ${contentType}`)
-  const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
+  debugLog(`Casting URL: ${castUrl.value} with content type: ${contentType}`)
+  const mediaInfo = new chrome.cast.media.MediaInfo(castUrl.value, contentType)
 
   // Add metadata for better cast experience
   if (currentlyPlayingTrack.value) {
@@ -344,10 +344,6 @@ function initializeCast() {
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
 
-  // Listen for cast state changes
-  context.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-  context.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
-
   debugLog('CastContext initialized')
 }
 
@@ -364,12 +360,13 @@ function onSessionStateChanged(event: any) {
 function updateCastState() {
   const context = cast.framework.CastContext.getInstance()
   session.value = context.getCurrentSession()
-  isCasting.value = !!session.value
 
   if (session.value) {
+    isCasting.value = true
     setupCastPlayer()
   }
   else {
+    isCasting.value = false
     cleanupCastPlayer()
   }
 }
@@ -378,6 +375,9 @@ function setupCastPlayer() {
   if (!castPlayer.value) {
     castPlayer.value = new cast.framework.RemotePlayer()
     castPlayerController.value = new cast.framework.RemotePlayerController(castPlayer.value)
+
+    castPlayerController.value.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+    castPlayerController.value.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
 
     // Listen for remote player events
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
@@ -527,70 +527,73 @@ onUnmounted(() => {
     :class="{ 'animate-pulse-bg': currentlyPlayingTrack && isPlaying }"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
   >
+    <div>
+      {{ castUrl }}
+    </div>
     <div class="flex flex-col items-center border-0 border-t-1 border-white/20 border-solid px-2 backdrop-blur-2xl backdrop-contrast-30 md:flex-row space-y-2 md:px-4 md:space-x-2 md:space-y-0">
       <div
-        class="h-full w-full flex flex-grow flex-col items-center justify-center py-1 space-y-1 md:py-2 md:space-y-2"
+        class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 md:py-2 md:space-y-2"
       >
         <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
         <div class="">
           <!-- Progress Bar -->
-          <div v-if="audioRef" class="max-w-xs w-full flex flex-row items-center gap-1 lg:max-w-200 md:max-w-lg sm:max-w-md md:gap-2">
-            <span id="currentTime" class="w-8 text-right text-xs text-gray-2 md:w-12 sm:w-10 sm:text-sm">
+          <div v-if="audioRef" class="max-w-xs w-full flex flex-row items-center gap-2 lg:max-w-200 md:max-w-lg sm:max-w-md md:gap-2">
+            <span id="currentTime" class="w-10 text-right text-sm text-gray-2 md:w-12 sm:w-10 sm:text-sm">
               {{ formatTime(currentTime) }}
             </span>
             <input
               type="range"
-              class="h-1 w-full cursor-pointer bg-white/60 accent-zene-200"
+              class="h-2 w-full cursor-pointer bg-white/60 accent-zene-200 md:h-1"
               :max="currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0"
               :value="currentTime"
               @input="seek"
             />
-            <span id="duration" class="w-8 text-xs text-gray-2 md:w-12 sm:w-10 sm:text-sm">
+            <span id="duration" class="w-10 text-sm text-gray-2 md:w-12 sm:w-10 sm:text-sm">
               {{ formatTime(currentlyPlayingTrack ? Number.parseFloat(currentlyPlayingTrack.duration) : 0) }}
             </span>
           </div>
 
           <!-- Buttons -->
-          <div class="mt-1 flex flex-row items-center justify-center gap-x-1 md:mt-2 md:gap-x-4 sm:gap-x-2">
-            <button id="repeat" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="stopPlayback()">
-              <icon-tabler-player-stop class="text-sm md:text-xl sm:text-lg" />
+          <div class="mt-2 flex flex-row items-center justify-center gap-x-2 md:mt-2 md:gap-x-4 sm:gap-x-2">
+            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="stopPlayback()">
+              <icon-tabler-player-stop class="text-lg md:text-xl sm:text-lg" />
             </button>
-            <button id="shuffle" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-tabler-arrows-shuffle class="text-sm md:text-xl sm:text-lg" />
+            <button id="shuffle" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
+              <icon-tabler-arrows-shuffle class="text-lg md:text-xl sm:text-lg" />
             </button>
-            <button id="back" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
-              <icon-tabler-player-skip-back class="text-sm md:text-xl sm:text-lg" />
+            <button id="back" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
+              <icon-tabler-player-skip-back class="text-lg md:text-xl sm:text-lg" />
             </button>
             <button
               id="play-pause"
-              class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-md border-none text-white font-semibold outline-none md:h-12 md:w-12 sm:h-12 sm:w-12"
+              class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-md border-none text-white font-semibold outline-none md:h-12 md:w-12 sm:h-12 sm:w-12"
               :class="isPlayPauseActive ? 'bg-zene-200' : 'bg-zene-400 transition-colors duration-200'"
               @click="togglePlayback()"
             >
-              <icon-tabler-player-play v-if="!isPlaying" class="text-xl md:text-3xl sm:text-2xl" />
-              <icon-tabler-player-pause v-else class="text-xl md:text-3xl sm:text-2xl" />
+              <icon-tabler-player-play v-if="!isPlaying" class="text-2xl md:text-3xl sm:text-2xl" />
+              <icon-tabler-player-pause v-else class="text-2xl md:text-3xl sm:text-2xl" />
             </button>
-            <button id="forward" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
-              <icon-tabler-player-skip-forward class="text-sm md:text-xl sm:text-lg" />
+            <button id="forward" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
+              <icon-tabler-player-skip-forward class="text-lg md:text-xl sm:text-lg" />
             </button>
-            <button id="repeat" class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-tabler-repeat class="text-sm md:text-xl sm:text-lg" />
+            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
+              <icon-tabler-repeat class="text-lg md:text-xl sm:text-lg" />
             </button>
             <button
               id="shuffle"
-              class="h-8 w-8 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
+              class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
               @click="handleGetRandomTracks()"
             >
-              <icon-tabler-dice-3 class="text-sm md:text-xl sm:text-lg" />
+              <icon-tabler-dice-3 class="text-lg md:text-xl sm:text-lg" />
             </button>
           </div>
         </div>
       </div>
 
       <!-- Cast button, Playlist button, and Volume controls in a row -->
-      <div class="flex flex-row items-center gap-x-2 md:gap-x-4">
+      <div class="flex flex-row items-center gap-x-3 md:gap-x-4">
         <!-- Cast button -->
-        <div class="inline-block size-20px flex cursor-pointer items-center sm:size-24px">
+        <div class="inline-block size-22px flex cursor-pointer items-center sm:size-24px">
           <google-cast-launcher />
         </div>
 
@@ -598,22 +601,22 @@ onUnmounted(() => {
         <div>
           <RouterLink
             to="/queue"
-            class="block flex gap-x-1 rounded-lg px-2 py-1 text-white no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
+            class="block flex gap-x-1 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
           >
-            <icon-tabler-playlist class="text-lg sm:text-xl" />
+            <icon-tabler-playlist class="text-xl sm:text-xl" />
           </RouterLink>
         </div>
 
         <!-- Volume controls -->
-        <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-1 md:gap-2">
+        <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 md:gap-2">
           <div @click="toggleMute()">
-            <icon-tabler-volume v-if="audioRef.volume > 0.5" class="text-xs sm:text-sm" />
-            <icon-tabler-volume-2 v-else-if="audioRef.volume > 0" class="text-xs sm:text-sm" />
-            <icon-tabler-volume-3 v-else class="text-xs sm:text-sm" />
+            <icon-tabler-volume v-if="audioRef.volume > 0.5" class="text-sm sm:text-sm" />
+            <icon-tabler-volume-2 v-else-if="audioRef.volume > 0" class="text-sm sm:text-sm" />
+            <icon-tabler-volume-3 v-else class="text-sm sm:text-sm" />
           </div>
           <input
             type="range"
-            class="h-1 w-20 cursor-pointer bg-white/60 accent-zene-200 md:w-30 sm:w-24"
+            class="h-2 w-20 cursor-pointer bg-white/60 accent-zene-200 md:w-30 sm:w-24"
             max="1"
             step="0.01"
             :value="currentVolume"
