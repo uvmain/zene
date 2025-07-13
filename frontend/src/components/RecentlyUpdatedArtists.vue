@@ -20,10 +20,8 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="py-2 text-lg font-semibold">
-      Recently Updated Artists
-    </h2>
-    <div class="flex flex-wrap gap-6">
+    <RefreshHeader title="Recently Updated Artists" @refreshed="getArtists()" />
+    <div class="flex flex-wrap justify-center gap-6 md:justify-start">
       <div v-for="artist in artists" :key="artist.musicbrainz_artist_id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <ArtistThumb :artist="artist" class="h-40 cursor-pointer" @click="() => router.push(`/artists/${artist.musicbrainz_artist_id}`)" />
       </div>

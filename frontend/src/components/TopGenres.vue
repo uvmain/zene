@@ -18,10 +18,8 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="py-2 text-lg font-semibold">
-      Top Genres
-    </h2>
-    <div class="flex flex-wrap gap-2">
+    <RefreshHeader title="Top Genres" @refreshed="getGenres()" />
+    <div class="flex flex-wrap justify-center gap-2 md:justify-start">
       <GenreBottle v-for="genre in topGenres" :key="genre" :genre="genre.genre" />
     </div>
   </div>

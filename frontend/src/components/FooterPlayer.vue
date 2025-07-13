@@ -29,6 +29,7 @@ const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
 const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
 const isCasting = ref(false)
 const castProgressInterval = ref<NodeJS.Timeout | null>(null)
+const castUrl = ref<string | null>()
 const temporaryToken = ref<TokenResponse | null>(null)
 
 const trackUrl = computed<string>(() => {
@@ -285,28 +286,27 @@ async function castAudio() {
     return
   }
 
-  let requestUrl: string
   if (trackUrl.value.includes('?')) {
-    requestUrl = `${trackUrl.value}&token=${temporaryToken.value?.token}`
+    castUrl.value = `${trackUrl.value}&token=${temporaryToken.value?.token}`
   }
   else {
-    requestUrl = `${trackUrl.value}?token=${temporaryToken.value?.token}`
+    castUrl.value = `${trackUrl.value}?token=${temporaryToken.value?.token}`
   }
   // prefix base url to requestUrl
   if (window) {
     const protocol = window.location.protocol
     const host = window.location.host
-    requestUrl = `${protocol}//${host}${requestUrl}`
+    castUrl.value = `${protocol}//${host}${castUrl.value}`
   }
 
-  const contentType = await getMimeType(requestUrl)
+  const contentType = await getMimeType(castUrl.value)
   if (!contentType) {
     console.error('Could not determine content type for casting')
     return
   }
 
-  debugLog(`Casting URL: ${requestUrl} with content type: ${contentType}`)
-  const mediaInfo = new chrome.cast.media.MediaInfo(requestUrl, contentType)
+  debugLog(`Casting URL: ${castUrl.value} with content type: ${contentType}`)
+  const mediaInfo = new chrome.cast.media.MediaInfo(castUrl.value, contentType)
 
   // Add metadata for better cast experience
   if (currentlyPlayingTrack.value) {
@@ -344,10 +344,6 @@ function initializeCast() {
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
 
-  // Listen for cast state changes
-  context.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-  context.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
-
   debugLog('CastContext initialized')
 }
 
@@ -364,12 +360,13 @@ function onSessionStateChanged(event: any) {
 function updateCastState() {
   const context = cast.framework.CastContext.getInstance()
   session.value = context.getCurrentSession()
-  isCasting.value = !!session.value
 
   if (session.value) {
+    isCasting.value = true
     setupCastPlayer()
   }
   else {
+    isCasting.value = false
     cleanupCastPlayer()
   }
 }
@@ -378,6 +375,9 @@ function setupCastPlayer() {
   if (!castPlayer.value) {
     castPlayer.value = new cast.framework.RemotePlayer()
     castPlayerController.value = new cast.framework.RemotePlayerController(castPlayer.value)
+
+    castPlayerController.value.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+    castPlayerController.value.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
 
     // Listen for remote player events
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
@@ -527,6 +527,9 @@ onUnmounted(() => {
     :class="{ 'animate-pulse-bg': currentlyPlayingTrack && isPlaying }"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
   >
+    <div>
+      {{ castUrl }}
+    </div>
     <div class="flex flex-col items-center border-0 border-t-1 border-white/20 border-solid px-2 backdrop-blur-2xl backdrop-contrast-30 md:flex-row space-y-2 md:px-4 md:space-x-2 md:space-y-0">
       <div
         class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 md:py-2 md:space-y-2"

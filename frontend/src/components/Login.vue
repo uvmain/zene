@@ -33,7 +33,7 @@ onBeforeMount(() => {
 
 <template>
   <div class="fixed left-0 top-0 z-999 size-full animate-fade-in backdrop-blur-xl">
-    <div class="mx-auto mb-auto mt-150px w-full max-w-sm border rounded px-6 pb-6 pt-4 md:w-300px md:px-30px md:pb-30px md:pt-20px">
+    <div class="mx-auto mb-auto mt-150px max-w-sm w-full border rounded px-6 pb-6 pt-4 md:w-300px md:px-30px md:pb-30px md:pt-20px">
       <div class="flex flex-col gap-4 p-4 md:w-300 md:p-6">
         <form class="flex flex-col gap-3">
           <div class="flex flex-col gap-2 md:flex-row md:items-center md:gap-2">
@@ -47,7 +47,7 @@ onBeforeMount(() => {
         </form>
       </div>
       <div class="flex justify-center gap-4">
-        <button aria-label="login" class="min-h-11 px-6 py-3 rounded bg-zene-400 text-white font-semibold hover:bg-zene-200 transition-colors md:px-4 md:py-2" @click="login(username, password)">
+        <button aria-label="login" class="min-h-11 rounded bg-zene-400 px-6 py-3 text-white font-semibold transition-colors hover:bg-zene-200 md:px-4 md:py-2" @click="login(username, password)">
           Login
         </button>
       </div>
