@@ -70,14 +70,14 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="albumArray.length" class="h-48 overflow-hidden rounded-lg md:h-65">
+  <section v-if="albumArray.length" class="overflow-hidden rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${albumArray[index].image_url})` }"
     >
       <div class="h-full w-full flex items-center justify-between backdrop-blur-md">
         <Album :album="albumArray[index]" size="xl" />
-        <div class="m-3 mb-auto flex gap-2 rounded-full bg-zene-800/50 p-3 text-white md:m-6 md:p-2">
+        <div class="m-3 mb-auto flex gap-2 rounded-full bg-zene-800/50 p-3 text-white md:m-6 md:mb-auto md:p-2">
           <icon-tabler-chevron-left
             class="cursor-pointer text-2xl opacity-80 md:text-3xl active:opacity-100"
             :class="{ 'text-gray': index === 0 }"
