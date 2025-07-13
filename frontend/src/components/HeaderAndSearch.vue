@@ -12,14 +12,14 @@ const toggleDark = useToggle(isDark)
 
 <template>
   <header>
-    <div class="flex gap-4 p-2">
+    <div class="flex gap-2 md:gap-4 p-2">
       <!-- Mobile hamburger menu -->
       <div class="flex md:hidden">
         <icon-tabler-menu-2 class="text-2xl" @click="toggleMobileNav()" />
       </div>
 
       <div class="flex flex-grow justify-center">
-        <div class="relative max-w-md w-full md:w-1/2">
+        <div class="relative w-full max-w-xs md:max-w-md md:w-1/2">
           <span class="absolute inset-y-0 left-0 flex justify-center pl-3 text-gray-400">
             <icon-tabler-search class="text-xl" />
           </span>
