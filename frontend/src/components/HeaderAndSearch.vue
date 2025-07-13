@@ -28,7 +28,7 @@ const toggleDark = useToggle(isDark)
             v-model="searchInput"
             placeholder="Type here to search"
             type="text"
-            class="border border-zene-400 rounded-lg bg-gray-800 py-2 pl-10 text-white focus:border-zene-200 focus:border-solid focus:shadow-zene-400 hover:shadow-lg focus:outline-none"
+            class="border border-zene-400 rounded-lg bg-gray-800 py-2 pl-10 text-white focus:border-zene-200 focus:border-solid md:pr-full focus:shadow-zene-400 hover:shadow-lg focus:outline-none"
             @change="search()"
             @input="search()"
             @keydown.escape="searchInput = ''"
