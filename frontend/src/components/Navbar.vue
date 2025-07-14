@@ -26,17 +26,15 @@ function handleLinkClick() {
 
   <!-- Navbar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col from-zene-600 to-zene-700 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex md:justify-between"
+    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col from-zene-600 to-zene-700 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
     :class="{
       'translate-x-0': isMobileNavOpen,
       '-translate-x-full md:translate-x-0': !isMobileNavOpen,
     }"
   >
     <!-- Mobile close button -->
-    <div class="mb-4 flex justify-end md:hidden">
-      <button class="p-2" @click="closeMobileNav">
-        <icon-tabler-x class="text-2xl text-white transition-colors hover:text-zene-200" />
-      </button>
+    <div class="mb-4 flex justify-start md:hidden">
+      <icon-tabler-x class="text-2xl text-white transition-colors hover:text-zene-200" @click="closeMobileNav" />
     </div>
 
     <div class="flex flex-col space-y-6">
@@ -103,6 +101,6 @@ function handleLinkClick() {
         </RouterLink>
       </nav>
     </div>
-    <NavArt />
+    <NavArt class="mt-auto" />
   </aside>
 </template>
