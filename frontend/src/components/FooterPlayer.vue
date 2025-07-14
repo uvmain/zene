@@ -465,7 +465,7 @@ function setupCastPlayer() {
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
-    
+
     // Listen for media info changes to detect track changes on the remote player
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onCastMediaInfoChanged)
 
@@ -573,27 +573,27 @@ async function onCastMediaInfoChanged() {
   }
 
   debugLog('Cast media info changed, checking for track changes')
-  
+
   const remoteMediaUrl = castPlayer.value.mediaInfo.contentId
   const currentTrackUrl = trackUrl.value
-  
+
   // Check if the media URL on the remote player is different from our current track
   if (remoteMediaUrl && currentTrackUrl && !remoteMediaUrl.includes(currentTrackUrl)) {
     debugLog('Remote player track changed, syncing local queue')
-    
+
     // Extract track ID from the remote media URL
     // The URL format should be something like: /api/v1/tracks/{track_id}/audio
-    const trackIdMatch = remoteMediaUrl.match(/\/tracks\/([^\/]+)\/audio/)
+    const trackIdMatch = remoteMediaUrl.match(/\/tracks\/([^/]+)\/audio/)
     if (trackIdMatch && trackIdMatch[1]) {
       const remoteTrackId = trackIdMatch[1]
-      
+
       // Check if this track change matches what we expect from our queue
       if (currentQueue.value && currentQueue.value.tracks.length > 0) {
         const nextTrackIndex = currentQueue.value.position + 1
         const prevTrackIndex = currentQueue.value.position - 1
-        
+
         let targetTrack: TrackMetadataWithImageUrl | undefined
-        
+
         // Check if the remote track matches the next track in our queue
         if (nextTrackIndex < currentQueue.value.tracks.length) {
           const nextTrack = currentQueue.value.tracks[nextTrackIndex]
@@ -603,7 +603,7 @@ async function onCastMediaInfoChanged() {
             debugLog('Remote player advanced to next track in queue')
           }
         }
-        
+
         // Check if the remote track matches the previous track in our queue
         if (!targetTrack && prevTrackIndex >= 0) {
           const prevTrack = currentQueue.value.tracks[prevTrackIndex]
@@ -613,7 +613,7 @@ async function onCastMediaInfoChanged() {
             debugLog('Remote player went back to previous track in queue')
           }
         }
-        
+
         // Check if it's a track at the beginning or end (queue wrapping)
         if (!targetTrack) {
           for (let i = 0; i < currentQueue.value.tracks.length; i++) {
@@ -625,18 +625,21 @@ async function onCastMediaInfoChanged() {
             }
           }
         }
-        
+
         // Update the currently playing track if we found a match
         if (targetTrack) {
           setCurrentlyPlayingTrack(targetTrack)
           debugLog('Local queue synced with remote player')
-        } else {
+        }
+        else {
           debugLog('Remote track not found in current queue, may need to handle queue changes')
         }
-      } else {
+      }
+      else {
         debugLog('No current queue available for syncing')
       }
-    } else {
+    }
+    else {
       debugLog('Could not extract track ID from remote media URL:', remoteMediaUrl)
     }
   }
