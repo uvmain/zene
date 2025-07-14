@@ -95,9 +95,23 @@ declare global {
 
     interface CastSession {
       loadMedia: (request: chrome.cast.media.LoadRequest) => Promise<any>
-      getMediaSession: () => any
+      getMediaSession: () => MediaSession | null
       addUpdateListener: (listener: (isAlive: boolean) => void) => void
       removeUpdateListener: (listener: (isAlive: boolean) => void) => void
+      addMediaListener: (listener: (event: any) => void) => void
+      removeMediaListener: (listener: (event: any) => void) => void
+    }
+
+    interface MediaSession {
+      media: MediaInfo | null
+      addEventListener: (eventType: string, listener: (event: any) => void) => void
+      removeEventListener: (eventType: string, listener: (event: any) => void) => void
+    }
+
+    interface MediaInfo {
+      contentId: string
+      contentType: string
+      metadata?: any
     }
 
     enum CastContextEventType {
@@ -136,6 +150,7 @@ declare global {
       playerState: string
       title: string
       volumeLevel: number
+      mediaInfo: MediaInfo | null
       constructor()
     }
 
@@ -165,6 +180,7 @@ declare global {
       CAN_CONTROL_VOLUME_CHANGED = 'canControlVolumeChanged',
       CAN_PAUSE_CHANGED = 'canPauseChanged',
       CAN_SEEK_CHANGED = 'canSeekChanged',
+      MEDIA_INFO_CHANGED = 'mediaInfoChanged',
     }
   }
 
