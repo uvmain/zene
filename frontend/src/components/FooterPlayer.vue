@@ -289,8 +289,9 @@ async function castAudio() {
     return
   }
 
-  // Capture current local playback position before switching to cast
-  if (audioRef.value && !audioRef.value.paused) {
+  // Capture current local playback state and position before switching to cast
+  const wasPlayingLocally = audioRef.value && !audioRef.value.paused
+  if (wasPlayingLocally) {
     savedLocalPosition.value = audioRef.value.currentTime
     debugLog(`Captured local position: ${savedLocalPosition.value}s`)
   }
@@ -352,6 +353,12 @@ async function castAudio() {
 
     // Update cast state
     updateCastState()
+
+    // Automatically start cast playback if local audio was playing
+    if (wasPlayingLocally && castPlayerController.value) {
+      debugLog('Auto-starting cast playback since local audio was playing')
+      castPlayerController.value.playOrPause()
+    }
 
     isTransitioningToCast.value = false
   }
