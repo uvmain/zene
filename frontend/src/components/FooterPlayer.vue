@@ -9,7 +9,7 @@ import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
 
-const { getMimeType, getTemporaryToken } = useBackendFetch()
+const { getMimeType, getTemporaryToken, refreshTemporaryToken } = useBackendFetch()
 const { debugLog } = useDebug()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, refreshRandomSeed, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { streamQuality } = useSettings()
@@ -287,6 +287,18 @@ async function castAudio() {
   if (!trackUrl.value) {
     console.error('No track URL available for casting')
     return
+  }
+
+  // Refresh the temporary token before casting to ensure it's valid
+  if (temporaryToken.value?.token) {
+    try {
+      temporaryToken.value = await refreshTemporaryToken(temporaryToken.value.token, 30)
+      debugLog('Temporary token refreshed for casting')
+    }
+    catch (err) {
+      console.error('Failed to refresh temporary token:', err)
+      // Continue with existing token as fallback
+    }
   }
 
   // Capture current local playback state and position before switching to cast
