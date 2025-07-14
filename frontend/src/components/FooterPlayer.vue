@@ -31,6 +31,9 @@ const isCasting = ref(false)
 const castProgressInterval = ref<NodeJS.Timeout | null>(null)
 const castUrl = ref<string | null>()
 const temporaryToken = ref<TokenResponse | null>(null)
+const savedLocalPosition = ref<number>(0)
+const isTransitioningToCast = ref<boolean>(false)
+const isTransitioningFromCast = ref<boolean>(false)
 
 const trackUrl = computed<string>(() => {
   return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream?quality=${streamQuality.value}` : ''
@@ -286,6 +289,17 @@ async function castAudio() {
     return
   }
 
+  // Capture current local playback position before switching to cast
+  if (audioRef.value && !audioRef.value.paused) {
+    savedLocalPosition.value = audioRef.value.currentTime
+    debugLog(`Captured local position: ${savedLocalPosition.value}s`)
+  }
+  else {
+    savedLocalPosition.value = currentTime.value
+  }
+
+  isTransitioningToCast.value = true
+
   if (trackUrl.value.includes('?')) {
     castUrl.value = `${trackUrl.value}&token=${temporaryToken.value?.token}`
   }
@@ -302,6 +316,7 @@ async function castAudio() {
   const contentType = await getMimeType(castUrl.value)
   if (!contentType) {
     console.error('Could not determine content type for casting')
+    isTransitioningToCast.value = false
     return
   }
 
@@ -319,6 +334,12 @@ async function castAudio() {
 
   const request = new chrome.cast.media.LoadRequest(mediaInfo)
 
+  // Set the starting position for cast playback
+  if (savedLocalPosition.value > 0) {
+    request.currentTime = savedLocalPosition.value
+    debugLog(`Setting cast start position to: ${savedLocalPosition.value}s`)
+  }
+
   try {
     await session.value.loadMedia(request)
     debugLog('Media loaded to cast device')
@@ -331,9 +352,12 @@ async function castAudio() {
 
     // Update cast state
     updateCastState()
+
+    isTransitioningToCast.value = false
   }
   catch (err) {
     console.error('Error loading media:', err)
+    isTransitioningToCast.value = false
   }
 }
 
@@ -353,21 +377,57 @@ function onCastStateChanged(event: any) {
 }
 
 function onSessionStateChanged(event: any) {
-  debugLog(`Session state changed:', ${event.sessionState}`)
+  debugLog(`Session state changed: ${event.sessionState}`)
+
+  // Handle specific session states for better transition management
+  if (event.sessionState === cast.framework.SessionState.SESSION_ENDED
+    || event.sessionState === cast.framework.SessionState.SESSION_ENDING) {
+    debugLog('Cast session ending/ended')
+
+    // Capture final cast position if available
+    if (castPlayer.value && castPlayer.value.isConnected) {
+      savedLocalPosition.value = castPlayer.value.currentTime
+      debugLog(`Final cast position captured: ${savedLocalPosition.value}s`)
+    }
+  }
+
   updateCastState()
 }
 
 function updateCastState() {
   const context = cast.framework.CastContext.getInstance()
-  session.value = context.getCurrentSession()
+  const currentSession = context.getCurrentSession()
+
+  // Check if we're transitioning from casting to local
+  if (session.value && !currentSession && isCasting.value) {
+    // Cast session ended, prepare to resume local playback
+    isTransitioningFromCast.value = true
+    debugLog('Cast session ended, preparing to resume local playback')
+
+    // Capture the last known cast position before cleanup
+    if (castPlayer.value && castPlayer.value.isConnected) {
+      savedLocalPosition.value = castPlayer.value.currentTime
+      debugLog(`Captured cast position: ${savedLocalPosition.value}s`)
+    }
+  }
+
+  session.value = currentSession
 
   if (session.value) {
     isCasting.value = true
     setupCastPlayer()
   }
   else {
+    const wasPlayingBeforeTransition = isCasting.value && isPlaying.value
     isCasting.value = false
     cleanupCastPlayer()
+
+    // Resume local playback if we were playing before and have a track
+    if (isTransitioningFromCast.value && wasPlayingBeforeTransition && currentlyPlayingTrack.value && audioRef.value) {
+      resumeLocalPlayback()
+    }
+
+    isTransitioningFromCast.value = false
   }
 }
 
@@ -384,9 +444,43 @@ function setupCastPlayer() {
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
+    castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
 
     // Start progress tracking for cast
     startCastProgressTracking()
+  }
+}
+
+function resumeLocalPlayback() {
+  if (!audioRef.value || !currentlyPlayingTrack.value) {
+    debugLog('Cannot resume local playback: missing audio element or track')
+    return
+  }
+
+  debugLog(`Resuming local playback from position: ${savedLocalPosition.value}s`)
+
+  // Set the position and play
+  audioRef.value.currentTime = savedLocalPosition.value
+  currentTime.value = savedLocalPosition.value
+
+  // Use a promise to handle the play() call properly
+  audioRef.value.play().then(() => {
+    debugLog('Local playback resumed successfully')
+    updateIsPlaying()
+  }).catch((error) => {
+    console.error('Error resuming local playback:', error)
+    isPlaying.value = false
+  })
+}
+
+function onCastConnectionChanged() {
+  if (castPlayer.value && !castPlayer.value.isConnected) {
+    debugLog('Cast device disconnected unexpectedly')
+    // Capture position before losing connection
+    if (castPlayer.value.currentTime > 0) {
+      savedLocalPosition.value = castPlayer.value.currentTime
+      debugLog(`Position captured on disconnect: ${savedLocalPosition.value}s`)
+    }
   }
 }
 
@@ -396,6 +490,7 @@ function cleanupCastPlayer() {
     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
+    castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
   }
 
   stopCastProgressTracking()
