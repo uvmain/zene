@@ -482,6 +482,8 @@ function onCastConnectionChanged() {
       debugLog(`Position captured on disconnect: ${savedLocalPosition.value}s`)
     }
   }
+  // Update cast state to handle potential transition back to local playback
+  updateCastState()
 }
 
 function cleanupCastPlayer() {
