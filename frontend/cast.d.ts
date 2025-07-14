@@ -51,6 +51,9 @@ declare global {
 
     class LoadRequest {
       media: MediaInfo
+      currentTime?: number
+      autoplay?: boolean
+      playbackRate?: number
       constructor(mediaInfo: MediaInfo)
     }
 
