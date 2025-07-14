@@ -624,9 +624,6 @@ onUnmounted(() => {
     :class="{ 'animate-pulse-bg': currentlyPlayingTrack && isPlaying }"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
   >
-    <div>
-      {{ castUrl }}
-    </div>
     <div class="flex flex-col items-center border-0 border-t-1 border-white/20 border-solid px-2 backdrop-blur-2xl backdrop-contrast-30 md:flex-row space-y-2 md:px-4 md:space-x-2 md:space-y-0">
       <div
         class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 md:py-2 md:space-y-2"
