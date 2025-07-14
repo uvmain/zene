@@ -41,7 +41,7 @@ func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbReleas
 	}
 
 	logger.Printf("Fetching metadata from MB for album ID: %s", musicBrainzAlbumId)
-	url := fmt.Sprintf("http://musicbrainz.org/ws/2/release/%s?fmt=json", musicBrainzAlbumId)
+	url := fmt.Sprintf("http://musicbrainz.org/ws/2/release/%s?fmt=json&inc=recordings", musicBrainzAlbumId)
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)

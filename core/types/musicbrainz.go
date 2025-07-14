@@ -53,6 +53,45 @@ type MbRelease struct {
 	Packaging      string  `json:"packaging"`
 	Disambiguation string  `json:"disambiguation"`
 	Quality        string  `json:"quality"`
+	Media          []struct {
+		Format   string `json:"format"`
+		Position int    `json:"position"`
+		Pregap   struct {
+			ID        string `json:"id"`
+			Title     string `json:"title"`
+			Length    int    `json:"length"`
+			Recording struct {
+				Disambiguation   string `json:"disambiguation"`
+				FirstReleaseDate string `json:"first-release-date"`
+				Title            string `json:"title"`
+				ID               string `json:"id"`
+				Length           int    `json:"length"`
+				Video            bool   `json:"video"`
+			} `json:"recording"`
+			Number   string `json:"number"`
+			Position int    `json:"position"`
+		} `json:"pregap"`
+		TrackCount  int    `json:"track-count"`
+		TrackOffset int    `json:"track-offset"`
+		ID          string `json:"id"`
+		FormatID    string `json:"format-id"`
+		Title       string `json:"title"`
+		Tracks      []struct {
+			Position  int    `json:"position"`
+			ID        string `json:"id"`
+			Length    int    `json:"length"`
+			Recording struct {
+				Disambiguation   string `json:"disambiguation"`
+				FirstReleaseDate string `json:"first-release-date"`
+				ID               string `json:"id"`
+				Length           int    `json:"length"`
+				Title            string `json:"title"`
+				Video            bool   `json:"video"`
+			} `json:"recording"`
+			Title  string `json:"title"`
+			Number string `json:"number"`
+		} `json:"tracks"`
+	} `json:"media"`
 }
 
 /* cspell: disable */

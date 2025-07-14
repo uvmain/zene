@@ -138,6 +138,30 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 		parsedReleaseDate = musicBrainzData.Date
 	}
 
+	if trackNumber == "" {
+		musicBrainzData, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
+		if err != nil {
+			logger.Printf("Error fetching parsedReleaseDate from musicbrainz: %v", err)
+			return types.Tags{}, err
+		}
+		//if musicBrainzData.Media[0].tracks contains trackNumber, use that
+		for _, media := range musicBrainzData.Media {
+			for _, track := range media.Tracks {
+				if track.Recording.ID == musicBrainzTrackId {
+					trackNumber = track.Number
+					break
+				}
+			}
+			if trackNumber != "" {
+				break
+			}
+		}
+		// else check if musicBrainzData.Media[0].Pregap contains trackNumber
+		if trackNumber == "" && len(musicBrainzData.Media) > 0 && musicBrainzData.Media[0].Pregap.Recording.ID == musicBrainzTrackId {
+			trackNumber = musicBrainzData.Media[0].Pregap.Number
+		}
+	}
+
 	parsedTags := types.Tags{
 		Format:              ffprobeOutput.FormatName,
 		Duration:            ffprobeOutput.Duration,
