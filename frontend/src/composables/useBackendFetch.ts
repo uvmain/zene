@@ -65,6 +65,18 @@ export function useBackendFetch() {
     return await response.json() as TokenResponse
   }
 
+  const refreshTemporaryToken = async (currentToken: string, duration = 30): Promise<TokenResponse> => {
+    const formData = new FormData()
+    formData.append('token', currentToken)
+    formData.append('duration', duration.toString())
+
+    const response = await backendFetchRequest('temporary_token', {
+      method: 'POST',
+      body: formData,
+    })
+    return await response.json() as TokenResponse
+  }
+
   const getMimeType = async (url: string): Promise<string> => {
     const response = await fetch(url, { method: 'HEAD' })
     const contentType = response.headers.get('content-type') ?? response.headers.get('Content-Type') ?? ''
@@ -80,6 +92,7 @@ export function useBackendFetch() {
     getGenreTracks,
     getUsers,
     getTemporaryToken,
+    refreshTemporaryToken,
     getMimeType,
   }
 }

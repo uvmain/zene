@@ -69,8 +69,8 @@ func GetTemporaryTokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ExtendTemporaryTokenDurationHandler(w http.ResponseWriter, r *http.Request) {
-	duration := r.URL.Query().Get("duration")
-	token := r.URL.Query().Get("token")
+	duration := r.FormValue("duration")
+	token := r.FormValue("token")
 
 	durationInt := 5 // default to 5 minutes
 	if duration != "" {
