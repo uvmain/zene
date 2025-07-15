@@ -8,6 +8,8 @@ import (
 	"time"
 	"zene/core/logger"
 	"zene/core/types"
+
+	"zombiezen.com/go/sqlite"
 )
 
 func createMetadataTable(ctx context.Context) error {
@@ -117,6 +119,12 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 		return fmt.Errorf("inserting metadata row: %v", err)
 	}
 
+	// Update genres table
+	err = updateGenresForMetadata(ctx, conn, metadata.FilePath, metadata.Genre)
+	if err != nil {
+		return fmt.Errorf("updating genres for metadata: %v", err)
+	}
+
 	return nil
 }
 
@@ -176,6 +184,12 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 		return fmt.Errorf("updating metadata for %s: %w", metadata.FilePath, err)
 	}
 
+	// Update genres table
+	err = updateGenresForMetadata(ctx, conn, metadata.FilePath, metadata.Genre)
+	if err != nil {
+		return fmt.Errorf("updating genres for metadata: %v", err)
+	}
+
 	logger.Printf("Updated metadata for %s", metadata.FilePath)
 	return nil
 }
@@ -229,4 +243,41 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 		}
 	}
 	return fileModTimes, nil
+}
+
+// updateGenresForMetadata updates the genres table for a given file_path
+func updateGenresForMetadata(ctx context.Context, conn *sqlite.Conn, filePath, genreString string) error {
+	// First, delete existing genres for this file_path
+	deleteStmt := conn.Prep("DELETE FROM genres WHERE file_path = $file_path;")
+	defer deleteStmt.Finalize()
+	deleteStmt.SetText("$file_path", filePath)
+	_, err := deleteStmt.Step()
+	if err != nil {
+		return fmt.Errorf("deleting existing genres for %s: %v", filePath, err)
+	}
+
+	// If no genre string, we're done
+	if genreString == "" {
+		return nil
+	}
+
+	// Split genres by semicolon and insert each one
+	genres := strings.Split(genreString, ";")
+	insertStmt := conn.Prep("INSERT INTO genres (file_path, genre) VALUES ($file_path, $genre);")
+	defer insertStmt.Finalize()
+
+	for _, genre := range genres {
+		trimmedGenre := strings.TrimSpace(genre)
+		if trimmedGenre != "" {
+			insertStmt.SetText("$file_path", filePath)
+			insertStmt.SetText("$genre", trimmedGenre)
+			_, err = insertStmt.Step()
+			if err != nil {
+				return fmt.Errorf("inserting genre %s for %s: %v", trimmedGenre, filePath, err)
+			}
+			insertStmt.Reset()
+		}
+	}
+
+	return nil
 }
