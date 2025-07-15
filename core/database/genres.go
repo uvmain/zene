@@ -153,57 +153,13 @@ func deleteGenresForFilePath(ctx context.Context, filePath string) error {
 }
 
 func createGenresTriggers(ctx context.Context) {
-	// Trigger for INSERT on metadata table
-	insertTriggerSQL := `
-		CREATE TRIGGER IF NOT EXISTS metadata_insert_genres
-		AFTER INSERT ON metadata
-		FOR EACH ROW
-		BEGIN
-			DELETE FROM genres WHERE file_path = NEW.file_path;
-			INSERT INTO genres (file_path, genre)
-			SELECT NEW.file_path, TRIM(value) 
-			FROM (
-				WITH RECURSIVE split(file_path, genre, str) AS (
-					SELECT NEW.file_path, '', NEW.genre || ';'
-					UNION ALL
-					SELECT file_path,
-						TRIM(SUBSTR(str, 0, INSTR(str, ';'))),
-						SUBSTR(str, INSTR(str, ';') + 1)
-					FROM split 
-					WHERE str != ''
-				)
-				SELECT genre as value FROM split WHERE genre != ''
-			);
-		END;`
+	// For SQLite, we'll use a simpler approach with triggers that call custom functions
+	// Since SQLite doesn't support complex string splitting in triggers easily,
+	// we'll rely on the application code to update the genres table
 	
-	// Trigger for UPDATE on metadata table
-	updateTriggerSQL := `
-		CREATE TRIGGER IF NOT EXISTS metadata_update_genres
-		AFTER UPDATE ON metadata
-		FOR EACH ROW
-		WHEN OLD.genre != NEW.genre
-		BEGIN
-			DELETE FROM genres WHERE file_path = NEW.file_path;
-			INSERT INTO genres (file_path, genre)
-			SELECT NEW.file_path, TRIM(value)
-			FROM (
-				WITH RECURSIVE split(file_path, genre, str) AS (
-					SELECT NEW.file_path, '', NEW.genre || ';'
-					UNION ALL
-					SELECT file_path,
-						TRIM(SUBSTR(str, 0, INSTR(str, ';'))),
-						SUBSTR(str, INSTR(str, ';') + 1)
-					FROM split 
-					WHERE str != ''
-				)
-				SELECT genre as value FROM split WHERE genre != ''
-			);
-		END;`
-	
-	// Trigger for DELETE on metadata table - handled by foreign key cascade
-	
-	createTrigger(ctx, "metadata_insert_genres", insertTriggerSQL)
-	createTrigger(ctx, "metadata_update_genres", updateTriggerSQL)
+	// Note: In production, these triggers would call application-level functions
+	// For now, we'll implement the genre updates in the InsertMetadataRow, 
+	// UpdateMetadataRow, and DeleteMetadataRow functions
 }
 
 func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam string) ([]types.GenreResponse, error) {
