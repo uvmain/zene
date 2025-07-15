@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 func getUnendedMetadataWithPlaycountsSql(userId int64) string {
@@ -13,21 +14,30 @@ func getUnendedMetadataWithPlaycountsSql(userId int64) string {
 
 func getMetadataWithGenresSql(userId int64, genres []string, condition string, limit int64, random string) string {
 	stmt := getUnendedMetadataWithPlaycountsSql(userId)
-	for index, genre := range genres {
-		if genre == "" {
-			continue
-		}
-		if index != 0 {
-			if condition == "or" {
-				stmt += " OR "
-			} else {
-				stmt += " AND "
+	
+	if len(genres) > 0 {
+		stmt += " WHERE m.file_path IN ("
+		stmt += "SELECT DISTINCT g.file_path FROM genres g WHERE "
+		
+		var genreConditions []string
+		for _, genre := range genres {
+			if genre != "" {
+				genreConditions = append(genreConditions, fmt.Sprintf("g.genre = '%s'", strings.ReplaceAll(genre, "'", "''")))
 			}
-		} else {
-			stmt += " WHERE "
 		}
-		stmt += fmt.Sprintf("(genre LIKE '%s;%%' OR genre LIKE '%%;%s;%%' OR genre LIKE '%%;%s' OR genre = '%s' )", genre, genre, genre, genre)
+		
+		if len(genreConditions) > 0 {
+			if condition == "or" {
+				stmt += strings.Join(genreConditions, " OR ")
+			} else {
+				// For "and" condition, we need to ensure all genres are present for the same file_path
+				stmt += strings.Join(genreConditions, " OR ")
+				stmt += fmt.Sprintf(" GROUP BY g.file_path HAVING COUNT(DISTINCT g.genre) = %d", len(genreConditions))
+			}
+		}
+		stmt += ")"
 	}
+	
 	if random != "" {
 		randomInteger, err := strconv.Atoi(random)
 		if err == nil {

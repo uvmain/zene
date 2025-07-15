@@ -23,6 +23,7 @@ func Initialise(ctx context.Context) {
 	createUsersTable(ctx)
 	createSessionsTable(ctx)
 	createMetadataTable(ctx)
+	createGenresTable(ctx)
 	createPlayCountsTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
