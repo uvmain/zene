@@ -16,10 +16,11 @@ func createFtsTables(ctx context.Context) {
 	insertFtsArtistsData(ctx)
 }
 
-func createFtsMetadataTable(ctx context.Context) {
+func createFtsMetadataTable(ctx context.Context) error {
 	tableName := "metadata_fts"
 	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS metadata_fts USING fts5(file_path, file_name, title, artist, album, album_artist, genre, release_date, label, tokenize="trigram remove_diacritics 1");`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	return err
 }
 
 func createFtsMetadataTriggers(ctx context.Context) {
@@ -60,7 +61,7 @@ func insertFtsMetadataData(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("Failed to take a db conn from the pool in insertFtsMetadataData: %v", err)
+		logger.Printf("taking a db conn from the pool in insertFtsMetadataData: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -73,10 +74,11 @@ func insertFtsMetadataData(ctx context.Context) {
 	}
 }
 
-func createFtsArtistsTable(ctx context.Context) {
+func createFtsArtistsTable(ctx context.Context) error {
 	tableName := "artists_fts"
 	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS artists_fts USING fts5(file_path, artist, tokenize="trigram remove_diacritics 1");`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	return err
 }
 
 func createFtsArtistsTriggers(ctx context.Context) {
@@ -102,7 +104,7 @@ func insertFtsArtistsData(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("Failed to take a db conn from the pool in insertFtsArtistsData: %v", err)
+		logger.Printf("taking a db conn from the pool in insertFtsArtistsData: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)

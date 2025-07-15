@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"sort"
 	"strings"
 	"time"
 	"zene/core/logger"
 	"zene/core/types"
 )
 
-func createMetadataTable(ctx context.Context) {
+func createMetadataTable(ctx context.Context) error {
 	tableName := "metadata"
 	schema := `CREATE TABLE IF NOT EXISTS metadata (
 		file_path TEXT PRIMARY KEY,
@@ -37,10 +36,14 @@ func createMetadataTable(ctx context.Context) {
 		musicbrainz_track_id TEXT NOT NULL,
 		label TEXT
 	);`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	if err != nil {
+		return err
+	}
 	createIndex(ctx, "idx_metadata_track_id", "metadata", "musicbrainz_track_id", false)
 	createIndex(ctx, "idx_metadata_album_id", "metadata", "musicbrainz_album_id", false)
 	createIndex(ctx, "idx_metadata_artist_id", "metadata", "musicbrainz_artist_id", false)
+	return nil
 }
 
 func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
@@ -49,7 +52,7 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in InsertMetadataRow: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in InsertMetadataRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -111,7 +114,7 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to insert metadata row: %v", err)
+		return fmt.Errorf("inserting metadata row: %v", err)
 	}
 
 	return nil
@@ -123,7 +126,7 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in UpdateMetadataRow: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in UpdateMetadataRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -170,7 +173,7 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to update metadata for %s: %w", metadata.FilePath, err)
+		return fmt.Errorf("updating metadata for %s: %w", metadata.FilePath, err)
 	}
 
 	logger.Printf("Updated metadata for %s", metadata.FilePath)
@@ -183,7 +186,7 @@ func DeleteMetadataRow(ctx context.Context, filepath string) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in DeleteMetadataRow: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in DeleteMetadataRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -193,68 +196,10 @@ func DeleteMetadataRow(ctx context.Context, filepath string) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to delete metadata row %s: %v", filepath, err)
+		return fmt.Errorf("deleting metadata row %s: %v", filepath, err)
 	}
 	logger.Printf("Deleted metadata row %s", filepath)
 	return nil
-}
-
-func SelectDistinctGenres(ctx context.Context, searchParam string) ([]types.GenreResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.GenreResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectDistinctGenres: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`SELECT DISTINCT genre FROM metadata;`)
-	defer stmt.Finalize()
-
-	var genres []string
-
-	for {
-		if hasRow, err := stmt.Step(); err != nil {
-			return []types.GenreResponse{}, err
-		} else if !hasRow {
-			break
-		} else {
-			row := stmt.GetText("genre")
-			splits := strings.Split(row, ";")
-			for _, split := range splits {
-				trimmed := strings.TrimSpace(split)
-				if trimmed != "" {
-					if searchParam != "" {
-						if strings.Contains(strings.ToLower(trimmed), strings.ToLower(searchParam)) {
-							genres = append(genres, trimmed)
-						}
-					} else {
-						genres = append(genres, trimmed)
-					}
-				}
-			}
-		}
-	}
-
-	dict := map[string]int{}
-	for _, num := range genres {
-		dict[num]++
-	}
-
-	var ss []types.GenreResponse
-	for k, v := range dict {
-		ss = append(ss, types.GenreResponse{
-			Genre: k,
-			Count: v,
-		})
-	}
-
-	sort.Slice(ss, func(i, j int) bool {
-		return ss[i].Count > ss[j].Count
-	})
-
-	return ss, nil
 }
 
 func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, error) {
@@ -263,7 +208,7 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to take a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
+		return nil, fmt.Errorf("taking a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
 	}
 	defer DbPool.Put(conn)
 

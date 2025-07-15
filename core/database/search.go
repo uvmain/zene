@@ -12,7 +12,7 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, 
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.Metadata{}, fmt.Errorf("Failed to take a db conn from the pool in SearchMetadata: %v", err)
+		return []types.Metadata{}, fmt.Errorf("taking a db conn from the pool in SearchMetadata: %v", err)
 	}
 	defer DbPool.Put(conn)
 

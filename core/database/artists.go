@@ -16,7 +16,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.ArtistResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectArtistByMusicBrainzArtistId: %v", err)
+		return types.ArtistResponse{}, fmt.Errorf("taking a db conn from the pool in SelectArtistByMusicBrainzArtistId: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -43,7 +43,7 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.AlbumsResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAlbumsByArtistId: %w", err)
+		return []types.AlbumsResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAlbumsByArtistId: %w", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -115,7 +115,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByArtistId: %v", err)
+		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectTracksByArtistId: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -205,7 +205,7 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.ArtistResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAlbumArtists: %v", err)
+		return []types.ArtistResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAlbumArtists: %v", err)
 	}
 	defer DbPool.Put(conn)
 

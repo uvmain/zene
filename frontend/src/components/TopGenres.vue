@@ -6,9 +6,9 @@ const { backendFetchRequest } = useBackendFetch()
 const topGenres = ref<any[]>([])
 
 async function getGenres() {
-  const response = await backendFetchRequest('genres')
+  const response = await backendFetchRequest('genres?limit=30')
   const json = await response.json()
-  topGenres.value = json.slice(0, 30)
+  topGenres.value = json
 }
 
 onBeforeMount(async () => {

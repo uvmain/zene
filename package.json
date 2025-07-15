@@ -19,7 +19,7 @@
     "build": "npm run build:frontend && npm run build:backend",
     "preview": "concurrently npm:caddy:preview npm:preview:go",
     "preview:go": "zene.exe",
-    "create-cert": "mkcert zene.localhost && mkcert --install",
+    "create-cert": "mkcert --install && mkcert -key-file zene.localhost-key.pem -cert-file zene.localhost.pem zene.localhost localhost 127.0.0.1 ::1",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
     "cspell": "cspell \"**/*.{go,ts,js,vue}\""

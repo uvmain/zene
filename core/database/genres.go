@@ -3,9 +3,82 @@ package database
 import (
 	"context"
 	"fmt"
+	"sort"
+	"strconv"
+	"strings"
 	"zene/core/logic"
 	"zene/core/types"
 )
+
+func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam string) ([]types.GenreResponse, error) {
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
+
+	conn, err := DbPool.Take(ctx)
+	if err != nil {
+		return []types.GenreResponse{}, fmt.Errorf("taking a db conn from the pool in SelectDistinctGenres: %v", err)
+	}
+	defer DbPool.Put(conn)
+
+	stmtText := "SELECT DISTINCT genre FROM metadata"
+
+	if limitParam != "" {
+		limitInt, err := strconv.Atoi(limitParam)
+		if err != nil {
+			return []types.GenreResponse{}, fmt.Errorf("invalid limit value: %v", err)
+		}
+		stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
+	}
+
+	stmtText = fmt.Sprintf("%s;", stmtText)
+
+	stmt := conn.Prep(stmtText)
+	defer stmt.Finalize()
+
+	var genres []string
+
+	for {
+		if hasRow, err := stmt.Step(); err != nil {
+			return []types.GenreResponse{}, err
+		} else if !hasRow {
+			break
+		} else {
+			row := stmt.GetText("genre")
+			splits := strings.Split(row, ";")
+			for _, split := range splits {
+				trimmed := strings.TrimSpace(split)
+				if trimmed != "" {
+					if searchParam != "" {
+						if strings.Contains(strings.ToLower(trimmed), strings.ToLower(searchParam)) {
+							genres = append(genres, trimmed)
+						}
+					} else {
+						genres = append(genres, trimmed)
+					}
+				}
+			}
+		}
+	}
+
+	dict := map[string]int{}
+	for _, num := range genres {
+		dict[num]++
+	}
+
+	var ss []types.GenreResponse
+	for k, v := range dict {
+		ss = append(ss, types.GenreResponse{
+			Genre: k,
+			Count: v,
+		})
+	}
+
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Count > ss[j].Count
+	})
+
+	return ss, nil
+}
 
 func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, limit int64, random string) ([]types.MetadataWithPlaycounts, error) {
 	dbMutex.RLock()
@@ -13,7 +86,7 @@ func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, li
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByAlbumId: %v", err)
+		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectTracksByAlbumId: %v", err)
 	}
 	defer DbPool.Put(conn)
 

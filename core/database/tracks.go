@@ -15,7 +15,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAllTracks: %v", err)
+		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectAllTracks: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -38,7 +38,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 	if limit != "" {
 		limitInt, err := strconv.Atoi(limit)
 		if err != nil {
-			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Invalid limit value: %v", err)
+			return []types.MetadataWithPlaycounts{}, fmt.Errorf("invalid limit value: %v", err)
 		}
 		stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
 	}
@@ -46,7 +46,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 	if offset != "" {
 		offsetInt, err := strconv.Atoi(offset)
 		if err != nil {
-			return []types.MetadataWithPlaycounts{}, fmt.Errorf("Invalid offset value: %v", err)
+			return []types.MetadataWithPlaycounts{}, fmt.Errorf("invalid offset value: %v", err)
 		}
 		stmtText = fmt.Sprintf("%s offset %d", stmtText, offsetInt)
 	}
@@ -106,7 +106,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in t: %v", err)
+		return types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in t: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -160,7 +160,7 @@ func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.File{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTrackFilesForScanner: %v", err)
+		return []types.File{}, fmt.Errorf("taking a db conn from the pool in SelectTrackFilesForScanner: %v", err)
 	}
 	defer DbPool.Put(conn)
 
