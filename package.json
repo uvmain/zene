@@ -7,7 +7,7 @@
     "./frontend"
   ],
   "scripts": {
-    "postinstall": "go mod download",
+    "setup": "go mod download",
     "clean": "rimraf -v -I zene zene.exe frontend/dist",
     "clean:build": "rimraf -v -I zene zene.exe frontend/dist",
     "clean:full": "rimraf -v -I zene zene.exe data frontend/dist frontend/node_modules node_modules",
