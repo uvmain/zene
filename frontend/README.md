@@ -37,3 +37,39 @@ npm run build
 ```sh
 npm run lint
 ```
+
+### Testing with [Vitest](https://vitest.dev/)
+
+The project includes a comprehensive testing framework using Vitest with Vue Test Utils and MSW for API mocking.
+
+#### Test Scripts
+
+```sh
+# Run tests in watch mode (development)
+npm run test
+```
+Starts Vitest in watch mode, automatically re-running tests when files change. Perfect for development and TDD workflows.
+
+```sh
+# Run tests once (CI/CD)
+npm run test:run
+```
+Runs all tests once and exits. Ideal for CI/CD pipelines and pre-commit hooks.
+
+```sh
+# Generate coverage report
+npm run test:coverage
+```
+Runs all tests and generates a detailed coverage report in HTML and JSON formats. Reports are saved to the `coverage/` directory.
+
+```sh
+# Run with UI interface
+npm run test:ui
+```
+Opens Vitest's web-based UI for an interactive testing experience with real-time results, test filtering, and debugging capabilities.
+
+#### Additional Testing Resources
+
+- **Testing Guide**: See `TESTING.md` for comprehensive testing patterns and examples
+- **Setup Details**: See `VITEST_SETUP_COMPLETE.md` for framework configuration details
+- **Test Files**: Component tests in `src/components/__tests__/`, composable tests in `src/composables/__tests__/`
