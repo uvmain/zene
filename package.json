@@ -34,7 +34,7 @@
   },
   "homepage": "https://github.com/uvmain/zene#readme",
   "devDependencies": {
-    "caddy-baron": "^2.0.1",
+    "caddy-baron": "^3.0.2",
     "concurrently": "^9.1.2",
     "cpy-cli": "^5.0.0",
     "cross-env": "^7.0.3",
