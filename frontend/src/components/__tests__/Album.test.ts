@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import Album from '../Album.vue'
 
 // Mock router
@@ -17,7 +17,7 @@ const mockAlbum = {
   musicbrainz_artist_id: 'test-artist-id',
 }
 
-describe('Album', () => {
+describe('album', () => {
   it('should render correctly', () => {
     const wrapper = mount(Album, {
       props: { album: mockAlbum },
@@ -27,8 +27,8 @@ describe('Album', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })
@@ -44,8 +44,8 @@ describe('Album', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })

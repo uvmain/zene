@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import TopGenres from '../TopGenres.vue'
 
 // Mock router
@@ -8,7 +8,7 @@ const mockRouter = {
   replace: vi.fn(),
 }
 
-describe('TopGenres', () => {
+describe('topGenres', () => {
   it('should render correctly', () => {
     const wrapper = mount(TopGenres, {
       global: {
@@ -17,8 +17,8 @@ describe('TopGenres', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })
@@ -33,8 +33,8 @@ describe('TopGenres', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })

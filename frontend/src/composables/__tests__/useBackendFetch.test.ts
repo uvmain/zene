@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { useBackendFetch } from '../useBackendFetch.ts'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { useBackendFetch } from '../useBackendFetch'
 
 // Mock backend fetch if needed
 vi.mock('../useBackendFetch', () => ({
   useBackendFetch: () => ({
     backendFetchRequest: vi.fn().mockResolvedValue({
-      json: () => Promise.resolve({}),
+      json: async () => Promise.resolve({}),
       ok: true,
     }),
   }),

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import LoginModal from '../LoginModal.vue'
 
 // Mock router
@@ -8,7 +8,7 @@ const mockRouter = {
   replace: vi.fn(),
 }
 
-describe('LoginModal', () => {
+describe('loginModal', () => {
   it('should render correctly', () => {
     const wrapper = mount(LoginModal, {
       global: {
@@ -17,8 +17,8 @@ describe('LoginModal', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })
@@ -33,8 +33,8 @@ describe('LoginModal', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })

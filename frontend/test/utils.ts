@@ -1,7 +1,8 @@
-import { mount, VueWrapper } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
+import type { Component } from 'vue'
+import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from '../src/routes/routes'
-import type { Component } from 'vue'
 
 // Test router setup
 export function createTestRouter() {
@@ -14,7 +15,7 @@ export function createTestRouter() {
 // Default mount options for components
 export function mountComponent(component: Component, options: any = {}) {
   const router = createTestRouter()
-  
+
   return mount(component, {
     global: {
       plugins: [router],
@@ -56,41 +57,51 @@ export async function waitForComponent(wrapper: VueWrapper<any>) {
 }
 
 // Mock implementation for commonly used composables - these should be used inside vi.mock calls
-export const mockUseAuth = () => ({
-  checkIfLoggedIn: vi.fn().mockResolvedValue(true),
-  logout: vi.fn().mockResolvedValue(undefined),
-  userLoginState: { value: true },
-})
+export function mockUseAuth() {
+  return {
+    checkIfLoggedIn: vi.fn().mockResolvedValue(true),
+    logout: vi.fn().mockResolvedValue(undefined),
+    userLoginState: { value: true },
+  }
+}
 
-export const mockUseBackendFetch = () => ({
-  backendFetchRequest: vi.fn().mockResolvedValue({
-    json: () => Promise.resolve({}),
-    ok: true,
-  }),
-  getCurrentUser: vi.fn().mockResolvedValue({ id: 1, username: 'test' }),
-  getUsers: vi.fn().mockResolvedValue([]),
-})
+export function mockUseBackendFetch() {
+  return {
+    backendFetchRequest: vi.fn().mockResolvedValue({
+      json: async () => Promise.resolve({}),
+      ok: true,
+    }),
+    getCurrentUser: vi.fn().mockResolvedValue({ id: 1, username: 'test' }),
+    getUsers: vi.fn().mockResolvedValue([]),
+  }
+}
 
-export const mockUseSearch = () => ({
-  searchQuery: { value: '' },
-  searchResults: { value: [] },
-  isSearchOpen: { value: false },
-  openSearch: vi.fn(),
-  closeSearch: vi.fn(),
-  performSearch: vi.fn(),
-})
+export function mockUseSearch() {
+  return {
+    searchQuery: { value: '' },
+    searchResults: { value: [] },
+    isSearchOpen: { value: false },
+    openSearch: vi.fn(),
+    closeSearch: vi.fn(),
+    performSearch: vi.fn(),
+  }
+}
 
-export const mockUseNavbar = () => ({
-  isNavOpen: { value: false },
-  toggleNav: vi.fn(),
-  closeNav: vi.fn(),
-})
+export function mockUseNavbar() {
+  return {
+    isNavOpen: { value: false },
+    toggleNav: vi.fn(),
+    closeNav: vi.fn(),
+  }
+}
 
-export const mockUseSettings = () => ({
-  settings: { value: { theme: 'dark', volume: 0.8 } },
-  updateSettings: vi.fn(),
-  loadSettings: vi.fn(),
-})
+export function mockUseSettings() {
+  return {
+    settings: { value: { theme: 'dark', volume: 0.8 } },
+    updateSettings: vi.fn(),
+    loadSettings: vi.fn(),
+  }
+}
 
 // Helper to mock router push/replace
 export function mockRouter() {

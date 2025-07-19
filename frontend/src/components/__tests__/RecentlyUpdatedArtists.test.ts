@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import RecentlyUpdatedArtists from '../RecentlyUpdatedArtists.vue'
 
 // Mock router
@@ -8,7 +8,7 @@ const mockRouter = {
   replace: vi.fn(),
 }
 
-describe('RecentlyUpdatedArtists', () => {
+describe('recentlyUpdatedArtists', () => {
   it('should render correctly', () => {
     const wrapper = mount(RecentlyUpdatedArtists, {
       global: {
@@ -17,8 +17,8 @@ describe('RecentlyUpdatedArtists', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })
@@ -33,8 +33,8 @@ describe('RecentlyUpdatedArtists', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })

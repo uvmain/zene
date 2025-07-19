@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { closeSearch, niceDate, formatTime } from '../logic'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { closeSearch, formatTime, niceDate } from '../logic'
 
 describe('logic', () => {
   beforeEach(() => {

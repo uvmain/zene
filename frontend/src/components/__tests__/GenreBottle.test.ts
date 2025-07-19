@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import GenreBottle from '../GenreBottle.vue'
 
 // Mock router
@@ -14,7 +14,7 @@ const mockGenre = {
   count: 100,
 }
 
-describe('GenreBottle', () => {
+describe('genreBottle', () => {
   it('should render correctly', () => {
     const wrapper = mount(GenreBottle, {
       props: { genre: mockGenre },
@@ -24,8 +24,8 @@ describe('GenreBottle', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })
@@ -41,8 +41,8 @@ describe('GenreBottle', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })

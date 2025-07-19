@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import ArtistThumb from '../ArtistThumb.vue'
 
 // Mock router
@@ -15,7 +15,7 @@ const mockArtist = {
   image_url: '/api/artists/test-artist-id/art',
 }
 
-describe('ArtistThumb', () => {
+describe('artistThumb', () => {
   it('should render correctly', () => {
     const wrapper = mount(ArtistThumb, {
       props: { artist: mockArtist },
@@ -25,8 +25,8 @@ describe('ArtistThumb', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })
@@ -42,8 +42,8 @@ describe('ArtistThumb', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })

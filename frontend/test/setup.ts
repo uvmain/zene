@@ -1,6 +1,6 @@
-import { beforeAll, afterEach, afterAll } from 'vitest'
-import { setupServer } from 'msw/node'
 import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+import { afterAll, afterEach, beforeAll } from 'vitest'
 import '@testing-library/jest-dom'
 
 // Mock API handlers
@@ -9,16 +9,16 @@ const handlers = [
   http.get('/api/check-session', () => {
     return HttpResponse.json({ loggedIn: true })
   }),
-  
+
   http.get('/api/logout', () => {
     return HttpResponse.json({ success: true })
   }),
-  
+
   // Mock temporary token for audio streaming
   http.get('/api/temporary_token', () => {
     return HttpResponse.json({ token: 'mock-token', expires_at: Date.now() + 30000 })
   }),
-  
+
   // Mock albums endpoints
   http.get('/api/albums', () => {
     return HttpResponse.json([
@@ -34,7 +34,7 @@ const handlers = [
       },
     ])
   }),
-  
+
   http.get('/api/albums/random', () => {
     return HttpResponse.json([
       {
@@ -49,7 +49,7 @@ const handlers = [
       },
     ])
   }),
-  
+
   // Mock artists endpoints
   http.get('/api/artists', () => {
     return HttpResponse.json([
@@ -61,7 +61,7 @@ const handlers = [
       },
     ])
   }),
-  
+
   // Mock tracks endpoints
   http.get('/api/tracks', () => {
     return HttpResponse.json([
@@ -76,7 +76,7 @@ const handlers = [
       },
     ])
   }),
-  
+
   // Mock genres endpoints
   http.get('/api/genres', () => {
     return HttpResponse.json([
@@ -87,7 +87,7 @@ const handlers = [
       },
     ])
   }),
-  
+
   // Mock search endpoint
   http.get('/api/search', () => {
     return HttpResponse.json({
@@ -96,7 +96,7 @@ const handlers = [
       tracks: [],
     })
   }),
-  
+
   // Mock settings endpoints
   http.get('/api/settings', () => {
     return HttpResponse.json({
@@ -104,11 +104,11 @@ const handlers = [
       volume: 0.8,
     })
   }),
-  
+
   http.post('/api/settings', () => {
     return HttpResponse.json({ success: true })
   }),
-  
+
   // Mock user endpoints
   http.get('/api/users', () => {
     return HttpResponse.json([
@@ -119,7 +119,7 @@ const handlers = [
       },
     ])
   }),
-  
+
   http.get('/api/user', () => {
     return HttpResponse.json({
       id: 1,
@@ -127,14 +127,14 @@ const handlers = [
       is_admin: false,
     })
   }),
-  
+
   // Mock art endpoints
   http.get(/\/api\/albums\/.*\/art/, () => {
     return new HttpResponse('mock-image-data', {
       headers: { 'Content-Type': 'image/jpeg' },
     })
   }),
-  
+
   http.get(/\/api\/artists\/.*\/art/, () => {
     return new HttpResponse('mock-image-data', {
       headers: { 'Content-Type': 'image/jpeg' },
@@ -159,7 +159,7 @@ afterAll(() => {
 })
 
 // Global test utilities
-global.server = server
+globalThis.server = server
 
 // Mock window.matchMedia for CSS queries
 Object.defineProperty(window, 'matchMedia', {
@@ -177,14 +177,14 @@ Object.defineProperty(window, 'matchMedia', {
 })
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+globalThis.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
+globalThis.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),

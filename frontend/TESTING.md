@@ -48,14 +48,14 @@ frontend/
 ### Component Tests
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { describe, expect, it, vi } from 'vitest'
 import MyComponent from '../MyComponent.vue'
 
 describe('MyComponent', () => {
   it('should render correctly', () => {
     const wrapper = mount(MyComponent, {
-      props: { 
+      props: {
         // Required props here
       },
       global: {
@@ -64,12 +64,12 @@ describe('MyComponent', () => {
           $route: { path: '/', params: {}, query: {} },
         },
         stubs: {
-          'RouterLink': true,
-          'RouterView': true,
+          RouterLink: true,
+          RouterView: true,
         },
       },
     })
-    
+
     expect(wrapper.exists()).toBe(true)
     expect(wrapper.text()).toContain('Expected text')
   })
@@ -79,13 +79,13 @@ describe('MyComponent', () => {
 ### Composable Tests
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { useMyComposable } from '../useMyComposable'
 
 describe('useMyComposable', () => {
   it('should return expected functionality', () => {
     const { someFunction, someState } = useMyComposable()
-    
+
     expect(someFunction).toBeDefined()
     expect(someState.value).toBe(expectedValue)
   })
@@ -105,8 +105,8 @@ const albums = await fetch('/api/albums')
 To add custom API mocks for specific tests:
 
 ```typescript
-import { server } from '../../../test/setup'
 import { http, HttpResponse } from 'msw'
+import { server } from '../../../test/setup'
 
 it('should handle custom API response', async () => {
   server.use(
@@ -114,7 +114,7 @@ it('should handle custom API response', async () => {
       return HttpResponse.json({ custom: 'data' })
     })
   )
-  
+
   // Your test here
 })
 ```
@@ -188,9 +188,9 @@ const wrapper = mount(MyComponent, {
 it('should handle click events', async () => {
   const wrapper = mount(MyComponent)
   const button = wrapper.find('button')
-  
+
   await button.trigger('click')
-  
+
   expect(wrapper.emitted('click')).toBeTruthy()
 })
 ```
