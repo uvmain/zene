@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockTrackMetadata, mockTrackMetadataWithImageUrl } from '../../../test/mocks/tracks'
 import { useLogic } from '../useLogic'
 
-const { inputText, closeSearch, niceDate, formatTime } = useLogic()
+const { inputText, closeSearch, niceDate, formatTime, getAlbumUrl, trackWithImageUrl } = useLogic()
 
 describe('logic', () => {
   beforeEach(() => {
@@ -18,6 +19,24 @@ describe('logic', () => {
     it('should export closeSearch function', () => {
       expect(closeSearch).toBeDefined()
       expect(typeof closeSearch).toBe('function')
+    })
+  })
+
+  describe('getAlbumUrl', () => {
+    it('should return album URL', () => {
+      const result = getAlbumUrl(mockTrackMetadata.musicbrainz_album_id)
+      expect(result).toBe('/albums/123')
+    })
+  })
+
+  describe ('trackWithImageUrl', () => {
+    it('should return track with image URL if it exists', () => {
+      const result = trackWithImageUrl(mockTrackMetadataWithImageUrl)
+      expect(result.image_url).toBe('/api/albums/123/art')
+    })
+    it('should add image URL if it does not exist', () => {
+      const result = trackWithImageUrl(mockTrackMetadata)
+      expect(result.image_url).toBe('/api/albums/123/art')
     })
   })
 
