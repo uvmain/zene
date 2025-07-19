@@ -2,6 +2,14 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import FooterPlayer from '../FooterPlayer.vue'
 
+// Mock Vue Router composables
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+  })),
+}))
+
 // Mock router
 const mockRouter = {
   push: vi.fn(),

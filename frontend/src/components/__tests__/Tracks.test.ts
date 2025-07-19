@@ -8,9 +8,26 @@ const mockRouter = {
   replace: vi.fn(),
 }
 
+const mockTracks = [
+  {
+    id: 1,
+    title: 'Test Track',
+    artist: 'Test Artist',
+    album: 'Test Album',
+    duration: 180,
+    track_number: 1,
+    total_tracks: 10,
+    musicbrainz_track_id: 'test-track-id',
+    musicbrainz_album_id: 'test-album-id',
+    musicbrainz_artist_id: 'test-artist-id',
+    image_url: '/api/albums/test-album-id/art',
+  },
+]
+
 describe('tracks', () => {
   it('should render correctly', () => {
     const wrapper = mount(Tracks, {
+      props: { tracks: mockTracks },
       global: {
         mocks: {
           $router: mockRouter,
@@ -27,6 +44,7 @@ describe('tracks', () => {
 
   it('should be a Vue instance', () => {
     const wrapper = mount(Tracks, {
+      props: { tracks: mockTracks },
       global: {
         mocks: {
           $router: mockRouter,

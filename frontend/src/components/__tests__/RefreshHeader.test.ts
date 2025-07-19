@@ -11,6 +11,7 @@ const mockRouter = {
 describe('refreshHeader', () => {
   it('should render correctly', () => {
     const wrapper = mount(RefreshHeader, {
+      props: { title: 'Test Title' },
       global: {
         mocks: {
           $router: mockRouter,
@@ -27,6 +28,7 @@ describe('refreshHeader', () => {
 
   it('should be a Vue instance', () => {
     const wrapper = mount(RefreshHeader, {
+      props: { title: 'Test Title' },
       global: {
         mocks: {
           $router: mockRouter,

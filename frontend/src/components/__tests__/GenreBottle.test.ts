@@ -2,17 +2,21 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import GenreBottle from '../GenreBottle.vue'
 
+// Mock Vue Router composables
+vi.mock('vue-router', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+  })),
+}))
+
 // Mock router
 const mockRouter = {
   push: vi.fn(),
   replace: vi.fn(),
 }
 
-const mockGenre = {
-  id: 1,
-  name: 'Rock',
-  count: 100,
-}
+const mockGenre = 'Rock'
 
 describe('genreBottle', () => {
   it('should render correctly', () => {

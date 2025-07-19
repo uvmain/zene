@@ -82,7 +82,7 @@ const handlers = [
     return HttpResponse.json([
       {
         id: 1,
-        name: 'Rock',
+        genre: 'Rock',
         count: 100,
       },
     ])
