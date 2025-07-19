@@ -18,6 +18,9 @@ const mockRouter = {
 
 describe('login', () => {
   it('should render correctly', () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      json: async () => Promise.resolve({ success: true }), // Mock response for login
+    } as Response)
     const wrapper = mount(Login, {
       global: {
         mocks: {
