@@ -1,3 +1,4 @@
+import type { AlbumMetadata } from '../../types'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import Album from '../Album.vue'
@@ -16,11 +17,13 @@ const mockRouter = {
   replace: vi.fn(),
 }
 
-const mockAlbum = {
-  id: 1,
-  title: 'Test Album',
-  artist: 'Test Artist',
+const mockAlbum: AlbumMetadata = {
+  album_artist: 'Test album artist',
+  album: 'Test Album',
+  genres: ['Test Genre'],
   release_date: '2023-01-01',
+  image_url: 'https://example.com/test-album.jpg',
+  artist: 'Test Artist',
   musicbrainz_album_id: 'test-album-id',
   musicbrainz_artist_id: 'test-artist-id',
 }

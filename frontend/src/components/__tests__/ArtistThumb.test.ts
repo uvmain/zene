@@ -1,3 +1,4 @@
+import type { ArtistMetadata } from '../../types'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import ArtistThumb from '../ArtistThumb.vue'
@@ -16,9 +17,8 @@ const mockRouter = {
   replace: vi.fn(),
 }
 
-const mockArtist = {
-  id: 1,
-  name: 'Test Artist',
+const mockArtist: ArtistMetadata = {
+  artist: 'Test Artist',
   musicbrainz_artist_id: 'test-artist-id',
   image_url: '/api/artists/test-artist-id/art',
 }
