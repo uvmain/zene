@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '../types'
 import { useIntersectionObserver } from '@vueuse/core'
-import { formatTime, getAlbumUrl, getArtistUrl, getTrackUrl } from '../composables/logic'
+import { useLogic } from '../composables/useLogic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
@@ -15,6 +15,7 @@ const emits = defineEmits(['loadMore'])
 
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
+const { getTrackUrl, getArtistUrl, getAlbumUrl, formatTime } = useLogic()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()

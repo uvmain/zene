@@ -1,14 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { closeSearch, formatTime, niceDate } from '../logic'
+import { useLogic } from '../useLogic'
+
+const { inputText, closeSearch, niceDate, formatTime } = useLogic()
 
 describe('logic', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('should export closeSearch function', () => {
-    expect(closeSearch).toBeDefined()
-    expect(typeof closeSearch).toBe('function')
+  describe('closeSearch', () => {
+    it('should clear the search input', () => {
+      inputText.value = 'test'
+      closeSearch()
+      expect(inputText.value).toBe('')
+    })
+
+    it('should export closeSearch function', () => {
+      expect(closeSearch).toBeDefined()
+      expect(typeof closeSearch).toBe('function')
+    })
   })
 
   it('should export niceDate function', () => {

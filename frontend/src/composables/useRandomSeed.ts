@@ -1,7 +1,8 @@
 import { useLocalStorage } from '@vueuse/core'
-import { getRandomInteger } from './logic'
+import { useLogic } from './useLogic'
 
 const randomSeed = useLocalStorage<number>('randomSeed', 0)
+const { getRandomInteger } = useLogic()
 
 export function useRandomSeed() {
   const refreshRandomSeed = (): number => {

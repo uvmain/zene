@@ -1,10 +1,11 @@
 import type { AlbumMetadata, ArtistMetadata, Queue, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import { getRandomInteger, trackWithImageUrl } from './logic'
 import { useBackendFetch } from './useBackendFetch'
+import { useLogic } from './useLogic'
 import { useRandomSeed } from './useRandomSeed'
 
 const { backendFetchRequest, getAlbumTracks, getArtistTracks } = useBackendFetch()
 const { randomSeed, refreshRandomSeed, getRandomSeed } = useRandomSeed()
+const { trackWithImageUrl, getRandomInteger } = useLogic()
 
 const currentlyPlayingTrack = ref<TrackMetadataWithImageUrl | undefined>()
 const currentQueue = ref<Queue | undefined>()

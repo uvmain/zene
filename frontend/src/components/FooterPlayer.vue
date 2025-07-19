@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { TokenResponse } from '../types/auth'
 import { onKeyStroke } from '@vueuse/core'
-import { formatTime } from '../composables/logic'
 import { useBackendFetch } from '../composables/useBackendFetch'
 import { useDebug } from '../composables/useDebug'
+import { useLogic } from '../composables/useLogic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRandomSeed } from '../composables/useRandomSeed'
@@ -12,6 +12,7 @@ import { useSettings } from '../composables/useSettings'
 
 const { getMimeType, getTemporaryToken, refreshTemporaryToken } = useBackendFetch()
 const { debugLog } = useDebug()
+const { formatTime } = useLogic()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { refreshRandomSeed } = useRandomSeed()
 const { streamQuality } = useSettings()
