@@ -1,22 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { useDebug } from '../useDebug'
 
 const { debugLog, toggleDebug, useDebugBool } = useDebug()
 
-// Mock backend fetch if needed
-vi.mock('../useBackendFetch', () => ({
-  useBackendFetch: () => ({
-    backendFetchRequest: vi.fn().mockResolvedValue({
-      json: async () => Promise.resolve({}),
-      ok: true,
-    }),
-  }),
-}))
-
 describe('useDebug', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
   afterAll(() => {
     useDebugBool.value = false // Reset debug state after tests
   })

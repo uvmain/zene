@@ -1,14 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { mockTrackMetadata, mockTrackMetadataWithImageUrl } from '../../../test/mocks/tracks'
 import { useLogic } from '../useLogic'
 
 const { inputText, closeSearch, niceDate, formatTime, getAlbumUrl, trackWithImageUrl } = useLogic()
 
-describe('logic', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
+describe('useLogic', () => {
   describe('closeSearch', () => {
     it('should clear the search input', () => {
       inputText.value = 'test'
