@@ -21,6 +21,8 @@
     "preview:go": "zene.exe",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
+    "test:frontend": "npm run test:run --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
     "cspell": "cspell \"**/*.{go,ts,js,vue}\""
   },
   "repository": {
