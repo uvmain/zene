@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import UserManagement from '../UserManagement.vue'
+import { mockUserResponse } from '../../../test/mocks/user'
 
 // Mock router
 const mockRouter = {
@@ -10,6 +11,10 @@ const mockRouter = {
 
 describe('userManagement', () => {
   it('should render correctly', () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      json: async () => Promise.resolve(mockUserResponse),
+    } as Response)
+
     const wrapper = mount(UserManagement, {
       global: {
         mocks: {

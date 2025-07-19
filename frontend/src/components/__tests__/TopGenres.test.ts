@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import TopGenres from '../TopGenres.vue'
+import { mockGenresResponse } from '../../../test/mocks/genres'
 
 // Mock Vue Router composables
 vi.mock('vue-router', () => ({
@@ -18,6 +19,10 @@ const mockRouter = {
 
 describe('topGenres', () => {
   it('should render correctly', () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      json: async () => Promise.resolve(mockGenresResponse),
+    } as Response)
+
     const wrapper = mount(TopGenres, {
       global: {
         mocks: {

@@ -18,6 +18,14 @@ const mockRouter = {
 
 describe('footerPlayer', () => {
   it('should render correctly', () => {
+    const mockResponse = {
+      Token: 'mock-token',
+      ExpiresAt: '2023-10-01T00:00:00Z',
+    }
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      json: async () => Promise.resolve(mockResponse),
+    } as Response)
+
     const wrapper = mount(FooterPlayer, {
       global: {
         mocks: {

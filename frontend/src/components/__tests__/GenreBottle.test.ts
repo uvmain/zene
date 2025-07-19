@@ -1,37 +1,32 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import GenreBottle from '../GenreBottle.vue'
 
 // Mock Vue Router composables
+const mockRouterPush = vi.fn()
 vi.mock('vue-router', () => ({
-  useRouter: vi.fn(() => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-  })),
+  useRouter: () => ({
+    push: mockRouterPush,
+  }),
 }))
 
-// Mock router
-const mockRouter = {
-  push: vi.fn(),
-  replace: vi.fn(),
-}
+// Mock useSearch composable
+vi.mock('../composables/useSearch', () => ({
+  useSearch: () => ({
+    closeSearch: vi.fn(),
+  }),
+}))
 
 const mockGenre = 'Rock'
 
 describe('genreBottle', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should render correctly', () => {
     const wrapper = mount(GenreBottle, {
       props: { genre: mockGenre },
-      global: {
-        mocks: {
-          $router: mockRouter,
-          $route: { path: '/', params: {}, query: {} },
-        },
-        stubs: {
-          RouterLink: true,
-          RouterView: true,
-        },
-      },
     })
     expect(wrapper.exists()).toBe(true)
   })
@@ -39,17 +34,23 @@ describe('genreBottle', () => {
   it('should be a Vue instance', () => {
     const wrapper = mount(GenreBottle, {
       props: { genre: mockGenre },
-      global: {
-        mocks: {
-          $router: mockRouter,
-          $route: { path: '/', params: {}, query: {} },
-        },
-        stubs: {
-          RouterLink: true,
-          RouterView: true,
-        },
-      },
     })
     expect(wrapper.vm).toBeTruthy()
+  })
+
+  it('should display the genre name', () => {
+    const wrapper = mount(GenreBottle, {
+      props: { genre: mockGenre },
+    })
+    expect(wrapper.text()).toContain(mockGenre)
+  })
+
+  it('should navigate to genre page on click', async () => {
+    const wrapper = mount(GenreBottle, {
+      props: { genre: mockGenre },
+    })
+
+    await wrapper.trigger('click')
+    expect(mockRouterPush).toHaveBeenCalledWith(`/genres/${mockGenre}`)
   })
 })

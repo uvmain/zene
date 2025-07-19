@@ -1,16 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useNavbar } from '../useNavbar'
 
-// Mock backend fetch if needed
-vi.mock('../useBackendFetch', () => ({
-  useBackendFetch: () => ({
-    backendFetchRequest: vi.fn().mockResolvedValue({
-      json: async () => Promise.resolve({}),
-      ok: true,
-    }),
-  }),
-}))
-
 describe('useNavbar', () => {
   beforeEach(() => {
     vi.clearAllMocks()

@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import RecentlyUpdatedArtists from '../RecentlyUpdatedArtists.vue'
+import { mockArtistsResponse } from '../../../test/mocks/artists'
 
 // Mock Vue Router composables
 vi.mock('vue-router', () => ({
@@ -18,6 +19,11 @@ const mockRouter = {
 
 describe('recentlyUpdatedArtists', () => {
   it('should render correctly', () => {
+
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      json: async () => Promise.resolve(mockArtistsResponse),
+    } as Response)
+
     const wrapper = mount(RecentlyUpdatedArtists, {
       global: {
         mocks: {

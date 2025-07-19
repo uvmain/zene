@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import RecentlyAddedAlbums from '../RecentlyAddedAlbums.vue'
+import { mockAlbumsResponse } from '../../../test/mocks/albums'
 
 // Mock Vue Router composables
 vi.mock('vue-router', () => ({
@@ -18,6 +19,10 @@ const mockRouter = {
 
 describe('recentlyAddedAlbums', () => {
   it('should render correctly', () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      json: async () => Promise.resolve(mockAlbumsResponse),
+    } as Response)
+
     const wrapper = mount(RecentlyAddedAlbums, {
       global: {
         mocks: {

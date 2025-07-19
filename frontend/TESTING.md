@@ -31,8 +31,7 @@ npm run test:ui
 ```
 frontend/
 ├── test/
-│   ├── setup.ts           # Global test setup (MSW, mocks)
-│   └── utils.ts           # Test utilities and helpers
+│   └── mocks/             # Mock objects and fetch responses
 ├── src/
 │   ├── components/
 │   │   └── __tests__/     # Component tests
@@ -223,7 +222,6 @@ Coverage reports are generated in:
 
 1. **Router injection errors**: Add router mocks to global mocks
 2. **Missing props**: Provide required props in mount options
-3. **API calls not mocked**: Check MSW handlers in `test/setup.ts`
 4. **Composable circular dependencies**: Mock complex composables
 
 ### Debug Tips
