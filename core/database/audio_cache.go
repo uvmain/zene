@@ -18,8 +18,8 @@ func createAudioCacheTable(ctx context.Context) error {
 }
 
 func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
@@ -50,8 +50,8 @@ func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, er
 }
 
 func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]string, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
@@ -83,8 +83,8 @@ func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]s
 }
 
 func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
