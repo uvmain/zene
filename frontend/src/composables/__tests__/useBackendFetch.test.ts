@@ -1,16 +1,18 @@
+import type { MockInstance } from 'vitest'
+import type { TrackMetadata } from '../../types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useBackendFetch } from '../useBackendFetch'
 
 // Mock dependencies
 vi.mock('../useRandomSeed', () => ({
   useRandomSeed: () => ({
-    getRandomSeed: () => 12345,
+    getRandomSeed: (): number => 12345,
   }),
 }))
 
 vi.mock('../useLogic', () => ({
   useLogic: () => ({
-    trackWithImageUrl: (track: any) => ({
+    trackWithImageUrl: (track: TrackMetadata) => ({
       ...track,
       image_url: `/api/albums/${track.musicbrainz_album_id}/art`,
     }),
@@ -18,7 +20,7 @@ vi.mock('../useLogic', () => ({
 }))
 
 describe('useBackendFetch', () => {
-  let fetchSpy: any
+  let fetchSpy: MockInstance
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -31,7 +33,7 @@ describe('useBackendFetch', () => {
 
   describe('backendFetchRequest', () => {
     it('should make a fetch request to the correct URL', async () => {
-      const mockResponse = { ok: true, json: () => Promise.resolve({}) }
+      const mockResponse = { ok: true, json: async () => Promise.resolve({}) }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
       const { backendFetchRequest } = useBackendFetch()
@@ -41,7 +43,7 @@ describe('useBackendFetch', () => {
     })
 
     it('should pass through options to fetch', async () => {
-      const mockResponse = { ok: true, json: () => Promise.resolve({}) }
+      const mockResponse = { ok: true, json: async () => Promise.resolve({}) }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
       const { backendFetchRequest } = useBackendFetch()
@@ -59,7 +61,7 @@ describe('useBackendFetch', () => {
         { id: 2, musicbrainz_album_id: 'album1', title: 'Track 2' },
       ]
       const mockResponse = {
-        json: () => Promise.resolve(mockTracks),
+        json: async () => Promise.resolve(mockTracks),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -81,7 +83,7 @@ describe('useBackendFetch', () => {
         { id: 1, musicbrainz_album_id: 'album1', title: 'Track 1' },
       ]
       const mockResponse = {
-        json: () => Promise.resolve(mockTracks),
+        json: async () => Promise.resolve(mockTracks),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -101,7 +103,7 @@ describe('useBackendFetch', () => {
         { id: 1, musicbrainz_album_id: 'album1', title: 'Track 1' },
       ]
       const mockResponse = {
-        json: () => Promise.resolve(mockTracks),
+        json: async () => Promise.resolve(mockTracks),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -119,7 +121,7 @@ describe('useBackendFetch', () => {
         { id: 2, title: 'Album 2', year: 2021 },
       ]
       const mockResponse = {
-        json: () => Promise.resolve(mockAlbums),
+        json: async () => Promise.resolve(mockAlbums),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -135,7 +137,7 @@ describe('useBackendFetch', () => {
     it('should fetch current user data', async () => {
       const mockUser = { id: 1, username: 'testuser', email: 'test@example.com' }
       const mockResponse = {
-        json: () => Promise.resolve(mockUser),
+        json: async () => Promise.resolve(mockUser),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -154,7 +156,7 @@ describe('useBackendFetch', () => {
         { id: 2, username: 'user2' },
       ]
       const mockResponse = {
-        json: () => Promise.resolve({ users: mockUsers }),
+        json: async () => Promise.resolve({ users: mockUsers }),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -173,7 +175,7 @@ describe('useBackendFetch', () => {
         { id: 2, title: 'Rock Track 2' },
       ]
       const mockResponse = {
-        json: () => Promise.resolve(mockTracks),
+        json: async () => Promise.resolve(mockTracks),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -187,7 +189,7 @@ describe('useBackendFetch', () => {
     it('should fetch genre tracks with limit and random parameters', async () => {
       const mockTracks = [{ id: 1, title: 'Rock Track 1' }]
       const mockResponse = {
-        json: () => Promise.resolve(mockTracks),
+        json: async () => Promise.resolve(mockTracks),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -202,7 +204,7 @@ describe('useBackendFetch', () => {
     it('should fetch temporary token with default duration', async () => {
       const mockToken = { token: 'abc123', expires_at: '2025-07-20T12:00:00Z' }
       const mockResponse = {
-        json: () => Promise.resolve(mockToken),
+        json: async () => Promise.resolve(mockToken),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -216,7 +218,7 @@ describe('useBackendFetch', () => {
     it('should fetch temporary token with custom duration', async () => {
       const mockToken = { token: 'abc123', expires_at: '2025-07-20T12:00:00Z' }
       const mockResponse = {
-        json: () => Promise.resolve(mockToken),
+        json: async () => Promise.resolve(mockToken),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -231,7 +233,7 @@ describe('useBackendFetch', () => {
     it('should refresh temporary token with form data', async () => {
       const mockToken = { token: 'def456', expires_at: '2025-07-20T13:00:00Z' }
       const mockResponse = {
-        json: () => Promise.resolve(mockToken),
+        json: async () => Promise.resolve(mockToken),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
@@ -240,11 +242,11 @@ describe('useBackendFetch', () => {
 
       expect(fetchSpy).toHaveBeenCalledWith('/api/temporary_token', {
         method: 'POST',
-        body: expect.any(FormData),
+        body: expect.any(FormData) as FormData,
       })
 
       // Verify FormData content
-      const callArgs = fetchSpy.mock.calls[0]
+      const callArgs = fetchSpy.mock.calls[0] as [string, RequestInit]
       const formData = callArgs[1].body as FormData
       expect(formData.get('token')).toBe('old-token')
       expect(formData.get('duration')).toBe('30')
@@ -254,14 +256,14 @@ describe('useBackendFetch', () => {
     it('should refresh temporary token with custom duration', async () => {
       const mockToken = { token: 'def456', expires_at: '2025-07-20T13:00:00Z' }
       const mockResponse = {
-        json: () => Promise.resolve(mockToken),
+        json: async () => Promise.resolve(mockToken),
       }
       fetchSpy.mockResolvedValue(mockResponse as Response)
 
       const { refreshTemporaryToken } = useBackendFetch()
       await refreshTemporaryToken('old-token', 120)
 
-      const callArgs = fetchSpy.mock.calls[0]
+      const callArgs = fetchSpy.mock.calls[0] as [string, RequestInit]
       const formData = callArgs[1].body as FormData
       expect(formData.get('duration')).toBe('120')
     })
@@ -272,8 +274,10 @@ describe('useBackendFetch', () => {
       const mockResponse = {
         headers: {
           get: vi.fn((header: string) => {
-            if (header === 'content-type') return 'audio/mpeg'
-            if (header === 'Content-Type') return null
+            if (header === 'content-type')
+              return 'audio/mpeg'
+            if (header === 'Content-Type')
+              return null
             return null
           }),
         },
@@ -291,8 +295,10 @@ describe('useBackendFetch', () => {
       const mockResponse = {
         headers: {
           get: vi.fn((header: string) => {
-            if (header === 'content-type') return null
-            if (header === 'Content-Type') return 'audio/wav'
+            if (header === 'content-type')
+              return null
+            if (header === 'Content-Type')
+              return 'audio/wav'
             return null
           }),
         },

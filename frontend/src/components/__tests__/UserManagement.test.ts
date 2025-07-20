@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import UserManagement from '../UserManagement.vue'
 import { mockUserResponse } from '../../../test/mocks/user'
+import UserManagement from '../UserManagement.vue'
 
 // Mock router
 const mockRouter = {
