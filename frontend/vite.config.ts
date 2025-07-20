@@ -1,4 +1,5 @@
 /// <reference types="vite-ssg" />
+/// <reference types="vitest" />
 
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
@@ -15,6 +16,7 @@ export default defineConfig({
       imports: [
         'vue',
         'vue-router',
+        'vitest',
       ],
       dts: true,
       viteOptimizeDeps: true,
@@ -59,5 +61,23 @@ export default defineConfig({
       '@vueuse/core',
     ],
     exclude: [],
+  },
+  // Vitest configuration
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: ['node_modules', 'dist', '.git', '.cache'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'test/',
+        '**/*.d.ts',
+        '**/*.config.*',
+        'dist/',
+      ],
+    },
   },
 })

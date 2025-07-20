@@ -7,10 +7,10 @@
     "./frontend"
   ],
   "scripts": {
-    "setup": "go mod download && npm run create-cert",
+    "setup": "go mod download",
     "clean": "rimraf -v -I zene zene.exe frontend/dist",
     "clean:build": "rimraf -v -I zene zene.exe frontend/dist",
-    "clean:full": "rimraf -v -I zene zene.exe data frontend/dist frontend/node_modules node_modules zene.localhost.pem zene.localhost-key.pem",
+    "clean:full": "rimraf -v -I zene zene.exe data frontend/dist frontend/node_modules node_modules",
     "dev:backend": "go run .",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
@@ -19,9 +19,10 @@
     "build": "npm run build:frontend && npm run build:backend",
     "preview": "concurrently npm:caddy:preview npm:preview:go",
     "preview:go": "zene.exe",
-    "create-cert": "mkcert zene.localhost && mkcert --install",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
+    "test:frontend": "npm run test:run --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
     "cspell": "cspell \"**/*.{go,ts,js,vue}\""
   },
   "repository": {
@@ -35,13 +36,12 @@
   },
   "homepage": "https://github.com/uvmain/zene#readme",
   "devDependencies": {
-    "caddy-baron": "^2.0.1",
+    "caddy-baron": "^3.0.2",
     "concurrently": "^9.1.2",
     "cpy-cli": "^5.0.0",
     "cross-env": "^7.0.3",
     "ffmpeg-baron": "^2.0.3",
     "ffprobe-baron": "^2.0.3",
-    "node-mkcert-binary": "^2.1.9",
     "rimraf": "^6.0.1"
   }
 }

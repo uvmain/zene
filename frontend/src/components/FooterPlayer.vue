@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '../types'
 import type { TokenResponse } from '../types/auth'
 import { onKeyStroke } from '@vueuse/core'
-import { formatTime } from '../composables/logic'
 import { useBackendFetch } from '../composables/useBackendFetch'
 import { useDebug } from '../composables/useDebug'
+import { useLogic } from '../composables/useLogic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
 import { usePlaycounts } from '../composables/usePlaycounts'
+import { useRandomSeed } from '../composables/useRandomSeed'
 import { useRouteTracks } from '../composables/useRouteTracks'
 import { useSettings } from '../composables/useSettings'
 
 const { getMimeType, getTemporaryToken, refreshTemporaryToken } = useBackendFetch()
 const { debugLog } = useDebug()
-const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, refreshRandomSeed, getRandomTracks, currentQueue, setCurrentQueue, setCurrentlyPlayingTrack } = usePlaybackQueue()
+const { formatTime } = useLogic()
+const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue, setCurrentlyPlayingTrack } = usePlaybackQueue()
+const { refreshRandomSeed } = useRandomSeed()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount, updatePlaycount } = usePlaycounts()
@@ -304,7 +306,7 @@ async function castAudio() {
 
   // Capture current local playback state and position before switching to cast
   const wasPlayingLocally = audioRef.value && !audioRef.value.paused
-  if (wasPlayingLocally) {
+  if (wasPlayingLocally && audioRef.value) {
     savedLocalPosition.value = audioRef.value.currentTime
     debugLog(`Captured local position: ${savedLocalPosition.value}s`)
   }

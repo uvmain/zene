@@ -8,22 +8,24 @@ import (
 	"zene/core/types"
 )
 
-func createAlbumArtTable(ctx context.Context) {
+func createAlbumArtTable(ctx context.Context) error {
 	tableName := "album_art"
 	schema := `CREATE TABLE IF NOT EXISTS album_art (
 		musicbrainz_album_id TEXT PRIMARY KEY,
 		date_modified TEXT NOT NULL
 	);`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	return err
 }
 
-func createArtistArtTable(ctx context.Context) {
+func createArtistArtTable(ctx context.Context) error {
 	tableName := "artist_art"
 	schema := `CREATE TABLE IF NOT EXISTS artist_art (
 		musicbrainz_artist_id TEXT PRIMARY KEY,
 		date_modified TEXT NOT NULL
 	);`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	return err
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {
@@ -31,7 +33,7 @@ func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId 
 	defer dbMutex.RUnlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.AlbumArtRow{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAlbumArtByMusicBrainzAlbumId: %v", err)
+		return types.AlbumArtRow{}, fmt.Errorf("taking a db conn from the pool in SelectAlbumArtByMusicBrainzAlbumId: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -56,7 +58,7 @@ func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModif
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in InsertAlbumArtRow: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in InsertAlbumArtRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -70,7 +72,7 @@ func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModif
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to insert album art row: %v", err)
+		return fmt.Errorf("inserting album art row: %v", err)
 	}
 	return nil
 }
@@ -80,7 +82,7 @@ func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string)
 	defer dbMutex.RUnlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to take a db conn from the pool in SelectArtistSubDirectories: %v", err)
+		return nil, fmt.Errorf("taking a db conn from the pool in SelectArtistSubDirectories: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -114,7 +116,7 @@ func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtist
 	defer dbMutex.RUnlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.ArtistArtRow{}, fmt.Errorf("Failed to take a db conn from the pool in SelectArtistArtByMusicBrainzArtistId: %v", err)
+		return types.ArtistArtRow{}, fmt.Errorf("taking a db conn from the pool in SelectArtistArtByMusicBrainzArtistId: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -139,7 +141,7 @@ func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateMod
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in InsertArtistArtRow: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in InsertArtistArtRow: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -153,7 +155,7 @@ func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateMod
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to insert artist art row: %v", err)
+		return fmt.Errorf("inserting artist art row: %v", err)
 	}
 	return nil
 }

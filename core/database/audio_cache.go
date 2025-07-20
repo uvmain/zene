@@ -7,22 +7,23 @@ import (
 	"zene/core/types"
 )
 
-func createAudioCacheTable(ctx context.Context) {
+func createAudioCacheTable(ctx context.Context) error {
 	tableName := "audio_cache"
 	schema := `CREATE TABLE IF NOT EXISTS audio_cache (
 		cache_key TEXT PRIMARY KEY,
 		last_accessed TEXT NOT NULL
 	);`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	return err
 }
 
 func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAudioCacheEntry: %v", err)
+		return time.Time{}, fmt.Errorf("taking a db conn from the pool in SelectAudioCacheEntry: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -33,7 +34,7 @@ func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, er
 
 	hasRow, err := stmt.Step()
 	if err != nil {
-		return time.Time{}, fmt.Errorf("Failed to query audio_cache: %v", err)
+		return time.Time{}, fmt.Errorf("querying audio_cache: %v", err)
 	}
 	if !hasRow {
 		return time.Time{}, fmt.Errorf("cache_key %s not found", cache_key)
@@ -42,19 +43,19 @@ func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, er
 	lastAccessedString := stmt.GetText("last_accessed")
 	lastAccessed, err := time.Parse(time.RFC3339Nano, lastAccessedString)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("Failed to parse last_accessed time: %v", err)
+		return time.Time{}, fmt.Errorf("parsing last_accessed time: %v", err)
 	}
 
 	return lastAccessed, nil
 }
 
 func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]string, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to take a db conn from the pool in SelectStaleAudioCacheEntries: %v", err)
+		return nil, fmt.Errorf("taking a db conn from the pool in SelectStaleAudioCacheEntries: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -70,7 +71,7 @@ func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]s
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return nil, fmt.Errorf("Error stepping through stale cache query: %v", err)
+			return nil, fmt.Errorf("stepping through stale cache query: %v", err)
 		}
 		if !hasRow {
 			break
@@ -82,12 +83,12 @@ func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]s
 }
 
 func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	dbMutex.RLock()
+	defer dbMutex.RUnlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in UpsertAudioCacheEntry: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in UpsertAudioCacheEntry: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -103,7 +104,7 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to upsert audio_cache: %v", err)
+		return fmt.Errorf("upserting audio_cache: %v", err)
 	}
 
 	return nil
@@ -115,7 +116,7 @@ func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in DeleteAudioCacheEntry: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in DeleteAudioCacheEntry: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -126,7 +127,7 @@ func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to delete from audio_cache: %v", err)
+		return fmt.Errorf("deleting from audio_cache: %v", err)
 	}
 
 	return nil
@@ -138,7 +139,7 @@ func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, e
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to take a db conn from the pool in SelectAllAudioCacheEntries: %v", err)
+		return nil, fmt.Errorf("taking a db conn from the pool in SelectAllAudioCacheEntries: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -159,7 +160,7 @@ func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, e
 		if lastAccessedString != "" {
 			lastAccessed, err = time.Parse(time.RFC3339Nano, lastAccessedString)
 			if err != nil {
-				return nil, fmt.Errorf("Failed to parse last_accessed time: %v", err)
+				return nil, fmt.Errorf("parsing last_accessed time: %v", err)
 			}
 		}
 

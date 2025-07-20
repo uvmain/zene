@@ -23,11 +23,16 @@ export function useAuth() {
   }
 
   const logout = async () => {
-    await backendFetchRequest('logout', {
-      method: 'GET',
-      credentials: 'include',
-    })
-    userLoginState.value = false
+    try {
+      await backendFetchRequest('logout', {
+        method: 'GET',
+        credentials: 'include',
+      })
+      userLoginState.value = false
+    }
+    catch {
+      // Don't update userLoginState if logout request fails
+    }
   }
 
   return {

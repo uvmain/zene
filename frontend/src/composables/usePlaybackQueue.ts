@@ -1,13 +1,14 @@
 import type { AlbumMetadata, ArtistMetadata, Queue, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import { useLocalStorage } from '@vueuse/core'
-import { getRandomInteger, trackWithImageUrl } from './logic'
 import { useBackendFetch } from './useBackendFetch'
+import { useLogic } from './useLogic'
+import { useRandomSeed } from './useRandomSeed'
 
 const { backendFetchRequest, getAlbumTracks, getArtistTracks } = useBackendFetch()
+const { randomSeed, refreshRandomSeed, getRandomSeed } = useRandomSeed()
+const { trackWithImageUrl, getRandomInteger } = useLogic()
 
 const currentlyPlayingTrack = ref<TrackMetadataWithImageUrl | undefined>()
 const currentQueue = ref<Queue | undefined>()
-const randomSeed = useLocalStorage<number>('randomSeed', 0)
 
 export function usePlaybackQueue() {
   const resetCurrentlyPlayingTrack = () => {
@@ -64,18 +65,6 @@ export function usePlaybackQueue() {
       const tracks = await getArtistTracks(artist.musicbrainz_artist_id)
       setCurrentQueue(tracks)
     }
-  }
-
-  const refreshRandomSeed = (): number => {
-    randomSeed.value = getRandomInteger()
-    return randomSeed.value
-  }
-
-  const getRandomSeed = (): number => {
-    if (randomSeed.value === 0) {
-      randomSeed.value = getRandomInteger()
-    }
-    return randomSeed.value
   }
 
   const getRandomTracks = async (): Promise<TrackMetadataWithImageUrl[]> => {

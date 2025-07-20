@@ -7,7 +7,7 @@ import (
 	"zene/core/types"
 )
 
-func createPlayCountsTable(ctx context.Context) {
+func createPlayCountsTable(ctx context.Context) error {
 	tableName := "play_counts"
 	schema := `CREATE TABLE IF NOT EXISTS play_counts (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,10 +18,14 @@ func createPlayCountsTable(ctx context.Context) {
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 		UNIQUE (user_id, musicbrainz_track_id)
 	);`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	if err != nil {
+		return err
+	}
 	createIndex(ctx, "idx_playcounts_user_track ", "play_counts", "user_id, musicbrainz_track_id", false)
 	createIndex(ctx, "idx_playcounts_track ", "play_counts", "musicbrainz_track_id", false)
 	createIndex(ctx, "idx_play_counts_user", "play_counts", "user_id", false)
+	return nil
 }
 
 func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId string) error {
@@ -30,7 +34,7 @@ func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId strin
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in UpsertPlaycount: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in UpsertPlaycount: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -46,7 +50,7 @@ func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId strin
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to upsert playcount: %v", err)
+		return fmt.Errorf("upserting playcount: %v", err)
 	}
 	return nil
 }
@@ -57,7 +61,7 @@ func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int64)
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.Playcount{}, fmt.Errorf("Failed to take a db conn from the pool in GetPlaycountsForUserId: %v", err)
+		return []types.Playcount{}, fmt.Errorf("taking a db conn from the pool in GetPlaycountsForUserId: %v", err)
 	}
 	defer DbPool.Put(conn)
 

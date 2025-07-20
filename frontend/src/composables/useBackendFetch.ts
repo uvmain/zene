@@ -1,9 +1,10 @@
 import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
 import type { TokenResponse, User, UsersResponse } from '../types/auth'
-import { trackWithImageUrl } from '../composables/logic'
-import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import { useRandomSeed } from '../composables/useRandomSeed'
+import { useLogic } from './useLogic'
 
-const { getRandomSeed } = usePlaybackQueue()
+const { getRandomSeed } = useRandomSeed()
+const { trackWithImageUrl } = useLogic()
 
 export function useBackendFetch() {
   const backendFetchRequest = async (path: string, options = {}): Promise<Response> => {

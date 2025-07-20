@@ -10,4 +10,6 @@ server.exe
 *.pem
 frontend/node_modules
 frontend/dist
+frontend/coverage
+frontend/generate-tests.mjs
 data

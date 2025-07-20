@@ -13,7 +13,7 @@ import (
 func doesTableExist(tableName string, conn *sqlite.Conn) (bool, error) {
 	stmt, err := conn.Prepare(`SELECT name FROM sqlite_master WHERE type = 'table' AND name = $table_name;`)
 	if err != nil {
-		return false, fmt.Errorf("Error preparing stmt for doesTableExist: %v", err)
+		return false, fmt.Errorf("preparing stmt for doesTableExist: %v", err)
 	}
 	defer stmt.Finalize()
 	stmt.SetText("$table_name", tableName)
@@ -27,32 +27,33 @@ func doesTableExist(tableName string, conn *sqlite.Conn) (bool, error) {
 	}
 }
 
-func createTable(ctx context.Context, tableName string, createSql string) {
+func createTable(ctx context.Context, tableName string, createSql string) error {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("Database: failed to take a db conn from the pool in createTable: %v", err)
-		return
+		return fmt.Errorf("taking a db conn from the pool in createTable: %v", err)
 	}
 	defer DbPool.Put(conn)
 
 	tableExists, err := doesTableExist(tableName, conn)
 
 	if err != nil {
-		logger.Printf("Database: Error checking if %s table exists: %s", tableName, err)
+		return fmt.Errorf("checking if %s table exists: %s", tableName, err)
 	}
 
 	if !tableExists {
 		stmt := createSql
 		err := sqlitex.ExecuteTransient(conn, stmt, nil)
 		if err != nil {
-			log.Fatalf("Database: Failed to create %s table: %v", tableName, err)
+			return fmt.Errorf("create %s table: %v", tableName, err)
 		} else {
 			logger.Printf("Database: %s table created", tableName)
+			return nil
 		}
 	} else {
 		logger.Printf("Database: %s table already exists", tableName)
+		return nil
 	}
 }
 
@@ -61,7 +62,7 @@ func createTrigger(ctx context.Context, triggerName string, triggerSQL string) {
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("Failed to take a db conn from the pool in createTrigger: %v", err)
+		logger.Printf("taking a db conn from the pool in createTrigger: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)
@@ -100,7 +101,7 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("Failed to take a db conn from the pool in createIndex: %v", err)
+		logger.Printf("taking a db conn from the pool in createIndex: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)

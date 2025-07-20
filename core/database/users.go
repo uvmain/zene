@@ -7,7 +7,7 @@ import (
 	"zene/core/types"
 )
 
-func createUsersTable(ctx context.Context) {
+func createUsersTable(ctx context.Context) error {
 	tableName := "users"
 	schema := `CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -16,7 +16,8 @@ func createUsersTable(ctx context.Context) {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		is_admin BOOLEAN NOT NULL DEFAULT FALSE
 	);`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	return err
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
@@ -25,7 +26,7 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.User{}, fmt.Errorf("Failed to take a db conn from the pool in GetUserByUsername: %v", err)
+		return types.User{}, fmt.Errorf("taking a db conn from the pool in GetUserByUsername: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -34,9 +35,9 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 	stmt.SetText("$username", username)
 
 	if hasRow, err := stmt.Step(); err != nil {
-		return types.User{}, fmt.Errorf("Failed to select user from users: %v", err)
+		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	} else if !hasRow {
-		return types.User{}, fmt.Errorf("User not found")
+		return types.User{}, fmt.Errorf("user not found")
 	} else {
 		var row types.User
 		row.Id = stmt.GetInt64("id")
@@ -54,7 +55,7 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.User{}, fmt.Errorf("Failed to take a db conn from the pool in GetUserById: %v", err)
+		return types.User{}, fmt.Errorf("taking a db conn from the pool in GetUserById: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -63,9 +64,9 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 	stmt.SetInt64("$id", id)
 
 	if hasRow, err := stmt.Step(); err != nil {
-		return types.User{}, fmt.Errorf("Failed to select user from users: %v", err)
+		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	} else if !hasRow {
-		return types.User{}, fmt.Errorf("User not found")
+		return types.User{}, fmt.Errorf("user not found")
 	} else {
 		var row types.User
 		row.Id = stmt.GetInt64("id")
@@ -83,7 +84,7 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.User{}, fmt.Errorf("Failed to take a db conn from the pool in GetAllUsers: %v", err)
+		return []types.User{}, fmt.Errorf("taking a db conn from the pool in GetAllUsers: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -94,7 +95,7 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	for {
 		hasRow, err := stmt.Step()
 		if err != nil {
-			return []types.User{}, fmt.Errorf("Failed to step through users: %w", err)
+			return []types.User{}, fmt.Errorf("stepping through users: %w", err)
 		}
 		if !hasRow {
 			break
@@ -117,7 +118,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return rowId, fmt.Errorf("Failed to take a db conn from the pool in UpsertUser: %v", err)
+		return rowId, fmt.Errorf("taking a db conn from the pool in UpsertUser: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -136,10 +137,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return rowId, fmt.Errorf("Failed to upsert user: %v", err)
-	}
-	if hasRow, _ := stmt.Step(); hasRow {
-		rowId = stmt.ColumnInt64(0)
+		return rowId, fmt.Errorf("upserting user: %v", err)
 	}
 	rowID := conn.LastInsertRowID()
 	return rowID, nil
@@ -151,7 +149,7 @@ func DeleteUserByUsername(ctx context.Context, username string) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in DeleteUserByUsername: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in DeleteUserByUsername: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -162,7 +160,7 @@ func DeleteUserByUsername(ctx context.Context, username string) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to delete user: %v", err)
+		return fmt.Errorf("deleting user: %v", err)
 	}
 
 	return nil
@@ -174,7 +172,7 @@ func DeleteUserById(ctx context.Context, id int64) error {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("Failed to take a db conn from the pool in DeleteUserById: %v", err)
+		return fmt.Errorf("taking a db conn from the pool in DeleteUserById: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -185,7 +183,7 @@ func DeleteUserById(ctx context.Context, id int64) error {
 
 	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("Failed to delete user: %v", err)
+		return fmt.Errorf("deleting user: %v", err)
 	}
 
 	return nil

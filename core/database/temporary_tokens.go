@@ -7,7 +7,7 @@ import (
 	"zene/core/logger"
 )
 
-func createTemporaryTokensTable(ctx context.Context) {
+func createTemporaryTokensTable(ctx context.Context) error {
 	tableName := "temporary_tokens"
 	schema := `CREATE TABLE IF NOT EXISTS temporary_tokens (
 		temporary_token TEXT PRIMARY KEY,
@@ -15,7 +15,8 @@ func createTemporaryTokensTable(ctx context.Context) {
 		expires TEXT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
-	createTable(ctx, tableName, schema)
+	err := createTable(ctx, tableName, schema)
+	return err
 }
 
 func SaveTemporaryToken(ctx context.Context, userId int64, temporary_token string, duration time.Duration) (string, error) {
@@ -23,7 +24,7 @@ func SaveTemporaryToken(ctx context.Context, userId int64, temporary_token strin
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return "", fmt.Errorf("Failed to take a db conn from the pool in SaveTemporaryToken: %v", err)
+		return "", fmt.Errorf("taking a db conn from the pool in SaveTemporaryToken: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -36,7 +37,7 @@ func SaveTemporaryToken(ctx context.Context, userId int64, temporary_token strin
 
 	_, err = stmt.Step()
 	if err != nil {
-		return "", fmt.Errorf("Failed to save temporary token: %v", err)
+		return "", fmt.Errorf("saving temporary token: %v", err)
 	}
 
 	return expiresAt, nil
@@ -47,7 +48,7 @@ func ExtendTemporaryToken(ctx context.Context, userId int64, temporary_token str
 	defer dbMutex.Unlock()
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return "", fmt.Errorf("Failed to take a db conn from the pool in ExtendTemporaryToken: %v", err)
+		return "", fmt.Errorf("taking a db conn from the pool in ExtendTemporaryToken: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -60,7 +61,7 @@ func ExtendTemporaryToken(ctx context.Context, userId int64, temporary_token str
 
 	_, err = stmt.Step()
 	if err != nil {
-		return "", fmt.Errorf("Failed to extend temporary token: %v", err)
+		return "", fmt.Errorf("extending temporary token: %v", err)
 	}
 
 	return expiresAt, nil
@@ -73,7 +74,7 @@ func IsTemporaryTokenValid(ctx context.Context, temporary_token string) (bool, e
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return false, fmt.Errorf("Failed to take a db conn from the pool in IsTemporaryTokenValid: %v", err)
+		return false, fmt.Errorf("taking a db conn from the pool in IsTemporaryTokenValid: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -82,13 +83,13 @@ func IsTemporaryTokenValid(ctx context.Context, temporary_token string) (bool, e
 	stmt.SetText("$temporary_token", temporary_token)
 
 	if hasRow, err := stmt.Step(); err != nil {
-		return false, fmt.Errorf("Failed to take a db conn from the pool in IsTemporaryTokenValid: %v", err)
+		return false, fmt.Errorf("taking a db conn from the pool in IsTemporaryTokenValid: %v", err)
 	} else if !hasRow {
 		return false, nil
 	} else {
 		expiresAt, err = time.Parse(time.RFC3339Nano, stmt.GetText("expires"))
 		if err != nil {
-			return false, fmt.Errorf("Error parsing expiry time for temporary_token %s: %v", temporary_token, err)
+			return false, fmt.Errorf("parsing expiry time for temporary_token %s: %v", temporary_token, err)
 		}
 		return time.Now().Before(expiresAt), nil
 	}
@@ -100,7 +101,7 @@ func CleanupExpiredTemporaryTokens(ctx context.Context) {
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		logger.Printf("Failed to take a db conn from the pool in CleanupExpiredTemporaryTokens: %v", err)
+		logger.Printf("taking a db conn from the pool in CleanupExpiredTemporaryTokens: %v", err)
 		return
 	}
 	defer DbPool.Put(conn)

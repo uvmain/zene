@@ -2,10 +2,10 @@
 import type { AlbumMetadata } from '../types'
 import dayjs from 'dayjs'
 import { useBackendFetch } from '../composables/useBackendFetch'
-import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import { useRandomSeed } from '../composables/useRandomSeed'
 
 const { backendFetchRequest } = useBackendFetch()
-const { getRandomSeed, refreshRandomSeed } = usePlaybackQueue()
+const { getRandomSeed, refreshRandomSeed } = useRandomSeed()
 
 const METADATA_COUNT = 20
 const isShaking = ref(false)

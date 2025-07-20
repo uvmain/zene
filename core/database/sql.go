@@ -13,6 +13,7 @@ func getUnendedMetadataWithPlaycountsSql(userId int64) string {
 
 func getMetadataWithGenresSql(userId int64, genres []string, condition string, limit int64, random string) string {
 	stmt := getUnendedMetadataWithPlaycountsSql(userId)
+	stmt += " JOIN track_genres tg ON m.file_path = tg.file_path"
 	for index, genre := range genres {
 		if genre == "" {
 			continue
@@ -26,7 +27,7 @@ func getMetadataWithGenresSql(userId int64, genres []string, condition string, l
 		} else {
 			stmt += " WHERE "
 		}
-		stmt += fmt.Sprintf("(genre LIKE '%s;%%' OR genre LIKE '%%;%s;%%' OR genre LIKE '%%;%s' OR genre = '%s' )", genre, genre, genre, genre)
+		stmt += fmt.Sprintf("(tg.genre = '%s')", genre)
 	}
 	if random != "" {
 		randomInteger, err := strconv.Atoi(random)

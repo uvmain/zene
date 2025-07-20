@@ -14,7 +14,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("Failed to take a db conn from the pool in SelectTracksByAlbumId: %v", err)
+		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectTracksByAlbumId: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -76,7 +76,7 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return []types.AlbumsResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAllAlbums: %v", err)
+		return []types.AlbumsResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAllAlbums: %v", err)
 	}
 	defer DbPool.Put(conn)
 
@@ -135,7 +135,7 @@ func SelectAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumsRe
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return types.AlbumsResponse{}, fmt.Errorf("Failed to take a db conn from the pool in SelectAlbum: %v", err)
+		return types.AlbumsResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAlbum: %v", err)
 	}
 	defer DbPool.Put(conn)
 
