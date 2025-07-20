@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import TopGenres from '../TopGenres.vue'
 import { mockGenresResponse } from '../../../test/mocks/genres'
+import TopGenres from '../TopGenres.vue'
 
 // Mock Vue Router composables
 vi.mock('vue-router', () => ({

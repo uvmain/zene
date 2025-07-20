@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
-import HeroAlbum from '../HeroAlbum.vue'
 import { mockAlbumsResponse } from '../../../test/mocks/albums'
+import HeroAlbum from '../HeroAlbum.vue'
 
 // Mock Vue Router composables
 vi.mock('vue-router', () => ({
