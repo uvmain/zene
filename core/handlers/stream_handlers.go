@@ -61,12 +61,12 @@ func HandleStreamTrack(w http.ResponseWriter, r *http.Request) {
 func OpenFile(filePath string) (string, time.Time, *os.File, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", time.Time{}, nil, fmt.Errorf("File not found in filesystem: %w.", err)
+		return "", time.Time{}, nil, fmt.Errorf("opening file: %w", err)
 	}
 
 	stat, err := file.Stat()
 	if err != nil {
-		return "", time.Time{}, nil, fmt.Errorf("Error stating file: %w", err)
+		return "", time.Time{}, nil, fmt.Errorf("stating file: %w", err)
 	}
 
 	return stat.Name(), stat.ModTime(), file, nil

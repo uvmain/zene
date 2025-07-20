@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { TrackMetadataWithImageUrl } from '../types'
 import type { TokenResponse } from '../types/auth'
 import { onKeyStroke } from '@vueuse/core'
 import { useBackendFetch } from '../composables/useBackendFetch'
@@ -642,7 +643,7 @@ async function onCastMediaInfoChanged() {
       }
     }
     else {
-      debugLog('Could not extract track ID from remote media URL:', remoteMediaUrl)
+      debugLog(`Could not extract track ID from remote media URL: ${remoteMediaUrl}`)
     }
   }
 }
@@ -663,7 +664,7 @@ onMounted(async () => {
     }
   }
 
-  // 🔥 If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
+  // If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
   // we have to check manually and initialize right now
   if ((window.cast && window.cast.isAvailable) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
     debugLog('Cast API already available (sync)')

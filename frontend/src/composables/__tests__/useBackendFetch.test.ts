@@ -1,16 +1,18 @@
+import type { MockInstance } from 'vitest'
+import type { TrackMetadata } from '../../types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useBackendFetch } from '../useBackendFetch'
 
 // Mock dependencies
 vi.mock('../useRandomSeed', () => ({
   useRandomSeed: () => ({
-    getRandomSeed: () => 12345,
+    getRandomSeed: (): number => 12345,
   }),
 }))
 
 vi.mock('../useLogic', () => ({
   useLogic: () => ({
-    trackWithImageUrl: (track: any) => ({
+    trackWithImageUrl: (track: TrackMetadata) => ({
       ...track,
       image_url: `/api/albums/${track.musicbrainz_album_id}/art`,
     }),
@@ -18,7 +20,7 @@ vi.mock('../useLogic', () => ({
 }))
 
 describe('useBackendFetch', () => {
-  let fetchSpy: any
+  let fetchSpy: MockInstance
 
   beforeEach(() => {
     vi.clearAllMocks()
