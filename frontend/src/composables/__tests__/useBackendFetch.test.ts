@@ -242,11 +242,11 @@ describe('useBackendFetch', () => {
 
       expect(fetchSpy).toHaveBeenCalledWith('/api/temporary_token', {
         method: 'POST',
-        body: expect.any(FormData),
+        body: expect.any(FormData) as FormData,
       })
 
       // Verify FormData content
-      const callArgs = fetchSpy.mock.calls[0]
+      const callArgs = fetchSpy.mock.calls[0] as [string, RequestInit]
       const formData = callArgs[1].body as FormData
       expect(formData.get('token')).toBe('old-token')
       expect(formData.get('duration')).toBe('30')
@@ -263,7 +263,7 @@ describe('useBackendFetch', () => {
       const { refreshTemporaryToken } = useBackendFetch()
       await refreshTemporaryToken('old-token', 120)
 
-      const callArgs = fetchSpy.mock.calls[0]
+      const callArgs = fetchSpy.mock.calls[0] as [string, RequestInit]
       const formData = callArgs[1].body as FormData
       expect(formData.get('duration')).toBe('120')
     })
