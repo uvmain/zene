@@ -68,8 +68,6 @@ func HandleGetTracksByGenre(w http.ResponseWriter, r *http.Request) {
 
 	var rows []types.MetadataWithPlaycounts
 
-	logger.Printf("Random: %s", random)
-
 	rows, err = database.SelectTracksByGenres(r.Context(), genresList, condition, int64(limitInt), random)
 	if err != nil {
 		logger.Printf("Error querying database in SelectTracksByGenres: %v", err)

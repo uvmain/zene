@@ -27,6 +27,7 @@ func Initialise(ctx context.Context) {
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
 	createFtsTables(ctx)
+	createGenresTable(ctx)
 	createAudioCacheTable(ctx)
 	createTemporaryTokensTable(ctx)
 }
