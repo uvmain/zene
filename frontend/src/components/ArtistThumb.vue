@@ -24,12 +24,19 @@ function navigate() {
 
 <template>
   <div class="w-30 flex flex-col cursor-pointer gap-2" @click="navigate()">
-    <div class="size-30">
+    <div class="group size-30">
       <img
         class="h-full w-full rounded-md object-cover"
         :src="artist.image_url"
         @error="onImageError"
       />
+      <div class="relative">
+        <PlayButton
+          size="small"
+          :artist="artist"
+          class="invisible absolute bottom-2 right-1 z-10 group-hover:visible"
+        />
+      </div>
     </div>
     <div class="text-nowrap text-xs text-gray-300">
       {{ artist.artist }}
