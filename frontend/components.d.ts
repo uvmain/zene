@@ -9,6 +9,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     Album: typeof import('./src/components/Album.vue')['default']
+    Albums: typeof import('./src/components/Albums.vue')['default']
+    Artists: typeof import('./src/components/Artists.vue')['default']
     ArtistThumb: typeof import('./src/components/ArtistThumb.vue')['default']
     FooterPlayer: typeof import('./src/components/FooterPlayer.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
@@ -48,7 +50,7 @@ declare module 'vue' {
     NavArt: typeof import('./src/components/NavArt.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     PlayButton: typeof import('./src/components/PlayButton.vue')['default']
-    RecentlyAddedAlbums: typeof import('./src/components/RecentlyAddedAlbums.vue')['default']
+    RecentlyAddedAlbums: typeof import('./s./src/components/Artists.vuefault']
     RecentlyUpdatedArtists: typeof import('./src/components/RecentlyUpdatedArtists.vue')['default']
     RefreshHeader: typeof import('./src/components/RefreshHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

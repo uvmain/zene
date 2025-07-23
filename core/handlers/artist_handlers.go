@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"zene/core/art"
 	"zene/core/database"
 	"zene/core/logger"
@@ -18,22 +17,6 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	chronoParam := r.URL.Query().Get("chronological")
 	limitParam := r.URL.Query().Get("limit")
 	offsetParam := r.URL.Query().Get("offset")
-
-	if randomParam != "" && randomParam != "true" && randomParam != "false" {
-		http.Error(w, "Invalid value for 'random' parameter", http.StatusBadRequest)
-		return
-	}
-	if recentParam != "" && recentParam != "true" && recentParam != "false" {
-		http.Error(w, "Invalid value for 'recent' parameter", http.StatusBadRequest)
-		return
-	}
-
-	if limitParam != "" {
-		if _, err := strconv.Atoi(limitParam); err != nil {
-			http.Error(w, "Invalid value for 'limit' parameter", http.StatusBadRequest)
-			return
-		}
-	}
 
 	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {

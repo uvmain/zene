@@ -55,24 +55,24 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	if recent == "true" {
 		stmtText += " ORDER BY date_added desc"
 	} else if random != "" {
-		integer, err := strconv.Atoi(random)
+		randomInt, err := strconv.Atoi(random)
 		if err == nil {
-			stmtText += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", integer)
+			stmtText += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", randomInt)
 		}
 	} else if chronological == "true" {
 		stmtText += " ORDER BY release_date desc"
 	}
 
 	if limit != "" {
-		integer, err := strconv.Atoi(limit)
+		limitInt, err := strconv.Atoi(limit)
 		if err == nil {
-			stmtText = fmt.Sprintf("%s limit %d", stmtText, integer)
+			stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
 		}
 	}
 	if offset != "" {
-		integer, err := strconv.Atoi(offset)
+		offsetInt, err := strconv.Atoi(offset)
 		if err == nil {
-			stmtText = fmt.Sprintf("%s offset %d", stmtText, integer)
+			stmtText = fmt.Sprintf("%s offset %d", stmtText, offsetInt)
 		}
 	}
 
@@ -136,15 +136,15 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 		}
 	}
 	if limit != "" {
-		integer, err := strconv.Atoi(limit)
+		limitInt, err := strconv.Atoi(limit)
 		if err == nil {
-			stmtText = fmt.Sprintf("%s limit %d", stmtText, integer)
+			stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
 		}
 	}
 	if offset != "" {
-		integer, err := strconv.Atoi(offset)
+		offsetInt, err := strconv.Atoi(offset)
 		if err == nil {
-			stmtText = fmt.Sprintf("%s offset %d", stmtText, integer)
+			stmtText = fmt.Sprintf("%s offset %d", stmtText, offsetInt)
 		}
 	}
 
@@ -225,24 +225,24 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
 	} else if random != "" {
-		integer, err := strconv.Atoi(random)
+		randomInt, err := strconv.Atoi(random)
 		if err == nil {
-			stmtText += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", integer)
+			stmtText += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInt)
 		}
 	} else if chronological == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY m.release_date desc", stmtText)
 	}
 
 	if limit != "" {
-		integer, err := strconv.Atoi(limit)
+		limitInt, err := strconv.Atoi(limit)
 		if err == nil {
-			stmtText = fmt.Sprintf("%s limit %d", stmtText, integer)
+			stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
 		}
 	}
 	if offset != "" {
-		integer, err := strconv.Atoi(offset)
+		offsetInt, err := strconv.Atoi(offset)
 		if err == nil {
-			stmtText = fmt.Sprintf("%s offset %d", stmtText, integer)
+			stmtText = fmt.Sprintf("%s offset %d", stmtText, offsetInt)
 		}
 	}
 

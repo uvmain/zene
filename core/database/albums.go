@@ -85,18 +85,18 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 	if recent == "true" {
 		stmtText += " ORDER BY date_added desc"
 	} else if random != "" {
-		integer, err := strconv.Atoi(random)
+		randomInt, err := strconv.Atoi(random)
 		if err == nil {
-			stmtText += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", integer)
+			stmtText += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", randomInt)
 		}
 	} else {
 		stmtText += " ORDER BY album"
 	}
 
 	if limit != "" {
-		integer, err := strconv.Atoi(random)
+		limitInt, err := strconv.Atoi(limit)
 		if err == nil {
-			stmtText += fmt.Sprintf(" limit %d", integer)
+			stmtText += fmt.Sprintf(" limit %d", limitInt)
 		}
 	}
 
