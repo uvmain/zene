@@ -6,6 +6,7 @@ import (
 	"zene/core/art"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/net"
 )
 
 func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +73,7 @@ func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
 	}
 	imageBlob, lastModified, err := art.GetArtForAlbum(r.Context(), musicBrainzAlbumId, sizeParam)
 
-	if IfModifiedResponse(w, r, lastModified) {
+	if net.IfModifiedResponse(w, r, lastModified) {
 		return
 	}
 

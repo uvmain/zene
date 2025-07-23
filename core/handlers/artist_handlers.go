@@ -7,6 +7,7 @@ import (
 	"zene/core/art"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/net"
 	"zene/core/types"
 )
 
@@ -96,7 +97,7 @@ func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
 	imageBlob, lastModified, err := art.GetArtForArtist(r.Context(), musicBrainzArtistId)
 
-	if IfModifiedResponse(w, r, lastModified) {
+	if net.IfModifiedResponse(w, r, lastModified) {
 		return
 	}
 
