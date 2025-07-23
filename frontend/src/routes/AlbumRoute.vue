@@ -7,7 +7,7 @@ import { useRouteTracks } from '../composables/useRouteTracks'
 const route = useRoute()
 const { routeTracks, clearRouteTracks } = useRouteTracks()
 const { backendFetchRequest, getAlbumTracks } = useBackendFetch()
-const { last_updated_musicbrainz_track_id } = usePlaycounts()
+const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const album = ref<AlbumMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()
@@ -39,7 +39,7 @@ watch(() => route.params.musicbrainz_album_id, async () => {
   getAlbumTracksAndRouteTracks()
 })
 
-watch(last_updated_musicbrainz_track_id, (newTrack) => {
+watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
   tracks.value?.forEach((track) => {
     if (track.musicbrainz_track_id === newTrack) {
       track.user_play_count = track.user_play_count + 1

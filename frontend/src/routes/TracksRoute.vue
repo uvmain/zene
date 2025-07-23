@@ -2,6 +2,7 @@
 import type { TrackMetadataWithImageUrl } from '../types'
 import { useBackendFetch } from '../composables/useBackendFetch'
 import { useLogic } from '../composables/useLogic'
+import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRandomSeed } from '../composables/useRandomSeed'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
@@ -9,6 +10,7 @@ const { routeTracks, clearRouteTracks } = useRouteTracks()
 const { backendFetchRequest } = useBackendFetch()
 const { getRandomSeed } = useRandomSeed()
 const { trackWithImageUrl } = useLogic()
+const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const LIMIT = 100 as const
 const offset = ref(0)
@@ -31,6 +33,15 @@ async function loadMore() {
     routeTracks.value.push(...tracksWithImages)
   }
 }
+
+watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
+  routeTracks.value?.forEach((track) => {
+    if (track.musicbrainz_track_id === newTrack) {
+      track.user_play_count = track.user_play_count + 1
+      track.global_play_count = track.global_play_count + 1
+    }
+  })
+})
 
 onMounted(async () => {
   try {

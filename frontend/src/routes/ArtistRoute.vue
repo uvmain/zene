@@ -2,11 +2,13 @@
 import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
 import dayjs from 'dayjs'
 import { useBackendFetch } from '../composables/useBackendFetch'
+import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()
 const { backendFetchRequest, getArtistAlbums, getArtistTracks } = useBackendFetch()
+const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const artist = ref<ArtistMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()
@@ -58,6 +60,15 @@ onBeforeMount(async () => {
 onMounted(async () => {
   await getTracks()
   await getAlbums()
+})
+
+watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
+  tracks.value?.forEach((track) => {
+    if (track.musicbrainz_track_id === newTrack) {
+      track.user_play_count = track.user_play_count + 1
+      track.global_play_count = track.global_play_count + 1
+    }
+  })
 })
 </script>
 

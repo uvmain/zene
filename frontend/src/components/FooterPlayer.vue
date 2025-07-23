@@ -18,7 +18,7 @@ const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTr
 const { refreshRandomSeed } = useRandomSeed()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
-const { postPlaycount, updatePlaycount } = usePlaycounts()
+const { postPlaycount } = usePlaycounts()
 const router = useRouter()
 
 const audioRef = ref<HTMLAudioElement | null>(null)
@@ -154,7 +154,6 @@ function updateProgress() {
     const halfwayPoint = Number.parseFloat(currentlyPlayingTrack.value.duration) / 2
     if (currentTime.value >= halfwayPoint) {
       postPlaycount(currentlyPlayingTrack.value.musicbrainz_track_id)
-      updatePlaycount(currentlyPlayingTrack.value.musicbrainz_track_id)
       playcountPosted.value = true
     }
   }
