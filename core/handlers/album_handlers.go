@@ -70,7 +70,11 @@ func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
 	if sizeParam == "" {
 		sizeParam = "xl"
 	}
-	imageBlob, err := art.GetArtForAlbum(r.Context(), musicBrainzAlbumId, sizeParam)
+	imageBlob, lastModified, err := art.GetArtForAlbum(r.Context(), musicBrainzAlbumId, sizeParam)
+
+	if IfModifiedResponse(w, r, lastModified) {
+		return
+	}
 
 	if err != nil {
 		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)

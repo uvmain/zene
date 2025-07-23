@@ -2,6 +2,7 @@ package art
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -119,20 +120,21 @@ func getArtFromInternet(ctx context.Context, musicBrainzAlbumId string) {
 	}
 }
 
-func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size string) ([]byte, error) {
+func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size string) ([]byte, time.Time, error) {
 	file_name := strings.Join([]string{musicBrainzAlbumId, size}, "_")
 	file_name = strings.Join([]string{file_name, "jpg"}, ".")
 	filePath, _ := filepath.Abs(filepath.Join(config.AlbumArtFolder, file_name))
 
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		logger.Printf("Image file does not exist: %s:  %s", filePath, err)
-		return nil, err
+	info, err := os.Stat(filePath)
+	if err != nil {
+		return nil, time.Now(), fmt.Errorf("file does not exist: %s:  %s", filePath, err)
 	}
+
+	modTime := info.ModTime()
 
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
-		logger.Printf("Error reading image for file_name %s: %s", file_name, err)
-		return nil, err
+		return nil, time.Now(), fmt.Errorf("error reading image for filename %s: %s", filePath, err)
 	}
-	return blob, nil
+	return blob, modTime, nil
 }
