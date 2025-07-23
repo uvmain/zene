@@ -94,7 +94,16 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	imageBlob, err := art.GetArtForArtist(r.Context(), musicBrainzArtistId)
+	imageBlob, lastModified, err := art.GetArtForArtist(r.Context(), musicBrainzArtistId)
+
+	if IfModifiedResponse(w, r, lastModified) {
+		return
+	}
+
+	if err != nil {
+		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
+		return
+	}
 
 	if err != nil {
 		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)

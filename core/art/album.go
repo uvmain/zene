@@ -134,7 +134,7 @@ func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size string)
 
 	blob, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, time.Now(), fmt.Errorf("error reading image for filename %s: %s", filePath, err)
+		return nil, time.Now(), fmt.Errorf("error reading image for filepath %s: %s", filePath, err)
 	}
 	return blob, modTime, nil
 }
