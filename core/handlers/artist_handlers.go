@@ -105,10 +105,6 @@ func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err != nil {
-		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
-		return
-	}
 	mimeType := http.DetectContentType(imageBlob)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
