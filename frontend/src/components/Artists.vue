@@ -19,13 +19,13 @@ const currentOrder = useSessionStorage<'recentlyUpdated' | 'random' | 'alphabeti
 const headerTitle = computed(() => {
   switch (currentOrder.value) {
     case 'recentlyUpdated':
-      return 'Albums: Recently Updated'
+      return 'Artists: Recently Updated'
     case 'random':
-      return 'Albums: Random'
+      return 'Artists: Random'
     case 'alphabetical':
-      return 'Albums: Alphabetical'
+      return 'Artists: Alphabetical'
     default:
-      return 'Albums'
+      return 'Artists'
   }
 })
 
