@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useSessionStorage } from '@vueuse/core'
+import { useLocalStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { useBackendFetch } from '../composables/useBackendFetch'
 import { useRandomSeed } from '../composables/useRandomSeed'
@@ -13,7 +13,7 @@ const { refreshRandomAlbumSeed, getRandomAlbumSeed, randomAlbumSeed } = useRando
 
 const recentlyAddedAlbums = ref()
 const showOrderOptions = ref(false)
-const currentOrder = useSessionStorage<'recentlyUpdated' | 'random' | 'alphabetical'>('currentAlbumOrder', 'recentlyUpdated')
+const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical'>('currentAlbumOrder', 'recentlyUpdated')
 
 const headerTitle = computed(() => {
   switch (currentOrder.value) {

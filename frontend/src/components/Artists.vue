@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ArtistMetadata } from '../types'
-import { useSessionStorage } from '@vueuse/core'
+import { useLocalStorage } from '@vueuse/core'
 import { useBackendFetch } from '../composables/useBackendFetch'
 import { useRandomSeed } from '../composables/useRandomSeed'
 
@@ -14,7 +14,7 @@ const { refreshRandomArtistSeed, getRandomArtistSeed, randomArtistSeed } = useRa
 
 const artists = ref<ArtistMetadata[]>()
 const showOrderOptions = ref(false)
-const currentOrder = useSessionStorage<'recentlyUpdated' | 'random' | 'alphabetical'>('currentAlbumOrder', 'recentlyUpdated')
+const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical'>('currentArtistsOrder', 'recentlyUpdated')
 
 const headerTitle = computed(() => {
   switch (currentOrder.value) {
