@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import type { AlbumMetadata, TrackMetadataWithImageUrl } from '../types'
 import { useBackendFetch } from '../composables/useBackendFetch'
-import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks, clearRouteTracks } = useRouteTracks()
 const { backendFetchRequest, getAlbumTracks } = useBackendFetch()
-const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const album = ref<AlbumMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()
@@ -37,15 +35,6 @@ async function getAlbumTracksAndRouteTracks() {
 watch(() => route.params.musicbrainz_album_id, async () => {
   getAlbum()
   getAlbumTracksAndRouteTracks()
-})
-
-watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
-  tracks.value?.forEach((track) => {
-    if (track.musicbrainz_track_id === newTrack) {
-      track.user_play_count = track.user_play_count + 1
-      track.global_play_count = track.global_play_count + 1
-    }
-  })
 })
 
 onBeforeMount(async () => {

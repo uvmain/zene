@@ -3,6 +3,7 @@ import type { TrackMetadataWithImageUrl } from '../types'
 import { useIntersectionObserver } from '@vueuse/core'
 import { useLogic } from '../composables/useLogic'
 import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import { usePlaycounts } from '../composables/usePlaycounts'
 import { useRouteTracks } from '../composables/useRouteTracks'
 
 const props = defineProps({
@@ -16,6 +17,7 @@ const emits = defineEmits(['loadMore'])
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
 const { getTrackUrl, getArtistUrl, getAlbumUrl, formatTime } = useLogic()
+const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
@@ -63,6 +65,15 @@ watch(currentlyPlayingTrack, async (newTrack) => {
   const index = props.tracks.findIndex(track => track.musicbrainz_track_id === newTrack.musicbrainz_track_id)
   currentRow.value = rowRefs.value[index]
   currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+})
+
+watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
+  routeTracks.value?.forEach((track) => {
+    if (track.musicbrainz_track_id === newTrack) {
+      track.user_play_count = track.user_play_count + 1
+      track.global_play_count = track.global_play_count + 1
+    }
+  })
 })
 </script>
 
