@@ -1,4 +1,4 @@
-import type { AlbumMetadata } from '../../types'
+import type { AlbumMetadata } from '~/types'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import Album from '../Album.vue'

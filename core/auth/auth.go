@@ -114,6 +114,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	sessionCheck := types.SessionCheck{
 		LoggedIn: true,
+		IsAdmin:  user.IsAdmin,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
@@ -215,17 +216,16 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
-	sessionCheck := types.SessionCheck{
-		LoggedIn: false,
+	sessionCheck := types.SessionCheck{}
+
+	user, isValidSession, err := GetUserFromRequest(r)
+	if err != nil {
+		http.Error(w, "Error getting user from request", http.StatusInternalServerError)
+		return
 	}
 
-	cookie, err := r.Cookie("appSession")
-	if err == nil {
-		_, isValid, err := database.GetUserIdFromSession(r.Context(), cookie.Value)
-		if err == nil && isValid {
-			sessionCheck.LoggedIn = true
-		}
-	}
+	sessionCheck.LoggedIn = isValidSession || false // default to false if user is not found
+	sessionCheck.IsAdmin = user.IsAdmin || false    // default to false if user is not found
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
@@ -247,5 +247,5 @@ func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
 			}
 		}
 	}
-	return types.User{}, false, fmt.Errorf("Failed to get user from request: %v", err)
+	return types.User{}, false, fmt.Errorf("getting user from request: %v", err)
 }

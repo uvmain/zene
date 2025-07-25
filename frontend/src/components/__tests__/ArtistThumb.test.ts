@@ -1,4 +1,4 @@
-import type { ArtistMetadata } from '../../types'
+import type { ArtistMetadata } from '~/types'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import ArtistThumb from '../ArtistThumb.vue'

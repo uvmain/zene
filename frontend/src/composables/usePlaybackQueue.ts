@@ -1,4 +1,4 @@
-import type { AlbumMetadata, ArtistMetadata, Queue, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
+import type { AlbumMetadata, ArtistMetadata, Queue, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
 import { useBackendFetch } from './useBackendFetch'
 import { useLogic } from './useLogic'
 import { useRandomSeed } from './useRandomSeed'

@@ -11,7 +11,7 @@ vi.mock('vue-router', () => ({
 }))
 
 // Mock useSearch composable
-vi.mock('../composables/useSearch', () => ({
+vi.mock('~/composables/useSearch', () => ({
   useSearch: () => ({
     closeSearch: vi.fn(),
   }),

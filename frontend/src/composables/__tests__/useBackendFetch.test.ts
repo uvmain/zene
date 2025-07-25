@@ -1,5 +1,5 @@
 import type { MockInstance } from 'vitest'
-import type { TrackMetadata } from '../../types'
+import type { TrackMetadata } from '~/types'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useBackendFetch } from '../useBackendFetch'
 

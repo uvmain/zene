@@ -1,4 +1,4 @@
-import type { TrackMetadataWithImageUrl } from '../../types'
+import type { TrackMetadataWithImageUrl } from '~/types'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import Tracks from '../Tracks.vue'

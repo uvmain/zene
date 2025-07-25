@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { TokenResponse } from '../types/auth'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useDebug } from '../composables/useDebug'
+import type { TokenResponse } from '~/types/auth'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useDebug } from '~/composables/useDebug'
 
 const { getTemporaryToken } = useBackendFetch()
 const { debugLog } = useDebug()

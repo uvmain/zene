@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBackendFetch } from '../composables/useBackendFetch'
+import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const { backendFetchRequest } = useBackendFetch()
 

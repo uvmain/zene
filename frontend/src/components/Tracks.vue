@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '../types'
+import type { TrackMetadataWithImageUrl } from '~/types'
 import { useIntersectionObserver } from '@vueuse/core'
-import { useLogic } from '../composables/useLogic'
-import { usePlaybackQueue } from '../composables/usePlaybackQueue'
-import { usePlaycounts } from '../composables/usePlaycounts'
-import { useRouteTracks } from '../composables/useRouteTracks'
+import { useLogic } from '~/composables/useLogic'
+import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
+import { usePlaycounts } from '~/composables/usePlaycounts'
+import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },

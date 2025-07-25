@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { SessionCheck } from '../types/auth'
-import { useAuth } from '../composables/useAuth'
-import { useBackendFetch } from '../composables/useBackendFetch'
+import type { SessionCheck } from '~/types/auth'
+import { useAuth } from '~/composables/useAuth'
+import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const router = useRouter()
 const { backendFetchRequest } = useBackendFetch()

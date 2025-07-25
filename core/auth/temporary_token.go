@@ -123,7 +123,7 @@ func ExtendTemporaryTokenDurationHandler(w http.ResponseWriter, r *http.Request)
 func ValidateToken(ctx context.Context, token string) (bool, error) {
 	tokenIsValid, err := database.IsTemporaryTokenValid(ctx, token)
 	if !tokenIsValid || err != nil {
-		return false, fmt.Errorf("Invalid token: %v", err)
+		return false, fmt.Errorf("fetching temporary token: %v", err)
 	}
 	return true, nil
 }

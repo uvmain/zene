@@ -1,7 +1,7 @@
 /// <reference types="vite-ssg" />
 /// <reference types="vitest" />
 
-import { fileURLToPath, URL } from 'node:url'
+import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
@@ -44,7 +44,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '~/': `${path.resolve(__dirname, 'src')}/`,
     },
   },
   assetsInclude: [

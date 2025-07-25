@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { GenreMetadata } from '../types'
-import { useBackendFetch } from '../composables/useBackendFetch'
+import type { GenreMetadata } from '~/types'
+import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const router = useRouter()
 const { backendFetchRequest } = useBackendFetch()

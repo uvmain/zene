@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '../types'
-import type { TokenResponse } from '../types/auth'
+import type { TrackMetadataWithImageUrl } from '~/types'
+import type { TokenResponse } from '~/types/auth'
 import { onKeyStroke } from '@vueuse/core'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useDebug } from '../composables/useDebug'
-import { useLogic } from '../composables/useLogic'
-import { usePlaybackQueue } from '../composables/usePlaybackQueue'
-import { usePlaycounts } from '../composables/usePlaycounts'
-import { useRandomSeed } from '../composables/useRandomSeed'
-import { useRouteTracks } from '../composables/useRouteTracks'
-import { useSettings } from '../composables/useSettings'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useDebug } from '~/composables/useDebug'
+import { useLogic } from '~/composables/useLogic'
+import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
+import { usePlaycounts } from '~/composables/usePlaycounts'
+import { useRandomSeed } from '~/composables/useRandomSeed'
+import { useRouteTracks } from '~/composables/useRouteTracks'
+import { useSettings } from '~/composables/useSettings'
 
 const { getMimeType, getTemporaryToken, refreshTemporaryToken } = useBackendFetch()
 const { debugLog } = useDebug()

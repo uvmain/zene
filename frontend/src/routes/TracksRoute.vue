@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '../types'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useLogic } from '../composables/useLogic'
-import { useRandomSeed } from '../composables/useRandomSeed'
-import { useRouteTracks } from '../composables/useRouteTracks'
+import type { TrackMetadataWithImageUrl } from '~/types'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useLogic } from '~/composables/useLogic'
+import { useRandomSeed } from '~/composables/useRandomSeed'
+import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const { routeTracks, clearRouteTracks } = useRouteTracks()
 const { backendFetchRequest } = useBackendFetch()
