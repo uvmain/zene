@@ -18,3 +18,8 @@ func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified tim
 	}
 	return false
 }
+
+func AddUserAgentHeaderToRequest(req *http.Request) {
+	var userAgent = "zene/core/1.0 (https://github.com/uvmain/zene)"
+	req.Header.Set("User-Agent", userAgent)
+}
