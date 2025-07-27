@@ -24,6 +24,7 @@ func Initialise(ctx context.Context) {
 	createSessionsTable(ctx)
 	createMetadataTable(ctx)
 	createPlayCountsTable(ctx)
+	createLyricsTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
 	createFtsTables(ctx)
