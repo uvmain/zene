@@ -34,6 +34,9 @@ const computedSyncedLyrics = computed((): SyncedLyricsLine[] => {
         lyrics,
       }
     }
+    else {
+      return null
+    }
   }).filter(line => line && line.lyrics.length > 0) as SyncedLyricsLine[]
 })
 

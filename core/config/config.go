@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"zene/core/logger"
@@ -13,8 +14,10 @@ import (
 
 var MusicDir string
 var DatabaseDirectory string
+var LibraryDirectory string
 var FfmpegPath string
 var FfprobePath string
+var FfprobeBinaryName string
 var AudioFileTypes []string
 var ArtworkFolder string
 var AlbumArtFolder string
@@ -41,6 +44,7 @@ func LoadConfig() {
 
 	DatabaseDirectory = filepath.Join(dataPath, "database")
 	AudioCacheFolder = filepath.Join(dataPath, "audio-cache")
+	LibraryDirectory = filepath.Join(dataPath, "library")
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")
@@ -71,7 +75,7 @@ func LoadConfig() {
 
 	ffmpegPath := os.Getenv("FFMPEG_PATH")
 	if ffmpegPath == "" {
-		FfmpegPath = "./bin/ffmpeg"
+		FfmpegPath = filepath.Join(LibraryDirectory, "ffmpeg")
 	} else {
 		FfmpegPath, _ = filepath.Abs(ffmpegPath)
 	}
@@ -86,17 +90,13 @@ func LoadConfig() {
 
 	ffprobePath := os.Getenv("FFPROBE_PATH")
 	if ffprobePath == "" {
-		FfprobePath = "./bin/ffprobe"
+		FfprobeBinaryName := "ffprobe"
+		if runtime.GOOS == "windows" {
+			FfprobeBinaryName += ".exe"
+		}
+		FfprobePath = filepath.Join(LibraryDirectory, FfprobeBinaryName)
 	} else {
 		FfprobePath, _ = filepath.Abs(ffprobePath)
-	}
-
-	logger.Printf("FFPROBE_PATH: %s", FfprobePath)
-	version, err = exec.Command(FfprobePath, "-version").Output()
-	if err != nil {
-		logger.Printf("ffprobe not found at %s: %v", FfprobePath, err)
-	} else {
-		logger.Printf("ffprobe version is %v", strings.Split(string(version), "\n")[0])
 	}
 
 	audioFileTypesEnv := os.Getenv("AUDIO_FILE_TYPES")

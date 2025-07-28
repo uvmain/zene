@@ -9,10 +9,32 @@ import (
 	"strings"
 
 	"zene/core/config"
+	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/musicbrainz"
 	"zene/core/types"
 )
+
+func InitializeFfprobe() error {
+	logger.Printf("FFPROBE_PATH: %s", config.FfprobePath)
+
+	if io.FileExists(config.FfprobePath) {
+		logger.Printf("ffprobe binary found at %s", config.FfprobePath)
+	} else {
+		err := DownloadFfprobeBinary()
+		if err != nil {
+			return fmt.Errorf("failed to download ffprobe binary: %v", err)
+		}
+	}
+
+	version, err := exec.Command(config.FfprobePath, "-version").Output()
+	if err != nil {
+		return fmt.Errorf("ffprobe not found at %s: %v", config.FfprobePath, err)
+	} else {
+		logger.Printf("ffprobe version is %v", strings.Split(string(version), "\n")[0])
+		return nil
+	}
+}
 
 func GetTags(ctx context.Context, audiofilePath string) (types.Tags, error) {
 	fileTags, err := GetTagsFromFile(ctx, audiofilePath)
