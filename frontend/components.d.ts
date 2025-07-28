@@ -52,8 +52,6 @@ declare module 'vue' {
     NavArt: typeof import('./src/components/NavArt.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     PlayButton: typeof import('./src/components/PlayButton.vue')['default']
-    RecentlyAddedAlbums: typeof import('./s./src/components/Artists.vuefault']
-    RecentlyUpdatedArtists: typeof import('./src/components/RecentlyUpdatedArtists.vue')['default']
     RefreshHeader: typeof import('./src/components/RefreshHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

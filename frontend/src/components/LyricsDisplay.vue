@@ -21,7 +21,6 @@ interface SyncedLyricsLine {
 
 const computedSyncedLyrics = computed((): SyncedLyricsLine[] => {
   return syncedLyricsRef.value?.split('\n').map((line) => {
-    // match time format of '[02:30.27]'
     const timeMatch = line.match(/^\[(\d+):(\d+)\.(\d+)\]/)
     if (timeMatch) {
       const minutes = Number.parseInt(timeMatch[1], 10)

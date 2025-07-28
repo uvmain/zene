@@ -169,10 +169,34 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 				return err
 			}
 
-			if err := os.Rename(file.Name, filepath.Join(targetDirectory, file.Name)); err != nil {
-				return fmt.Errorf("moving %s to %s: %v", file.Name, targetDirectory, err)
+			targetPath := filepath.Join(targetDirectory, file.Name)
+			err = os.Rename(file.Name, targetPath)
+			if err != nil {
+				if linkErr, ok := err.(*os.LinkError); ok && linkErr.Err.Error() == "invalid cross-device link" {
+					// fallback to copy and delete
+					src, err := os.Open(file.Name)
+					if err != nil {
+						return err
+					}
+					defer src.Close()
+					dst, err := os.Create(targetPath)
+					if err != nil {
+						return err
+					}
+					defer dst.Close()
+					if _, err := io.Copy(dst, src); err != nil {
+						return err
+					}
+					if err := os.Remove(file.Name); err != nil {
+						return err
+					}
+					logger.Printf("extracted %s to %s (copy/delete fallback)", file.Name, targetPath)
+				} else {
+					return fmt.Errorf("moving %s to %s: %v", file.Name, targetPath, err)
+				}
+			} else {
+				logger.Printf("extracted %s to %s", file.Name, targetPath)
 			}
-			logger.Printf("extracted %s to %s", file.Name, targetDirectory)
 		}
 	}
 

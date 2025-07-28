@@ -16,7 +16,7 @@ COPY . .
 
 COPY --from=frontend-build /frontend/dist ./frontend/dist
 
-RUN CGO_ENABLED=0 go build -o zene .
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o zene .
 
 FROM gcr.io/distroless/static-debian12
 
