@@ -83,8 +83,8 @@ func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]s
 }
 
 func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	dbMutex.Lock()
+	defer dbMutex.Unlock()
 
 	conn, err := DbPool.Take(ctx)
 	if err != nil {

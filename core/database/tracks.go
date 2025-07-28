@@ -164,7 +164,7 @@ func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
 	}
 	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`SELECT file_path, date_modified FROM metadata;`)
+	stmt := conn.Prep(`SELECT file_path, file_name, date_modified FROM metadata;`)
 	defer stmt.Finalize()
 
 	var rows []types.File
@@ -178,6 +178,7 @@ func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
 
 		row := types.File{
 			FilePathAbs:  stmt.GetText("file_path"),
+			FileName:     stmt.GetText("file_name"),
 			DateModified: stmt.GetText("date_modified"),
 		}
 		rows = append(rows, row)

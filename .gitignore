@@ -13,3 +13,4 @@ frontend/dist
 frontend/coverage
 frontend/generate-tests.mjs
 data
+.DS_Store
