@@ -191,11 +191,17 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 						return err
 					}
 					logger.Printf("extracted %s to %s (copy/delete fallback)", file.Name, targetPath)
+					if err := os.Chmod(targetPath, 0755); err != nil {
+						return fmt.Errorf("setting executable permissions on %s: %v", targetPath, err)
+					}
 				} else {
 					return fmt.Errorf("moving %s to %s: %v", file.Name, targetPath, err)
 				}
 			} else {
 				logger.Printf("extracted %s to %s", file.Name, targetPath)
+				if err := os.Chmod(targetPath, 0755); err != nil {
+					return fmt.Errorf("setting executable permissions on %s: %v", targetPath, err)
+				}
 			}
 		}
 	}
