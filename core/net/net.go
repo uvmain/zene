@@ -5,7 +5,9 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
+	"zene/core/config"
 	zene_io "zene/core/io"
 	"zene/core/logger"
 )
@@ -38,6 +40,7 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 	}
 	defer response.Body.Close()
 
+	fileName = filepath.Join(config.TempDirectory, fileName)
 	out, err := os.Create(fileName)
 	if err != nil {
 		out.Close()

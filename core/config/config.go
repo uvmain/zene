@@ -14,6 +14,7 @@ import (
 var MusicDir string
 var DatabaseDirectory string
 var LibraryDirectory string
+var TempDirectory string
 var FfmpegPath string
 var FfmpegBinaryName string
 var FfprobePath string
@@ -45,6 +46,7 @@ func LoadConfig() {
 	DatabaseDirectory = filepath.Join(dataPath, "database")
 	AudioCacheFolder = filepath.Join(dataPath, "audio-cache")
 	LibraryDirectory = filepath.Join(dataPath, "library")
+	TempDirectory = filepath.Join(dataPath, "temp")
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")
