@@ -29,7 +29,7 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 
 	logger.Printf("Transcoding %s at %dk at %s", filePath, quality, cachePath)
 
-	cmd := exec.Command("ffmpeg",
+	cmd := exec.Command(config.FfmpegPath,
 		"-loglevel", "error",
 		"-i", filePathAbs,
 		"-vn",
@@ -77,7 +77,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	logger.Printf("Transcoding %s to stream at %dk", filePathAbs, quality)
 
-	cmd := exec.Command("ffmpeg",
+	cmd := exec.Command(config.FfmpegPath,
 		"-loglevel", "error",
 		"-i", filePathAbs,
 		"-vn",
