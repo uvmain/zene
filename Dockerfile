@@ -1,11 +1,3 @@
-FROM node:22-alpine AS ff
-
-WORKDIR /
-
-COPY ./package.json .
-
-RUN npm install
-
 FROM node:22-alpine AS frontend-build
 
 WORKDIR /frontend
@@ -29,8 +21,6 @@ RUN CGO_ENABLED=0 go build -o zene .
 FROM gcr.io/distroless/static-debian12
 
 COPY --from=backend-build /app/zene .
-COPY --from=ff ./node_modules/ffprobe-baron/ffprobe ./bin/ffprobe
-COPY --from=ff ./node_modules/ffmpeg-baron/ffmpeg ./bin/ffmpeg
 
 EXPOSE 8080
 

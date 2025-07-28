@@ -46,8 +46,7 @@ func GetLyricsForMusicBrainzTrackIdFromLrclib(ctx context.Context, musicBrainzTr
 
 	durationFloat, err := strconv.ParseFloat(trackMetadata.Duration, 64)
 	if err != nil {
-		fmt.Println("Error converting string to float:", err)
-		return types.Lyrics{}, err
+		return types.Lyrics{}, fmt.Errorf("converting string to float: %v", err)
 	}
 
 	durationInt := int(math.Round(durationFloat))

@@ -1,8 +1,13 @@
 package net
 
 import (
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"time"
+	zene_io "zene/core/io"
+	"zene/core/logger"
 )
 
 func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified time.Time) bool {
@@ -22,4 +27,37 @@ func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified tim
 func AddUserAgentHeaderToRequest(req *http.Request) {
 	var userAgent = "zene/core/1.0 (https://github.com/uvmain/zene)"
 	req.Header.Set("User-Agent", userAgent)
+}
+
+func DownloadZip(url string, fileName string, targetDirectory string, fileNameFilter string) error {
+	logger.Println("Downloading:", url)
+	response, err := http.Get(url)
+	if err != nil {
+		zene_io.Cleanup(fileName)
+		return fmt.Errorf("downloading zip from %s: %v", url, err)
+	}
+	defer response.Body.Close()
+
+	out, err := os.Create(fileName)
+	if err != nil {
+		out.Close()
+		zene_io.Cleanup(fileName)
+		return err
+	}
+
+	_, err = io.Copy(out, response.Body)
+	if err != nil {
+		out.Close()
+		zene_io.Cleanup(fileName)
+		return err
+	}
+
+	out.Close()
+
+	if err := zene_io.Unzip(fileName, targetDirectory, fileNameFilter); err != nil {
+		zene_io.Cleanup(fileName)
+		return fmt.Errorf("unzipping %s: %v", fileName, err)
+	}
+
+	return nil
 }

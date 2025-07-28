@@ -40,8 +40,6 @@
     "concurrently": "^9.1.2",
     "cpy-cli": "^5.0.0",
     "cross-env": "^7.0.3",
-    "ffmpeg-baron": "^2.0.3",
-    "ffprobe-baron": "^2.0.3",
     "rimraf": "^6.0.1"
   }
 }
