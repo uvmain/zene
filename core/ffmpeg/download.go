@@ -1,4 +1,4 @@
-package ffprobe
+package ffmpeg
 
 import (
 	"encoding/json"
@@ -12,18 +12,19 @@ import (
 )
 
 const (
-	fileName = "ffprobe.zip"
+	fileName = "ffmpeg.zip"
 	mainUrl  = "https://ffbinaries.com/api/v1/version/latest"
 	macUrl   = "https://www.osxexperts.net"
 )
 
 var (
-	target   string
-	platform = runtime.GOOS
-	arch     = runtime.GOARCH
+	target     string
+	fileString string
+	platform   = runtime.GOOS
+	arch       = runtime.GOARCH
 )
 
-func DownloadFfprobeBinary() error {
+func downloadFfmpegBinary() error {
 	if err := getArch(); err != nil {
 		return err
 	}
@@ -37,6 +38,7 @@ func DownloadFfprobeBinary() error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -61,7 +63,7 @@ func getArch() error {
 			target = "linux-32"
 		}
 	default:
-		return fmt.Errorf("unsupported platform/architecture for ffprobe: %s/%s", platform, arch)
+		return fmt.Errorf("unsupported platform/architecture")
 	}
 	return nil
 }
@@ -69,7 +71,7 @@ func getArch() error {
 func downloadOsxExpertsBinariesFile() error {
 	response, err := http.Get(macUrl)
 	if err != nil {
-		return fmt.Errorf("downloading ffprobe from %s: %v", macUrl, err)
+		return fmt.Errorf("downloading ffmpeg from %s: %v", macUrl, err)
 	}
 	defer response.Body.Close()
 
@@ -80,33 +82,31 @@ func downloadOsxExpertsBinariesFile() error {
 
 	html := string(body)
 	prefix := `href="`
-	suffix := `"`
-
-	elementIndex := strings.Index(html, "ffprobe")
+	elementIndex := strings.Index(html, "ffmpeg")
 	if elementIndex == -1 {
-		return fmt.Errorf("finding ffprobe link from html")
+		return fmt.Errorf("finding ffmpeg link from html")
 	}
 
 	start := strings.LastIndex(html[:elementIndex], prefix) + len(prefix)
-	end := strings.Index(html[start:], suffix)
+	end := strings.Index(html[start:], `"`)
 	if end == -1 {
-		return fmt.Errorf("extracting ffprobe link from html")
+		return fmt.Errorf("extracting ffmpeg link from html")
 	}
 	url := html[start : start+end]
 
-	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffprobe")
+	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffmpeg")
 }
 
 func downloadFfBinariesFile() error {
 	response, err := http.Get(mainUrl)
 	if err != nil {
-		return fmt.Errorf("downloading ffprobe from %s: %v", mainUrl, err)
+		return fmt.Errorf("downloading ffmpeg from %s: %v", mainUrl, err)
 	}
 	defer response.Body.Close()
 
 	type BinInfo struct {
 		Bin map[string]struct {
-			FFProbe string `json:"ffprobe"`
+			FFMpeg string `json:"ffmpeg"`
 		} `json:"bin"`
 	}
 
@@ -115,10 +115,10 @@ func downloadFfBinariesFile() error {
 		return fmt.Errorf("decoding JSON response from %s: %v", mainUrl, err)
 	}
 
-	url := info.Bin[target].FFProbe
+	url := info.Bin[target].FFMpeg
 	if url == "" {
-		return fmt.Errorf("ffprobe not found at %s", mainUrl)
+		return fmt.Errorf("ffmpeg not found at %s", mainUrl)
 	}
 
-	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffprobe")
+	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffmpeg")
 }

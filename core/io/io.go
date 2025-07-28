@@ -1,11 +1,14 @@
 package io
 
 import (
+	"archive/zip"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 	"zene/core/logger"
 	"zene/core/types"
@@ -120,5 +123,60 @@ func DeleteFile(filePath string) error {
 			return fmt.Errorf("Error deleting file %s: %s", filePathAbs, err)
 		}
 	}
+	return nil
+}
+
+func Cleanup(fileName string) error {
+	macosxDir := "__MACOSX"
+
+	err := os.Remove(fileName)
+	if err != nil {
+		return fmt.Errorf("Error removing file %s: %v", fileName, err)
+	}
+
+	err = os.RemoveAll(macosxDir)
+	if err != nil {
+		return fmt.Errorf("Error removing file %s: %v", fileName, err)
+	}
+
+	return nil
+}
+
+func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error {
+	logger.Printf("Unzipping %s to %s", srcFile, targetDirectory)
+	zipReader, err := zip.OpenReader(srcFile)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range zipReader.File {
+		if strings.Contains(file.Name, fileNameFilter) {
+			fileReadCloser, err := file.Open()
+			if err != nil {
+				return err
+			}
+
+			outFile, err := os.Create(file.Name)
+			if err != nil {
+				fileReadCloser.Close()
+				return err
+			}
+
+			_, err = io.Copy(outFile, fileReadCloser)
+			fileReadCloser.Close()
+			outFile.Close()
+			if err != nil {
+				return err
+			}
+
+			if err := os.Rename(file.Name, filepath.Join(targetDirectory, file.Name)); err != nil {
+				return fmt.Errorf("moving %s to %s: %v", file.Name, targetDirectory, err)
+			}
+			logger.Printf("extracted %s to %s", file.Name, targetDirectory)
+		}
+	}
+
+	zipReader.Close()
+	Cleanup(srcFile)
 	return nil
 }

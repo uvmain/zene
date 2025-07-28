@@ -2,7 +2,6 @@ package config
 
 import (
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -16,6 +15,7 @@ var MusicDir string
 var DatabaseDirectory string
 var LibraryDirectory string
 var FfmpegPath string
+var FfmpegBinaryName string
 var FfprobePath string
 var FfprobeBinaryName string
 var AudioFileTypes []string
@@ -75,17 +75,13 @@ func LoadConfig() {
 
 	ffmpegPath := os.Getenv("FFMPEG_PATH")
 	if ffmpegPath == "" {
-		FfmpegPath = filepath.Join(LibraryDirectory, "ffmpeg")
+		FfmpegBinaryName := "ffmpeg"
+		if runtime.GOOS == "windows" {
+			FfmpegBinaryName += ".exe"
+		}
+		FfmpegPath = filepath.Join(LibraryDirectory, FfmpegBinaryName)
 	} else {
 		FfmpegPath, _ = filepath.Abs(ffmpegPath)
-	}
-
-	logger.Printf("FFMPEG_PATH: %s", FfmpegPath)
-	version, err := exec.Command(FfmpegPath, "-version").Output()
-	if err != nil {
-		logger.Printf("ffmpeg not found at %s", FfmpegPath)
-	} else {
-		logger.Printf("ffmpeg version is %v", strings.Split(string(version), "\n")[0])
 	}
 
 	ffprobePath := os.Getenv("FFPROBE_PATH")

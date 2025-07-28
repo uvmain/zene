@@ -5,6 +5,7 @@ import (
 	"log"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/ffmpeg"
 	"zene/core/ffprobe"
 	"zene/core/io"
 	"zene/core/logger"
@@ -28,6 +29,12 @@ func main() {
 	err := ffprobe.InitializeFfprobe()
 	if err != nil {
 		log.Fatalf("Failed to initialize ffprobe: %v", err)
+		return
+	}
+
+	err = ffmpeg.InitializeFfmpeg()
+	if err != nil {
+		log.Fatalf("Failed to initialize ffmpeg: %v", err)
 		return
 	}
 
