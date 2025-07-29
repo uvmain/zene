@@ -199,12 +199,6 @@ function volumeInput(event: Event) {
 }
 
 async function handleNextTrack() {
-  if (isCasting.value && castPlayerController.value) {
-    // For cast, try to use the native next track functionality
-    castPlayerController.value.nextTrack()
-  }
-
-  // Always update the local queue for track management
   await getNextTrack()
 
   // If casting, load the new track to the cast device
@@ -214,12 +208,6 @@ async function handleNextTrack() {
 }
 
 async function handlePreviousTrack() {
-  if (isCasting.value && castPlayerController.value) {
-    // For cast, try to use the native previous track functionality
-    castPlayerController.value.previousTrack()
-  }
-
-  // Always update the local queue for track management
   await getPreviousTrack()
 
   // If casting, load the new track to the cast device
