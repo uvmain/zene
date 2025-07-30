@@ -30,34 +30,24 @@ func createArtistArtTable(ctx context.Context) error {
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {
-
-	stmt := conn.Prep(`SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = $musicbrainz_album_id;`)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
-
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.AlbumArtRow{}, err
-	} else if !hasRow {
+	query := `SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = ?`
+	var row types.AlbumArtRow
+	err := DB.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&row.MusicbrainzAlbumId, &row.DateModified)
+	if err == sql.ErrNoRows {
 		return types.AlbumArtRow{}, nil
-	} else {
-		var row types.AlbumArtRow
-		row.MusicbrainzAlbumId = stmt.GetText("musicbrainz_album_id")
-		row.DateModified = stmt.GetText("date_modified")
-		return row, nil
+	} else if err != nil {
+		return types.AlbumArtRow{}, err
 	}
+	return row, nil
 }
 
 func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModified string) error {
-
-	stmt := conn.Prep(`INSERT INTO album_art (musicbrainz_album_id, date_modified)
-		VALUES ($musicbrainz_album_id, $date_modified)
+	query := `INSERT INTO album_art (musicbrainz_album_id, date_modified)
+		VALUES (?, ?)
 		ON CONFLICT(musicbrainz_album_id) DO UPDATE SET date_modified=excluded.date_modified
-	 	WHERE excluded.date_modified>album_art.date_modified;`)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
-	stmt.SetText("$date_modified", time.Now().Format(time.RFC3339Nano))
-
-	_, err = stmt.Step()
+		WHERE excluded.date_modified>album_art.date_modified`
+	
+	_, err := DB.ExecContext(ctx, query, musicbrainzAlbumId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
 		return fmt.Errorf("inserting album art row: %v", err)
 	}
@@ -65,61 +55,55 @@ func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModif
 }
 
 func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string) ([]string, error) {
-
-	stmt := conn.Prep(`SELECT DISTINCT file_path FROM metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
+	query := `SELECT DISTINCT file_path FROM metadata WHERE musicbrainz_artist_id = ?`
+	rows, err := DB.QueryContext(ctx, query, musicbrainzArtistId)
+	if err != nil {
+		return nil, fmt.Errorf("querying artist subdirectories: %v", err)
+	}
+	defer rows.Close()
 
 	uniqueDirectories := make(map[string]struct{})
 
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return nil, err
-		} else if !hasRow {
-			break
+	for rows.Next() {
+		var filePath string
+		if err := rows.Scan(&filePath); err != nil {
+			return nil, fmt.Errorf("scanning file path: %v", err)
 		}
-		directory := filepath.Dir(stmt.GetText("file_path"))
+		directory := filepath.Dir(filePath)
 		uniqueDirectories[directory] = struct{}{}
 	}
 
-	var rows []string
-	for directory := range uniqueDirectories {
-		rows = append(rows, directory)
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %v", err)
 	}
 
-	return rows, nil
+	var result []string
+	for directory := range uniqueDirectories {
+		result = append(result, directory)
+	}
+
+	return result, nil
 }
 
 func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.ArtistArtRow, error) {
-
-	stmt := conn.Prep(`SELECT musicbrainz_artist_id, date_modified FROM artist_art WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
-
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.ArtistArtRow{}, err
-	} else if !hasRow {
+	query := `SELECT musicbrainz_artist_id, date_modified FROM artist_art WHERE musicbrainz_artist_id = ?`
+	var row types.ArtistArtRow
+	err := DB.QueryRowContext(ctx, query, musicbrainzArtistId).Scan(&row.MusicbrainzArtistId, &row.DateModified)
+	if err == sql.ErrNoRows {
 		return types.ArtistArtRow{}, nil
-	} else {
-		var row types.ArtistArtRow
-		row.MusicbrainzArtistId = stmt.GetText("musicbrainz_artist_id")
-		row.DateModified = stmt.GetText("date_modified")
-		return row, nil
+	} else if err != nil {
+		return types.ArtistArtRow{}, err
 	}
+	return row, nil
 }
 
 func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateModified string) error {
-
-	stmt := conn.Prep(`INSERT INTO artist_art (musicbrainz_artist_id, date_modified)
-	VALUES ($musicbrainz_artist_id, $date_modified)
+	query := `INSERT INTO artist_art (musicbrainz_artist_id, date_modified)
+	VALUES (?, ?)
 	ON CONFLICT(musicbrainz_artist_id) DO UPDATE SET date_modified=excluded.date_modified
-	 WHERE excluded.date_modified>artist_art.date_modified;`)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
-	stmt.SetText("$date_modified", time.Now().Format(time.RFC3339Nano))
-
-	_, err = stmt.Step()
+	WHERE excluded.date_modified>artist_art.date_modified`
+	
+	_, err := DB.ExecContext(ctx, query, musicbrainzArtistId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
 		return fmt.Errorf("inserting artist art row: %v", err)
 	}

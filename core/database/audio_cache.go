@@ -21,12 +21,12 @@ func createAudioCacheTable(ctx context.Context) error {
 func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {
 
 
-	stmt := conn.Prep(`SELECT last_accessed FROM audio_cache WHERE cache_key = $cache_key`)
-	defer stmt.Finalize()
+	var query = `SELECT last_accessed FROM audio_cache WHERE cache_key = ?`)
+	
 
-	stmt.SetText("$cache_key", cache_key)
+	// param: cache_key = cache_key
 
-	hasRow, err := stmt.Step()
+	// TODO: Query single row
 	if err != nil {
 		return time.Time{}, fmt.Errorf("querying audio_cache: %v", err)
 	}
@@ -46,17 +46,17 @@ func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, er
 func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]string, error) {
 
 
-	stmt := conn.Prep(`
+	var query = `
 		SELECT cache_key FROM audio_cache
-		WHERE last_accessed < $older_than
+		WHERE last_accessed < ?
 	`)
-	defer stmt.Finalize()
+	
 
-	stmt.SetText("$older_than", olderThan.Format(time.RFC3339Nano))
+	// param: older_than = olderThan.Format(time.RFC3339Nano)
 
 	var staleKeys []string
 	for {
-		hasRow, err := stmt.Step()
+		// TODO: Query single row
 		if err != nil {
 			return nil, fmt.Errorf("stepping through stale cache query: %v", err)
 		}
@@ -72,17 +72,17 @@ func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]s
 func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 
 
-	stmt := conn.Prep(`
+	var query = `
 		INSERT INTO audio_cache (cache_key, last_accessed)
-		VALUES ($cache_key, $lastAccessed)
-		ON CONFLICT(cache_key) DO UPDATE SET last_accessed = $lastAccessed
+		VALUES (?, ?)
+		ON CONFLICT(cache_key) DO UPDATE SET last_accessed = ?
 	`)
-	defer stmt.Finalize()
+	
 
-	stmt.SetText("$cache_key", cache_key)
-	stmt.SetText("$lastAccessed", time.Now().Format(time.RFC3339Nano))
+	// param: cache_key = cache_key
+	// param: lastAccessed = time.Now(.Format(time.RFC3339Nano))
 
-	_, err = stmt.Step()
+	// TODO: Execute query
 	if err != nil {
 		return fmt.Errorf("upserting audio_cache: %v", err)
 	}
@@ -93,12 +93,12 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
 
 
-	stmt := conn.Prep(`DELETE FROM audio_cache WHERE cache_key = $cache_key`)
-	defer stmt.Finalize()
+	var query = `DELETE FROM audio_cache WHERE cache_key = ?`)
+	
 
-	stmt.SetText("$cache_key", cache_key)
+	// param: cache_key = cache_key
 
-	_, err = stmt.Step()
+	// TODO: Execute query
 	if err != nil {
 		return fmt.Errorf("deleting from audio_cache: %v", err)
 	}
@@ -109,12 +109,12 @@ func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
 func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, error) {
 
 
-	stmt := conn.Prep(`SELECT cache_key, last_accessed FROM audio_cache`)
-	defer stmt.Finalize()
+	var query = `SELECT cache_key, last_accessed FROM audio_cache`)
+	
 
 	var rows []types.AudioCacheEntry
 	for {
-		hasRow, err := stmt.Step()
+		// TODO: Query single row
 		if err != nil {
 			return nil, err
 		}

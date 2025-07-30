@@ -15,16 +15,16 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
 
-	stmtText = fmt.Sprintf("%s where musicbrainz_album_id = $musicbrainz_album_id order by cast(disc_number AS INTEGER), cast(track_number AS INTEGER);", stmtText)
+	stmtText = fmt.Sprintf("%s where musicbrainz_album_id = ? order by cast(disc_number AS INTEGER), cast(track_number AS INTEGER);", stmtText)
 
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_album_id", musicbrainz_album_id)
+	var query = stmtText)
+	
+	// param: musicbrainz_album_id = musicbrainz_album_id
 
 	var rows []types.MetadataWithPlaycounts
 
 	for {
-		if hasRow, err := stmt.Step(); err != nil {
+		if // TODO: Query single row; err != nil {
 			return []types.MetadataWithPlaycounts{}, err
 		} else if !hasRow {
 			break
@@ -88,13 +88,13 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 	}
 
 	stmtText += ";"
-	stmt := conn.Prep(stmtText)
+	var query = stmtText)
 
-	defer stmt.Finalize()
+	
 
 	var rows []types.AlbumsResponse
 	for {
-		if hasRow, err := stmt.Step(); err != nil {
+		if // TODO: Query single row; err != nil {
 			return []types.AlbumsResponse{}, err
 		} else if !hasRow {
 			break
@@ -119,11 +119,11 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 func SelectAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumsResponse, error) {
 
 
-	stmt := conn.Prep(`SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM metadata where musicbrainz_album_id = $musicbrainz_album_id limit 1;`)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_album_id", musicbrainzAlbumId)
+	var query = `SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM metadata where musicbrainz_album_id = ? limit 1;`)
+	
+	// param: musicbrainz_album_id = musicbrainzAlbumId
 
-	if hasRow, err := stmt.Step(); err != nil {
+	if // TODO: Query single row; err != nil {
 		return types.AlbumsResponse{}, err
 	} else if !hasRow {
 		return types.AlbumsResponse{}, nil

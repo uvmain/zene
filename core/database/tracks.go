@@ -46,13 +46,13 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 	}
 
 	stmtText = fmt.Sprintf("%s;", stmtText)
-	stmt := conn.Prep(stmtText)
+	var query = stmtText)
 
-	defer stmt.Finalize()
+	
 
 	var rows []types.MetadataWithPlaycounts
 	for {
-		hasRow, err := stmt.Step()
+		// TODO: Query single row
 		if err != nil {
 			return []types.MetadataWithPlaycounts{}, err
 		} else if !hasRow {
@@ -100,14 +100,14 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 	userId, _ := logic.GetUserIdFromContext(ctx)
 
 	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
-	stmtText = fmt.Sprintf("%s where m.musicbrainz_track_id = $musicbrainz_track_id limit 1;", stmtText)
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_track_id", musicBrainzTrackId)
+	stmtText = fmt.Sprintf("%s where m.musicbrainz_track_id = ? limit 1;", stmtText)
+	var query = stmtText)
+	
+	// param: musicbrainz_track_id = musicBrainzTrackId
 
 	var row types.MetadataWithPlaycounts
 
-	if hasRow, err := stmt.Step(); err != nil {
+	if // TODO: Query single row; err != nil {
 		return types.MetadataWithPlaycounts{}, err
 	} else if !hasRow {
 		return types.MetadataWithPlaycounts{}, nil
@@ -144,12 +144,12 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
 
 
-	stmt := conn.Prep(`SELECT file_path, file_name, date_modified FROM metadata;`)
-	defer stmt.Finalize()
+	var query = `SELECT file_path, file_name, date_modified FROM metadata;`)
+	
 
 	var rows []types.File
 	for {
-		hasRow, err := stmt.Step()
+		// TODO: Query single row
 		if err != nil {
 			return []types.File{}, err
 		} else if !hasRow {

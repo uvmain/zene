@@ -81,72 +81,52 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 }
 
 func UpsertUser(ctx context.Context, user types.User) (int64, error) {
-	rowId := int64(0)
-
-
-	stmt := conn.Prep(`
+	query := `
 		INSERT INTO users (username, password_hash, is_admin)
-		VALUES ($username, $password_hash, $is_admin)
+		VALUES (?, ?, ?)
 		ON CONFLICT(username) DO UPDATE SET
 			password_hash = excluded.password_hash,
-			is_admin = excluded.is_admin
-	`)
-	defer stmt.Finalize()
+			is_admin = excluded.is_admin`
 
-	stmt.SetText("$username", user.Username)
-	stmt.SetText("$password_hash", user.PasswordHash)
-	stmt.SetInt64("$is_admin", logic.BoolToInt64(user.IsAdmin))
-
-	_, err = stmt.Step()
+	result, err := DB.ExecContext(ctx, query, user.Username, user.PasswordHash, logic.BoolToInt64(user.IsAdmin))
 	if err != nil {
-		return rowId, fmt.Errorf("upserting user: %v", err)
+		return 0, fmt.Errorf("upserting user: %v", err)
 	}
-	rowID := conn.LastInsertRowID()
+	
+	rowID, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("getting last insert ID: %v", err)
+	}
+	
 	return rowID, nil
 }
 
 func DeleteUserByUsername(ctx context.Context, username string) error {
-
-
-	stmt := conn.Prep(`DELETE FROM users WHERE username = $username`)
-	defer stmt.Finalize()
-
-	stmt.SetText("$username", username)
-
-	_, err = stmt.Step()
+	query := `DELETE FROM users WHERE username = ?`
+	_, err := DB.ExecContext(ctx, query, username)
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
-
 	return nil
 }
 
 func DeleteUserById(ctx context.Context, id int64) error {
-
-
-	stmt := conn.Prep(`DELETE FROM users WHERE id = $id`)
-	defer stmt.Finalize()
-
-	stmt.SetInt64("$id", id)
-
-	_, err = stmt.Step()
+	query := `DELETE FROM users WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
-
 	return nil
 }
 
 func AnyUsersExist(ctx context.Context) (bool, error) {
-
-
-	stmt := conn.Prep(`SELECT 1 FROM users LIMIT 1`)
-	defer stmt.Finalize()
-
-	hasRow, err := stmt.Step()
-	if err != nil {
+	query := `SELECT 1 FROM users LIMIT 1`
+	var exists int
+	err := DB.QueryRowContext(ctx, query).Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
-
-	return hasRow, nil
+	return true, nil
 }

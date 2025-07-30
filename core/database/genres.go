@@ -28,9 +28,9 @@ func createGenresTable(ctx context.Context) error {
 	createGenresTriggers(ctx)
 
 	// get count of rows in track_genres table
-	stmt := conn.Prep("SELECT COUNT(*) as count FROM track_genres;")
-	defer stmt.Finalize()
-	if hasRow, err := stmt.Step(); err != nil {
+	var query = "SELECT COUNT(*) as count FROM track_genres;")
+	
+	if // TODO: Query single row; err != nil {
 		return fmt.Errorf("error checking count of track_genres table: %v", err)
 	} else if hasRow {
 		count := stmt.GetInt64("count")
@@ -148,12 +148,12 @@ func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam st
 
 	stmtText = fmt.Sprintf("%s;", stmtText)
 
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
+	var query = stmtText)
+	
 
 	var rows []types.GenreResponse
 	for {
-		hasRow, err := stmt.Step()
+		// TODO: Query single row
 		if err != nil {
 			return nil, err
 		}
@@ -175,13 +175,13 @@ func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, li
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	stmtText := getMetadataWithGenresSql(userId, genres, andOr, limit, random)
 
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
+	var query = stmtText)
+	
 
 	var rows []types.MetadataWithPlaycounts
 
 	for {
-		if hasRow, err := stmt.Step(); err != nil {
+		if // TODO: Query single row; err != nil {
 			return []types.MetadataWithPlaycounts{}, err
 		} else if !hasRow {
 			break

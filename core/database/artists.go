@@ -13,11 +13,11 @@ import (
 func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.ArtistResponse, error) {
 
 
-	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM metadata where musicbrainz_artist_id = $musicbrainz_artist_id limit 1;`)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_artist_id", musicbrainzArtistId)
+	var query = `SELECT DISTINCT artist, musicbrainz_artist_id FROM metadata where musicbrainz_artist_id = ? limit 1;`)
+	
+	// param: musicbrainz_artist_id = musicbrainzArtistId
 
-	if hasRow, err := stmt.Step(); err != nil {
+	if // TODO: Query single row; err != nil {
 		return types.ArtistResponse{}, err
 	} else if !hasRow {
 		return types.ArtistResponse{}, nil
@@ -36,7 +36,7 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	var stmtText string
 	var stmt *sqlite.Stmt
 
-	stmtText = "SELECT DISTINCT musicbrainz_album_id, album, musicbrainz_artist_id, artist, genre, release_date FROM metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id GROUP BY musicbrainz_album_id"
+	stmtText = "SELECT DISTINCT musicbrainz_album_id, album, musicbrainz_artist_id, artist, genre, release_date FROM metadata WHERE musicbrainz_artist_id = ? GROUP BY musicbrainz_album_id"
 
 	if recent == "true" {
 		stmtText += " ORDER BY date_added desc"
@@ -65,13 +65,13 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	stmtText = fmt.Sprintf("%s;", stmtText)
 
 	stmt = conn.Prep(stmtText)
-	defer stmt.Finalize()
+	
 
-	stmt.SetText("$musicbrainz_artist_id", musicbrainz_artist_id)
+	// param: musicbrainz_artist_id = musicbrainz_artist_id
 
 	var rows []types.AlbumsResponse
 	for {
-		hasRow, err := stmt.Step()
+		// TODO: Query single row
 		if err != nil {
 			return []types.AlbumsResponse{}, err
 		} else if !hasRow {
@@ -104,7 +104,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	stmtText = getUnendedMetadataWithPlaycountsSql(userId)
 
-	stmtText = fmt.Sprintf("%s where musicbrainz_artist_id = $musicbrainz_artist_id", stmtText)
+	stmtText = fmt.Sprintf("%s where musicbrainz_artist_id = ?", stmtText)
 
 	if recent == "true" {
 		stmtText = fmt.Sprintf("%s ORDER BY date_added desc", stmtText)
@@ -130,13 +130,13 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	stmtText = fmt.Sprintf("%s;", stmtText)
 
 	stmt = conn.Prep(stmtText)
-	defer stmt.Finalize()
+	
 
-	stmt.SetText("$musicbrainz_artist_id", musicbrainz_artist_id)
+	// param: musicbrainz_artist_id = musicbrainz_artist_id
 
 	var rows []types.MetadataWithPlaycounts
 	for {
-		hasRow, err := stmt.Step()
+		// TODO: Query single row
 		if err != nil {
 			return []types.MetadataWithPlaycounts{}, err
 		} else if !hasRow {
@@ -191,7 +191,7 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	stmtText = fmt.Sprintf("%s where m.album_artist = m.artist", stmtText)
 
 	if searchParam != "" {
-		stmtText = fmt.Sprintf("%s and artists_fts MATCH $searchQuery", stmtText)
+		stmtText = fmt.Sprintf("%s and artists_fts MATCH ?", stmtText)
 	}
 
 	if recent == "true" {
@@ -221,16 +221,16 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	stmtText = fmt.Sprintf("%s;", stmtText)
 
 	stmt = conn.Prep(stmtText)
-	defer stmt.Finalize()
+	
 
 	if searchParam != "" {
-		stmt.SetText("$searchQuery", searchParam)
+		// param: searchQuery = searchParam
 	}
 
 	var artists []types.ArtistResponse
 
 	for {
-		if hasRow, err := stmt.Step(); err != nil {
+		if // TODO: Query single row; err != nil {
 			return []types.ArtistResponse{}, err
 		} else if !hasRow {
 			break
