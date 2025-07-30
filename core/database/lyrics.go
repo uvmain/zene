@@ -28,7 +28,7 @@ func UpsertTrackLyrics(ctx context.Context, musicbrainzTrackId string, lyrics ty
 	query := `INSERT INTO track_lyrics (musicbrainz_track_id, plain_lyrics, synced_lyrics)
 		VALUES (?, ?, ?)
 		ON CONFLICT(musicbrainz_track_id) DO UPDATE SET plain_lyrics=excluded.plain_lyrics, synced_lyrics=excluded.synced_lyrics`
-	
+
 	_, err := DB.ExecContext(ctx, query, musicbrainzTrackId, lyrics.PlainLyrics, lyrics.SyncedLyrics)
 	if err != nil {
 		return fmt.Errorf("upserting track lyrics row: %v", err)

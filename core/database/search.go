@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"context"
 	"fmt"
 	"zene/core/types"
@@ -16,7 +15,7 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, 
 		FROM metadata m JOIN metadata_fts f ON f.file_path = m.file_path
 		WHERE metadata_fts MATCH ?
 		ORDER BY m.file_path DESC`
-		
+
 	rows, err := DB.QueryContext(ctx, query, searchQuery)
 	if err != nil {
 		return []types.Metadata{}, fmt.Errorf("searching metadata: %v", err)

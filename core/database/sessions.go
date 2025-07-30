@@ -1,8 +1,8 @@
 package database
 
 import (
-	"context"
 	"database/sql"
+	"context"
 	"fmt"
 	"time"
 	"zene/core/logger"
@@ -66,13 +66,8 @@ func CleanupExpiredSessions(ctx context.Context) {
 }
 
 func DeleteAllSessionsForUserId(ctx context.Context, userId int) error {
-
-
-	stmt := conn.Prep(`DELETE FROM sessions WHERE user_id = $user_id`)
-	defer stmt.Finalize()
-	stmt.SetInt64("$user_id", int64(userId))
-
-	_, err = stmt.Step()
+	query := `DELETE FROM sessions WHERE user_id = ?`
+	_, err := DB.ExecContext(ctx, query, userId)
 	if err != nil {
 		return fmt.Errorf("deleting all sessions for user %d: %v", userId, err)
 	}

@@ -1,8 +1,8 @@
 package database
 
 import (
-	"fmt"
 	"strconv"
+	"fmt"
 )
 
 func getUnendedMetadataWithPlaycountsSql(userId int64) string {

@@ -25,14 +25,14 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = ?`
 	var row types.User
 	var isAdmin int64
-	
+
 	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
-	
+
 	row.IsAdmin = isAdmin != 0
 	return row, nil
 }
@@ -41,14 +41,14 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = ?`
 	var row types.User
 	var isAdmin int64
-	
+
 	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
-	
+
 	row.IsAdmin = isAdmin != 0
 	return row, nil
 }
@@ -72,11 +72,11 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 		row.IsAdmin = isAdmin != 0
 		users = append(users, row)
 	}
-	
+
 	if err := rows.Err(); err != nil {
 		return []types.User{}, fmt.Errorf("rows error: %v", err)
 	}
-	
+
 	return users, nil
 }
 
@@ -92,12 +92,12 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("upserting user: %v", err)
 	}
-	
+
 	rowID, err := result.LastInsertId()
 	if err != nil {
 		return 0, fmt.Errorf("getting last insert ID: %v", err)
 	}
-	
+
 	return rowID, nil
 }
 

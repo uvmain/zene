@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"zene/core/logger"
 )
 
@@ -42,7 +41,7 @@ func createTrigger(ctx context.Context, triggerName string, triggerSQL string) {
 	query := "SELECT name FROM sqlite_master WHERE type='trigger' AND name=?"
 	var name string
 	err := DB.QueryRowContext(ctx, query, triggerName).Scan(&name)
-	
+
 	if err == sql.ErrNoRows {
 		// Trigger doesn't exist, create it
 		_, err := DB.ExecContext(ctx, triggerSQL)
@@ -62,7 +61,7 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 	query := "SELECT name FROM sqlite_master WHERE type='index' AND name=?"
 	var name string
 	err := DB.QueryRowContext(ctx, query, indexName).Scan(&name)
-	
+
 	if err == sql.ErrNoRows {
 		// Index doesn't exist, create it
 		var sql string

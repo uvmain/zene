@@ -49,7 +49,7 @@ func IsTemporaryTokenValid(ctx context.Context, temporary_token string) (bool, e
 	} else if err != nil {
 		return false, fmt.Errorf("checking temporary token validity: %v", err)
 	}
-	
+
 	expiresAt, err := time.Parse(time.RFC3339Nano, expiresAtStr)
 	if err != nil {
 		return false, fmt.Errorf("parsing expiry time for temporary_token %s: %v", temporary_token, err)

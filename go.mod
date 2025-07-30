@@ -9,7 +9,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/rs/cors v1.11.1
 	golang.org/x/crypto v0.39.0
-	zombiezen.com/go/sqlite v1.4.2
+	modernc.org/sqlite v1.37.1
 )
 
 require (
@@ -23,5 +23,4 @@ require (
 	modernc.org/libc v1.65.7 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.37.1 // indirect
 )

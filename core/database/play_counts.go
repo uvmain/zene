@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"context"
 	"fmt"
 	"time"
@@ -47,7 +46,7 @@ func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int64)
 	var args []interface{}
 
 	query = "SELECT id, user_id, musicbrainz_track_id, play_count, last_played FROM play_counts"
-	
+
 	var conditions []string
 	if musicbrainzTrackId != "" {
 		conditions = append(conditions, "musicbrainz_track_id = ?")
@@ -57,14 +56,14 @@ func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int64)
 		conditions = append(conditions, "user_id = ?")
 		args = append(args, userId)
 	}
-	
+
 	if len(conditions) > 0 {
 		query += " WHERE " + fmt.Sprintf("%s", conditions[0])
 		for i := 1; i < len(conditions); i++ {
 			query += " AND " + conditions[i]
 		}
 	}
-	
+
 	query += " ORDER BY play_count DESC, last_played DESC"
 
 	rows, err := DB.QueryContext(ctx, query, args...)
