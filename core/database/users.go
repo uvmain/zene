@@ -22,72 +22,61 @@ func createUsersTable(ctx context.Context) error {
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
-
-
-	stmt := conn.Prep(`SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = $username`)
-	defer stmt.Finalize()
-	stmt.SetText("$username", username)
-
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
-	} else if !hasRow {
+	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = ?`
+	var row types.User
+	var isAdmin int64
+	
+	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
+	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
-	} else {
-		var row types.User
-		row.Id = stmt.GetInt64("id")
-		row.Username = stmt.GetText("username")
-		row.CreatedAt = stmt.GetText("created_at")
-		row.IsAdmin = stmt.GetInt64("is_admin") != 0
-		row.PasswordHash = stmt.GetText("password_hash")
-		return row, nil
+	} else if err != nil {
+		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
+	
+	row.IsAdmin = isAdmin != 0
+	return row, nil
 }
 
 func GetUserById(ctx context.Context, id int64) (types.User, error) {
-
-
-	stmt := conn.Prep(`SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = $id`)
-	defer stmt.Finalize()
-	stmt.SetInt64("$id", id)
-
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
-	} else if !hasRow {
+	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = ?`
+	var row types.User
+	var isAdmin int64
+	
+	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
+	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
-	} else {
-		var row types.User
-		row.Id = stmt.GetInt64("id")
-		row.Username = stmt.GetText("username")
-		row.CreatedAt = stmt.GetText("created_at")
-		row.IsAdmin = stmt.GetInt64("is_admin") != 0
-		row.PasswordHash = stmt.GetText("password_hash")
-		return row, nil
+	} else if err != nil {
+		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
+	
+	row.IsAdmin = isAdmin != 0
+	return row, nil
 }
 
 func GetAllUsers(ctx context.Context) ([]types.User, error) {
-
-
-	stmt := conn.Prep(`SELECT id, username, created_at, is_admin, password_hash FROM users ORDER BY id ASC`)
-	defer stmt.Finalize()
+	query := `SELECT id, username, created_at, is_admin, password_hash FROM users ORDER BY id ASC`
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		return []types.User{}, fmt.Errorf("querying all users: %v", err)
+	}
+	defer rows.Close()
 
 	var users []types.User
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return []types.User{}, fmt.Errorf("stepping through users: %w", err)
-		}
-		if !hasRow {
-			break
-		}
+	for rows.Next() {
 		var row types.User
-		row.Id = stmt.GetInt64("id")
-		row.Username = stmt.GetText("username")
-		row.CreatedAt = stmt.GetText("created_at")
-		row.IsAdmin = stmt.GetInt64("is_admin") != 0
-		row.PasswordHash = stmt.GetText("password_hash")
+		var isAdmin int64
+		err := rows.Scan(&row.Id, &row.Username, &row.CreatedAt, &isAdmin, &row.PasswordHash)
+		if err != nil {
+			return []types.User{}, fmt.Errorf("scanning user row: %v", err)
+		}
+		row.IsAdmin = isAdmin != 0
 		users = append(users, row)
 	}
+	
+	if err := rows.Err(); err != nil {
+		return []types.User{}, fmt.Errorf("rows error: %v", err)
+	}
+	
 	return users, nil
 }
 
