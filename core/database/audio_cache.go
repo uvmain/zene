@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"time"
@@ -18,14 +19,7 @@ func createAudioCacheTable(ctx context.Context) error {
 }
 
 func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("taking a db conn from the pool in SelectAudioCacheEntry: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT last_accessed FROM audio_cache WHERE cache_key = $cache_key`)
 	defer stmt.Finalize()
@@ -50,14 +44,7 @@ func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, er
 }
 
 func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]string, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("taking a db conn from the pool in SelectStaleAudioCacheEntries: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`
 		SELECT cache_key FROM audio_cache
@@ -83,14 +70,7 @@ func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]s
 }
 
 func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in UpsertAudioCacheEntry: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`
 		INSERT INTO audio_cache (cache_key, last_accessed)
@@ -111,14 +91,7 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 }
 
 func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in DeleteAudioCacheEntry: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`DELETE FROM audio_cache WHERE cache_key = $cache_key`)
 	defer stmt.Finalize()
@@ -134,14 +107,7 @@ func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
 }
 
 func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("taking a db conn from the pool in SelectAllAudioCacheEntries: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT cache_key, last_accessed FROM audio_cache`)
 	defer stmt.Finalize()

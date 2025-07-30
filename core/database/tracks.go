@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"strconv"
@@ -10,14 +11,7 @@ import (
 )
 
 func SelectAllTracks(ctx context.Context, random string, limit string, offset string, recent string, chronological string) ([]types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectAllTracks: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
@@ -101,14 +95,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 }
 
 func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in t: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
 
@@ -155,14 +142,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 }
 
 func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.File{}, fmt.Errorf("taking a db conn from the pool in SelectTrackFilesForScanner: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT file_path, file_name, date_modified FROM metadata;`)
 	defer stmt.Finalize()

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"log"
@@ -8,7 +9,6 @@ import (
 	"zene/core/logic"
 	"zene/core/types"
 
-	"zombiezen.com/go/sqlite/sqlitex"
 )
 
 func createGenresTable(ctx context.Context) error {
@@ -28,11 +28,6 @@ func createGenresTable(ctx context.Context) error {
 	createGenresTriggers(ctx)
 
 	// get count of rows in track_genres table
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in createGenresTable: %v", err)
-	}
-	defer DbPool.Put(conn)
 	stmt := conn.Prep("SELECT COUNT(*) as count FROM track_genres;")
 	defer stmt.Finalize()
 	if hasRow, err := stmt.Step(); err != nil {
@@ -129,14 +124,7 @@ func populateGenresFromMetadata(ctx context.Context) error {
 		FROM split_genre
 		WHERE genre <> '';`
 
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in populateGenresFromMetadata: %v", err)
-	}
-	defer DbPool.Put(conn)
 	err = sqlitex.ExecuteTransient(conn, stmtText, nil)
 	if err != nil {
 		return fmt.Errorf("error inserting data into track_genres table: %v", err)
@@ -146,14 +134,7 @@ func populateGenresFromMetadata(ctx context.Context) error {
 }
 
 func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam string) ([]types.GenreResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.GenreResponse{}, fmt.Errorf("taking a db conn from the pool in SelectDistinctGenres: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmtText := "select genre, count(file_path) as count from track_genres group by genre order by count desc"
 
@@ -189,14 +170,7 @@ func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam st
 }
 
 func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, limit int64, random string) ([]types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectTracksByAlbumId: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	stmtText := getMetadataWithGenresSql(userId, genres, andOr, limit, random)

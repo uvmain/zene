@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"path/filepath"
@@ -29,13 +30,6 @@ func createArtistArtTable(ctx context.Context) error {
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.AlbumArtRow{}, fmt.Errorf("taking a db conn from the pool in SelectAlbumArtByMusicBrainzAlbumId: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = $musicbrainz_album_id;`)
 	defer stmt.Finalize()
@@ -54,13 +48,6 @@ func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId 
 }
 
 func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModified string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in InsertAlbumArtRow: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`INSERT INTO album_art (musicbrainz_album_id, date_modified)
 		VALUES ($musicbrainz_album_id, $date_modified)
@@ -78,13 +65,6 @@ func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModif
 }
 
 func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string) ([]string, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("taking a db conn from the pool in SelectArtistSubDirectories: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT DISTINCT file_path FROM metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
 	defer stmt.Finalize()
@@ -112,13 +92,6 @@ func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string)
 }
 
 func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.ArtistArtRow, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.ArtistArtRow{}, fmt.Errorf("taking a db conn from the pool in SelectArtistArtByMusicBrainzArtistId: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT musicbrainz_artist_id, date_modified FROM artist_art WHERE musicbrainz_artist_id = $musicbrainz_artist_id;`)
 	defer stmt.Finalize()
@@ -137,13 +110,6 @@ func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtist
 }
 
 func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateModified string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in InsertArtistArtRow: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`INSERT INTO artist_art (musicbrainz_artist_id, date_modified)
 	VALUES ($musicbrainz_artist_id, $date_modified)

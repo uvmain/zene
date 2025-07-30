@@ -1,24 +1,17 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"strconv"
 	"zene/core/logic"
 	"zene/core/types"
 
-	"zombiezen.com/go/sqlite"
 )
 
 func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.ArtistResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.ArtistResponse{}, fmt.Errorf("taking a db conn from the pool in SelectArtistByMusicBrainzArtistId: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT DISTINCT artist, musicbrainz_artist_id FROM metadata where musicbrainz_artist_id = $musicbrainz_artist_id limit 1;`)
 	defer stmt.Finalize()
@@ -38,14 +31,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 }
 
 func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, recent string, chronological string, limit string, offset string) ([]types.AlbumsResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.AlbumsResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAlbumsByArtistId: %w", err)
-	}
-	defer DbPool.Put(conn)
 
 	var stmtText string
 	var stmt *sqlite.Stmt
@@ -110,14 +96,7 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 }
 
 func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, limit string, offset string, recent string) ([]types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectTracksByArtistId: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	var stmtText string
 	var stmt *sqlite.Stmt
@@ -200,14 +179,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 }
 
 func SelectAlbumArtists(ctx context.Context, searchParam string, random string, recent string, chronological string, limit string, offset string) ([]types.ArtistResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.ArtistResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAlbumArtists: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	var stmtText string
 	var stmt *sqlite.Stmt

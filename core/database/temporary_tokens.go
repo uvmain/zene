@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"time"
@@ -20,13 +21,6 @@ func createTemporaryTokensTable(ctx context.Context) error {
 }
 
 func SaveTemporaryToken(ctx context.Context, userId int64, temporary_token string, duration time.Duration) (string, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return "", fmt.Errorf("taking a db conn from the pool in SaveTemporaryToken: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	expiresAt := time.Now().Add(duration).Format(time.RFC3339Nano)
 	stmt := conn.Prep("INSERT INTO temporary_tokens (user_id, temporary_token, expires) VALUES ($user_id, $temporary_token, $expires);")
@@ -44,13 +38,6 @@ func SaveTemporaryToken(ctx context.Context, userId int64, temporary_token strin
 }
 
 func ExtendTemporaryToken(ctx context.Context, userId int64, temporary_token string, duration time.Duration) (string, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return "", fmt.Errorf("taking a db conn from the pool in ExtendTemporaryToken: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	expiresAt := time.Now().Add(duration).Format(time.RFC3339Nano)
 	stmt := conn.Prep("Update temporary_tokens set expires = $expires where temporary_token = $temporary_token and user_id = $user_id;")
@@ -69,14 +56,7 @@ func ExtendTemporaryToken(ctx context.Context, userId int64, temporary_token str
 
 func IsTemporaryTokenValid(ctx context.Context, temporary_token string) (bool, error) {
 	var expiresAt time.Time
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return false, fmt.Errorf("taking a db conn from the pool in IsTemporaryTokenValid: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep("SELECT expires FROM temporary_tokens WHERE temporary_token = $temporary_token;")
 	defer stmt.Finalize()
@@ -96,21 +76,8 @@ func IsTemporaryTokenValid(ctx context.Context, temporary_token string) (bool, e
 }
 
 func CleanupExpiredTemporaryTokens(ctx context.Context) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		logger.Printf("taking a db conn from the pool in CleanupExpiredTemporaryTokens: %v", err)
-		return
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`DELETE FROM temporary_tokens WHERE expires < $expiry`)
-	defer stmt.Finalize()
-	stmt.SetText("$expiry", time.Now().Format(time.RFC3339Nano))
-
-	_, err = stmt.Step()
+	query := `DELETE FROM temporary_tokens WHERE expires < ?`
+	_, err := DB.ExecContext(ctx, query, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
 		logger.Printf("Failed to run temporary_tokens cleanup: %v", err)
 	}

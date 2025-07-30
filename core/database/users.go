@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"zene/core/logic"
@@ -21,14 +22,7 @@ func createUsersTable(ctx context.Context) error {
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.User{}, fmt.Errorf("taking a db conn from the pool in GetUserByUsername: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = $username`)
 	defer stmt.Finalize()
@@ -50,14 +44,7 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 }
 
 func GetUserById(ctx context.Context, id int64) (types.User, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.User{}, fmt.Errorf("taking a db conn from the pool in GetUserById: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = $id`)
 	defer stmt.Finalize()
@@ -79,14 +66,7 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 }
 
 func GetAllUsers(ctx context.Context) ([]types.User, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.User{}, fmt.Errorf("taking a db conn from the pool in GetAllUsers: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT id, username, created_at, is_admin, password_hash FROM users ORDER BY id ASC`)
 	defer stmt.Finalize()
@@ -112,15 +92,8 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 }
 
 func UpsertUser(ctx context.Context, user types.User) (int64, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
 	rowId := int64(0)
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return rowId, fmt.Errorf("taking a db conn from the pool in UpsertUser: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`
 		INSERT INTO users (username, password_hash, is_admin)
@@ -144,14 +117,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 }
 
 func DeleteUserByUsername(ctx context.Context, username string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in DeleteUserByUsername: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`DELETE FROM users WHERE username = $username`)
 	defer stmt.Finalize()
@@ -167,14 +133,7 @@ func DeleteUserByUsername(ctx context.Context, username string) error {
 }
 
 func DeleteUserById(ctx context.Context, id int64) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in DeleteUserById: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`DELETE FROM users WHERE id = $id`)
 	defer stmt.Finalize()
@@ -190,14 +149,7 @@ func DeleteUserById(ctx context.Context, id int64) error {
 }
 
 func AnyUsersExist(ctx context.Context) (bool, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return false, err
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT 1 FROM users LIMIT 1`)
 	defer stmt.Finalize()

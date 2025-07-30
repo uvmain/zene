@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"time"
@@ -29,14 +30,7 @@ func createPlayCountsTable(ctx context.Context) error {
 }
 
 func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in UpsertPlaycount: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`INSERT INTO play_counts (user_id, musicbrainz_track_id, play_count, last_played)
 		VALUES ($user_id, $musicbrainz_track_id, 1, $last_played)
@@ -56,14 +50,7 @@ func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId strin
 }
 
 func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int64) ([]types.Playcount, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.Playcount{}, fmt.Errorf("taking a db conn from the pool in GetPlaycountsForUserId: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	var stmtText string
 

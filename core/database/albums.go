@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"strconv"
@@ -9,14 +10,7 @@ import (
 )
 
 func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectTracksByAlbumId: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
@@ -71,14 +65,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 }
 
 func SelectAllAlbums(ctx context.Context, random string, limit string, recent string) ([]types.AlbumsResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.AlbumsResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAllAlbums: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmtText := "SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album"
 
@@ -130,14 +117,7 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 }
 
 func SelectAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumsResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.AlbumsResponse{}, fmt.Errorf("taking a db conn from the pool in SelectAlbum: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM metadata where musicbrainz_album_id = $musicbrainz_album_id limit 1;`)
 	defer stmt.Finalize()

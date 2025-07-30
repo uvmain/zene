@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"context"
 	"fmt"
 	"zene/core/logger"
@@ -24,13 +25,6 @@ func createLyricsTable(ctx context.Context) error {
 }
 
 func UpsertTrackLyrics(ctx context.Context, musicbrainzTrackId string, lyrics types.Lyrics) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in UpsertTrackLyrics: %v", err)
-	}
-	defer DbPool.Put(conn)
 
 	stmt := conn.Prep(`INSERT INTO track_lyrics (musicbrainz_track_id, plain_lyrics, synced_lyrics)
 		VALUES ($musicbrainz_track_id, $plain_lyrics, $synced_lyrics)
@@ -49,14 +43,7 @@ func UpsertTrackLyrics(ctx context.Context, musicbrainzTrackId string, lyrics ty
 }
 
 func GetLyricsForMusicBrainzTrackId(ctx context.Context, musicbrainzTrackId string) (types.Lyrics, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.Lyrics{}, err
-	}
-	defer DbPool.Put(conn)
 	stmt := conn.Prep("SELECT plain_lyrics, synced_lyrics FROM track_lyrics WHERE musicbrainz_track_id = $musicbrainz_track_id")
 	defer stmt.Finalize()
 	stmt.SetText("$musicbrainz_track_id", musicbrainzTrackId)
