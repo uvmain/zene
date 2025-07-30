@@ -47,24 +47,15 @@ func createMetadataTable(ctx context.Context) error {
 }
 
 func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in InsertMetadataRow: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`
+	query := `
 	INSERT INTO metadata (
 		file_path, date_added, date_modified, file_name, format, duration, size, bitrate, title, artist, album,
 		album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
 		musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
 	) VALUES (
-		$file_path, $date_added, $date_modified, $file_name, $format, $duration, $size, $bitrate, $title, $artist, $album,
-		$album_artist, $genre, $track_number, $total_tracks, $disc_number, $total_discs, $release_date,
-		$musicbrainz_artist_id, $musicbrainz_album_id, $musicbrainz_track_id, $label
+		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?
 	)
 	ON CONFLICT(file_path) DO UPDATE SET
 		date_modified = excluded.date_modified,
@@ -86,38 +77,22 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 		musicbrainz_artist_id = excluded.musicbrainz_artist_id,
 		musicbrainz_album_id = excluded.musicbrainz_album_id,
 		musicbrainz_track_id = excluded.musicbrainz_track_id,
-		label = excluded.label;`)
+		label = excluded.label`
 
-	defer stmt.Finalize()
-	stmt.SetText("$file_path", metadata.FilePath)
-	stmt.SetText("$date_added", metadata.DateAdded)
-	stmt.SetText("$date_modified", metadata.DateModified)
-	stmt.SetText("$file_name", metadata.FileName)
-	stmt.SetText("$format", metadata.Format)
-	stmt.SetText("$duration", metadata.Duration)
-	stmt.SetText("$size", metadata.Size)
-	stmt.SetText("$bitrate", metadata.Bitrate)
-	stmt.SetText("$title", metadata.Title)
-	stmt.SetText("$artist", metadata.Artist)
-	stmt.SetText("$album", metadata.Album)
-	stmt.SetText("$album_artist", metadata.AlbumArtist)
-	stmt.SetText("$genre", metadata.Genre)
-	stmt.SetText("$track_number", metadata.TrackNumber)
-	stmt.SetText("$total_tracks", metadata.TotalTracks)
-	stmt.SetText("$disc_number", metadata.DiscNumber)
-	stmt.SetText("$total_discs", metadata.TotalDiscs)
-	stmt.SetText("$release_date", metadata.ReleaseDate)
-	stmt.SetText("$musicbrainz_artist_id", metadata.MusicBrainzArtistID)
-	stmt.SetText("$musicbrainz_album_id", metadata.MusicBrainzAlbumID)
-	stmt.SetText("$musicbrainz_track_id", metadata.MusicBrainzTrackID)
-	stmt.SetText("$label", metadata.Label)
+	_, err := DB.ExecContext(ctx, query,
+		metadata.FilePath, metadata.DateAdded, metadata.DateModified, metadata.FileName,
+		metadata.Format, metadata.Duration, metadata.Size, metadata.Bitrate,
+		metadata.Title, metadata.Artist, metadata.Album, metadata.AlbumArtist,
+		metadata.Genre, metadata.TrackNumber, metadata.TotalTracks, metadata.DiscNumber,
+		metadata.TotalDiscs, metadata.ReleaseDate, metadata.MusicBrainzArtistID,
+		metadata.MusicBrainzAlbumID, metadata.MusicBrainzTrackID, metadata.Label)
 
-	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("inserting metadata row: %v", err)
 	}
 
 	return nil
+}
 }
 
 func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {

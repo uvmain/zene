@@ -2,21 +2,19 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"path/filepath"
-	"sync"
 	"zene/core/config"
 	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/logic"
 
-	"zombiezen.com/go/sqlite"
-	"zombiezen.com/go/sqlite/sqlitex"
+	_ "modernc.org/sqlite"
 )
 
 var dbFile = "sqlite.db"
-var DbPool *sqlitex.Pool
-var dbMutex sync.RWMutex
+var DB *sql.DB
 
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
@@ -42,26 +40,22 @@ func openDatabase(ctx context.Context) {
 		logger.Println("Creating new database file")
 	}
 
-	poolOptions := sqlitex.PoolOptions{
-		PrepareConn: func(conn *sqlite.Conn) error {
-			err := sqlitex.ExecuteTransient(conn, `PRAGMA foreign_keys = on;`, nil)
-			if err != nil {
-				logger.Printf("Prepare internal error: %v", err)
-			}
-			return err
-		},
-	}
-	poolOptions.Flags = 0
-	poolOptions.PoolSize = 10
-
 	var err error
-
-	DbPool, err = sqlitex.NewPool(dbFile, poolOptions)
+	DB, err = sql.Open("sqlite", dbFile+"?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)")
 	if err != nil {
-		log.Fatalf("Failed to open database pool: %v", err)
-	} else {
-		logger.Println("Database pool opened")
+		log.Fatalf("Failed to open database: %v", err)
 	}
+
+	// Configure connection pool
+	DB.SetMaxOpenConns(10)
+	DB.SetMaxIdleConns(5)
+
+	// Test connection
+	if err := DB.PingContext(ctx); err != nil {
+		log.Fatalf("Failed to ping database: %v", err)
+	}
+
+	logger.Println("Database opened with WAL mode enabled")
 
 	if err := logic.CheckContext(ctx); err != nil {
 		CloseDatabase()
@@ -69,7 +63,7 @@ func openDatabase(ctx context.Context) {
 }
 
 func CloseDatabase() {
-	if DbPool != nil {
-		DbPool.Close()
+	if DB != nil {
+		DB.Close()
 	}
 }
