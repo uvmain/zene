@@ -32,7 +32,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
 			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
 			logger.Printf("Failed to scan row: %v", err)
-			return nil, err
+			return []types.MetadataWithPlaycounts{}, err
 		}
 		results = append(results, result)
 	}

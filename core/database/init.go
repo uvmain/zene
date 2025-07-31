@@ -10,7 +10,8 @@ import (
 	"zene/core/logger"
 	"zene/core/logic"
 
-	_ "modernc.org/sqlite"
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 var dbFile = "sqlite.db"
