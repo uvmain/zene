@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -98,6 +99,7 @@ func DeleteUserByUsername(ctx context.Context, username string) error {
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
+	logger.Printf("Deleted user with username: %s", username)
 	return nil
 }
 
@@ -107,6 +109,7 @@ func DeleteUserById(ctx context.Context, id int64) error {
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
+	logger.Printf("Deleted user with ID: %d", id)
 	return nil
 }
 
