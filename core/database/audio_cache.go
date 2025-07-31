@@ -55,7 +55,7 @@ func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]s
 	for rows.Next() {
 		var result string
 		if err := rows.Scan(&result); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectStaleAudioCacheEntries: %v", err)
 			return []string{}, err
 		}
 		results = append(results, result)
@@ -114,7 +114,7 @@ func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, e
 		var cacheKey string
 		var lastAccessedString string
 		if err := rows.Scan(&cacheKey, &lastAccessedString); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectAllAudioCacheEntries: %v", err)
 			return []types.AudioCacheEntry{}, err
 		}
 		result.CacheKey = cacheKey

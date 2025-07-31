@@ -155,7 +155,7 @@ func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam st
 	for rows.Next() {
 		var result types.GenreResponse
 		if err := rows.Scan(&result.Genre, &result.Count); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectDistinctGenres: %v", err)
 			return nil, err
 		}
 		results = append(results, result)
@@ -188,7 +188,7 @@ func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, li
 			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
 			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
 			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectTracksByGenres: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
 		}
 		results = append(results, result)

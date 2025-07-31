@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -24,32 +23,26 @@ func createUsersTable(ctx context.Context) error {
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
 	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = ?`
 	var row types.User
-	var isAdmin int64
 
-	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
+	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &row.IsAdmin)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
-
-	row.IsAdmin = isAdmin != 0
 	return row, nil
 }
 
 func GetUserById(ctx context.Context, id int64) (types.User, error) {
 	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = ?`
 	var row types.User
-	var isAdmin int64
 
-	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
+	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &row.IsAdmin)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
-
-	row.IsAdmin = isAdmin != 0
 	return row, nil
 }
 
@@ -64,12 +57,10 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	var users []types.User
 	for rows.Next() {
 		var row types.User
-		var isAdmin int64
-		err := rows.Scan(&row.Id, &row.Username, &row.CreatedAt, &isAdmin, &row.PasswordHash)
+		err := rows.Scan(&row.Id, &row.Username, &row.CreatedAt, &row.IsAdmin, &row.PasswordHash)
 		if err != nil {
 			return []types.User{}, fmt.Errorf("scanning user row: %v", err)
 		}
-		row.IsAdmin = isAdmin != 0
 		users = append(users, row)
 	}
 
@@ -88,7 +79,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 			password_hash = excluded.password_hash,
 			is_admin = excluded.is_admin`
 
-	result, err := DB.ExecContext(ctx, query, user.Username, user.PasswordHash, logic.BoolToInt64(user.IsAdmin))
+	result, err := DB.ExecContext(ctx, query, user.Username, user.PasswordHash, user.IsAdmin)
 	if err != nil {
 		return 0, fmt.Errorf("upserting user: %v", err)
 	}

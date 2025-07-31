@@ -60,7 +60,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
 			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
 			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectAllTracks: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
 		}
 		results = append(results, result)
@@ -108,7 +108,7 @@ func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
 	for rows.Next() {
 		var result types.File
 		if err := rows.Scan(&result.FilePathAbs, &result.FileName, &result.DateModified); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectTrackFilesForScanner: %v", err)
 			return []types.File{}, err
 		}
 		results = append(results, result)

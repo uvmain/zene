@@ -31,7 +31,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
 			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
 			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectTracksByAlbumId: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
 		}
 		results = append(results, result)
@@ -79,8 +79,9 @@ func SelectAllAlbums(ctx context.Context, random string, limit string, recent st
 
 	for rows.Next() {
 		var result types.AlbumsResponse
-		if err := rows.Scan(&result.Album, &result.MusicBrainzAlbumID, &result.Artist, &result.MusicBrainzArtistID, &result.Genres, &result.ReleaseDate); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+		var dateAdded string
+		if err := rows.Scan(&result.Album, &result.MusicBrainzAlbumID, &result.Artist, &result.MusicBrainzArtistID, &result.Genres, &result.ReleaseDate, &dateAdded); err != nil {
+			logger.Printf("Failed to scan row in SelectAllAlbums: %v", err)
 			return nil, err
 		}
 		results = append(results, result)

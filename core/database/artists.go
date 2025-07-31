@@ -27,7 +27,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 }
 
 func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, recent string, chronological string, limit string, offset string) ([]types.AlbumsResponse, error) {
-	query := "SELECT DISTINCT musicbrainz_album_id, album, musicbrainz_artist_id, artist, genre, release_date FROM metadata WHERE musicbrainz_artist_id = $musicbrainz_artist_id GROUP BY musicbrainz_album_id"
+	query := "SELECT DISTINCT musicbrainz_album_id, album, musicbrainz_artist_id, artist, genre, release_date FROM metadata WHERE musicbrainz_artist_id = ? GROUP BY musicbrainz_album_id"
 
 	if recent == "true" {
 		query += " ORDER BY date_added desc"
@@ -43,17 +43,17 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	if limit != "" {
 		limitInt, err := strconv.Atoi(limit)
 		if err == nil {
-			query = fmt.Sprintf("%s limit %d", query, limitInt)
+			query += fmt.Sprintf(" limit %d", limitInt)
 		}
 	}
 	if offset != "" {
 		offsetInt, err := strconv.Atoi(offset)
 		if err == nil {
-			query = fmt.Sprintf("%s offset %d", query, offsetInt)
+			query += fmt.Sprintf(" offset %d", offsetInt)
 		}
 	}
 
-	query = fmt.Sprintf("%s;", query)
+	query += ";"
 
 	rows, err := DB.QueryContext(ctx, query, musicbrainz_artist_id)
 	if err != nil {
@@ -67,7 +67,7 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	for rows.Next() {
 		var result types.AlbumsResponse
 		if err := rows.Scan(&result.Album, &result.MusicBrainzAlbumID, &result.Artist, &result.MusicBrainzArtistID, &result.Genres, &result.ReleaseDate); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectAlbumsByArtistId: %v", err)
 			return nil, err
 		}
 		results = append(results, result)
@@ -85,10 +85,10 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	query := getUnendedMetadataWithPlaycountsSql(userId)
 
-	query = fmt.Sprintf("%s where musicbrainz_artist_id = $musicbrainz_artist_id", query)
+	query += " where musicbrainz_artist_id = ?"
 
 	if recent == "true" {
-		query = fmt.Sprintf("%s ORDER BY date_added desc", query)
+		query += " ORDER BY date_added desc"
 	} else if random != "" {
 		randomInteger, err := strconv.Atoi(random)
 		if err == nil {
@@ -98,17 +98,17 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 	if limit != "" {
 		limitInt, err := strconv.Atoi(limit)
 		if err == nil {
-			query = fmt.Sprintf("%s limit %d", query, limitInt)
+			query += fmt.Sprintf(" limit %d", limitInt)
 		}
 	}
 	if offset != "" {
 		offsetInt, err := strconv.Atoi(offset)
 		if err == nil {
-			query = fmt.Sprintf("%s offset %d", query, offsetInt)
+			query += fmt.Sprintf(" offset %d", offsetInt)
 		}
 	}
 
-	query = fmt.Sprintf("%s;", query)
+	query += ";"
 
 	rows, err := DB.QueryContext(ctx, query, musicbrainz_artist_id)
 	if err != nil {
@@ -125,7 +125,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
 			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
 			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectTracksByArtistId: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
 		}
 		results = append(results, result)
@@ -144,7 +144,7 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	if searchParam != "" {
 		query += " JOIN artists_fts f ON m.file_path = f.file_path"
 	}
-	query = " where m.album_artist = m.artist"
+	query += " where m.album_artist = m.artist"
 
 	if searchParam != "" {
 		query += " and artists_fts MATCH ?"
@@ -195,7 +195,7 @@ func SelectAlbumArtists(ctx context.Context, searchParam string, random string, 
 	for rows.Next() {
 		var result types.ArtistResponse
 		if err := rows.Scan(&result.Artist, &result.MusicBrainzArtistID); err != nil {
-			logger.Printf("Failed to scan row: %v", err)
+			logger.Printf("Failed to scan row in SelectAlbumArtists: %v", err)
 			return []types.ArtistResponse{}, err
 		}
 		result.ImageURL = fmt.Sprintf("/api/artists/%s/art", result.MusicBrainzArtistID)
