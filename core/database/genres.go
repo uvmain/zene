@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
-
-	"zombiezen.com/go/sqlite/sqlitex"
 )
 
 func createGenresTable(ctx context.Context) error {
@@ -27,26 +26,19 @@ func createGenresTable(ctx context.Context) error {
 	createIndex(ctx, "idx_track_genres_genre", "track_genres", "genre", false)
 	createGenresTriggers(ctx)
 
-	// get count of rows in track_genres table
-	conn, err := DbPool.Take(ctx)
+	var count int
+	err = DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM track_genres").Scan(&count)
 	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in createGenresTable: %v", err)
-	}
-	defer DbPool.Put(conn)
-	stmt := conn.Prep("SELECT COUNT(*) as count FROM track_genres;")
-	defer stmt.Finalize()
-	if hasRow, err := stmt.Step(); err != nil {
 		return fmt.Errorf("error checking count of track_genres table: %v", err)
-	} else if hasRow {
-		count := stmt.GetInt64("count")
-		if count == 0 {
-			log.Println("track_genres table is empty, populating from metadata")
-			err = populateGenresFromMetadata(ctx)
-			if err != nil {
-				return fmt.Errorf("error populating track_genres table from metadata: %v", err)
-			} else {
-				log.Println("track_genres table populated from metadata")
-			}
+	}
+
+	if count == 0 {
+		log.Println("track_genres table is empty, populating from metadata")
+		err = populateGenresFromMetadata(ctx)
+		if err != nil {
+			return fmt.Errorf("error populating track_genres table from metadata: %v", err)
+		} else {
+			log.Println("track_genres table populated from metadata")
 		}
 	}
 
@@ -108,7 +100,7 @@ func createGenresTriggers(ctx context.Context) {
 }
 
 func populateGenresFromMetadata(ctx context.Context) error {
-	var stmtText = `INSERT INTO track_genres (file_path, genre)
+	var stmt = `INSERT INTO track_genres (file_path, genre)
 		WITH RECURSIVE split_genre(file_path, genre, rest) AS (
 		SELECT 
 			file_path,
@@ -129,120 +121,83 @@ func populateGenresFromMetadata(ctx context.Context) error {
 		FROM split_genre
 		WHERE genre <> '';`
 
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	_, err := DB.ExecContext(ctx, stmt)
 
-	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in populateGenresFromMetadata: %v", err)
+		return fmt.Errorf("inserting data into track_genres table: %v", err)
 	}
-	defer DbPool.Put(conn)
-	err = sqlitex.ExecuteTransient(conn, stmtText, nil)
-	if err != nil {
-		return fmt.Errorf("error inserting data into track_genres table: %v", err)
-	} else {
-		return nil
-	}
+
+	return nil
 }
 
 func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam string) ([]types.GenreResponse, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.GenreResponse{}, fmt.Errorf("taking a db conn from the pool in SelectDistinctGenres: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmtText := "select genre, count(file_path) as count from track_genres group by genre order by count desc"
+	query := "select genre, count(file_path) as count from track_genres group by genre order by count desc"
 
 	if limitParam != "" {
 		limitInt, err := strconv.Atoi(limitParam)
 		if err != nil {
 			return []types.GenreResponse{}, fmt.Errorf("invalid limit value: %v", err)
 		}
-		stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
+		query += fmt.Sprintf(" limit %d", limitInt)
 	}
 
-	stmtText = fmt.Sprintf("%s;", stmtText)
+	query += ";"
 
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return []types.GenreResponse{}, err
+	}
+	defer rows.Close()
 
-	var rows []types.GenreResponse
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
+	var results []types.GenreResponse
+
+	for rows.Next() {
+		var result types.GenreResponse
+		if err := rows.Scan(&result.Genre, &result.Count); err != nil {
+			logger.Printf("Failed to scan row: %v", err)
 			return nil, err
 		}
-		if !hasRow {
-			break
-		}
-		row := types.GenreResponse{
-			Genre: stmt.GetText("genre"),
-			Count: int(stmt.GetInt64("count")),
-		}
-		rows = append(rows, row)
+		results = append(results, result)
 	}
-	return rows, nil
+
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
+	}
+
+	return results, nil
 }
 
 func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, limit int64, random string) ([]types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectTracksByAlbumId: %v", err)
-	}
-	defer DbPool.Put(conn)
-
 	userId, _ := logic.GetUserIdFromContext(ctx)
-	stmtText := getMetadataWithGenresSql(userId, genres, andOr, limit, random)
+	query := getMetadataWithGenresSql(userId, genres, andOr, limit, random)
 
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return []types.MetadataWithPlaycounts{}, err
+	}
+	defer rows.Close()
 
-	var rows []types.MetadataWithPlaycounts
+	var results []types.MetadataWithPlaycounts
 
-	for {
-		if hasRow, err := stmt.Step(); err != nil {
+	for rows.Next() {
+		var result types.MetadataWithPlaycounts
+		if err := rows.Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
+			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
+			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
+			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
+			logger.Printf("Failed to scan row: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
-		} else if !hasRow {
-			break
-		} else {
-			row := types.MetadataWithPlaycounts{
-				FilePath:            stmt.GetText("file_path"),
-				DateAdded:           stmt.GetText("date_added"),
-				DateModified:        stmt.GetText("date_modified"),
-				FileName:            stmt.GetText("file_name"),
-				Format:              stmt.GetText("format"),
-				Duration:            stmt.GetText("duration"),
-				Size:                stmt.GetText("size"),
-				Bitrate:             stmt.GetText("bitrate"),
-				Title:               stmt.GetText("title"),
-				Artist:              stmt.GetText("artist"),
-				Album:               stmt.GetText("album"),
-				AlbumArtist:         stmt.GetText("album_artist"),
-				Genre:               stmt.GetText("genre"),
-				TrackNumber:         stmt.GetText("track_number"),
-				TotalTracks:         stmt.GetText("total_tracks"),
-				DiscNumber:          stmt.GetText("disc_number"),
-				TotalDiscs:          stmt.GetText("total_discs"),
-				ReleaseDate:         stmt.GetText("release_date"),
-				MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-				MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
-				MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
-				Label:               stmt.GetText("label"),
-				UserPlayCount:       stmt.GetInt64("user_play_count"),
-				GlobalPlayCount:     stmt.GetInt64("global_play_count"),
-			}
-			rows = append(rows, row)
 		}
+		results = append(results, result)
 	}
-	if rows == nil {
-		rows = []types.MetadataWithPlaycounts{}
+
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
 	}
-	return rows, nil
+
+	return results, nil
 }

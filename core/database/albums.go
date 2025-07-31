@@ -14,7 +14,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	query := getUnendedMetadataWithPlaycountsSql(userId)
 
-	query = fmt.Sprintf("%s where musicbrainz_album_id = ? order by cast(disc_number AS INTEGER), cast(track_number AS INTEGER);", query)
+	query += " where musicbrainz_album_id = ? order by cast(disc_number AS INTEGER), cast(track_number AS INTEGER);"
 
 	rows, err := DB.QueryContext(ctx, query, musicbrainz_album_id)
 	if err != nil {
