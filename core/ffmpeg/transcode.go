@@ -137,21 +137,25 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	waitErr := cmd.Wait()
 
 	if err != nil {
+		cacheFile.Close()
 		cleanupIncompleteCache(ctx, cachePath, cacheKey)
 		return fmt.Errorf("copy failed: %w", err)
 	} else {
 		logger.Printf("Transcoding %s complete, cached at %s", filePathAbs, cachePath)
 		err = database.UpsertAudioCacheEntry(ctx, cacheKey)
 		if err != nil {
+			cacheFile.Close()
 			cleanupIncompleteCache(ctx, cachePath, cacheKey)
 			logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
 			return err
 		}
 	}
 	if waitErr != nil {
+		cacheFile.Close()
 		cleanupIncompleteCache(ctx, cachePath, cacheKey)
 		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
 	}
+	cacheFile.Close()
 
 	return nil
 }
