@@ -3,8 +3,6 @@ package database
 import (
 	"context"
 	"zene/core/logger"
-
-	"zombiezen.com/go/sqlite/sqlitex"
 )
 
 func createFtsTables(ctx context.Context) {
@@ -59,16 +57,9 @@ func insertFtsMetadataData(ctx context.Context) {
 			file_path, file_name, title, artist, album, album_artist, genre, release_date, label 
 		FROM metadata;`
 
-	conn, err := DbPool.Take(ctx)
+	_, err := DB.ExecContext(ctx, query)
 	if err != nil {
-		logger.Printf("taking a db conn from the pool in insertFtsMetadataData: %v", err)
-		return
-	}
-	defer DbPool.Put(conn)
-
-	err = sqlitex.ExecuteTransient(conn, query, nil)
-	if err != nil {
-		logger.Printf("Error inserting data into metadata_fts table: %s", err)
+		logger.Printf("Error inserting data into metadata_fts table: %v", err)
 	} else {
 		logger.Println("Data inserted into metadata_fts table")
 	}
@@ -102,15 +93,9 @@ func insertFtsArtistsData(ctx context.Context) {
 	query := `INSERT INTO artists_fts (file_path, artist)
 		SELECT file_path, artist FROM metadata;`
 
-	conn, err := DbPool.Take(ctx)
+	_, err := DB.ExecContext(ctx, query)
 	if err != nil {
-		logger.Printf("taking a db conn from the pool in insertFtsArtistsData: %v", err)
-		return
-	}
-	defer DbPool.Put(conn)
-	err = sqlitex.ExecuteTransient(conn, query, nil)
-	if err != nil {
-		logger.Printf("Error inserting data into artists_fts table: %s", err)
+		logger.Printf("Error inserting data into artists_fts table: %v", err)
 	} else {
 		logger.Println("Data inserted into artists_fts table")
 	}

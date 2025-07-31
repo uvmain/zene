@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"zene/core/logic"
 	"zene/core/types"
@@ -21,191 +22,111 @@ func createUsersTable(ctx context.Context) error {
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = ?`
+	var row types.User
+	var isAdmin int64
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.User{}, fmt.Errorf("taking a db conn from the pool in GetUserByUsername: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = $username`)
-	defer stmt.Finalize()
-	stmt.SetText("$username", username)
-
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
-	} else if !hasRow {
+	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
+	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
-	} else {
-		var row types.User
-		row.Id = stmt.GetInt64("id")
-		row.Username = stmt.GetText("username")
-		row.CreatedAt = stmt.GetText("created_at")
-		row.IsAdmin = stmt.GetInt64("is_admin") != 0
-		row.PasswordHash = stmt.GetText("password_hash")
-		return row, nil
+	} else if err != nil {
+		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
+
+	row.IsAdmin = isAdmin != 0
+	return row, nil
 }
 
 func GetUserById(ctx context.Context, id int64) (types.User, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = ?`
+	var row types.User
+	var isAdmin int64
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.User{}, fmt.Errorf("taking a db conn from the pool in GetUserById: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = $id`)
-	defer stmt.Finalize()
-	stmt.SetInt64("$id", id)
-
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
-	} else if !hasRow {
+	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &isAdmin)
+	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
-	} else {
-		var row types.User
-		row.Id = stmt.GetInt64("id")
-		row.Username = stmt.GetText("username")
-		row.CreatedAt = stmt.GetText("created_at")
-		row.IsAdmin = stmt.GetInt64("is_admin") != 0
-		row.PasswordHash = stmt.GetText("password_hash")
-		return row, nil
+	} else if err != nil {
+		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
+
+	row.IsAdmin = isAdmin != 0
+	return row, nil
 }
 
 func GetAllUsers(ctx context.Context) ([]types.User, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
+	query := `SELECT id, username, created_at, is_admin, password_hash FROM users ORDER BY id ASC`
+	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
-		return []types.User{}, fmt.Errorf("taking a db conn from the pool in GetAllUsers: %v", err)
+		return []types.User{}, fmt.Errorf("querying all users: %v", err)
 	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`SELECT id, username, created_at, is_admin, password_hash FROM users ORDER BY id ASC`)
-	defer stmt.Finalize()
+	defer rows.Close()
 
 	var users []types.User
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return []types.User{}, fmt.Errorf("stepping through users: %w", err)
-		}
-		if !hasRow {
-			break
-		}
+	for rows.Next() {
 		var row types.User
-		row.Id = stmt.GetInt64("id")
-		row.Username = stmt.GetText("username")
-		row.CreatedAt = stmt.GetText("created_at")
-		row.IsAdmin = stmt.GetInt64("is_admin") != 0
-		row.PasswordHash = stmt.GetText("password_hash")
+		var isAdmin int64
+		err := rows.Scan(&row.Id, &row.Username, &row.CreatedAt, &isAdmin, &row.PasswordHash)
+		if err != nil {
+			return []types.User{}, fmt.Errorf("scanning user row: %v", err)
+		}
+		row.IsAdmin = isAdmin != 0
 		users = append(users, row)
 	}
+
+	if err := rows.Err(); err != nil {
+		return []types.User{}, fmt.Errorf("rows error: %v", err)
+	}
+
 	return users, nil
 }
 
 func UpsertUser(ctx context.Context, user types.User) (int64, error) {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-	rowId := int64(0)
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return rowId, fmt.Errorf("taking a db conn from the pool in UpsertUser: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`
+	query := `
 		INSERT INTO users (username, password_hash, is_admin)
-		VALUES ($username, $password_hash, $is_admin)
+		VALUES (?, ?, ?)
 		ON CONFLICT(username) DO UPDATE SET
 			password_hash = excluded.password_hash,
-			is_admin = excluded.is_admin
-	`)
-	defer stmt.Finalize()
+			is_admin = excluded.is_admin`
 
-	stmt.SetText("$username", user.Username)
-	stmt.SetText("$password_hash", user.PasswordHash)
-	stmt.SetInt64("$is_admin", logic.BoolToInt64(user.IsAdmin))
-
-	_, err = stmt.Step()
+	result, err := DB.ExecContext(ctx, query, user.Username, user.PasswordHash, logic.BoolToInt64(user.IsAdmin))
 	if err != nil {
-		return rowId, fmt.Errorf("upserting user: %v", err)
+		return 0, fmt.Errorf("upserting user: %v", err)
 	}
-	rowID := conn.LastInsertRowID()
+
+	rowID, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("getting last insert ID: %v", err)
+	}
+
 	return rowID, nil
 }
 
 func DeleteUserByUsername(ctx context.Context, username string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in DeleteUserByUsername: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`DELETE FROM users WHERE username = $username`)
-	defer stmt.Finalize()
-
-	stmt.SetText("$username", username)
-
-	_, err = stmt.Step()
+	query := `DELETE FROM users WHERE username = ?`
+	_, err := DB.ExecContext(ctx, query, username)
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
-
 	return nil
 }
 
 func DeleteUserById(ctx context.Context, id int64) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in DeleteUserById: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`DELETE FROM users WHERE id = $id`)
-	defer stmt.Finalize()
-
-	stmt.SetInt64("$id", id)
-
-	_, err = stmt.Step()
+	query := `DELETE FROM users WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
-
 	return nil
 }
 
 func AnyUsersExist(ctx context.Context) (bool, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
+	query := `SELECT 1 FROM users LIMIT 1`
+	var exists int
+	err := DB.QueryRowContext(ctx, query).Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`SELECT 1 FROM users LIMIT 1`)
-	defer stmt.Finalize()
-
-	hasRow, err := stmt.Step()
-	if err != nil {
-		return false, err
-	}
-
-	return hasRow, nil
+	return true, nil
 }
