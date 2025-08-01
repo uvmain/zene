@@ -58,6 +58,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 		if err != nil {
 			scanError("Error inserting or updating metadata row: %v", err)
 		} else {
+			logger.Printf("Scan: Upserted metadata for %s", audioFile.FilePathAbs)
 			fileCount += 1
 		}
 	}
