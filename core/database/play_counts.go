@@ -29,26 +29,12 @@ func createPlayCountsTable(ctx context.Context) error {
 }
 
 func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in UpsertPlaycount: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`INSERT INTO play_counts (user_id, musicbrainz_track_id, play_count, last_played)
-		VALUES ($user_id, $musicbrainz_track_id, 1, $last_played)
+	query := `INSERT INTO play_counts (user_id, musicbrainz_track_id, play_count, last_played)
+		VALUES (?, ?, 1, ?)
 		ON CONFLICT(user_id, musicbrainz_track_id)
-		DO UPDATE SET play_count = play_count + 1, last_played = excluded.last_played;`)
-	defer stmt.Finalize()
+		DO UPDATE SET play_count = play_count + 1, last_played = excluded.last_played`
 
-	stmt.SetInt64("$user_id", userId)
-	stmt.SetText("$musicbrainz_track_id", musicbrainzTrackId)
-	stmt.SetText("$last_played", time.Now().Format(time.RFC3339Nano))
-
-	_, err = stmt.Step()
+	_, err := DB.ExecContext(ctx, query, userId, musicbrainzTrackId, time.Now().Format(time.RFC3339Nano))
 	if err != nil {
 		return fmt.Errorf("upserting playcount: %v", err)
 	}
@@ -56,59 +42,52 @@ func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId strin
 }
 
 func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int64) ([]types.Playcount, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	var query string
+	var args []interface{}
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.Playcount{}, fmt.Errorf("taking a db conn from the pool in GetPlaycountsForUserId: %v", err)
-	}
-	defer DbPool.Put(conn)
+	query = "SELECT id, user_id, musicbrainz_track_id, play_count, last_played FROM play_counts"
 
-	var stmtText string
-
-	stmtText = "SELECT id, user_id, musicbrainz_track_id, play_count, last_played FROM play_counts"
+	var conditions []string
 	if musicbrainzTrackId != "" {
-		stmtText = fmt.Sprintf("%s where musicbrainz_track_id = $musicbrainz_track_id", stmtText)
-		if userId != 0 {
-			stmtText = fmt.Sprintf("%s and user_id = $user_id", stmtText)
-		}
-	} else if userId != 0 {
-		stmtText = fmt.Sprintf("%s where user_id = $user_id", stmtText)
-	}
-	stmtText = fmt.Sprintf("%s order by play_count desc, last_played desc", stmtText)
-
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
-
-	if musicbrainzTrackId != "" {
-		stmt.SetText("$musicbrainz_track_id", musicbrainzTrackId)
+		conditions = append(conditions, "musicbrainz_track_id = ?")
+		args = append(args, musicbrainzTrackId)
 	}
 	if userId != 0 {
-		stmt.SetInt64("$user_id", userId)
+		conditions = append(conditions, "user_id = ?")
+		args = append(args, userId)
 	}
 
-	var rows []types.Playcount
-	for {
-		hasRow, err := stmt.Step()
+	if len(conditions) > 0 {
+		query += " WHERE " + fmt.Sprintf("%s", conditions[0])
+		for i := 1; i < len(conditions); i++ {
+			query += " AND " + conditions[i]
+		}
+	}
+
+	query += " ORDER BY play_count DESC, last_played DESC"
+
+	rows, err := DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return []types.Playcount{}, fmt.Errorf("querying play counts: %v", err)
+	}
+	defer rows.Close()
+
+	var result []types.Playcount
+	for rows.Next() {
+		var row types.Playcount
+		err := rows.Scan(&row.Id, &row.UserId, &row.MusicBrainzTrackID, &row.PlayCount, &row.LastPlayed)
 		if err != nil {
-			return []types.Playcount{}, err
-		} else if !hasRow {
-			break
+			return []types.Playcount{}, fmt.Errorf("scanning play count row: %v", err)
 		}
-
-		row := types.Playcount{
-			Id:                 stmt.GetInt64("id"),
-			UserId:             stmt.GetInt64("user_id"),
-			MusicBrainzTrackID: stmt.GetText("musicbrainz_track_id"),
-			PlayCount:          stmt.GetInt64("play_count"),
-			LastPlayed:         stmt.GetText("last_played"),
-		}
-		rows = append(rows, row)
+		result = append(result, row)
 	}
 
-	if rows == nil {
-		rows = []types.Playcount{}
+	if err := rows.Err(); err != nil {
+		return []types.Playcount{}, fmt.Errorf("rows error: %v", err)
 	}
-	return rows, nil
+
+	if result == nil {
+		result = []types.Playcount{}
+	}
+	return result, nil
 }

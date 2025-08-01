@@ -1,6 +1,6 @@
 # Zene Project Overview
 ## Backend
-- This project uses Golang for the backend, with the zombiezen sql driver for SQLite.
+- This project uses Golang for the backend, with the ncruces database/sql driver for SQLite.
 - The backend is main.go and router.go in the root directory, and uses modularised services in the /core directory.
 - The backend uses stdlib net/http for HTTP handling and routing.
 ## Frontend
