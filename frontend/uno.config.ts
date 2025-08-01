@@ -1,7 +1,5 @@
 import {
   defineConfig,
-  presetUno,
-  presetWind,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
@@ -40,10 +38,7 @@ export default defineConfig({
       },
     },
   },
-  presets: [
-    presetUno(),
-    presetWind(),
-  ],
+  presets: [],
   transformers: [
     transformerDirectives(),
     transformerVariantGroup(),
