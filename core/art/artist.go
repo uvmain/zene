@@ -10,6 +10,7 @@ import (
 	"time"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/deezer"
 	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/logic"
@@ -24,7 +25,7 @@ func ImportArtForArtists(ctx context.Context, artists []types.ArtistResponse) {
 			continue
 		}
 		logger.Printf("Importing art for artist: %s (%s)", artist.Artist, artist.MusicBrainzArtistID)
-		getArtistArtFromInternet(ctx, artist.MusicBrainzArtistID)
+		getArtistArtFromInternet(ctx, artist.MusicBrainzArtistID, artist.Artist)
 	}
 	logger.Println("Finished importing art for artists")
 }
@@ -100,7 +101,7 @@ func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, ar
 		} else {
 			// no local image, download from internet
 			logger.Printf("No artist artwork found for %s, downloading", artistName)
-			getArtistArtFromInternet(ctx, musicBrainzArtistId)
+			getArtistArtFromInternet(ctx, musicBrainzArtistId, artistName)
 		}
 	}
 }
@@ -113,12 +114,18 @@ func getArtistArtFromFolder(ctx context.Context, musicBrainzArtistId string, ima
 	}
 }
 
-func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string) {
-	logger.Printf("fetching art for %s from musicbrainz", musicBrainzArtistId)
-	artistArtUrl, err := musicbrainz.GetArtistArtUrl(ctx, musicBrainzArtistId)
+func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, artistName string) {
+	logger.Printf("fetching artist art for %s from deezer", artistName)
+	artistArtUrl, err := deezer.GetArtistArtUrlWithArtistName(ctx, artistName)
+
 	if err != nil {
-		logger.Printf("Failed to get artist art url for %s from musicbrainz: %v", musicBrainzArtistId, err)
-		return
+		logger.Printf("failed to get artist art url for %s from deezer: %v", musicBrainzArtistId, err)
+		logger.Printf("fetching art for %s from musicbrainz", musicBrainzArtistId)
+		artistArtUrl, err = musicbrainz.GetArtistArtUrl(ctx, musicBrainzArtistId)
+		if err != nil {
+			logger.Printf("failed to get artist art url for %s from musicbrainz: %v", musicBrainzArtistId, err)
+			return
+		}
 	}
 
 	img, err := getImageFromInternet(artistArtUrl)
