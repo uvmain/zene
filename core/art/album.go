@@ -10,13 +10,14 @@ import (
 	"time"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/deezer"
 	"zene/core/ffmpeg"
 	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/musicbrainz"
 )
 
-func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName string) {
+func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName string, artistName string) {
 	trackMetadataRows, err := database.SelectTracksByAlbumId(ctx, musicBrainzAlbumId)
 	if err != nil {
 		logger.Printf("Error getting track data from database: %v", err)
@@ -81,14 +82,14 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 		} else {
 			// get art from tags if available
 			art, err := ffmpeg.GetCoverArtFromTrack(ctx, trackMetadataRows[0].FilePath)
-			if err != nil || len(art) > 0 {
+			if err != nil && len(art) > 0 {
 				// save art from tags
 				logger.Printf("Scan: Found album artwork in tags for %s, importing", albumName)
 				getArtFromBytes(ctx, musicBrainzAlbumId, art)
 			} else {
 				// no local image, fallback to downloading from internet
 				logger.Printf("Scan: No album artwork found for %s, downloading", albumName)
-				getArtFromInternet(ctx, musicBrainzAlbumId)
+				getAlbumArtFromInternet(ctx, musicBrainzAlbumId, albumName, artistName)
 			}
 		}
 	}
@@ -116,12 +117,16 @@ func getArtFromFolder(ctx context.Context, musicBrainzAlbumId string, imagePath 
 	}
 }
 
-func getArtFromInternet(ctx context.Context, musicBrainzAlbumId string) {
-	logger.Printf("Fetching art for %s from musicbrainz", musicBrainzAlbumId)
-	albumArtUrl, err := musicbrainz.GetAlbumArtUrl(ctx, musicBrainzAlbumId)
+func getAlbumArtFromInternet(ctx context.Context, musicBrainzAlbumId string, albumName string, artistName string) {
+	logger.Printf("Fetching art for %s from deezer", musicBrainzAlbumId)
+	albumArtUrl, err := deezer.GetAlbumArtUrlWithArtistNameAndAlbumName(ctx, artistName, albumName)
 	if err != nil {
-		logger.Printf("Failed to get album art url for %s from musicbrainz: %v", musicBrainzAlbumId, err)
-		return
+		logger.Printf("Failed to get album art url for %s from deezer: %v. Fetching from musicbrainz", musicBrainzAlbumId, err)
+		albumArtUrl, err = musicbrainz.GetAlbumArtUrl(ctx, musicBrainzAlbumId)
+		if err != nil {
+			logger.Printf("Failed to get album art url for %s from musicbrainz: %v", musicBrainzAlbumId, err)
+			return
+		}
 	}
 
 	img, err := getImageFromInternet(albumArtUrl)
