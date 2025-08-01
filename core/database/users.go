@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -90,6 +91,13 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 		return 0, fmt.Errorf("getting last insert ID: %v", err)
 	}
 
+	adminUser, err := logic.GetUsernameFromContext(ctx)
+	if err != nil {
+		logger.Printf("user %s created, failed to get admin user: %v", user.Username, err)
+	} else {
+		logger.Printf("user %s created by admin user %s", user.Username, adminUser)
+	}
+
 	return rowID, nil
 }
 
@@ -99,7 +107,14 @@ func DeleteUserByUsername(ctx context.Context, username string) error {
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
-	logger.Printf("Deleted user with username: %s", username)
+
+	adminUser, err := logic.GetUsernameFromContext(ctx)
+	if err != nil {
+		logger.Printf("user %s deleted, failed to get admin user: %v", username, err)
+	} else {
+		logger.Printf("user %s deleted by admin user %s", username, adminUser)
+	}
+
 	return nil
 }
 
@@ -109,7 +124,14 @@ func DeleteUserById(ctx context.Context, id int64) error {
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
-	logger.Printf("Deleted user with ID: %d", id)
+
+	adminUser, err := logic.GetUsernameFromContext(ctx)
+	if err != nil {
+		logger.Printf("user id %d deleted, failed to get admin user: %v", id, err)
+	} else {
+		logger.Printf("user id %d deleted by admin user %s", id, adminUser)
+	}
+
 	return nil
 }
 
