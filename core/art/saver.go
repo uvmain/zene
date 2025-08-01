@@ -1,6 +1,7 @@
 package art
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"zene/core/logger"
 
 	"github.com/nfnt/resize"
 )
@@ -56,33 +58,34 @@ func getImageFromInternet(imageUrl string) (image.Image, error) {
 	return img, nil
 }
 
-func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) error {
+func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) {
 	if filepath.Ext(outputPath) != ".jpg" {
 		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
 	}
 
 	img, err := getImageFromFilePath(imagePath)
 	if err != nil {
-		return fmt.Errorf("Failed to decode image: %w", err)
+		logger.Printf("Failed to decode image: %v", err)
+		return
 	}
 
 	resizedImg := resize.Thumbnail(uint(pixelSize), uint(pixelSize), img, resize.Lanczos3)
 
 	outFile, err := os.Create(outputPath)
 	if err != nil {
-		return fmt.Errorf("Failed to create output file: %w", err)
+		logger.Printf("Failed to create output file: %v", err)
+		return
 	}
 	defer outFile.Close()
 
 	opts := jpeg.Options{Quality: 90}
 	if err := jpeg.Encode(outFile, resizedImg, &opts); err != nil {
-		return fmt.Errorf("Failed to encode image to jpg: %w", err)
+		logger.Printf("Failed to encode image to jpg: %v", err)
+		return
 	}
-
-	return nil
 }
 
-func resizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) error {
+func resizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) {
 	if filepath.Ext(outputPath) != ".jpg" {
 		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
 	}
@@ -91,14 +94,41 @@ func resizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) 
 
 	outFile, err := os.Create(outputPath)
 	if err != nil {
-		return fmt.Errorf("Failed to create output file: %w", err)
+		logger.Printf("Failed to create output file: %v", err)
+		return
 	}
 	defer outFile.Close()
 
 	opts := jpeg.Options{Quality: 90}
 	if err := jpeg.Encode(outFile, resizedImg, &opts); err != nil {
-		return fmt.Errorf("Failed to encode image to jpg: %w", err)
+		logger.Printf("Failed to encode image to jpg: %v", err)
+		return
+	}
+}
+
+func resizeBytesAndSaveAsJPG(imgBytes []byte, outputPath string, pixelSize int) {
+	if filepath.Ext(outputPath) != ".jpg" {
+		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
 	}
 
-	return nil
+	img, _, err := image.Decode(bytes.NewReader(imgBytes))
+	if err != nil {
+		logger.Printf("Failed to decode image: %v", err)
+		return
+	}
+
+	resizedImg := resize.Thumbnail(uint(pixelSize), uint(pixelSize), img, resize.Lanczos3)
+
+	outFile, err := os.Create(outputPath)
+	if err != nil {
+		logger.Printf("Failed to create output file: %v", err)
+		return
+	}
+	defer outFile.Close()
+
+	opts := jpeg.Options{Quality: 90}
+	if err := jpeg.Encode(outFile, resizedImg, &opts); err != nil {
+		logger.Printf("Failed to encode image to jpg: %v", err)
+		return
+	}
 }

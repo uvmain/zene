@@ -11,6 +11,7 @@ import (
 
 	"zene/core/logger"
 	"zene/core/logic"
+	"zene/core/net"
 	"zene/core/types"
 )
 
@@ -24,11 +25,6 @@ func ClearMbCache() {
 	defer mbCacheMu.Unlock()
 	mbCache = make(map[string]types.MbRelease)
 	logger.Println("musicbrainz album metadata cache cleared")
-}
-
-func addUserAgentHeaderToRequest(req *http.Request) {
-	var userAgent = "zene/core/1.0 (https://github.com/uvmain/zene)"
-	req.Header.Set("User-Agent", userAgent)
 }
 
 func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbRelease, error) {
@@ -49,7 +45,7 @@ func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbReleas
 		return types.MbRelease{}, fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	addUserAgentHeaderToRequest(req)
+	net.AddUserAgentHeaderToRequest(req)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -91,7 +87,7 @@ func GetAlbumArtUrl(ctx context.Context, musicBrainzAlbumId string) (string, err
 		return "", fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	addUserAgentHeaderToRequest(req)
+	net.AddUserAgentHeaderToRequest(req)
 
 	if err := logic.CheckContext(ctx); err != nil {
 		return "", err
@@ -141,7 +137,7 @@ func GetArtistArtUrl(ctx context.Context, musicBrainzArtistId string) (string, e
 		return "", fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	addUserAgentHeaderToRequest(req)
+	net.AddUserAgentHeaderToRequest(req)
 
 	if err := logic.CheckContext(ctx); err != nil {
 		return "", err
@@ -192,7 +188,7 @@ func GetArtistArtUrl(ctx context.Context, musicBrainzArtistId string) (string, e
 		return "", fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
-	addUserAgentHeaderToRequest(req)
+	net.AddUserAgentHeaderToRequest(req)
 
 	if err := logic.CheckContext(ctx); err != nil {
 		return "", err

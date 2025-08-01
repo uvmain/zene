@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"log"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/ffmpeg"
+	"zene/core/ffprobe"
 	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/scanner"
@@ -22,6 +25,18 @@ func main() {
 
 	database.Initialise(ctx)
 	defer database.CloseDatabase()
+
+	err := ffprobe.InitializeFfprobe(ctx)
+	if err != nil {
+		log.Fatalf("Failed to initialize ffprobe: %v", err)
+		return
+	}
+
+	err = ffmpeg.InitializeFfmpeg(ctx)
+	if err != nil {
+		log.Fatalf("Failed to initialize ffmpeg: %v", err)
+		return
+	}
 
 	scheduler.Initialise(ctx)
 

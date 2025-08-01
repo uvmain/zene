@@ -14,14 +14,13 @@
     "dev:backend": "go run .",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
-    "build:backend": "cross-env CGO_ENABLED=0 go build -o zene . && cpy zene . --rename=zene.exe",
+    "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && cpy zene . --rename=zene.exe",
     "build:frontend": "npm run build --workspace frontend",
     "build": "npm run build:frontend && npm run build:backend",
     "preview": "concurrently npm:caddy:preview npm:preview:go",
     "preview:go": "zene.exe",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
-    "test:frontend": "npm run test:run --workspace frontend",
     "lint": "npm run lint --workspace frontend",
     "cspell": "cspell \"**/*.{go,ts,js,vue}\""
   },
@@ -39,9 +38,7 @@
     "caddy-baron": "^3.0.2",
     "concurrently": "^9.1.2",
     "cpy-cli": "^5.0.0",
-    "cross-env": "^7.0.3",
-    "ffmpeg-baron": "^2.0.3",
-    "ffprobe-baron": "^2.0.3",
+    "cross-env": "^10.0.0",
     "rimraf": "^6.0.1"
   }
 }

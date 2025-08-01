@@ -38,6 +38,7 @@ const temporaryToken = ref<TokenResponse | null>(null)
 const savedLocalPosition = ref<number>(0)
 const isTransitioningToCast = ref<boolean>(false)
 const isTransitioningFromCast = ref<boolean>(false)
+const showLyrics = ref<boolean>(false)
 
 const trackUrl = computed<string>(() => {
   return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream?quality=${streamQuality.value}` : ''
@@ -198,12 +199,6 @@ function volumeInput(event: Event) {
 }
 
 async function handleNextTrack() {
-  if (isCasting.value && castPlayerController.value) {
-    // For cast, try to use the native next track functionality
-    castPlayerController.value.nextTrack()
-  }
-
-  // Always update the local queue for track management
   await getNextTrack()
 
   // If casting, load the new track to the cast device
@@ -213,12 +208,6 @@ async function handleNextTrack() {
 }
 
 async function handlePreviousTrack() {
-  if (isCasting.value && castPlayerController.value) {
-    // For cast, try to use the native previous track functionality
-    castPlayerController.value.previousTrack()
-  }
-
-  // Always update the local queue for track management
   await getPreviousTrack()
 
   // If casting, load the new track to the cast device
@@ -728,6 +717,9 @@ onUnmounted(() => {
     :class="{ 'animate-pulse-bg': currentlyPlayingTrack && isPlaying }"
     :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
   >
+    <div v-if="showLyrics && currentlyPlayingTrack">
+      <LyricsDisplay :track="currentlyPlayingTrack" :current-seconds="currentTime" @close="showLyrics = false" />
+    </div>
     <div class="flex flex-col items-center border-0 border-t-1 border-white/20 border-solid px-2 backdrop-blur-2xl backdrop-contrast-30 md:flex-row space-y-2 md:px-4 md:space-x-2 md:space-y-0">
       <div
         class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 md:py-2 md:space-y-2"
@@ -795,6 +787,15 @@ onUnmounted(() => {
           <google-cast-launcher />
         </div>
 
+        <!-- Lyrics button -->
+        <button
+          id="lyrics"
+          class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
+          @click="showLyrics = !showLyrics"
+        >
+          <icon-tabler-microphone-2 class="text-lg md:text-xl sm:text-lg" />
+        </button>
+
         <!-- Playlist button -->
         <div>
           <RouterLink
@@ -841,18 +842,5 @@ onUnmounted(() => {
 
 .animate-pulse-bg {
   animation: pulse-bg 120s infinite ease-in-out;
-}
-
-:global(google-cast-launcher .cast_caf_state_c) {
-  fill: rgb(101, 199, 117);
-  opacity: 100;
-}
-:global(google-cast-launcher .cast_caf_state_d) {
-  fill: rgb(250, 250, 250);
-  opacity: 100;
-}
-:global(google-cast-launcher .cast_caf_state_h) {
-  fill: rgb(250, 250, 250);
-  opacity: 50;
 }
 </style>

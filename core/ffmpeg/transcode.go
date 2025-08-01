@@ -17,7 +17,7 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 	filePathAbs, _ := filepath.Abs(filePath)
 
 	if _, err := os.Stat(filePathAbs); os.IsNotExist(err) {
-		return "", fmt.Errorf("File does not exist: %s:  %s", filePathAbs, err)
+		return "", fmt.Errorf("file does not exist: %s:  %s", filePathAbs, err)
 	}
 
 	cacheKey := fmt.Sprintf("%s-%d.aac", trackId, quality)
@@ -29,7 +29,7 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 
 	logger.Printf("Transcoding %s at %dk at %s", filePath, quality, cachePath)
 
-	cmd := exec.Command("ffmpeg",
+	cmd := exec.CommandContext(ctx, config.FfmpegPath,
 		"-loglevel", "error",
 		"-i", filePathAbs,
 		"-vn",
@@ -41,18 +41,34 @@ func TranscodeFile(ctx context.Context, filePath string, trackId string, quality
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("Error running ffprobe: %s", output)
+		cleanupIncompleteCache(ctx, cachePath, cacheKey)
+		return "", fmt.Errorf("running ffprobe: %s", output)
 	} else {
 		logger.Printf("Transcoding %s complete", filePath)
 	}
 
 	err = database.UpsertAudioCacheEntry(ctx, cacheKey)
 	if err != nil {
+		cleanupIncompleteCache(ctx, cachePath, cacheKey)
 		logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
 		return "", err
 	}
 
 	return cachePath, nil
+}
+
+func cleanupIncompleteCache(ctx context.Context, cachePath string, cacheKey string) {
+	if err := os.Remove(cachePath); err != nil {
+		logger.Printf("Failed to remove incomplete cache file %s: %v", cachePath, err)
+	} else {
+		logger.Printf("Removed incomplete cache file: %s", cachePath)
+	}
+
+	if err := database.DeleteAudioCacheEntry(ctx, cacheKey); err != nil {
+		logger.Printf("Failed to delete audio cache entry for %s: %v", cacheKey, err)
+	} else {
+		logger.Printf("Deleted audio cache entry for %s", cacheKey)
+	}
 }
 
 func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, quality int) error {
@@ -67,7 +83,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		}
 		f, err := os.Open(cachePath)
 		if err != nil {
-			return fmt.Errorf("Failed to open cached file: %w", err)
+			return fmt.Errorf("opening cached file: %w", err)
 		}
 		defer f.Close()
 		w.Header().Set("Content-Type", "audio/aac")
@@ -77,7 +93,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	logger.Printf("Transcoding %s to stream at %dk", filePathAbs, quality)
 
-	cmd := exec.Command("ffmpeg",
+	cmd := exec.CommandContext(ctx, config.FfmpegPath,
 		"-loglevel", "error",
 		"-i", filePathAbs,
 		"-vn",
@@ -89,15 +105,15 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("Failed to get ffmpeg stdout: %w", err)
+		return fmt.Errorf("getting ffmpeg stdout: %w", err)
 	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return fmt.Errorf("Failed to get ffmpeg stderr: %w", err)
+		return fmt.Errorf("getting ffmpeg stderr: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("Failed to start ffmpeg: %w", err)
+		return fmt.Errorf("starting ffmpeg: %w", err)
 	}
 
 	go func() {
@@ -111,7 +127,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	cacheFile, err := os.Create(cachePath)
 	if err != nil {
-		return fmt.Errorf("Failed to create cache file: %w", err)
+		return fmt.Errorf("creating cache file: %w", err)
 	}
 	defer cacheFile.Close()
 
@@ -121,18 +137,25 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	waitErr := cmd.Wait()
 
 	if err != nil {
+		cacheFile.Close()
+		cleanupIncompleteCache(ctx, cachePath, cacheKey)
 		return fmt.Errorf("copy failed: %w", err)
 	} else {
 		logger.Printf("Transcoding %s complete, cached at %s", filePathAbs, cachePath)
 		err = database.UpsertAudioCacheEntry(ctx, cacheKey)
 		if err != nil {
+			cacheFile.Close()
+			cleanupIncompleteCache(ctx, cachePath, cacheKey)
 			logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
 			return err
 		}
 	}
 	if waitErr != nil {
+		cacheFile.Close()
+		cleanupIncompleteCache(ctx, cachePath, cacheKey)
 		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
 	}
+	cacheFile.Close()
 
 	return nil
 }

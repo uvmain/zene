@@ -2,21 +2,21 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"path/filepath"
-	"sync"
 	"zene/core/config"
 	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/logic"
 
-	"zombiezen.com/go/sqlite"
-	"zombiezen.com/go/sqlite/sqlitex"
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 var dbFile = "sqlite.db"
-var DbPool *sqlitex.Pool
-var dbMutex sync.RWMutex
+var DB *sql.DB
+var err error
 
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
@@ -24,6 +24,7 @@ func Initialise(ctx context.Context) {
 	createSessionsTable(ctx)
 	createMetadataTable(ctx)
 	createPlayCountsTable(ctx)
+	createLyricsTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
 	createFtsTables(ctx)
@@ -33,33 +34,39 @@ func Initialise(ctx context.Context) {
 }
 
 func openDatabase(ctx context.Context) {
-	dbFile := filepath.Join(config.DatabaseDirectory, dbFile)
+	dbFilePath := filepath.Join(config.DatabaseDirectory, dbFile)
 
-	if io.FileExists(dbFile) {
+	if io.FileExists(dbFilePath) {
 		logger.Println("Database already exists")
 	} else {
 		logger.Println("Creating new database file")
 	}
 
-	poolOptions := sqlitex.PoolOptions{
-		PrepareConn: func(conn *sqlite.Conn) error {
-			err := sqlitex.ExecuteTransient(conn, `PRAGMA foreign_keys = on;`, nil)
-			if err != nil {
-				logger.Printf("Prepare internal error: %v", err)
-			}
-			return err
-		},
-	}
-	poolOptions.Flags = 0
-	poolOptions.PoolSize = 10
-
-	var err error
-
-	DbPool, err = sqlitex.NewPool(dbFile, poolOptions)
+	DB, err = sql.Open("sqlite3", dbFilePath)
 	if err != nil {
-		log.Fatalf("Failed to open database pool: %v", err)
+		log.Fatalf("Failed to open database: %v", err)
+	}
+	log.Printf("Database file opened: %s", dbFilePath)
+
+	_, err = DB.Exec("pragma foreign_keys = 1;")
+	if err != nil {
+		log.Printf("Error enabling foreign keys: %s", err)
 	} else {
-		logger.Println("Database pool opened")
+		log.Println("Foreign keys enabled")
+	}
+
+	_, err = DB.Exec("pragma journal_mode = wal;")
+	if err != nil {
+		log.Printf("Error entering WAL mode: %s", err)
+	} else {
+		log.Println("Database is in WAL mode")
+	}
+
+	// DB.SetMaxOpenConns(10)
+	DB.SetMaxIdleConns(5)
+
+	if err := DB.PingContext(ctx); err != nil {
+		log.Fatalf("Failed to ping database: %v", err)
 	}
 
 	if err := logic.CheckContext(ctx); err != nil {
@@ -68,7 +75,7 @@ func openDatabase(ctx context.Context) {
 }
 
 func CloseDatabase() {
-	if DbPool != nil {
-		DbPool.Close()
+	if DB != nil {
+		DB.Close()
 	}
 }

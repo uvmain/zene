@@ -118,18 +118,19 @@ func cleanupAudioCache(ctx context.Context) {
 func removeOrphanCache(ctx context.Context) error {
 	cacheFiles, err := io.GetFiles(ctx, config.AudioCacheFolder, []string{})
 	if err != nil {
-		return fmt.Errorf("Error getting audio cache files from filesystem: %v", err)
+		return fmt.Errorf("getting audio cache files from filesystem: %v", err)
 	}
 
 	audioCacheRows, err := database.SelectAllAudioCacheEntries(ctx)
 	if err != nil {
-		return fmt.Errorf("Error getting audio cache files from database: %v", err)
+		return fmt.Errorf("getting audio cache files from database: %v", err)
 	}
 
 	databaseFiles := []types.File{}
 	for _, row := range audioCacheRows {
 		filePathAbs := filepath.Join(config.AudioCacheFolder, row.CacheKey)
 		databaseFiles = append(databaseFiles, types.File{
+			FileName:     row.CacheKey,
 			FilePathAbs:  filePathAbs,
 			DateModified: row.LastAccessed.Format(time.RFC3339Nano),
 		})
@@ -141,6 +142,16 @@ func removeOrphanCache(ctx context.Context) error {
 		err = io.DeleteFile(file.FilePathAbs)
 		if err != nil {
 			logger.Printf("Error deleting orphan cache file %s: %v", file.FilePathAbs, err)
+			continue
+		}
+	}
+
+	orphanFiles = logic.FilesInSliceOnceNotInSliceTwo(databaseFiles, cacheFiles)
+
+	for _, file := range orphanFiles {
+		err = database.DeleteAudioCacheEntry(ctx, file.FileName)
+		if err != nil {
+			logger.Printf("Error deleting orphan cache file %s: %v", file.FileName, err)
 			continue
 		}
 	}

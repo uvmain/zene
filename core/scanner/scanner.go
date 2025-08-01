@@ -58,6 +58,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 		if err != nil {
 			scanError("Error inserting or updating metadata row: %v", err)
 		} else {
+			logger.Printf("Scan: Upserted metadata for %s", audioFile.FilePathAbs)
 			fileCount += 1
 		}
 	}
@@ -178,7 +179,7 @@ func getAlbumArtwork(ctx context.Context) error {
 		return err
 	}
 	for _, album := range albums {
-		art.ImportArtForAlbum(ctx, album.MusicBrainzAlbumID, album.Album)
+		art.ImportArtForAlbum(ctx, album.MusicBrainzAlbumID, album.Album, album.Artist)
 	}
 	return nil
 }

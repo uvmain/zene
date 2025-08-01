@@ -7,65 +7,44 @@ import (
 )
 
 func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.Metadata{}, fmt.Errorf("taking a db conn from the pool in SearchMetadata: %v", err)
+	if searchQuery == "" {
+		return []types.Metadata{}, fmt.Errorf("search query cannot be empty")
 	}
-	defer DbPool.Put(conn)
 
-	stmt := conn.Prep(`select distinct m.*
+	query := `SELECT DISTINCT m.*
 		FROM metadata m JOIN metadata_fts f ON f.file_path = m.file_path
-		WHERE metadata_fts MATCH $searchQuery
-		ORDER BY m.file_path DESC;`)
-	defer stmt.Finalize()
+		WHERE metadata_fts MATCH ?
+		ORDER BY m.file_path DESC`
 
-	if searchQuery != "" {
-		stmt.SetText("$searchQuery", searchQuery)
-	} else {
-		return []types.Metadata{}, fmt.Errorf("FTS Query cannot be empty")
+	rows, err := DB.QueryContext(ctx, query, searchQuery)
+	if err != nil {
+		return []types.Metadata{}, fmt.Errorf("searching metadata: %v", err)
 	}
+	defer rows.Close()
 
-	var rows []types.Metadata
-	for {
-		hasRow, err := stmt.Step()
+	var result []types.Metadata
+	for rows.Next() {
+		var row types.Metadata
+		err := rows.Scan(
+			&row.FilePath, &row.FileName, &row.DateAdded, &row.DateModified,
+			&row.Format, &row.Duration, &row.Size, &row.Bitrate,
+			&row.Title, &row.Artist, &row.Album, &row.AlbumArtist,
+			&row.Genre, &row.TrackNumber, &row.TotalTracks, &row.DiscNumber,
+			&row.TotalDiscs, &row.ReleaseDate, &row.MusicBrainzArtistID,
+			&row.MusicBrainzAlbumID, &row.MusicBrainzTrackID, &row.Label,
+		)
 		if err != nil {
-			return []types.Metadata{}, err
-		} else if !hasRow {
-			break
+			return []types.Metadata{}, fmt.Errorf("scanning metadata row: %v", err)
 		}
-
-		row := types.Metadata{
-			FilePath:            stmt.GetText("file_path"),
-			DateAdded:           stmt.GetText("date_added"),
-			DateModified:        stmt.GetText("date_modified"),
-			FileName:            stmt.GetText("file_name"),
-			Format:              stmt.GetText("format"),
-			Duration:            stmt.GetText("duration"),
-			Size:                stmt.GetText("size"),
-			Bitrate:             stmt.GetText("bitrate"),
-			Title:               stmt.GetText("title"),
-			Artist:              stmt.GetText("artist"),
-			Album:               stmt.GetText("album"),
-			AlbumArtist:         stmt.GetText("album_artist"),
-			Genre:               stmt.GetText("genre"),
-			TrackNumber:         stmt.GetText("track_number"),
-			TotalTracks:         stmt.GetText("total_tracks"),
-			DiscNumber:          stmt.GetText("disc_number"),
-			TotalDiscs:          stmt.GetText("total_discs"),
-			ReleaseDate:         stmt.GetText("release_date"),
-			MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-			MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
-			MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
-			Label:               stmt.GetText("label"),
-		}
-		rows = append(rows, row)
+		result = append(result, row)
 	}
 
-	if rows == nil {
-		rows = []types.Metadata{}
+	if err := rows.Err(); err != nil {
+		return []types.Metadata{}, fmt.Errorf("rows error: %v", err)
 	}
-	return rows, nil
+
+	if result == nil {
+		result = []types.Metadata{}
+	}
+	return result, nil
 }

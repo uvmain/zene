@@ -93,6 +93,15 @@ export function useBackendFetch() {
     return contentType
   }
 
+  const getLyrics = async (musicbrainzTrackId: string): Promise<{ plainLyrics: string, syncedLyrics: string }> => {
+    const response = await backendFetchRequest(`tracks/${musicbrainzTrackId}/lyrics`)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch lyrics for track ${musicbrainzTrackId}: ${response.statusText}`)
+    }
+    const data = await response.json() as { plainLyrics: string, syncedLyrics: string }
+    return data
+  }
+
   return {
     backendFetchRequest,
     getAlbum,
@@ -105,5 +114,6 @@ export function useBackendFetch() {
     getTemporaryToken,
     refreshTemporaryToken,
     getMimeType,
+    getLyrics,
   }
 }
