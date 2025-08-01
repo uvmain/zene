@@ -26,13 +26,13 @@ func main() {
 	database.Initialise(ctx)
 	defer database.CloseDatabase()
 
-	err := ffprobe.InitializeFfprobe()
+	err := ffprobe.InitializeFfprobe(ctx)
 	if err != nil {
 		log.Fatalf("Failed to initialize ffprobe: %v", err)
 		return
 	}
 
-	err = ffmpeg.InitializeFfmpeg()
+	err = ffmpeg.InitializeFfmpeg(ctx)
 	if err != nil {
 		log.Fatalf("Failed to initialize ffmpeg: %v", err)
 		return

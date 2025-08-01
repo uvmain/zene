@@ -1,6 +1,7 @@
 package art
 
 import (
+	"bytes"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -85,6 +86,32 @@ func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) 
 func resizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) error {
 	if filepath.Ext(outputPath) != ".jpg" {
 		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
+	}
+
+	resizedImg := resize.Thumbnail(uint(pixelSize), uint(pixelSize), img, resize.Lanczos3)
+
+	outFile, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("Failed to create output file: %w", err)
+	}
+	defer outFile.Close()
+
+	opts := jpeg.Options{Quality: 90}
+	if err := jpeg.Encode(outFile, resizedImg, &opts); err != nil {
+		return fmt.Errorf("Failed to encode image to jpg: %w", err)
+	}
+
+	return nil
+}
+
+func resizeBytesAndSaveAsJPG(imgBytes []byte, outputPath string, pixelSize int) error {
+	if filepath.Ext(outputPath) != ".jpg" {
+		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
+	}
+
+	img, _, err := image.Decode(bytes.NewReader(imgBytes))
+	if err != nil {
+		return fmt.Errorf("Failed to decode image: %w", err)
 	}
 
 	resizedImg := resize.Thumbnail(uint(pixelSize), uint(pixelSize), img, resize.Lanczos3)
