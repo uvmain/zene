@@ -66,7 +66,7 @@ func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 
 	for rows.Next() {
 		var result types.AlbumsResponse
-		if err := rows.Scan(&result.Album, &result.MusicBrainzAlbumID, &result.Artist, &result.MusicBrainzArtistID, &result.Genres, &result.ReleaseDate); err != nil {
+		if err := rows.Scan(&result.MusicBrainzAlbumID, &result.Album, &result.MusicBrainzArtistID, &result.Artist, &result.Genres, &result.ReleaseDate); err != nil {
 			logger.Printf("Failed to scan row in SelectAlbumsByArtistId: %v", err)
 			return nil, err
 		}
