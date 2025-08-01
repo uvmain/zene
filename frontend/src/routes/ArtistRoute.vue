@@ -13,6 +13,7 @@ const tracks = ref<TrackMetadataWithImageUrl[]>()
 const albums = ref<AlbumMetadata[]>()
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
+const artistArtUrl = computed(() => `/api/artists/${musicbrainz_artist_id.value}/art?size=xl`)
 
 async function getArtist() {
   const response = await backendFetchRequest(`artists/${musicbrainz_artist_id.value}`)
@@ -72,7 +73,7 @@ onMounted(async () => {
           <div class="size-60">
             <img
               class="h-full w-full rounded-md object-cover"
-              :src="artist.image_url"
+              :src="artistArtUrl"
               @error="onImageError"
             />
           </div>
