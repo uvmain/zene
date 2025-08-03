@@ -15,7 +15,7 @@ import (
 	"zene/core/types"
 )
 
-func InitializeFfprobe() error {
+func InitializeFfprobe(ctx context.Context) error {
 	logger.Printf("FFPROBE_PATH: %s", config.FfprobePath)
 
 	if io.FileExists(config.FfprobePath) {
@@ -27,7 +27,7 @@ func InitializeFfprobe() error {
 		}
 	}
 
-	version, err := exec.Command(config.FfprobePath, "-version").Output()
+	version, err := exec.CommandContext(ctx, config.FfprobePath, "-version").Output()
 	if err != nil {
 		return fmt.Errorf("ffprobe not found at %s: %v", config.FfprobePath, err)
 	} else {
@@ -49,7 +49,7 @@ func GetTags(ctx context.Context, audiofilePath string) (types.Tags, error) {
 }
 
 func GetTagsFromFile(ctx context.Context, audiofilePath string) (types.FfprobeStandard, error) {
-	cmd := exec.Command(config.FfprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", audiofilePath)
+	cmd := exec.CommandContext(ctx, config.FfprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", audiofilePath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Printf("Error running ffprobe: %s", output)

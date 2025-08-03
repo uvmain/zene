@@ -2,8 +2,10 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
+	"zene/core/logger"
 	"zene/core/types"
 )
 
@@ -18,29 +20,18 @@ func createAudioCacheTable(ctx context.Context) error {
 }
 
 func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	query := "SELECT last_accessed FROM audio_cache WHERE cache_key = ?"
 
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("taking a db conn from the pool in SelectAudioCacheEntry: %v", err)
-	}
-	defer DbPool.Put(conn)
+	var lastAccessedString string
 
-	stmt := conn.Prep(`SELECT last_accessed FROM audio_cache WHERE cache_key = $cache_key`)
-	defer stmt.Finalize()
+	err := DB.QueryRowContext(ctx, query, cache_key).Scan(&lastAccessedString)
 
-	stmt.SetText("$cache_key", cache_key)
-
-	hasRow, err := stmt.Step()
-	if err != nil {
+	if err == sql.ErrNoRows {
+		return time.Time{}, fmt.Errorf("cache_key %s not found", cache_key)
+	} else if err != nil {
 		return time.Time{}, fmt.Errorf("querying audio_cache: %v", err)
 	}
-	if !hasRow {
-		return time.Time{}, fmt.Errorf("cache_key %s not found", cache_key)
-	}
 
-	lastAccessedString := stmt.GetText("last_accessed")
 	lastAccessed, err := time.Parse(time.RFC3339Nano, lastAccessedString)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("parsing last_accessed time: %v", err)
@@ -50,112 +41,83 @@ func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, er
 }
 
 func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]string, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	query := "SELECT cache_key FROM audio_cache WHERE last_accessed < ?"
 
-	conn, err := DbPool.Take(ctx)
+	rows, err := DB.QueryContext(ctx, query, olderThan.Format(time.RFC3339Nano))
 	if err != nil {
-		return nil, fmt.Errorf("taking a db conn from the pool in SelectStaleAudioCacheEntries: %v", err)
+		logger.Printf("Query failed: %v", err)
+		return []string{}, err
 	}
-	defer DbPool.Put(conn)
+	defer rows.Close()
 
-	stmt := conn.Prep(`
-		SELECT cache_key FROM audio_cache
-		WHERE last_accessed < $older_than
-	`)
-	defer stmt.Finalize()
+	var results []string
 
-	stmt.SetText("$older_than", olderThan.Format(time.RFC3339Nano))
-
-	var staleKeys []string
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return nil, fmt.Errorf("stepping through stale cache query: %v", err)
+	for rows.Next() {
+		var result string
+		if err := rows.Scan(&result); err != nil {
+			logger.Printf("Failed to scan row in SelectStaleAudioCacheEntries: %v", err)
+			return []string{}, err
 		}
-		if !hasRow {
-			break
-		}
-		staleKeys = append(staleKeys, stmt.ColumnText(0))
+		results = append(results, result)
 	}
 
-	return staleKeys, nil
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
+	}
+
+	return results, nil
 }
 
 func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in UpsertAudioCacheEntry: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`
+	stmt := `
 		INSERT INTO audio_cache (cache_key, last_accessed)
-		VALUES ($cache_key, $lastAccessed)
-		ON CONFLICT(cache_key) DO UPDATE SET last_accessed = $lastAccessed
-	`)
-	defer stmt.Finalize()
+		VALUES (?, ?)
+		ON CONFLICT(cache_key) DO UPDATE SET last_accessed = ?
+	`
 
-	stmt.SetText("$cache_key", cache_key)
-	stmt.SetText("$lastAccessed", time.Now().Format(time.RFC3339Nano))
+	lastAccessed := time.Now().Format(time.RFC3339Nano)
+	_, err := DB.ExecContext(ctx, stmt, cache_key, lastAccessed, lastAccessed)
 
-	_, err = stmt.Step()
 	if err != nil {
-		return fmt.Errorf("upserting audio_cache: %v", err)
+		return fmt.Errorf("upserting audio cache row: %v", err)
 	}
 
 	return nil
 }
 
 func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
+	stmt := "DELETE FROM audio_cache WHERE cache_key = ?"
+	_, err := DB.ExecContext(ctx, stmt, cache_key)
 
-	conn, err := DbPool.Take(ctx)
 	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in DeleteAudioCacheEntry: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`DELETE FROM audio_cache WHERE cache_key = $cache_key`)
-	defer stmt.Finalize()
-
-	stmt.SetText("$cache_key", cache_key)
-
-	_, err = stmt.Step()
-	if err != nil {
-		return fmt.Errorf("deleting from audio_cache: %v", err)
+		return fmt.Errorf("deleting audio cache row: %v", err)
 	}
 
 	return nil
 }
 
 func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	query := "SELECT cache_key, last_accessed FROM audio_cache"
 
-	conn, err := DbPool.Take(ctx)
+	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("taking a db conn from the pool in SelectAllAudioCacheEntries: %v", err)
+		logger.Printf("Query failed: %v", err)
+		return []types.AudioCacheEntry{}, err
 	}
-	defer DbPool.Put(conn)
+	defer rows.Close()
 
-	stmt := conn.Prep(`SELECT cache_key, last_accessed FROM audio_cache`)
-	defer stmt.Finalize()
+	var results []types.AudioCacheEntry
 
-	var rows []types.AudioCacheEntry
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
-			return nil, err
+	for rows.Next() {
+		var result types.AudioCacheEntry
+		var cacheKey string
+		var lastAccessedString string
+		if err := rows.Scan(&cacheKey, &lastAccessedString); err != nil {
+			logger.Printf("Failed to scan row in SelectAllAudioCacheEntries: %v", err)
+			return []types.AudioCacheEntry{}, err
 		}
-		if !hasRow {
-			break
-		}
-		lastAccessedString := stmt.GetText("last_accessed")
+		result.CacheKey = cacheKey
 		var lastAccessed time.Time
 		if lastAccessedString != "" {
 			lastAccessed, err = time.Parse(time.RFC3339Nano, lastAccessedString)
@@ -163,13 +125,14 @@ func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, e
 				return nil, fmt.Errorf("parsing last_accessed time: %v", err)
 			}
 		}
-
-		row := types.AudioCacheEntry{
-			CacheKey:     stmt.GetText("cache_key"),
-			LastAccessed: lastAccessed,
-		}
-		rows = append(rows, row)
+		result.LastAccessed = lastAccessed
+		results = append(results, result)
 	}
 
-	return rows, nil
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
+	}
+
+	return results, nil
 }

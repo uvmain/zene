@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strconv"
 	"zene/core/logger"
@@ -10,29 +11,20 @@ import (
 )
 
 func SelectAllTracks(ctx context.Context, random string, limit string, offset string, recent string, chronological string) ([]types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return []types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in SelectAllTracks: %v", err)
-	}
-	defer DbPool.Put(conn)
-
 	userId, _ := logic.GetUserIdFromContext(ctx)
-	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
+	query := getUnendedMetadataWithPlaycountsSql(userId)
 
 	if recent == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY m.date_added desc", stmtText)
+		query += " ORDER BY m.date_added desc"
 	} else if random != "" {
 		randomInteger, err := strconv.Atoi(random)
 		if err == nil {
-			stmtText += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInteger)
+			query += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInteger)
 		} else {
 			logger.Printf("Error setting randomness: %v", err)
 		}
 	} else if chronological == "true" {
-		stmtText = fmt.Sprintf("%s ORDER BY m.release_date desc", stmtText)
+		query += " ORDER BY m.release_date desc"
 	}
 
 	if limit != "" {
@@ -40,7 +32,7 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 		if err != nil {
 			return []types.MetadataWithPlaycounts{}, fmt.Errorf("invalid limit value: %v", err)
 		}
-		stmtText = fmt.Sprintf("%s limit %d", stmtText, limitInt)
+		query += fmt.Sprintf(" limit %d", limitInt)
 	}
 
 	if offset != "" {
@@ -48,144 +40,84 @@ func SelectAllTracks(ctx context.Context, random string, limit string, offset st
 		if err != nil {
 			return []types.MetadataWithPlaycounts{}, fmt.Errorf("invalid offset value: %v", err)
 		}
-		stmtText = fmt.Sprintf("%s offset %d", stmtText, offsetInt)
+		query += fmt.Sprintf(" offset %d", offsetInt)
 	}
 
-	stmtText = fmt.Sprintf("%s;", stmtText)
-	stmt := conn.Prep(stmtText)
+	query += ";"
 
-	defer stmt.Finalize()
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return []types.MetadataWithPlaycounts{}, err
+	}
+	defer rows.Close()
 
-	var rows []types.MetadataWithPlaycounts
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
+	var results []types.MetadataWithPlaycounts
+
+	for rows.Next() {
+		var result types.MetadataWithPlaycounts
+		if err := rows.Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
+			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
+			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
+			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
+			logger.Printf("Failed to scan row in SelectAllTracks: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
-		} else if !hasRow {
-			break
 		}
-
-		row := types.MetadataWithPlaycounts{
-			FilePath:            stmt.GetText("file_path"),
-			DateAdded:           stmt.GetText("date_added"),
-			DateModified:        stmt.GetText("date_modified"),
-			FileName:            stmt.GetText("file_name"),
-			Format:              stmt.GetText("format"),
-			Duration:            stmt.GetText("duration"),
-			Size:                stmt.GetText("size"),
-			Bitrate:             stmt.GetText("bitrate"),
-			Title:               stmt.GetText("title"),
-			Artist:              stmt.GetText("artist"),
-			Album:               stmt.GetText("album"),
-			AlbumArtist:         stmt.GetText("album_artist"),
-			Genre:               stmt.GetText("genre"),
-			TrackNumber:         stmt.GetText("track_number"),
-			TotalTracks:         stmt.GetText("total_tracks"),
-			DiscNumber:          stmt.GetText("disc_number"),
-			TotalDiscs:          stmt.GetText("total_discs"),
-			ReleaseDate:         stmt.GetText("release_date"),
-			MusicBrainzArtistID: stmt.GetText("musicbrainz_artist_id"),
-			MusicBrainzAlbumID:  stmt.GetText("musicbrainz_album_id"),
-			MusicBrainzTrackID:  stmt.GetText("musicbrainz_track_id"),
-			Label:               stmt.GetText("label"),
-			UserPlayCount:       stmt.GetInt64("user_play_count"),
-			GlobalPlayCount:     stmt.GetInt64("global_play_count"),
-		}
-		rows = append(rows, row)
+		results = append(results, result)
 	}
 
-	if rows == nil {
-		rows = []types.MetadataWithPlaycounts{}
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
 	}
-	return rows, nil
+
+	return results, nil
 }
 
 func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.MetadataWithPlaycounts, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return types.MetadataWithPlaycounts{}, fmt.Errorf("taking a db conn from the pool in t: %v", err)
-	}
-	defer DbPool.Put(conn)
-
 	userId, _ := logic.GetUserIdFromContext(ctx)
 
-	stmtText := getUnendedMetadataWithPlaycountsSql(userId)
-	stmtText = fmt.Sprintf("%s where m.musicbrainz_track_id = $musicbrainz_track_id limit 1;", stmtText)
-	stmt := conn.Prep(stmtText)
-	defer stmt.Finalize()
-	stmt.SetText("$musicbrainz_track_id", musicBrainzTrackId)
+	query := getUnendedMetadataWithPlaycountsSql(userId)
+	query += " where m.musicbrainz_track_id = ? limit 1;"
 
-	var row types.MetadataWithPlaycounts
-
-	if hasRow, err := stmt.Step(); err != nil {
-		return types.MetadataWithPlaycounts{}, err
-	} else if !hasRow {
+	var result types.MetadataWithPlaycounts
+	err := DB.QueryRowContext(ctx, query, musicBrainzTrackId).Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
+		&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
+		&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
+		&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount)
+	if err == sql.ErrNoRows {
 		return types.MetadataWithPlaycounts{}, nil
-	} else {
-		row.FilePath = stmt.GetText("file_path")
-		row.DateAdded = stmt.GetText("date_added")
-		row.DateModified = stmt.GetText("date_modified")
-		row.FileName = stmt.GetText("file_name")
-		row.Format = stmt.GetText("format")
-		row.Duration = stmt.GetText("duration")
-		row.Size = stmt.GetText("size")
-		row.Bitrate = stmt.GetText("bitrate")
-		row.Title = stmt.GetText("title")
-		row.Artist = stmt.GetText("artist")
-		row.Album = stmt.GetText("album")
-		row.AlbumArtist = stmt.GetText("album_artist")
-		row.Genre = stmt.GetText("genre")
-		row.TrackNumber = stmt.GetText("track_number")
-		row.TotalTracks = stmt.GetText("total_tracks")
-		row.DiscNumber = stmt.GetText("disc_number")
-		row.TotalDiscs = stmt.GetText("total_discs")
-		row.ReleaseDate = stmt.GetText("release_date")
-		row.MusicBrainzArtistID = stmt.GetText("musicbrainz_artist_id")
-		row.MusicBrainzAlbumID = stmt.GetText("musicbrainz_album_id")
-		row.MusicBrainzTrackID = stmt.GetText("musicbrainz_track_id")
-		row.Label = stmt.GetText("label")
-		row.UserPlayCount = stmt.GetInt64("user_play_count")
-		row.GlobalPlayCount = stmt.GetInt64("global_play_count")
+	} else if err != nil {
+		return types.MetadataWithPlaycounts{}, err
 	}
-
-	return row, nil
+	return result, nil
 }
 
 func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
+	query := "SELECT file_path, file_name, date_modified FROM metadata;"
 
-	conn, err := DbPool.Take(ctx)
+	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
-		return []types.File{}, fmt.Errorf("taking a db conn from the pool in SelectTrackFilesForScanner: %v", err)
+		logger.Printf("Query failed: %v", err)
+		return []types.File{}, err
 	}
-	defer DbPool.Put(conn)
+	defer rows.Close()
 
-	stmt := conn.Prep(`SELECT file_path, file_name, date_modified FROM metadata;`)
-	defer stmt.Finalize()
+	var results []types.File
 
-	var rows []types.File
-	for {
-		hasRow, err := stmt.Step()
-		if err != nil {
+	for rows.Next() {
+		var result types.File
+		if err := rows.Scan(&result.FilePathAbs, &result.FileName, &result.DateModified); err != nil {
+			logger.Printf("Failed to scan row in SelectTrackFilesForScanner: %v", err)
 			return []types.File{}, err
-		} else if !hasRow {
-			break
 		}
-
-		row := types.File{
-			FilePathAbs:  stmt.GetText("file_path"),
-			FileName:     stmt.GetText("file_name"),
-			DateModified: stmt.GetText("date_modified"),
-		}
-		rows = append(rows, row)
+		results = append(results, result)
 	}
 
-	if rows == nil {
-		rows = []types.File{}
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
 	}
-	return rows, nil
+
+	return results, nil
 }

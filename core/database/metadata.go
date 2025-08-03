@@ -47,24 +47,15 @@ func createMetadataTable(ctx context.Context) error {
 }
 
 func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in InsertMetadataRow: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`
+	query := `
 	INSERT INTO metadata (
 		file_path, date_added, date_modified, file_name, format, duration, size, bitrate, title, artist, album,
 		album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
 		musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
 	) VALUES (
-		$file_path, $date_added, $date_modified, $file_name, $format, $duration, $size, $bitrate, $title, $artist, $album,
-		$album_artist, $genre, $track_number, $total_tracks, $disc_number, $total_discs, $release_date,
-		$musicbrainz_artist_id, $musicbrainz_album_id, $musicbrainz_track_id, $label
+		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?, ?, ?, ?,
+		?, ?, ?, ?
 	)
 	ON CONFLICT(file_path) DO UPDATE SET
 		date_modified = excluded.date_modified,
@@ -86,33 +77,16 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 		musicbrainz_artist_id = excluded.musicbrainz_artist_id,
 		musicbrainz_album_id = excluded.musicbrainz_album_id,
 		musicbrainz_track_id = excluded.musicbrainz_track_id,
-		label = excluded.label;`)
+		label = excluded.label`
 
-	defer stmt.Finalize()
-	stmt.SetText("$file_path", metadata.FilePath)
-	stmt.SetText("$date_added", metadata.DateAdded)
-	stmt.SetText("$date_modified", metadata.DateModified)
-	stmt.SetText("$file_name", metadata.FileName)
-	stmt.SetText("$format", metadata.Format)
-	stmt.SetText("$duration", metadata.Duration)
-	stmt.SetText("$size", metadata.Size)
-	stmt.SetText("$bitrate", metadata.Bitrate)
-	stmt.SetText("$title", metadata.Title)
-	stmt.SetText("$artist", metadata.Artist)
-	stmt.SetText("$album", metadata.Album)
-	stmt.SetText("$album_artist", metadata.AlbumArtist)
-	stmt.SetText("$genre", metadata.Genre)
-	stmt.SetText("$track_number", metadata.TrackNumber)
-	stmt.SetText("$total_tracks", metadata.TotalTracks)
-	stmt.SetText("$disc_number", metadata.DiscNumber)
-	stmt.SetText("$total_discs", metadata.TotalDiscs)
-	stmt.SetText("$release_date", metadata.ReleaseDate)
-	stmt.SetText("$musicbrainz_artist_id", metadata.MusicBrainzArtistID)
-	stmt.SetText("$musicbrainz_album_id", metadata.MusicBrainzAlbumID)
-	stmt.SetText("$musicbrainz_track_id", metadata.MusicBrainzTrackID)
-	stmt.SetText("$label", metadata.Label)
+	_, err := DB.ExecContext(ctx, query,
+		metadata.FilePath, metadata.DateAdded, metadata.DateModified, metadata.FileName,
+		metadata.Format, metadata.Duration, metadata.Size, metadata.Bitrate,
+		metadata.Title, metadata.Artist, metadata.Album, metadata.AlbumArtist,
+		metadata.Genre, metadata.TrackNumber, metadata.TotalTracks, metadata.DiscNumber,
+		metadata.TotalDiscs, metadata.ReleaseDate, metadata.MusicBrainzArtistID,
+		metadata.MusicBrainzAlbumID, metadata.MusicBrainzTrackID, metadata.Label)
 
-	_, err = stmt.Step()
 	if err != nil {
 		return fmt.Errorf("inserting metadata row: %v", err)
 	}
@@ -121,15 +95,6 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 }
 
 func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in UpdateMetadataRow: %v", err)
-	}
-	defer DbPool.Put(conn)
-
 	metadata.DateModified = time.Now().Format(time.RFC3339Nano)
 
 	v := reflect.ValueOf(metadata)
@@ -152,28 +117,9 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 	query := fmt.Sprintf("UPDATE metadata SET %s WHERE file_path = ?", strings.Join(queryParts, ", "))
 	params = append(params, metadata.FilePath) // primary key goes in the where clause
 
-	stmt, err := conn.Prepare(query)
+	_, err := DB.ExecContext(ctx, query, params...)
 	if err != nil {
-		return fmt.Errorf("prepare statement failed: %w", err)
-	}
-	defer stmt.Finalize()
-
-	for i, param := range params {
-		switch v := param.(type) {
-		case int:
-			stmt.BindInt64(i+1, int64(v))
-		case int64:
-			stmt.BindInt64(i+1, v)
-		case string:
-			stmt.BindText(i+1, v)
-		default:
-			return fmt.Errorf("unsupported bind type %T at param %d", param, i+1)
-		}
-	}
-
-	_, err = stmt.Step()
-	if err != nil {
-		return fmt.Errorf("updating metadata for %s: %w", metadata.FilePath, err)
+		return fmt.Errorf("updating metadata for %s: %v", metadata.FilePath, err)
 	}
 
 	logger.Printf("Updated metadata for %s", metadata.FilePath)
@@ -181,20 +127,8 @@ func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 }
 
 func DeleteMetadataRow(ctx context.Context, filepath string) error {
-	dbMutex.Lock()
-	defer dbMutex.Unlock()
-
-	conn, err := DbPool.Take(ctx)
-	if err != nil {
-		return fmt.Errorf("taking a db conn from the pool in DeleteMetadataRow: %v", err)
-	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`delete FROM metadata WHERE file_path = $file_path;`)
-	defer stmt.Finalize()
-	stmt.SetText("$file_path", filepath)
-
-	_, err = stmt.Step()
+	query := `DELETE FROM metadata WHERE file_path = ?`
+	_, err := DB.ExecContext(ctx, query, filepath)
 	if err != nil {
 		return fmt.Errorf("deleting metadata row %s: %v", filepath, err)
 	}
@@ -203,30 +137,26 @@ func DeleteMetadataRow(ctx context.Context, filepath string) error {
 }
 
 func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, error) {
-	dbMutex.RLock()
-	defer dbMutex.RUnlock()
-
-	conn, err := DbPool.Take(ctx)
+	query := `SELECT file_path, date_modified FROM metadata`
+	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("taking a db conn from the pool in SelectAllFilePathsAndModTimes: %v", err)
+		return nil, fmt.Errorf("querying file paths and mod times: %v", err)
 	}
-	defer DbPool.Put(conn)
-
-	stmt := conn.Prep(`SELECT file_path, date_modified FROM metadata;`)
-	defer stmt.Finalize()
+	defer rows.Close()
 
 	fileModTimes := make(map[string]string)
 
-	for {
-		if hasRow, err := stmt.Step(); err != nil {
-			return nil, err
-		} else if !hasRow {
-			break
-		} else {
-			filePath := stmt.GetText("file_path")
-			dateModified := stmt.GetText("date_modified")
-			fileModTimes[filePath] = dateModified
+	for rows.Next() {
+		var filePath, dateModified string
+		if err := rows.Scan(&filePath, &dateModified); err != nil {
+			return nil, fmt.Errorf("scanning row: %v", err)
 		}
+		fileModTimes[filePath] = dateModified
 	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %v", err)
+	}
+
 	return fileModTimes, nil
 }

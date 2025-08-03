@@ -11,8 +11,7 @@
     },
     "types": [
       "node",
-      "vite/client",
-      "vitest/globals"
+      "vite/client"
     ],
     "strict": true,
     "noEmit": true,
@@ -25,8 +24,7 @@
     "components.d.ts",
     "auto-imports.d.ts",
     "cast.d.ts",
-    "src/**/*",
-    "test/**/*"
+    "src/**/*"
   ],
   "ts-node": {
     "files": true

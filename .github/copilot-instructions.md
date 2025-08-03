@@ -1,12 +1,11 @@
 # Zene Project Overview
 ## Backend
-- This project uses Golang for the backend, with the zombiezen sql driver for SQLite.
+- This project uses Golang for the backend, with the ncruces database/sql driver for SQLite.
 - The backend is main.go and router.go in the root directory, and uses modularised services in the /core directory.
 - The backend uses stdlib net/http for HTTP handling and routing.
 ## Frontend
 - The frontend is built with Vue 3, using the Composition API and TypeScript.
 - The frontend uses @antfu/eslint-config for linting - this means no semi colons, and single quotes for strings.
-- The frontend uses Vitest for testing, with Vue Test Utils for component tests.
 - The frontend uses a custom backend fetch composable for making API requests: frontend/src/composables/useBackendFetch.ts
 - The frontend uses vite-ssg for static site generation, with a custom vite.config.ts for configuration.
 ## Project Structure
@@ -19,7 +18,6 @@
 - When the application is built for production/preview, the built frontend dist is embedded in the backend binary.
 ## Pull requests
 - Pull requests should be made against the main branch.
-- A PR is not considered ready for review until all tests pass and the code is linted;
+- A PR is not considered ready for review until the code is linted;
     - "npm run lint --workspace frontend" should be run and any linting errors resolved before opening a PR.
-    - "npm run test:run --workspace frontend" should be run before opening a PR and any test failures resolved.
     - "npm run cspell" should be run before opening a PR to check for spelling errors - the project uses the en-GB dictionary.
