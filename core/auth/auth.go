@@ -8,45 +8,17 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"io"
 	"net/http"
 	"os"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/net"
+	"zene/core/types"
 )
 
 var encryptionKey []byte
-
-// SubsonicResponse represents the top-level response structure for Subsonic API
-type SubsonicResponse struct {
-	XMLName xml.Name `xml:"subsonic-response" json:"-"`
-	Status  string   `xml:"status,attr" json:"status"`
-	Version string   `xml:"version,attr" json:"version"`
-	Type    string   `xml:"type,attr" json:"type"`
-	Error   *Error   `xml:"error,omitempty" json:"error,omitempty"`
-}
-
-// Error represents a Subsonic API error
-type Error struct {
-	Code    int    `xml:"code,attr" json:"code"`
-	Message string `xml:"message,attr" json:"message"`
-}
-
-// Subsonic error codes as defined in the OpenSubsonic API specification
-const (
-	ErrorGeneric              = 0
-	ErrorMissingParameter     = 10
-	ErrorIncompatibleVersion  = 20
-	ErrorIncompatibleClient   = 30
-	ErrorWrongCredentials     = 40
-	ErrorTokenAuthNotSupported = 41
-	ErrorNotAuthorized        = 50
-	ErrorTrialExpired         = 60
-	ErrorDataNotFound         = 70
-)
 
 func getEncryptionKey() {
 	key := os.Getenv("AUTH_ENCRYPTION_KEY")
@@ -57,32 +29,6 @@ func getEncryptionKey() {
 
 	}
 	encryptionKey = []byte(key)
-}
-
-// writeSubsonicError writes a Subsonic API error response in XML or JSON format
-func writeSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string) {
-	response := SubsonicResponse{
-		Status:  "failed",
-		Version: "1.16.1",
-		Type:    "zene",
-		Error: &Error{
-			Code:    code,
-			Message: message,
-		},
-	}
-
-	// Determine format based on 'f' parameter (default to XML)
-	format := r.FormValue("f")
-	if format == "json" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK) // Subsonic API always returns 200 OK with error in response body
-		json.NewEncoder(w).Encode(response)
-	} else {
-		w.Header().Set("Content-Type", "application/xml")
-		w.WriteHeader(http.StatusOK) // Subsonic API always returns 200 OK with error in response body
-		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
-		xml.NewEncoder(w).Encode(response)
-	}
 }
 
 func encryptAES(plaintext string) (string, error) {
@@ -193,7 +139,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 
 	username := r.FormValue("u")
 	if username == "" {
-		writeSubsonicError(w, r, ErrorMissingParameter, "Required parameter 'u' is missing")
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'u' is missing")
 		return "", 0, false
 	}
 
@@ -202,14 +148,14 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	password := r.FormValue("p")
 
 	if password == "" && (token == "" || salt == "") {
-		writeSubsonicError(w, r, ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required")
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required")
 		return "", 0, false
 	}
 
 	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, username)
 	if err != nil {
 		logger.Printf("Error getting encrypted password for user %s: %v", username, err)
-		writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 		return "", 0, false
 	}
 
@@ -224,7 +170,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 		return username, userId, true
 	}
 
-	writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
+	net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 	return "", 0, false
 }
 
@@ -233,7 +179,7 @@ func validateWithPassword(username string, password string, encryptedPassword st
 	decryptedPassword, err := decryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
-		writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 		return false
 	}
 	return decryptedPassword == password
@@ -244,7 +190,7 @@ func validateWithTokenAndSalt(username string, salt string, token string, encryp
 	ok, err := validateToken(salt, token, encryptedPassword)
 	if err != nil || !ok {
 		logger.Printf("Error validating token for user %s: %v", username, err)
-		writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 		return false
 	}
 	return true
@@ -280,12 +226,12 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 		user, err := database.GetUserById(r.Context(), userId)
 		if err != nil {
 			logger.Printf("Error getting user by ID %d: %v", userId, err)
-			writeSubsonicError(w, r, ErrorGeneric, "Internal server error")
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Internal server error")
 			return
 		}
 		if !user.IsAdmin {
 			logger.Printf("User %s (ID: %d) is not an admin", userName, userId)
-			writeSubsonicError(w, r, ErrorNotAuthorized, "User is not authorized for this operation")
+			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "User is not authorized for this operation")
 			return
 		}
 		logger.Printf("Admin user %s (ID: %d) authenticated", userName, userId)

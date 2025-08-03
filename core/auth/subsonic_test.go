@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"zene/core/net"
+	"zene/core/types"
 )
 
 func TestWriteSubsonicErrorXML(t *testing.T) {
@@ -13,7 +15,7 @@ func TestWriteSubsonicErrorXML(t *testing.T) {
 	req := httptest.NewRequest("GET", "/test", nil)
 	w := httptest.NewRecorder()
 
-	writeSubsonicError(w, req, ErrorWrongCredentials, "Test error message")
+	net.WriteSubsonicError(w, req, types.ErrorWrongCredentials, "Test error message")
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
@@ -47,7 +49,7 @@ func TestWriteSubsonicErrorJSON(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	w := httptest.NewRecorder()
 
-	writeSubsonicError(w, req, ErrorMissingParameter, "Test JSON error")
+	net.WriteSubsonicError(w, req, types.ErrorMissingParameter, "Test JSON error")
 
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected status code %d, got %d", http.StatusOK, w.Code)
@@ -85,15 +87,15 @@ func TestSubsonicErrorCodes(t *testing.T) {
 	}
 
 	actualCodes := map[string]int{
-		"ErrorGeneric":               ErrorGeneric,
-		"ErrorMissingParameter":      ErrorMissingParameter,
-		"ErrorIncompatibleVersion":   ErrorIncompatibleVersion,
-		"ErrorIncompatibleClient":    ErrorIncompatibleClient,
-		"ErrorWrongCredentials":      ErrorWrongCredentials,
-		"ErrorTokenAuthNotSupported": ErrorTokenAuthNotSupported,
-		"ErrorNotAuthorized":         ErrorNotAuthorized,
-		"ErrorTrialExpired":          ErrorTrialExpired,
-		"ErrorDataNotFound":          ErrorDataNotFound,
+		"ErrorGeneric":               types.ErrorGeneric,
+		"ErrorMissingParameter":      types.ErrorMissingParameter,
+		"ErrorIncompatibleVersion":   types.ErrorIncompatibleVersion,
+		"ErrorIncompatibleClient":    types.ErrorIncompatibleClient,
+		"ErrorWrongCredentials":      types.ErrorWrongCredentials,
+		"ErrorTokenAuthNotSupported": types.ErrorTokenAuthNotSupported,
+		"ErrorNotAuthorized":         types.ErrorNotAuthorized,
+		"ErrorTrialExpired":          types.ErrorTrialExpired,
+		"ErrorDataNotFound":          types.ErrorDataNotFound,
 	}
 
 	for name, expected := range expectedCodes {
