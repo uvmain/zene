@@ -14,7 +14,7 @@ func createUsersTable(ctx context.Context) error {
 	schema := `CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
+    encrypted_password TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		is_admin BOOLEAN NOT NULL DEFAULT FALSE
 	);`
@@ -23,7 +23,7 @@ func createUsersTable(ctx context.Context) error {
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
-	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE username = ?`
+	query := `SELECT id, username, encrypted_password, created_at, is_admin FROM users WHERE username = ?`
 	var row types.User
 
 	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &row.IsAdmin)
@@ -36,7 +36,7 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 }
 
 func GetUserById(ctx context.Context, id int64) (types.User, error) {
-	query := `SELECT id, username, password_hash, created_at, is_admin FROM users WHERE id = ?`
+	query := `SELECT id, username, encrypted_password, created_at, is_admin FROM users WHERE id = ?`
 	var row types.User
 
 	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &row.IsAdmin)
@@ -49,7 +49,7 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 }
 
 func GetAllUsers(ctx context.Context) ([]types.User, error) {
-	query := `SELECT id, username, created_at, is_admin, password_hash FROM users ORDER BY id ASC`
+	query := `SELECT id, username, created_at, is_admin, encrypted_password FROM users ORDER BY id ASC`
 	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
 		return []types.User{}, fmt.Errorf("querying all users: %v", err)
@@ -75,10 +75,10 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 
 func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 	query := `
-		INSERT INTO users (username, password_hash, is_admin)
+		INSERT INTO users (username, encrypted_password, is_admin)
 		VALUES (?, ?, ?)
 		ON CONFLICT(username) DO UPDATE SET
-			password_hash = excluded.password_hash,
+			encrypted_password = excluded.encrypted_password,
 			is_admin = excluded.is_admin`
 
 	result, err := DB.ExecContext(ctx, query, user.Username, user.PasswordHash, user.IsAdmin)
@@ -145,4 +145,19 @@ func AnyUsersExist(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func GetEncryptedPasswordFromDB(ctx context.Context, username string) (string, int64, error) {
+	query := `SELECT encrypted_password, id FROM users WHERE username = ?`
+	var encryptedPassword string
+	var userId int64
+
+	err := DB.QueryRowContext(ctx, query, username).Scan(&encryptedPassword, &userId)
+	if err == sql.ErrNoRows {
+		return "", 0, fmt.Errorf("user not found")
+	} else if err != nil {
+		return "", 0, fmt.Errorf("selecting encrypted password for user %s: %v", username, err)
+	}
+
+	return encryptedPassword, userId, nil
 }

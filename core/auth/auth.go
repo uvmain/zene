@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -11,15 +12,19 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"zene/core/database"
 	"zene/core/logger"
 )
 
 var encryptionKey []byte
 
-func init() {
+func getEncryptionKey() {
 	key := os.Getenv("AUTH_ENCRYPTION_KEY")
 	if key == "" || len(key) != 32 {
-		panic("AUTH_ENCRYPTION_KEY must be exactly 32 characters long")
+		logger.Println("*** AUTH_ENCRYPTION_KEY environment variable is not set or is not exactly 32 characters long")
+		logger.Println("*** Using fallback key for development purposes only")
+		key = "0123456789abcdef0123456789abcdef"
+
 	}
 	encryptionKey = []byte(key)
 }
@@ -87,7 +92,10 @@ func validateToken(salt string, token string, encryptedPassword string) (bool, e
 }
 
 // ValidateAuth authenticates a user by either plaintext password or token and salt.
-// It returns the authenticated username and true if successful; otherwise returns false and writes a 401 response.
+// It returns:
+// string: the authenticated username
+// int64: the authenticated userId
+// bool: true if successful; otherwise returns false and writes a 401 response.
 //
 // This supports the following request parameters in either form data or query parameters:
 // - u: username
@@ -98,39 +106,39 @@ func validateToken(salt string, token string, encryptedPassword string) (bool, e
 //
 // If apiKey is specified, then none of p, t, s, nor u can be specified.
 // Else either p or both t and s must be specified.
-func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, bool) {
+func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) {
 	ctx := r.Context()
 
-	apiKey := r.FormValue("apiKey")
-	if apiKey != "" {
-		user, err := database.ValidateApiKey(ctx, apiKey)
-		if err != nil {
-			logger.Printf("Error validating API key %s: %v", apiKey, err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return "", false
-		}
-		if user == nil {
-			logger.Printf("API key %s not found", apiKey)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return "", false
-		}
-		if user.IsDisabled {
-			logger.Printf("API key %s belongs to a disabled user", apiKey)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return "", false
-		}
-		if user.IsAdmin {
-			logger.Printf("API key used for admin user %s", user.Username)
-		} else {
-			logger.Printf("API key used for user %s", user.Username)
-		}
-		return user.Username, true
-	}
+	// apiKey := r.FormValue("apiKey")
+	// if apiKey != "" {
+	// 	user, err := database.ValidateApiKey(ctx, apiKey)
+	// 	if err != nil {
+	// 		logger.Printf("Error validating API key %s: %v", apiKey, err)
+	// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 		return "", false
+	// 	}
+	// 	if user == nil {
+	// 		logger.Printf("API key %s not found", apiKey)
+	// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 		return "", false
+	// 	}
+	// 	if user.IsDisabled {
+	// 		logger.Printf("API key %s belongs to a disabled user", apiKey)
+	// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	// 		return "", false
+	// 	}
+	// 	if user.IsAdmin {
+	// 		logger.Printf("API key used for admin user %s", user.Username)
+	// 	} else {
+	// 		logger.Printf("API key used for user %s", user.Username)
+	// 	}
+	// 	return user.Username, true
+	// }
 
 	username := r.FormValue("u")
 	if username == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return "", false
+		return "", 0, false
 	}
 
 	salt := r.FormValue("s")
@@ -139,26 +147,29 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, bool) {
 
 	if password == "" && (token == "" || salt == "") {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return "", false
+		return "", 0, false
 	}
 
-	encryptedPassword, err := database.GetEncryptedPasswordFromDB(ctx, username)
+	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, username)
 	if err != nil {
 		logger.Printf("Error getting encrypted password for user %s: %v", username, err)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return "", false
+		return "", 0, false
 	}
 
 	if password != "" && validateWithPassword(username, password, encryptedPassword, w) {
-		return username, true
+		// set context with username for further processing
+		logger.Printf("User %s authenticated with plaintext password", username)
+		return username, userId, true
 	}
 
 	if token != "" && salt != "" && validateWithTokenAndSalt(username, salt, token, encryptedPassword, w) {
-		return username, true
+		logger.Printf("User %s authenticated with salted password", username)
+		return username, userId, true
 	}
 
 	http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	return "", false
+	return "", 0, false
 }
 
 // validateWithPassword checks if the provided plaintext password matches the decrypted password from the database and returns true if valid.
@@ -181,4 +192,50 @@ func validateWithTokenAndSalt(username string, salt string, token string, encryp
 		return false
 	}
 	return true
+}
+
+// AuthMiddleware is an HTTP middleware that authenticates requests using ValidateAuth.
+// If authentication fails, it writes a 401 response and does not call the next handler.
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userName, userId, ok := ValidateAuth(r, w)
+		if !ok {
+			// ValidateAuth already handled the error response.
+			return
+		}
+		ctx := context.WithValue(r.Context(), "username", userName)
+		ctx = context.WithValue(r.Context(), "userId", userId)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// AdminAuthMiddleware is an HTTP middleware that authenticates requests using ValidateAuth.
+// If authentication fails, it writes a 401 response and does not call the next handler.
+// It also ensures that the user is an admin by checking the "isAdmin" field in the database.
+// If the user is not an admin, it writes a 403 Forbidden response.
+func AdminAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userName, userId, ok := ValidateAuth(r, w)
+		if !ok {
+			// ValidateAuth already handled the error response.
+			return
+		}
+		user, err := database.GetUserById(r.Context(), userId)
+		if err != nil {
+			logger.Printf("Error getting user by ID %d: %v", userId, err)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		if !user.IsAdmin {
+			logger.Printf("User %s (ID: %d) is not an admin", userName, userId)
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+		logger.Printf("Admin user %s (ID: %d) authenticated", userName, userId)
+		ctx := context.WithValue(r.Context(), "username", userName)
+		ctx = context.WithValue(r.Context(), "userId", userId)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }

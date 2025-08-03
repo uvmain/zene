@@ -5,19 +5,29 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"zene/core/auth"
 	"zene/core/database"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
 func HandleGetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	user, _, err := auth.GetUserFromRequest(r)
-	response := &UserResponse{}
-
+	userId, err := logic.GetUserIdFromContext(r.Context())
 	if err != nil {
-		handleErrorResponse(w, response, "Failed to get user from request", err, http.StatusInternalServerError)
+		handleErrorResponse(w, &UserResponse{}, "Failed to get user ID from context", err, http.StatusInternalServerError)
 		return
 	}
+
+	user, err := database.GetUserById(r.Context(), userId)
+	if err != nil {
+		handleErrorResponse(w, &UserResponse{}, "Failed to get user from database", err, http.StatusInternalServerError)
+		return
+	}
+	if user.Id == 0 {
+		handleErrorResponse(w, &UserResponse{}, "User not found", fmt.Errorf("user not found"), http.StatusNotFound)
+		return
+	}
+
+	response := &UserResponse{}
 
 	response.User = toUserPointer(user)
 	handleSuccessResponse(w, response)

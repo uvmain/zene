@@ -10,6 +10,8 @@ import (
 var FirstUserAllowed bool
 
 func Initialise(ctx context.Context) {
+	getEncryptionKey()
+
 	exists, err := database.AnyUsersExist(ctx)
 	if err != nil {
 		log.Fatalf("Failed to check if users exist: %v", err)
