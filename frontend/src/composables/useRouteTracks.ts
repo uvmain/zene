@@ -1,4 +1,4 @@
-import type { TrackMetadataWithImageUrl } from '../types'
+import type { TrackMetadataWithImageUrl } from '~/types'
 import { useLocalStorage } from '@vueuse/core'
 import { usePlaybackQueue } from './usePlaybackQueue'
 

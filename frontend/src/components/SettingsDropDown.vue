@@ -1,7 +1,7 @@
 <script setup>
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useDebug } from '../composables/useDebug'
-import { useSettings } from '../composables/useSettings'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useDebug } from '~/composables/useDebug'
+import { useSettings } from '~/composables/useSettings'
 
 const { streamQuality, StreamQualities } = useSettings()
 const { backendFetchRequest } = useBackendFetch()

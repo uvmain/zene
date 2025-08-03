@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AlbumMetadata } from '../types'
+import { useAuth } from '../composables/useAuth'
 import { useSearch } from '../composables/useSearch'
 
 const props = defineProps({
@@ -9,6 +10,7 @@ const props = defineProps({
 
 const router = useRouter()
 const { closeSearch } = useSearch()
+const { userIsAdminState } = useAuth()
 
 const artistAndDate = computed(() => {
   return props.album.release_date !== 'Invalid Date' ? `${props.album.artist} • ${props.album.release_date}` : props.album.artist
@@ -33,6 +35,9 @@ function navigateArtist() {
 
 <template>
   <div>
+    <div v-if="userIsAdminState">
+      test
+    </div>
     <div v-if="props.size === 'lg'" class="group h-32 w-24 md:h-40 md:w-30">
       <img class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-30" :src="album.image_url" alt="Album Cover" @error="onImageError" @click="navigateAlbum()" />
       <div class="relative">

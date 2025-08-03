@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useLogic } from '../composables/useLogic'
-import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import { useLogic } from '~/composables/useLogic'
+import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const { currentlyPlayingTrack } = usePlaybackQueue()
 const { getTrackUrl, getArtistUrl, getAlbumUrl } = useLogic()

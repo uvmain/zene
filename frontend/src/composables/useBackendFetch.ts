@@ -1,6 +1,6 @@
-import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import type { TokenResponse, User, UsersResponse } from '../types/auth'
-import { useRandomSeed } from '../composables/useRandomSeed'
+import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
+import type { TokenResponse, User, UsersResponse } from '~/types/auth'
+import { useRandomSeed } from '~/composables/useRandomSeed'
 import { useLogic } from './useLogic'
 
 const { getRandomSeed } = useRandomSeed()
@@ -11,6 +11,15 @@ export function useBackendFetch() {
     const url = `/api/${path}`
     const response = await fetch(url, options)
     return response
+  }
+
+  const getAlbum = async (musicbrainz_album_id: string): Promise<AlbumMetadata> => {
+    const response = await backendFetchRequest(`albums/${musicbrainz_album_id}`)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch album with ID ${musicbrainz_album_id}: ${response.statusText}`)
+    }
+    const json = await response.json() as AlbumMetadata
+    return json
   }
 
   const getAlbumTracks = async (musicbrainz_album_id: string): Promise<TrackMetadataWithImageUrl[]> => {
@@ -95,6 +104,7 @@ export function useBackendFetch() {
 
   return {
     backendFetchRequest,
+    getAlbum,
     getAlbumTracks,
     getArtistTracks,
     getArtistAlbums,

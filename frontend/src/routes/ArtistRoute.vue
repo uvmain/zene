@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '../types'
+import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '~/types'
 import dayjs from 'dayjs'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useRouteTracks } from '../composables/useRouteTracks'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()

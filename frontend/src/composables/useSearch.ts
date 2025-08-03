@@ -1,4 +1,4 @@
-import type { AlbumMetadata, ArtistMetadata, GenreMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
+import type { AlbumMetadata, ArtistMetadata, GenreMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
 import { useSessionStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { useBackendFetch } from './useBackendFetch'

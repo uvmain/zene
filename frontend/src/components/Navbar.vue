@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useNavbar } from '../composables/useNavbar'
-import { useSearch } from '../composables/useSearch'
+import { useNavbar } from '~/composables/useNavbar'
+import { useSearch } from '~/composables/useSearch'
 
 const route = useRoute()
 const { closeSearch } = useSearch()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { AlbumMetadata, TrackMetadataWithImageUrl } from '../types'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useRouteTracks } from '../composables/useRouteTracks'
+import type { AlbumMetadata, TrackMetadataWithImageUrl } from '~/types'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks, clearRouteTracks } = useRouteTracks()

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ArtistMetadata } from '../types'
-import { useBackendFetch } from '../composables/useBackendFetch'
+import type { ArtistMetadata } from '~/types'
+import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const router = useRouter()
 const { backendFetchRequest } = useBackendFetch()

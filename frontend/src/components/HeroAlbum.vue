@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { AlbumMetadata } from '../types'
+import type { AlbumMetadata } from '~/types'
 import dayjs from 'dayjs'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useRandomSeed } from '../composables/useRandomSeed'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useRandomSeed } from '~/composables/useRandomSeed'
 
 const { backendFetchRequest } = useBackendFetch()
 const { getRandomSeed, refreshRandomSeed } = useRandomSeed()

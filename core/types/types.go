@@ -89,6 +89,7 @@ type ArtistArtRow struct {
 
 type SessionCheck struct {
 	LoggedIn bool `json:"loggedIn"`
+	IsAdmin  bool `json:"isAdmin"`
 }
 
 type File struct {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AlbumMetadata, ArtistMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '../types'
-import { usePlaybackQueue } from '../composables/usePlaybackQueue'
+import type { AlbumMetadata, ArtistMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
+import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 defineProps({
   artist: { type: Object as PropType<ArtistMetadata>, required: false },
