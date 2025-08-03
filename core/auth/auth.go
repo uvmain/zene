@@ -8,6 +8,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"io"
 	"net/http"
@@ -18,6 +20,34 @@ import (
 
 var encryptionKey []byte
 
+// SubsonicResponse represents the top-level response structure for Subsonic API
+type SubsonicResponse struct {
+	XMLName xml.Name `xml:"subsonic-response" json:"-"`
+	Status  string   `xml:"status,attr" json:"status"`
+	Version string   `xml:"version,attr" json:"version"`
+	Type    string   `xml:"type,attr" json:"type"`
+	Error   *Error   `xml:"error,omitempty" json:"error,omitempty"`
+}
+
+// Error represents a Subsonic API error
+type Error struct {
+	Code    int    `xml:"code,attr" json:"code"`
+	Message string `xml:"message,attr" json:"message"`
+}
+
+// Subsonic error codes as defined in the OpenSubsonic API specification
+const (
+	ErrorGeneric              = 0
+	ErrorMissingParameter     = 10
+	ErrorIncompatibleVersion  = 20
+	ErrorIncompatibleClient   = 30
+	ErrorWrongCredentials     = 40
+	ErrorTokenAuthNotSupported = 41
+	ErrorNotAuthorized        = 50
+	ErrorTrialExpired         = 60
+	ErrorDataNotFound         = 70
+)
+
 func getEncryptionKey() {
 	key := os.Getenv("AUTH_ENCRYPTION_KEY")
 	if key == "" || len(key) != 32 {
@@ -27,6 +57,32 @@ func getEncryptionKey() {
 
 	}
 	encryptionKey = []byte(key)
+}
+
+// writeSubsonicError writes a Subsonic API error response in XML or JSON format
+func writeSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string) {
+	response := SubsonicResponse{
+		Status:  "failed",
+		Version: "1.16.1",
+		Type:    "zene",
+		Error: &Error{
+			Code:    code,
+			Message: message,
+		},
+	}
+
+	// Determine format based on 'f' parameter (default to XML)
+	format := r.FormValue("f")
+	if format == "json" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK) // Subsonic API always returns 200 OK with error in response body
+		json.NewEncoder(w).Encode(response)
+	} else {
+		w.Header().Set("Content-Type", "application/xml")
+		w.WriteHeader(http.StatusOK) // Subsonic API always returns 200 OK with error in response body
+		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
+		xml.NewEncoder(w).Encode(response)
+	}
 }
 
 func encryptAES(plaintext string) (string, error) {
@@ -137,7 +193,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 
 	username := r.FormValue("u")
 	if username == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		writeSubsonicError(w, r, ErrorMissingParameter, "Required parameter 'u' is missing")
 		return "", 0, false
 	}
 
@@ -146,49 +202,49 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	password := r.FormValue("p")
 
 	if password == "" && (token == "" || salt == "") {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		writeSubsonicError(w, r, ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required")
 		return "", 0, false
 	}
 
 	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, username)
 	if err != nil {
 		logger.Printf("Error getting encrypted password for user %s: %v", username, err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
 		return "", 0, false
 	}
 
-	if password != "" && validateWithPassword(username, password, encryptedPassword, w) {
+	if password != "" && validateWithPassword(username, password, encryptedPassword, w, r) {
 		// set context with username for further processing
 		logger.Printf("User %s authenticated with plaintext password", username)
 		return username, userId, true
 	}
 
-	if token != "" && salt != "" && validateWithTokenAndSalt(username, salt, token, encryptedPassword, w) {
+	if token != "" && salt != "" && validateWithTokenAndSalt(username, salt, token, encryptedPassword, w, r) {
 		logger.Printf("User %s authenticated with salted password", username)
 		return username, userId, true
 	}
 
-	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
 	return "", 0, false
 }
 
 // validateWithPassword checks if the provided plaintext password matches the decrypted password from the database and returns true if valid.
-func validateWithPassword(username string, password string, encryptedPassword string, w http.ResponseWriter) bool {
+func validateWithPassword(username string, password string, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
 	decryptedPassword, err := decryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
 		return false
 	}
 	return decryptedPassword == password
 }
 
 // validateWithTokenAndSalt checks if the provided token matches the computed token from the decrypted password and salt and returns true if valid.
-func validateWithTokenAndSalt(username string, salt string, token string, encryptedPassword string, w http.ResponseWriter) bool {
+func validateWithTokenAndSalt(username string, salt string, token string, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
 	ok, err := validateToken(salt, token, encryptedPassword)
 	if err != nil || !ok {
 		logger.Printf("Error validating token for user %s: %v", username, err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		writeSubsonicError(w, r, ErrorWrongCredentials, "Wrong username or password")
 		return false
 	}
 	return true
@@ -224,12 +280,12 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 		user, err := database.GetUserById(r.Context(), userId)
 		if err != nil {
 			logger.Printf("Error getting user by ID %d: %v", userId, err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			writeSubsonicError(w, r, ErrorGeneric, "Internal server error")
 			return
 		}
 		if !user.IsAdmin {
 			logger.Printf("User %s (ID: %d) is not an admin", userName, userId)
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			writeSubsonicError(w, r, ErrorNotAuthorized, "User is not authorized for this operation")
 			return
 		}
 		logger.Printf("Admin user %s (ID: %d) authenticated", userName, userId)
