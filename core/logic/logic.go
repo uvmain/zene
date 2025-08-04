@@ -2,6 +2,8 @@ package logic
 
 import (
 	"context"
+	"crypto/rand"
+	"math/big"
 	"sync"
 	"time"
 	"zene/core/logger"
@@ -55,4 +57,19 @@ func FilesInSliceOnceNotInSliceTwo(slice1, slice2 []types.File) []types.File {
 
 func GetCurrentTimeFormatted() string {
 	return time.Now().UTC().Format(time.RFC3339Nano)
+}
+
+func GenerateRandomPassword(length int) (string, error) {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+	password := make([]byte, length)
+
+	for i := range password {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "", err
+		}
+		password[i] = charset[num.Int64()]
+	}
+
+	return string(password), nil
 }

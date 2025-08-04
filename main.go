@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"log"
-	"zene/core/auth"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/encryption"
 	"zene/core/ffmpeg"
 	"zene/core/ffprobe"
 	"zene/core/io"
@@ -23,6 +23,7 @@ func main() {
 
 	config.LoadConfig()
 	io.CreateDirs()
+	encryption.GetEncryptionKey()
 
 	database.Initialise(ctx)
 	defer database.CloseDatabase()
@@ -40,8 +41,6 @@ func main() {
 	}
 
 	scheduler.Initialise(ctx)
-
-	auth.Initialise(ctx)
 
 	go func() {
 		scanner.RunScan(ctx)

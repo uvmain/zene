@@ -26,6 +26,8 @@ var ArtistArtFolder string
 var AudioCacheFolder string
 var AudioCacheMaxMB int
 var AudioCacheMaxDays int
+var AdminUsername string
+var AdminPassword string
 
 func LoadConfig() {
 
@@ -109,6 +111,9 @@ func LoadConfig() {
 		}
 	}
 	logger.Printf("Audio file types: %v", AudioFileTypes)
+
+	AdminUsername = os.Getenv("ADMIN_USERNAME")
+	AdminPassword = os.Getenv("ADMIN_PASSWORD")
 }
 
 func IsLocalDevEnv() bool {

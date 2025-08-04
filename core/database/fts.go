@@ -16,7 +16,12 @@ func createFtsTables(ctx context.Context) {
 
 func createFtsMetadataTable(ctx context.Context) error {
 	tableName := "metadata_fts"
-	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS metadata_fts USING fts5(file_path, file_name, title, artist, album, album_artist, genre, release_date, label, tokenize="trigram remove_diacritics 1");`
+	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS metadata_fts USING fts5(
+    file_path, file_name, title, artist, album, album_artist, genre, release_date, label,
+    content='metadata',
+    content_rowid='file_path',
+    tokenize='trigram remove_diacritics 1'
+	);`
 	err := createTable(ctx, tableName, schema)
 	return err
 }
@@ -49,13 +54,7 @@ func createFtsMetadataTriggers(ctx context.Context) {
 }
 
 func insertFtsMetadataData(ctx context.Context) {
-	const query = `
-		INSERT INTO metadata_fts (
-			file_path, file_name, title, artist, album, album_artist, genre, release_date, label
-		)
-		SELECT 
-			file_path, file_name, title, artist, album, album_artist, genre, release_date, label 
-		FROM metadata;`
+	const query = `INSERT INTO metadata_fts(metadata_fts) VALUES ('rebuild');`
 
 	_, err := DB.ExecContext(ctx, query)
 	if err != nil {

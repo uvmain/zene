@@ -2,80 +2,15 @@ package auth
 
 import (
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/hex"
-	"errors"
-	"io"
 	"net/http"
-	"os"
 	"zene/core/database"
+	"zene/core/encryption"
 	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/types"
 )
-
-var encryptionKey []byte
-
-func getEncryptionKey() {
-	key := os.Getenv("AUTH_ENCRYPTION_KEY")
-	if key == "" || len(key) != 32 {
-		logger.Println("*** AUTH_ENCRYPTION_KEY environment variable is not set or is not exactly 32 characters long")
-		logger.Println("*** Using fallback key for development purposes only")
-		key = "0123456789abcdef0123456789abcdef"
-
-	}
-	encryptionKey = []byte(key)
-}
-
-func encryptAES(plaintext string) (string, error) {
-	block, err := aes.NewCipher(encryptionKey)
-	if err != nil {
-		return "", err
-	}
-
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-
-	nonce := make([]byte, aesGCM.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
-	}
-
-	ciphertext := aesGCM.Seal(nonce, nonce, []byte(plaintext), nil)
-	return base64.StdEncoding.EncodeToString(ciphertext), nil
-}
-
-func decryptAES(cipherTextBase64 string) (string, error) {
-	ciphertext, err := base64.StdEncoding.DecodeString(cipherTextBase64)
-	if err != nil {
-		return "", err
-	}
-
-	block, err := aes.NewCipher(encryptionKey)
-	if err != nil {
-		return "", err
-	}
-
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
-
-	nonceSize := aesGCM.NonceSize()
-	if len(ciphertext) < nonceSize {
-		return "", errors.New("ciphertext too short")
-	}
-
-	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
-	return string(plaintext), err
-}
 
 // computeToken generates a SHA-256 token from a password and salt.
 func computeToken(password, salt string) string {
@@ -85,7 +20,7 @@ func computeToken(password, salt string) string {
 
 // validateToken checks if the provided token matches the computed token from the password and salt.
 func validateToken(salt string, token string, encryptedPassword string) (bool, error) {
-	decryptedPassword, err := decryptAES(encryptedPassword)
+	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
 	if err != nil {
 		return false, err
 	}
@@ -102,22 +37,45 @@ func validateToken(salt string, token string, encryptedPassword string) (bool, e
 // This supports the following request parameters in either form data or query parameters:
 // - u: username
 // - p: plaintext password
-// - s: salt
 // - t: token = sha256(password + salt)
+// - s: salt
 // - apiKey: API key for authentication
+// - v: protocol version
+// - c: client name (required for all requests)
 //
 // If apiKey is specified, then none of p, t, s, nor u can be specified.
 // Else either p or both t and s must be specified.
 func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) {
 	ctx := r.Context()
 
+	username := r.FormValue("u")
+	password := r.FormValue("p")
+	token := r.FormValue("t")
+	salt := r.FormValue("s")
+	apiKey := r.FormValue("apiKey")
+	version := r.FormValue("v")
 	clientName := r.FormValue("c")
+
 	if clientName == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'c' is missing", "")
 		return "", 0, false
 	}
 
-	apiKey := r.FormValue("apiKey")
+	if version == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'v' is missing", "")
+		return "", 0, false
+	}
+
+	if apiKey != "" && (username != "" || password != "" || token != "" || salt != "") {
+		net.WriteSubsonicError(w, r, types.ErrorTooManyAuthMechanisms, "Too many authentication mechanisms specified", "")
+		return "", 0, false
+	}
+
+	if password != "" && (token != "" || salt != "") {
+		net.WriteSubsonicError(w, r, types.ErrorTooManyAuthMechanisms, "Too many authentication mechanisms specified", "")
+		return "", 0, false
+	}
+
 	if apiKey != "" {
 		user, err := database.ValidateApiKey(ctx, apiKey)
 		if err != nil {
@@ -143,15 +101,10 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 		return user.Username, user.Id, true
 	}
 
-	username := r.FormValue("u")
 	if username == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'u' is missing", "")
 		return "", 0, false
 	}
-
-	salt := r.FormValue("s")
-	token := r.FormValue("t")
-	password := r.FormValue("p")
 
 	if password == "" && (token == "" || salt == "") {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required", "")
@@ -181,7 +134,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 
 // validateWithPassword checks if the provided plaintext password matches the decrypted password from the database and returns true if valid.
 func validateWithPassword(username string, password string, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
-	decryptedPassword, err := decryptAES(encryptedPassword)
+	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
 		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")

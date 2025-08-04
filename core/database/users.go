@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"zene/core/config"
+	"zene/core/encryption"
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
@@ -20,6 +22,58 @@ func createUsersTable(ctx context.Context) error {
 	);`
 	err := createTable(ctx, tableName, schema)
 	return err
+}
+
+func CreateAdminUserIfRequired(ctx context.Context) error {
+	adminUserExists, err := anyAdminUsersExist(ctx)
+	if err != nil {
+		return fmt.Errorf("checking if any admin users exist: %v", err)
+	}
+
+	if adminUserExists {
+		logger.Printf("Admin user already exists, skipping creation")
+		return nil
+	}
+
+	adminUsername := config.AdminUsername
+	adminPassword := config.AdminPassword
+
+	if adminUsername == "" {
+		adminUsername = "admin"
+		logger.Println("Admin username not set in configuration, using default 'admin'")
+	}
+
+	if adminPassword == "" {
+		logger.Logger.Println("admin password not set in configuration, generating a random one")
+		adminPassword, err = logic.GenerateRandomPassword(12)
+		if err != nil {
+			logger.Printf("Error generating random password for admin user: %v", err)
+			return fmt.Errorf("generating random password for admin user: %v", err)
+		} else {
+			logger.Printf("** Generated random password for admin user: %s", adminPassword)
+		}
+	}
+
+	encryptedPassword, err := encryption.EncryptAES(adminPassword)
+	if err != nil {
+		logger.Printf("Error encrypting admin password: %v", err)
+		return fmt.Errorf("encrypting admin password: %v", err)
+	}
+
+	user := types.User{
+		Username:          adminUsername,
+		EncryptedPassword: encryptedPassword,
+		IsAdmin:           true,
+	}
+
+	_, err = UpsertUser(ctx, user)
+	if err != nil {
+		logger.Printf("Error upserting admin user: %v", err)
+		return fmt.Errorf("upserting admin user: %v", err)
+	}
+
+	logger.Printf("Admin user %s created successfully", adminUsername)
+	return nil
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
@@ -75,13 +129,13 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 
 func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 	query := `
-		INSERT INTO users (username, encrypted_password, is_admin)
-		VALUES (?, ?, ?)
+		INSERT INTO users (username, encrypted_password, created_at, is_admin)
+		VALUES (?, ?, ?, ?)
 		ON CONFLICT(username) DO UPDATE SET
 			encrypted_password = excluded.encrypted_password,
 			is_admin = excluded.is_admin`
 
-	result, err := DB.ExecContext(ctx, query, user.Username, user.EncryptedPassword, user.IsAdmin)
+	result, err := DB.ExecContext(ctx, query, user.Username, user.EncryptedPassword, logic.GetCurrentTimeFormatted(), user.IsAdmin)
 	if err != nil {
 		return 0, fmt.Errorf("upserting user: %v", err)
 	}
@@ -93,7 +147,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 
 	adminUser, err := logic.GetUsernameFromContext(ctx)
 	if err != nil {
-		logger.Printf("user %s created, failed to get admin user: %v", user.Username, err)
+		logger.Printf("user %s created, failed to get name of the creating admin user: %v", user.Username, err)
 	} else {
 		logger.Printf("user %s created by admin user %s", user.Username, adminUser)
 	}
@@ -137,6 +191,18 @@ func DeleteUserById(ctx context.Context, id int64) error {
 
 func AnyUsersExist(ctx context.Context) (bool, error) {
 	query := `SELECT 1 FROM users LIMIT 1`
+	var exists int
+	err := DB.QueryRowContext(ctx, query).Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func anyAdminUsersExist(ctx context.Context) (bool, error) {
+	query := `SELECT 1 FROM users where is_admin = true LIMIT 1`
 	var exists int
 	err := DB.QueryRowContext(ctx, query).Scan(&exists)
 	if err == sql.ErrNoRows {
