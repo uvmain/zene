@@ -1,5 +1,6 @@
 export interface SessionCheck {
   loggedIn: boolean
+  isAdmin: boolean
 }
 
 export interface User {

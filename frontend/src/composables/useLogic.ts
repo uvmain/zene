@@ -1,4 +1,4 @@
-import type { TrackMetadata, TrackMetadataWithImageUrl } from '../types'
+import type { TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
 import { useSessionStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
 

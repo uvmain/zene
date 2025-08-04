@@ -160,7 +160,6 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	}
 
 	if password != "" && validateWithPassword(username, password, encryptedPassword, w, r) {
-		// set context with username for further processing
 		logger.Printf("User %s authenticated with plaintext password", username)
 		return username, userId, true
 	}

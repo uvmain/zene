@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ArtistMetadata } from '../types'
-import { useSearch } from '../composables/useSearch'
+import type { ArtistMetadata } from '~/types'
+import { useSearch } from '~/composables/useSearch'
 
 const props = defineProps({
   artist: { type: Object as PropType<ArtistMetadata>, required: true },

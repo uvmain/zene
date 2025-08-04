@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '../types'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useLogic } from '../composables/useLogic'
-import { useRouteTracks } from '../composables/useRouteTracks'
+import type { TrackMetadataWithImageUrl } from '~/types'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useLogic } from '~/composables/useLogic'
+import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()

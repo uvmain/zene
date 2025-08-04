@@ -1,8 +1,9 @@
-import type { SessionCheck } from '../types/auth'
+import type { SessionCheck } from '~/types/auth'
 import { useSessionStorage } from '@vueuse/core'
 import { useBackendFetch } from './useBackendFetch'
 
 const userLoginState = useSessionStorage('untrustedLoginState', false)
+const userIsAdminState = useSessionStorage('untrustedUserIsAdmin', false)
 const { backendFetchRequest } = useBackendFetch()
 
 export function useAuth() {
@@ -14,10 +15,12 @@ export function useAuth() {
       })
       const json = await response.json() as SessionCheck
       userLoginState.value = json.loggedIn
+      userIsAdminState.value = json.isAdmin
       return userLoginState.value
     }
     catch {
       userLoginState.value = false
+      userIsAdminState.value = false
       return false
     }
   }
@@ -39,5 +42,6 @@ export function useAuth() {
     checkIfLoggedIn,
     logout,
     userLoginState,
+    userIsAdminState,
   }
 }

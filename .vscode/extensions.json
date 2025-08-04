@@ -3,6 +3,7 @@
     "antfu.unocss",
     "dbaeumer.vscode-eslint",
     "golang.go",
-    "streetsidesoftware.code-spell-checker"
+    "streetsidesoftware.code-spell-checker",
+    "vue.volar"
   ]
 }

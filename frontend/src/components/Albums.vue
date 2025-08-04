@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
-import { useBackendFetch } from '../composables/useBackendFetch'
-import { useRandomSeed } from '../composables/useRandomSeed'
+import { useBackendFetch } from '~/composables/useBackendFetch'
+import { useRandomSeed } from '~/composables/useRandomSeed'
 
 const props = defineProps({
   limit: { type: Number, default: 30 },

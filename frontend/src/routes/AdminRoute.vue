@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { User } from '../types/auth'
-import { useBackendFetch } from '../composables/useBackendFetch'
+import type { User } from '~/types/auth'
+import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const { getCurrentUser } = useBackendFetch()
 
