@@ -14,6 +14,8 @@ import (
 	"os"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/net"
+	"zene/core/types"
 )
 
 var encryptionKey []byte
@@ -109,35 +111,35 @@ func validateToken(salt string, token string, encryptedPassword string) (bool, e
 func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) {
 	ctx := r.Context()
 
-	// apiKey := r.FormValue("apiKey")
-	// if apiKey != "" {
-	// 	user, err := database.ValidateApiKey(ctx, apiKey)
-	// 	if err != nil {
-	// 		logger.Printf("Error validating API key %s: %v", apiKey, err)
-	// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 		return "", false
-	// 	}
-	// 	if user == nil {
-	// 		logger.Printf("API key %s not found", apiKey)
-	// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 		return "", false
-	// 	}
-	// 	if user.IsDisabled {
-	// 		logger.Printf("API key %s belongs to a disabled user", apiKey)
-	// 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-	// 		return "", false
-	// 	}
-	// 	if user.IsAdmin {
-	// 		logger.Printf("API key used for admin user %s", user.Username)
-	// 	} else {
-	// 		logger.Printf("API key used for user %s", user.Username)
-	// 	}
-	// 	return user.Username, true
-	// }
+	apiKey := r.FormValue("apiKey")
+	if apiKey != "" {
+		user, err := database.ValidateApiKey(ctx, apiKey)
+		if err != nil {
+			logger.Printf("Error validating API key %s: %v", apiKey, err)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return "", 0, false
+		}
+		if user.Username == "" {
+			logger.Printf("API key %s not found", apiKey)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return "", 0, false
+		}
+		if user.IsDisabled {
+			logger.Printf("API key %s belongs to a disabled user", apiKey)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return "", 0, false
+		}
+		if user.IsAdmin {
+			logger.Printf("API key used for admin user %s", user.Username)
+		} else {
+			logger.Printf("API key used for user %s", user.Username)
+		}
+		return user.Username, user.Id, true
+	}
 
 	username := r.FormValue("u")
 	if username == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'u' is missing")
 		return "", 0, false
 	}
 
@@ -146,49 +148,49 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	password := r.FormValue("p")
 
 	if password == "" && (token == "" || salt == "") {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required")
 		return "", 0, false
 	}
 
 	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, username)
 	if err != nil {
 		logger.Printf("Error getting encrypted password for user %s: %v", username, err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 		return "", 0, false
 	}
 
-	if password != "" && validateWithPassword(username, password, encryptedPassword, w) {
+	if password != "" && validateWithPassword(username, password, encryptedPassword, w, r) {
 		// set context with username for further processing
 		logger.Printf("User %s authenticated with plaintext password", username)
 		return username, userId, true
 	}
 
-	if token != "" && salt != "" && validateWithTokenAndSalt(username, salt, token, encryptedPassword, w) {
+	if token != "" && salt != "" && validateWithTokenAndSalt(username, salt, token, encryptedPassword, w, r) {
 		logger.Printf("User %s authenticated with salted password", username)
 		return username, userId, true
 	}
 
-	http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 	return "", 0, false
 }
 
 // validateWithPassword checks if the provided plaintext password matches the decrypted password from the database and returns true if valid.
-func validateWithPassword(username string, password string, encryptedPassword string, w http.ResponseWriter) bool {
+func validateWithPassword(username string, password string, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
 	decryptedPassword, err := decryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 		return false
 	}
 	return decryptedPassword == password
 }
 
 // validateWithTokenAndSalt checks if the provided token matches the computed token from the decrypted password and salt and returns true if valid.
-func validateWithTokenAndSalt(username string, salt string, token string, encryptedPassword string, w http.ResponseWriter) bool {
+func validateWithTokenAndSalt(username string, salt string, token string, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
 	ok, err := validateToken(salt, token, encryptedPassword)
 	if err != nil || !ok {
 		logger.Printf("Error validating token for user %s: %v", username, err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
 		return false
 	}
 	return true
@@ -224,12 +226,12 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 		user, err := database.GetUserById(r.Context(), userId)
 		if err != nil {
 			logger.Printf("Error getting user by ID %d: %v", userId, err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Internal server error")
 			return
 		}
 		if !user.IsAdmin {
 			logger.Printf("User %s (ID: %d) is not an admin", userName, userId)
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "User is not authorized for this operation")
 			return
 		}
 		logger.Printf("Admin user %s (ID: %d) authenticated", userName, userId)

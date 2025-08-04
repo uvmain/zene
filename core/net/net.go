@@ -1,6 +1,8 @@
 package net
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +12,7 @@ import (
 	"zene/core/config"
 	zene_io "zene/core/io"
 	"zene/core/logger"
+	"zene/core/types"
 )
 
 func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified time.Time) bool {
@@ -63,4 +66,31 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 	}
 
 	return nil
+}
+
+// WriteSubsonicError writes a Subsonic API error response in XML or JSON format, defaulting to XML.
+// It always returns HTTP status 200 OK, as per Subsonic API specification.
+// The response includes the error code and message if there is an error.
+func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string) {
+	response := types.SubsonicResponse{
+		Status:  "failed",
+		Version: "1.16.1",
+		Type:    "zene",
+		Error: &types.SubsonicError{
+			Code:    code,
+			Message: message,
+		},
+	}
+
+	format := r.FormValue("f")
+	if format == "json" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
+	} else {
+		w.Header().Set("Content-Type", "application/xml")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
+		xml.NewEncoder(w).Encode(response)
+	}
 }

@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
-	"time"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -34,7 +34,7 @@ func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId strin
 		ON CONFLICT(user_id, musicbrainz_track_id)
 		DO UPDATE SET play_count = play_count + 1, last_played = excluded.last_played`
 
-	_, err := DB.ExecContext(ctx, query, userId, musicbrainzTrackId, time.Now().Format(time.RFC3339Nano))
+	_, err := DB.ExecContext(ctx, query, userId, musicbrainzTrackId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		return fmt.Errorf("upserting playcount: %v", err)
 	}

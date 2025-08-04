@@ -26,7 +26,7 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 	query := `SELECT id, username, encrypted_password, created_at, is_admin FROM users WHERE username = ?`
 	var row types.User
 
-	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &row.IsAdmin)
+	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.EncryptedPassword, &row.CreatedAt, &row.IsAdmin)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
@@ -39,7 +39,7 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 	query := `SELECT id, username, encrypted_password, created_at, is_admin FROM users WHERE id = ?`
 	var row types.User
 
-	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.PasswordHash, &row.CreatedAt, &row.IsAdmin)
+	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.EncryptedPassword, &row.CreatedAt, &row.IsAdmin)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
@@ -59,7 +59,7 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	var users []types.User
 	for rows.Next() {
 		var row types.User
-		err := rows.Scan(&row.Id, &row.Username, &row.CreatedAt, &row.IsAdmin, &row.PasswordHash)
+		err := rows.Scan(&row.Id, &row.Username, &row.CreatedAt, &row.IsAdmin, &row.EncryptedPassword)
 		if err != nil {
 			return []types.User{}, fmt.Errorf("scanning user row: %v", err)
 		}
@@ -81,7 +81,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 			encrypted_password = excluded.encrypted_password,
 			is_admin = excluded.is_admin`
 
-	result, err := DB.ExecContext(ctx, query, user.Username, user.PasswordHash, user.IsAdmin)
+	result, err := DB.ExecContext(ctx, query, user.Username, user.EncryptedPassword, user.IsAdmin)
 	if err != nil {
 		return 0, fmt.Errorf("upserting user: %v", err)
 	}

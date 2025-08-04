@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"zene/core/auth"
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/ffmpeg"
@@ -39,6 +40,8 @@ func main() {
 	}
 
 	scheduler.Initialise(ctx)
+
+	auth.Initialise(ctx)
 
 	go func() {
 		scanner.RunScan(ctx)

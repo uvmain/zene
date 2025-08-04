@@ -36,6 +36,7 @@
         "Lrclib",
         "mainsnak",
         "musicbrainz",
+        "ncruces",
         "nfnt",
         "Snak",
         "sqlitex",
@@ -47,6 +48,7 @@
         "Upserting",
         "uvmain",
         "vueuse",
+        "wal",
         "zene"
     ],
     "ignoreWords": [],

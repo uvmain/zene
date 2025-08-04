@@ -143,7 +143,7 @@ func upsertMetadataForFile(ctx context.Context, file types.File) error {
 
 	metadata.FilePath = file.FilePathAbs
 	metadata.FileName = filepath.Base(file.FilePathAbs)
-	metadata.DateAdded = time.Now().Format(time.RFC3339Nano)
+	metadata.DateAdded = logic.GetCurrentTimeFormatted()
 	metadata.DateModified = file.DateModified
 	metadata.Format = tags.Format
 	metadata.Duration = tags.Duration

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -76,7 +77,7 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 		ON CONFLICT(cache_key) DO UPDATE SET last_accessed = ?
 	`
 
-	lastAccessed := time.Now().Format(time.RFC3339Nano)
+	lastAccessed := logic.GetCurrentTimeFormatted()
 	_, err := DB.ExecContext(ctx, stmt, cache_key, lastAccessed, lastAccessed)
 
 	if err != nil {

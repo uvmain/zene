@@ -33,12 +33,12 @@ func createGenresTable(ctx context.Context) error {
 	}
 
 	if count == 0 {
-		log.Println("track_genres table is empty, populating from metadata")
+		log.Println("Database: track_genres table is empty, populating from metadata")
 		err = populateGenresFromMetadata(ctx)
 		if err != nil {
 			return fmt.Errorf("error populating track_genres table from metadata: %v", err)
 		} else {
-			log.Println("track_genres table populated from metadata")
+			log.Println("Database: track_genres table populated from metadata")
 		}
 	}
 

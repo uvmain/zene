@@ -59,9 +59,9 @@ func insertFtsMetadataData(ctx context.Context) {
 
 	_, err := DB.ExecContext(ctx, query)
 	if err != nil {
-		logger.Printf("Error inserting data into metadata_fts table: %v", err)
+		logger.Printf("Database: error inserting data into metadata_fts table: %v", err)
 	} else {
-		logger.Println("Data inserted into metadata_fts table")
+		logger.Println("Database: data inserted into metadata_fts table")
 	}
 }
 
@@ -95,8 +95,8 @@ func insertFtsArtistsData(ctx context.Context) {
 
 	_, err := DB.ExecContext(ctx, query)
 	if err != nil {
-		logger.Printf("Error inserting data into artists_fts table: %v", err)
+		logger.Printf("Database: error inserting data into artists_fts table: %v", err)
 	} else {
-		logger.Println("Data inserted into artists_fts table")
+		logger.Println("Database: data inserted into artists_fts table")
 	}
 }

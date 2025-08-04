@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"strconv"
 	"sync"
 	"time"
 	"zene/core/logger"
@@ -19,15 +18,6 @@ func GetBootTime() time.Time {
 		bootTime = time.Now().UTC().Truncate(time.Second)
 	})
 	return bootTime
-}
-
-func GenerateSlug() string {
-	unixTime := time.Now().Unix()
-	unixTimeString := strconv.FormatInt(unixTime, 10)
-
-	nanoTime := time.Now().Nanosecond()
-	nanoTimeString := strconv.Itoa(nanoTime)
-	return unixTimeString + nanoTimeString
 }
 
 // CheckContext returns an error if the context is done/cancelled
@@ -47,13 +37,6 @@ func CheckContext(ctx context.Context) error {
 	}
 }
 
-func BoolToInt64(b bool) int64 {
-	if b {
-		return 1
-	}
-	return 0
-}
-
 func FilesInSliceOnceNotInSliceTwo(slice1, slice2 []types.File) []types.File {
 	slice2Map := make(map[string]bool)
 	for _, f := range slice2 {
@@ -68,4 +51,8 @@ func FilesInSliceOnceNotInSliceTwo(slice1, slice2 []types.File) []types.File {
 	}
 
 	return diff
+}
+
+func GetCurrentTimeFormatted() string {
+	return time.Now().UTC().Format(time.RFC3339Nano)
 }

@@ -45,14 +45,14 @@ func createTrigger(ctx context.Context, triggerName string, triggerSQL string) {
 	if err == sql.ErrNoRows {
 		_, err := DB.ExecContext(ctx, triggerSQL)
 		if err != nil {
-			logger.Printf("Error creating %s trigger: %v", triggerName, err)
+			logger.Printf("Database: error creating %s trigger: %v", triggerName, err)
 			return
 		}
-		logger.Printf("%s trigger created", triggerName)
+		logger.Printf("Database: %s trigger created", triggerName)
 	} else if err != nil {
-		logger.Printf("Error checking for %s trigger: %v", triggerName, err)
+		logger.Printf("Database: error checking for %s trigger: %v", triggerName, err)
 	} else {
-		logger.Printf("%s trigger already exists", triggerName)
+		logger.Printf("Database: %s trigger already exists", triggerName)
 	}
 }
 
@@ -71,12 +71,12 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 
 		_, err := DB.ExecContext(ctx, sql)
 		if err != nil {
-			logger.Printf("Database: Error creating %s index: %v", indexName, err)
+			logger.Printf("Database: error creating %s index: %v", indexName, err)
 			return
 		}
 		logger.Printf("Database: %s index created", indexName)
 	} else if err != nil {
-		logger.Printf("Database: Error checking for %s index: %v", indexName, err)
+		logger.Printf("Database: error checking for %s index: %v", indexName, err)
 	} else {
 		logger.Printf("Database: %s index already exists", indexName)
 	}

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -95,7 +95,7 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 }
 
 func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
-	metadata.DateModified = time.Now().Format(time.RFC3339Nano)
+	metadata.DateModified = logic.GetCurrentTimeFormatted()
 
 	v := reflect.ValueOf(metadata)
 	t := reflect.TypeOf(metadata)

@@ -21,7 +21,7 @@ var err error
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
 	createUsersTable(ctx)
-	createSessionsTable(ctx)
+	createApiKeysTable(ctx)
 	createMetadataTable(ctx)
 	createPlayCountsTable(ctx)
 	createLyricsTable(ctx)
@@ -30,7 +30,6 @@ func Initialise(ctx context.Context) {
 	createFtsTables(ctx)
 	createGenresTable(ctx)
 	createAudioCacheTable(ctx)
-	createTemporaryTokensTable(ctx)
 }
 
 func openDatabase(ctx context.Context) {
