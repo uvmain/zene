@@ -111,22 +111,28 @@ func validateToken(salt string, token string, encryptedPassword string) (bool, e
 func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) {
 	ctx := r.Context()
 
+	clientName := r.FormValue("c")
+	if clientName == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'c' is missing", "")
+		return "", 0, false
+	}
+
 	apiKey := r.FormValue("apiKey")
 	if apiKey != "" {
 		user, err := database.ValidateApiKey(ctx, apiKey)
 		if err != nil {
 			logger.Printf("Error validating API key %s: %v", apiKey, err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Server Error", "")
 			return "", 0, false
 		}
 		if user.Username == "" {
 			logger.Printf("API key %s not found", apiKey)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key not found", "")
 			return "", 0, false
 		}
 		if user.IsDisabled {
 			logger.Printf("API key %s belongs to a disabled user", apiKey)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key belongs to a disabled user", "")
 			return "", 0, false
 		}
 		if user.IsAdmin {
@@ -139,7 +145,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 
 	username := r.FormValue("u")
 	if username == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'u' is missing")
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'u' is missing", "")
 		return "", 0, false
 	}
 
@@ -148,14 +154,14 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	password := r.FormValue("p")
 
 	if password == "" && (token == "" || salt == "") {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required")
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required", "")
 		return "", 0, false
 	}
 
 	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, username)
 	if err != nil {
 		logger.Printf("Error getting encrypted password for user %s: %v", username, err)
-		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 		return "", 0, false
 	}
 
@@ -169,7 +175,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 		return username, userId, true
 	}
 
-	net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
+	net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 	return "", 0, false
 }
 
@@ -178,7 +184,7 @@ func validateWithPassword(username string, password string, encryptedPassword st
 	decryptedPassword, err := decryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
-		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 		return false
 	}
 	return decryptedPassword == password
@@ -189,7 +195,7 @@ func validateWithTokenAndSalt(username string, salt string, token string, encryp
 	ok, err := validateToken(salt, token, encryptedPassword)
 	if err != nil || !ok {
 		logger.Printf("Error validating token for user %s: %v", username, err)
-		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password")
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 		return false
 	}
 	return true
@@ -225,12 +231,12 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 		user, err := database.GetUserById(r.Context(), userId)
 		if err != nil {
 			logger.Printf("Error getting user by ID %d: %v", userId, err)
-			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Internal server error")
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Internal server error", "")
 			return
 		}
 		if !user.IsAdmin {
 			logger.Printf("User %s (ID: %d) is not an admin", userName, userId)
-			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "User is not authorized for this operation")
+			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "User is not authorized for this operation", "")
 			return
 		}
 		logger.Printf("Admin user %s (ID: %d) authenticated", userName, userId)

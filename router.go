@@ -64,6 +64,9 @@ func StartServer() {
 	router.Handle("PATCH /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))   // return userId int64
 	router.Handle("DELETE /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById))) // return { Status: string }
 
+	// subsonic routes
+	router.Handle("/rest/ping.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePing))) // returns types.SubsonicResponse
+
 	handler := cors.AllowAll().Handler(router)
 
 	var serverAddress string

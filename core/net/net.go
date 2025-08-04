@@ -71,15 +71,13 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 // WriteSubsonicError writes a Subsonic API error response in XML or JSON format, defaulting to XML.
 // It always returns HTTP status 200 OK, as per Subsonic API specification.
 // The response includes the error code and message if there is an error.
-func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string) {
-	response := types.SubsonicResponse{
-		Status:  "failed",
-		Version: "1.16.1",
-		Type:    "zene",
-		Error: &types.SubsonicError{
-			Code:    code,
-			Message: message,
-		},
+func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string, helpUrl string) {
+
+	response := NewSubsonicResponse(true)
+	response.Error.Code = code
+	response.Error.Message = message
+	if helpUrl != "" {
+		response.Error.HelpUrl = helpUrl
 	}
 
 	format := r.FormValue("f")
@@ -92,5 +90,24 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
 		xml.NewEncoder(w).Encode(response)
+	}
+}
+
+func NewSubsonicResponse(withError bool) *types.SubsonicResponse {
+	return &types.SubsonicResponse{
+		Status:        "ok",
+		Version:       "1.16.0",
+		ServerVersion: "1.0.0",
+		Type:          "zene",
+		OpenSubsonic:  true,
+		Error: func() *types.SubsonicError {
+			if withError {
+				return &types.SubsonicError{
+					Code:    types.ErrorGeneric,
+					Message: "An error occurred",
+				}
+			}
+			return nil
+		}(),
 	}
 }
