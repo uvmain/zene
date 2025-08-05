@@ -65,8 +65,11 @@ func StartServer() {
 	router.Handle("DELETE /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById))) // return { Status: string }
 
 	// subsonic routes
-	router.Handle("/rest/ping.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePing)))          // returns types.SubsonicResponse
-	router.Handle("/rest/getLicense.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense))) // returns types.SubsonicLicense
+	/// System
+	router.Handle("/rest/ping.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePing)))                                        // returns types.SubsonicResponse
+	router.Handle("/rest/getLicense.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense)))                               // returns types.SubsonicLicenseResponse
+	router.Handle("/rest/getOpenSubsonicExtensions.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleOpenSubsonicExtensions))) // returns types.SubsonicOpenSubsonicExtensionsResponse
+	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))                              // returns types.SubsonicTokenInfoResponse
 
 	handler := cors.AllowAll().Handler(router)
 

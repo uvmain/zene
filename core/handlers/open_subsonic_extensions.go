@@ -5,19 +5,18 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
-	"zene/core/database"
 	"zene/core/net"
 	"zene/core/types"
 )
 
-func HandleLicense(w http.ResponseWriter, r *http.Request) {
+func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
 		return
 	}
 
-	response := types.SubsonicLicenseResponse{}
+	response := types.SubsonicOpenSubsonicExtensionsResponse{}
 	stdRes := types.GetPopulatedSubsonicResponse(false)
 
 	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
@@ -28,13 +27,28 @@ func HandleLicense(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
 	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
 
-	user, _ := database.GetUserByContext(r.Context())
+	extension1 := types.OpenSubsonicExtensions{
+		Name:     "formPost",
+		Versions: []int{1},
+	}
+	extension2 := types.OpenSubsonicExtensions{
+		Name:     "apiKeyAuthentication",
+		Versions: []int{1},
+	}
+	extension3 := types.OpenSubsonicExtensions{
+		Name:     "transcodeOffset",
+		Versions: []int{1},
+	}
+	extension4 := types.OpenSubsonicExtensions{
+		Name:     "songLyrics",
+		Versions: []int{1},
+	}
 
-	response.SubsonicResponse.License = &types.LicenseInfo{
-		Valid:          true,
-		Email:          user.Username,
-		LicenseExpires: "",
-		TrialExpires:   "",
+	response.SubsonicResponse.OpenSubsonicExtensions = []*types.OpenSubsonicExtensions{
+		&extension1,
+		&extension2,
+		&extension3,
+		&extension4,
 	}
 
 	format := r.FormValue("f")

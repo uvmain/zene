@@ -10,14 +10,14 @@ import (
 	"zene/core/types"
 )
 
-func HandleLicense(w http.ResponseWriter, r *http.Request) {
+func HandleTokenInfo(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
 		return
 	}
 
-	response := types.SubsonicLicenseResponse{}
+	response := types.SubsonicTokenInfoResponse{}
 	stdRes := types.GetPopulatedSubsonicResponse(false)
 
 	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
@@ -30,11 +30,8 @@ func HandleLicense(w http.ResponseWriter, r *http.Request) {
 
 	user, _ := database.GetUserByContext(r.Context())
 
-	response.SubsonicResponse.License = &types.LicenseInfo{
-		Valid:          true,
-		Email:          user.Username,
-		LicenseExpires: "",
-		TrialExpires:   "",
+	response.SubsonicResponse.TokenInfo = &types.TokenInfo{
+		Username: user.Username,
 	}
 
 	format := r.FormValue("f")
