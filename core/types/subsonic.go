@@ -1,16 +1,22 @@
 package types
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+)
 
-// SubsonicResponse represents the top-level response structure for Subsonic API
-type SubsonicResponse struct {
+type SubsonicStandard struct {
 	XMLName       xml.Name       `xml:"subsonic-response" json:"-"`
+	Xmlns         string         `xml:"xmlns,attr" json:"-"`
 	Status        string         `xml:"status,attr" json:"status"`
 	Version       string         `xml:"version,attr" json:"version"`
 	Type          string         `xml:"type,attr" json:"type"`
 	ServerVersion string         `xml:"serverVersion,attr" json:"serverVersion"`
 	OpenSubsonic  bool           `xml:"openSubsonic,attr" json:"openSubsonic"`
 	Error         *SubsonicError `xml:"error,omitempty" json:"error,omitempty"`
+}
+
+type SubsonicResponse struct {
+	SubsonicResponse SubsonicStandard `json:"subsonic-response"`
 }
 
 // SubsonicError represents a Subsonic API error
@@ -35,3 +41,48 @@ const (
 	ErrorTrialExpired              = 60
 	ErrorDataNotFound              = 70
 )
+
+func GetPopulatedSubsonicResponse(withError bool) SubsonicResponse {
+	response := SubsonicResponse{
+		SubsonicResponse: SubsonicStandard{
+			Status:        "ok",
+			Version:       "1.16.1",
+			Type:          "zene",
+			ServerVersion: "0.1.0",
+			OpenSubsonic:  true,
+			Xmlns:         "http://subsonic.org/restapi",
+		},
+	}
+
+	if withError {
+		response.SubsonicResponse.Status = "error"
+		response.SubsonicResponse.Error = &SubsonicError{
+			Code:    ErrorGeneric,
+			Message: "An error occurred",
+		}
+	}
+	return response
+}
+
+type LicenseInfo struct {
+	Valid          bool   `xml:"valid,attr" json:"valid"`
+	Email          string `xml:"email,attr,omitempty" json:"email,omitempty"`
+	LicenseExpires string `xml:"licenseExpires,attr,omitempty" json:"licenseExpires,omitempty"`
+	TrialExpires   string `xml:"trialExpires,attr,omitempty" json:"trialExpires,omitempty"`
+}
+
+type SubsonicLicense struct {
+	XMLName       xml.Name       `xml:"subsonic-response" json:"-"`
+	Xmlns         string         `xml:"xmlns,attr" json:"-"`
+	Status        string         `xml:"status,attr" json:"status"`
+	Version       string         `xml:"version,attr" json:"version"`
+	Type          string         `xml:"type,attr" json:"type"`
+	ServerVersion string         `xml:"serverVersion,attr" json:"serverVersion"`
+	OpenSubsonic  bool           `xml:"openSubsonic,attr" json:"openSubsonic"`
+	Error         *SubsonicError `xml:"error,omitempty" json:"error,omitempty"`
+	License       *LicenseInfo   `xml:"license" json:"license"`
+}
+
+type SubsonicLicenseResponse struct {
+	SubsonicResponse SubsonicLicense `json:"subsonic-response"`
+}

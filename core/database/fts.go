@@ -16,12 +16,8 @@ func createFtsTables(ctx context.Context) {
 
 func createFtsMetadataTable(ctx context.Context) error {
 	tableName := "metadata_fts"
-	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS metadata_fts USING fts5(
-    file_path, file_name, title, artist, album, album_artist, genre, release_date, label,
-    content='metadata',
-    content_rowid='file_path',
-    tokenize='trigram remove_diacritics 1'
-	);`
+	schema := `CREATE VIRTUAL TABLE IF NOT EXISTS metadata_fts
+		USING fts5(file_path, file_name, title, artist, album, album_artist, genre, release_date, label, tokenize="trigram remove_diacritics 1");`
 	err := createTable(ctx, tableName, schema)
 	return err
 }
@@ -54,13 +50,19 @@ func createFtsMetadataTriggers(ctx context.Context) {
 }
 
 func insertFtsMetadataData(ctx context.Context) {
-	const query = `INSERT INTO metadata_fts(metadata_fts) VALUES ('rebuild');`
+	const query = `
+		INSERT INTO metadata_fts (
+			file_path, file_name, title, artist, album, album_artist, genre, release_date, label
+		)
+		SELECT 
+			file_path, file_name, title, artist, album, album_artist, genre, release_date, label 
+		FROM metadata;`
 
 	_, err := DB.ExecContext(ctx, query)
 	if err != nil {
-		logger.Printf("Database: error inserting data into metadata_fts table: %v", err)
+		logger.Printf("Error inserting data into metadata_fts table: %v", err)
 	} else {
-		logger.Println("Database: data inserted into metadata_fts table")
+		logger.Println("Data inserted into metadata_fts table")
 	}
 }
 

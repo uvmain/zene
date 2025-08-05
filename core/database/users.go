@@ -76,6 +76,21 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 	return nil
 }
 
+func GetUserByContext(ctx context.Context) (types.User, error) {
+	val := ctx.Value("userId")
+	userId, ok := val.(int64)
+	if !ok {
+		return types.User{}, fmt.Errorf("userId missing or invalid in context")
+	}
+
+	user, err := GetUserById(ctx, userId)
+	if err != nil {
+		return types.User{}, fmt.Errorf("failed to get user from database: %v", err)
+	}
+
+	return user, nil
+}
+
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
 	query := `SELECT id, username, encrypted_password, created_at, is_admin FROM users WHERE username = ?`
 	var row types.User

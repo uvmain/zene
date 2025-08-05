@@ -73,11 +73,11 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 // The response includes the error code and message if there is an error.
 func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string, helpUrl string) {
 
-	response := NewSubsonicResponse(true)
-	response.Error.Code = code
-	response.Error.Message = message
+	response := types.GetPopulatedSubsonicResponse(true)
+	response.SubsonicResponse.Error.Code = code
+	response.SubsonicResponse.Error.Message = message
 	if helpUrl != "" {
-		response.Error.HelpUrl = helpUrl
+		response.SubsonicResponse.Error.HelpUrl = helpUrl
 	}
 
 	format := r.FormValue("f")
@@ -90,24 +90,5 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
 		xml.NewEncoder(w).Encode(response)
-	}
-}
-
-func NewSubsonicResponse(withError bool) *types.SubsonicResponse {
-	return &types.SubsonicResponse{
-		Status:        "ok",
-		Version:       "1.16.0",
-		ServerVersion: "1.0.0",
-		Type:          "zene",
-		OpenSubsonic:  true,
-		Error: func() *types.SubsonicError {
-			if withError {
-				return &types.SubsonicError{
-					Code:    types.ErrorGeneric,
-					Message: "An error occurred",
-				}
-			}
-			return nil
-		}(),
 	}
 }

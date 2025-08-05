@@ -15,7 +15,7 @@ func HandlePing(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
 		return
 	}
-	response := net.NewSubsonicResponse(false)
+	response := types.GetPopulatedSubsonicResponse(false)
 
 	format := r.FormValue("f")
 	if format == "json" {
@@ -26,6 +26,6 @@ func HandlePing(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/xml")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
-		xml.NewEncoder(w).Encode(response)
+		xml.NewEncoder(w).Encode(response.SubsonicResponse)
 	}
 }
