@@ -70,6 +70,8 @@ func StartServer() {
 	router.Handle("/rest/getLicense.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense)))                               // returns types.SubsonicLicenseResponse
 	router.Handle("/rest/getOpenSubsonicExtensions.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleOpenSubsonicExtensions))) // returns types.SubsonicOpenSubsonicExtensionsResponse
 	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))                              // returns types.SubsonicTokenInfoResponse
+	/// Browsing
+	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
 
 	handler := cors.AllowAll().Handler(router)
 
