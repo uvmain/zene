@@ -50,14 +50,14 @@ func openDatabase(ctx context.Context) {
 
 	_, err = DB.Exec("pragma foreign_keys = 1;")
 	if err != nil {
-		log.Printf("Error enabling foreign keys: %s", err)
+		log.Fatalf("Error enabling foreign keys: %s", err)
 	} else {
 		log.Println("Foreign keys enabled")
 	}
 
 	_, err = DB.Exec("pragma journal_mode = wal;")
 	if err != nil {
-		log.Printf("Error entering WAL mode: %s", err)
+		log.Fatalf("Error entering WAL mode: %s", err)
 	} else {
 		log.Println("Database is in WAL mode")
 	}

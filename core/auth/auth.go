@@ -77,28 +77,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	}
 
 	if apiKey != "" {
-		user, err := database.ValidateApiKey(ctx, apiKey)
-		if err != nil {
-			logger.Printf("Error validating API key %s: %v", apiKey, err)
-			net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Server Error", "")
-			return "", 0, false
-		}
-		if user.Username == "" {
-			logger.Printf("API key %s not found", apiKey)
-			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key not found", "")
-			return "", 0, false
-		}
-		if user.IsDisabled {
-			logger.Printf("API key %s belongs to a disabled user", apiKey)
-			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key belongs to a disabled user", "")
-			return "", 0, false
-		}
-		if user.IsAdmin {
-			logger.Printf("API key used for admin user %s", user.Username)
-		} else {
-			logger.Printf("API key used for user %s", user.Username)
-		}
-		return user.Username, user.Id, true
+		return validateWithApiKey(ctx, apiKey, w, r)
 	}
 
 	if username == "" {
@@ -132,8 +111,34 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	return "", 0, false
 }
 
+// validateWithApiKey checks if the provided API key is valid and returns the username and userId if successful.
+func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWriter, r *http.Request) (string, int64, bool) {
+	user, err := database.ValidateApiKey(ctx, apiKey)
+	if err != nil {
+		logger.Printf("Error validating API key %s: %v", apiKey, err)
+		net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Server Error", "")
+		return "", 0, false
+	}
+	if user.Username == "" {
+		logger.Printf("API key %s not found", apiKey)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key not found", "")
+		return "", 0, false
+	}
+	if user.IsDisabled {
+		logger.Printf("API key %s belongs to a disabled user", apiKey)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key belongs to a disabled user", "")
+		return "", 0, false
+	}
+	if user.IsAdmin {
+		logger.Printf("API key used for admin user %s", user.Username)
+	} else {
+		logger.Printf("API key used for user %s", user.Username)
+	}
+	return user.Username, user.Id, true
+}
+
 // validateWithPassword checks if the provided plaintext password matches the decrypted password from the database and returns true if valid.
-func validateWithPassword(username string, password string, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
+func validateWithPassword(username, password, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
 	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
@@ -144,7 +149,7 @@ func validateWithPassword(username string, password string, encryptedPassword st
 }
 
 // validateWithTokenAndSalt checks if the provided token matches the computed token from the decrypted password and salt and returns true if valid.
-func validateWithTokenAndSalt(username string, salt string, token string, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
+func validateWithTokenAndSalt(username, salt, token, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
 	ok, err := validateToken(salt, token, encryptedPassword)
 	if err != nil || !ok {
 		logger.Printf("Error validating token for user %s: %v", username, err)
