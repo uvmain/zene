@@ -97,7 +97,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 }
 
 func getAudioFiles(ctx context.Context) ([]types.File, error) {
-	audioFiles, err := io.GetFiles(ctx, config.MusicDir, config.AudioFileTypes)
+	audioFiles, err := io.GetFiles(ctx, config.MusicDirs[0], config.AudioFileTypes)
 	if err != nil {
 		return []types.File{}, fmt.Errorf("Error getting slice of audio files from the filesystem: %v", err)
 	}

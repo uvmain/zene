@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var MusicDir string
+var MusicDirs []string
 var DatabaseDirectory string
 var LibraryDirectory string
 var TempDirectory string
@@ -33,12 +33,16 @@ func LoadConfig() {
 
 	godotenv.Load(".env")
 
-	musicDir := os.Getenv("MUSIC_DIR")
-	if musicDir == "" {
-		musicDir = "./music"
+	musicDirEnv := os.Getenv("MUSIC_DIRS")
+	if musicDirEnv == "" {
+		MusicDirs = []string{"./music"}
+	} else {
+		MusicDirs = strings.Split(musicDirEnv, ",")
+		for i, dir := range MusicDirs {
+			MusicDirs[i], _ = filepath.Abs(dir)
+		}
 	}
-	MusicDir, _ = filepath.Abs(musicDir)
-	logger.Printf("Using music directory: %s", MusicDir)
+	logger.Printf("Using music directories: %v", MusicDirs)
 
 	dataPath := os.Getenv("DATA_PATH")
 	if dataPath == "" {

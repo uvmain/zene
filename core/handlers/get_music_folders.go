@@ -31,7 +31,7 @@ func HandleGetMusicFolders(w http.ResponseWriter, r *http.Request) {
 
 	musicFolder1 := types.MusicFolder{
 		Id:   1,
-		Name: filepath.Base(config.MusicDir),
+		Name: filepath.Base(config.MusicDirs[0]),
 	}
 
 	response.SubsonicResponse.MusicFolders = &types.MusicFolders{

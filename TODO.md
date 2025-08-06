@@ -1,0 +1,1 @@
+[ ] add proper support for multiple music folders

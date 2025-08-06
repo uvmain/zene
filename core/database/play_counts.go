@@ -7,9 +7,8 @@ import (
 	"zene/core/types"
 )
 
-func createPlayCountsTable(ctx context.Context) error {
-	tableName := "play_counts"
-	schema := `CREATE TABLE IF NOT EXISTS play_counts (
+func createPlayCountsTable(ctx context.Context) {
+	schema := `CREATE TABLE play_counts (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
 		musicbrainz_track_id TEXT NOT NULL,
@@ -18,14 +17,10 @@ func createPlayCountsTable(ctx context.Context) error {
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 		UNIQUE (user_id, musicbrainz_track_id)
 	);`
-	err := createTable(ctx, tableName, schema)
-	if err != nil {
-		return err
-	}
+	createTable(ctx, schema)
 	createIndex(ctx, "idx_playcounts_user_track ", "play_counts", "user_id, musicbrainz_track_id", false)
 	createIndex(ctx, "idx_playcounts_track ", "play_counts", "musicbrainz_track_id", false)
 	createIndex(ctx, "idx_play_counts_user", "play_counts", "user_id", false)
-	return nil
 }
 
 func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId string) error {

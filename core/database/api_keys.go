@@ -9,33 +9,31 @@ import (
 	"zene/core/types"
 )
 
-func createApiKeysTable(ctx context.Context) error {
-	tableName := "api_keys"
-	schema := `CREATE TABLE IF NOT EXISTS api_keys (
+func createApiKeysTable(ctx context.Context) {
+	schema := `CREATE TABLE api_keys (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
 		api_key TEXT NOT NULL,
 		date_created TEXT NOT NULL,
 		last_used TEXT,
-		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
-	err := createTable(ctx, tableName, schema)
-	return err
+	createTable(ctx, schema)
 }
 
 func ValidateApiKey(ctx context.Context, apiKey string) (types.User, error) {
-	query := `SELECT u.Id, u.username, u.encrypted_password, u.created_at, u.is_admin, u.is_disabled FROM users u join api_keys k on u.id = k.user_id WHERE k.api_key = ?`
-	var user types.User
+	query := `SELECT u.* FROM subsonic_users u join api_keys k on u.user_id = k.user_id WHERE k.api_key = ?`
+	var row types.User
 
-	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&user.Id, &user.Username, &user.EncryptedPassword, &user.CreatedAt, &user.IsAdmin, &user.IsDisabled)
+	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Password, &row.Email, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.Folders)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
-	} else if user.IsDisabled {
-		return types.User{}, fmt.Errorf("user is disabled")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users in GetUserByApiKey: %v", err)
 	}
-	return user, nil
+	return row, nil
 }
 
 func InsertApiKey(ctx context.Context, userId int64, apiKey string) error {

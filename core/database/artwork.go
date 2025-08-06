@@ -9,18 +9,14 @@ import (
 	"zene/core/types"
 )
 
-func createAlbumArtTable(ctx context.Context) error {
-	tableName := "album_art"
-	schema := `CREATE TABLE IF NOT EXISTS album_art (musicbrainz_album_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
-	err := createTable(ctx, tableName, schema)
-	return err
+func createAlbumArtTable(ctx context.Context) {
+	schema := `CREATE TABLE album_art (musicbrainz_album_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
+	createTable(ctx, schema)
 }
 
-func createArtistArtTable(ctx context.Context) error {
-	tableName := "artist_art"
-	schema := `CREATE TABLE IF NOT EXISTS artist_art (musicbrainz_artist_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
-	err := createTable(ctx, tableName, schema)
-	return err
+func createArtistArtTable(ctx context.Context) {
+	schema := `CREATE TABLE artist_art (musicbrainz_artist_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
+	createTable(ctx, schema)
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {

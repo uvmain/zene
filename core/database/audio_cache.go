@@ -10,14 +10,12 @@ import (
 	"zene/core/types"
 )
 
-func createAudioCacheTable(ctx context.Context) error {
-	tableName := "audio_cache"
-	schema := `CREATE TABLE IF NOT EXISTS audio_cache (
+func createAudioCacheTable(ctx context.Context) {
+	schema := `CREATE TABLE audio_cache (
 		cache_key TEXT PRIMARY KEY,
 		last_accessed TEXT NOT NULL
 	);`
-	err := createTable(ctx, tableName, schema)
-	return err
+	createTable(ctx, schema)
 }
 
 func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {

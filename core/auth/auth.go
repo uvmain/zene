@@ -124,12 +124,7 @@ func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWrite
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key not found", "")
 		return "", 0, false
 	}
-	if user.IsDisabled {
-		logger.Printf("API key %s belongs to a disabled user", apiKey)
-		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key belongs to a disabled user", "")
-		return "", 0, false
-	}
-	if user.IsAdmin {
+	if user.AdminRole {
 		logger.Printf("API key used for admin user %s", user.Username)
 	} else {
 		logger.Printf("API key used for user %s", user.Username)
@@ -177,7 +172,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 // AdminAuthMiddleware is an HTTP middleware that authenticates requests using ValidateAuth.
 // If authentication fails, it writes a 401 response and does not call the next handler.
-// It also ensures that the user is an admin by checking the "isAdmin" field in the database.
+// It also ensures that the user is an admin by checking the "admin_role" field in the users table.
 // If the user is not an admin, it writes a 403 Forbidden response.
 func AdminAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -192,7 +187,7 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Internal server error", "")
 			return
 		}
-		if !user.IsAdmin {
+		if !user.AdminRole {
 			logger.Printf("User %s (ID: %d) is not an admin", userName, userId)
 			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "User is not authorized for this operation", "")
 			return

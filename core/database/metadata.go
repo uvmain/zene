@@ -10,9 +10,8 @@ import (
 	"zene/core/types"
 )
 
-func createMetadataTable(ctx context.Context) error {
-	tableName := "metadata"
-	schema := `CREATE TABLE IF NOT EXISTS metadata (
+func createMetadataTable(ctx context.Context) {
+	schema := `CREATE TABLE metadata (
 		file_path TEXT PRIMARY KEY,
 		file_name TEXT NOT NULL,
 		date_added TEXT NOT NULL,
@@ -34,16 +33,14 @@ func createMetadataTable(ctx context.Context) error {
 		musicbrainz_artist_id TEXT NOT NULL,
 		musicbrainz_album_id TEXT NOT NULL,
 		musicbrainz_track_id TEXT NOT NULL,
-		label TEXT
+		label TEXT,
+		music_folder_id INTEGER DEFAULT 1,
+		FOREIGN KEY (music_folder_id) REFERENCES music_folders(id) ON DELETE CASCADE
 	);`
-	err := createTable(ctx, tableName, schema)
-	if err != nil {
-		return err
-	}
+	createTable(ctx, schema)
 	createIndex(ctx, "idx_metadata_track_id", "metadata", "musicbrainz_track_id", false)
 	createIndex(ctx, "idx_metadata_album_id", "metadata", "musicbrainz_album_id", false)
 	createIndex(ctx, "idx_metadata_artist_id", "metadata", "musicbrainz_artist_id", false)
-	return nil
 }
 
 func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {

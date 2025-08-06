@@ -20,9 +20,10 @@ var err error
 
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
+	createMusicFoldersTable(ctx)
 	createUsersTable(ctx)
-	CreateAdminUserIfRequired(ctx)
 	createApiKeysTable(ctx)
+	CreateAdminUserIfRequired(ctx)
 	createMetadataTable(ctx)
 	createPlayCountsTable(ctx)
 	createLyricsTable(ctx)
