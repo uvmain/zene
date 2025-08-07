@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"io"
 	"os"
@@ -47,6 +48,32 @@ func EncryptAES(plaintext string) (string, error) {
 
 func DecryptAES(cipherTextBase64 string) (string, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(cipherTextBase64)
+	if err != nil {
+		return "", err
+	}
+
+	block, err := aes.NewCipher(encryptionKey)
+	if err != nil {
+		return "", err
+	}
+
+	aesGCM, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	nonceSize := aesGCM.NonceSize()
+	if len(ciphertext) < nonceSize {
+		return "", errors.New("ciphertext too short")
+	}
+
+	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
+	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
+	return string(plaintext), err
+}
+
+func DecryptHexAES(cipherTextHex string) (string, error) {
+	ciphertext, err := hex.DecodeString(cipherTextHex)
 	if err != nil {
 		return "", err
 	}

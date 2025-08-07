@@ -73,7 +73,8 @@ func StartServer() {
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
 	// User Management
-	router.Handle("/rest/getUser.view", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUser))) // returns types.SubsonicUsersResponse
+	router.Handle("/rest/getUser.view", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))       // returns types.SubsonicUsersResponse
+	router.Handle("/rest/createUser.view", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleCreateUser))) // returns types.SubsonicResponse
 
 	handler := cors.AllowAll().Handler(router)
 

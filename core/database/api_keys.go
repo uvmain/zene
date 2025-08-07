@@ -26,7 +26,7 @@ func ValidateApiKey(ctx context.Context, apiKey string) (types.User, error) {
 	var row types.User
 	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 	if err == sql.ErrNoRows {

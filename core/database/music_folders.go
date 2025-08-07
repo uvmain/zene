@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"zene/core/config"
 	"zene/core/logger"
@@ -54,6 +55,18 @@ func GetMusicFolders(ctx context.Context) ([]types.MusicFolder, error) {
 	}
 
 	return folders, nil
+}
+
+func GetMusicFolderById(ctx context.Context, id int) (types.MusicFolder, error) {
+	query := `SELECT id, name FROM music_folders where id = ?`
+	var row types.MusicFolder
+	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Name)
+	if err == sql.ErrNoRows {
+		return types.MusicFolder{}, fmt.Errorf("music folder with id %d not found", id)
+	} else if err != nil {
+		return types.MusicFolder{}, fmt.Errorf("querying music folder: %v", err)
+	}
+	return row, nil
 }
 
 func InsertMusicFolder(ctx context.Context, name string) error {

@@ -36,7 +36,7 @@ func validateToken(salt string, token string, encryptedPassword string) (bool, e
 //
 // This supports the following request parameters in either form data or query parameters:
 // - u: username
-// - p: plaintext password
+// - p: plaintext password, or hex encrypted password prefixed with "enc:"
 // - t: token = sha256(password + salt)
 // - s: salt
 // - apiKey: API key for authentication
@@ -125,13 +125,22 @@ func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWrite
 	return user.Username, user.Id, true
 }
 
-// validateWithPassword checks if the provided plaintext password matches the decrypted password from the database and returns true if valid.
+// validateWithPassword checks if the provided password matches the decrypted password from the database and returns true if valid.
 func validateWithPassword(username, password, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
 	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
 		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 		return false
+	}
+	// if password starts with "enc:" it is hex encrypted, we need to decrypt it first
+	if len(password) > 4 && password[:4] == "enc:" {
+		password, err = encryption.DecryptHexAES(password[4:])
+		if err != nil {
+			logger.Printf("Error decrypting hex encoded password for user %s: %v", username, err)
+			net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
+			return false
+		}
 	}
 	return decryptedPassword == password
 }

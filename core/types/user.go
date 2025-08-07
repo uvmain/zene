@@ -42,7 +42,7 @@ type User struct {
 	Username            string `json:"username" xml:"username"`                       // Required: The name of the new user.
 	Password            string `json:"password" xml:"password"`                       // Required: The password of the new user, either clear text or hex-encoded.
 	Email               string `json:"email" xml:"email"`                             // Required: The email address of the new user.
-	LDAPAuthenticated   bool   `json:"ldapAuthenticated" xml:"ldapAuthenticated"`     // Optional: LDAP authentication. Default: false
+	LdapAuthenticated   bool   `json:"ldapAuthenticated" xml:"ldapAuthenticated"`     // Optional: LDAP authentication. Default: false
 	AdminRole           bool   `json:"adminRole" xml:"adminRole"`                     // Optional: Admin privileges. Default: false
 	ScrobblingEnabled   bool   `json:"scrobblingEnabled" xml:"scrobblingEnabled"`     // Optional: Enable scrobbling. Default: true
 	SettingsRole        bool   `json:"settingsRole" xml:"settingsRole"`               // Optional: Change personal settings/password. Default: true
@@ -58,5 +58,3 @@ type User struct {
 	VideoConversionRole bool   `json:"videoConversionRole" xml:"videoConversionRole"` // Optional: Start video conversions. Default: false
 	Folders             []int  `json:"folder" xml:"folder"`                           // Optional: IDs of music folders the user can access.
 }
-
-type Users []User

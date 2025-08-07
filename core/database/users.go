@@ -150,7 +150,7 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 	var row types.User
 	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 	if err == sql.ErrNoRows {
@@ -167,7 +167,7 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 	var row types.User
 	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 	if err == sql.ErrNoRows {
@@ -191,7 +191,7 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	for rows.Next() {
 		var row types.User
 		var foldersString string
-		err := rows.Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+		err := rows.Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 			&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 			&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 		if err != nil {
@@ -232,7 +232,7 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 			video_conversion_role = excluded.video_conversion_role`
 
 	result, err := DB.ExecContext(ctx, query, user.Username, user.Password, user.Email, user.ScrobblingEnabled,
-		user.LDAPAuthenticated, user.AdminRole, user.SettingsRole, user.StreamRole, user.JukeboxRole,
+		user.LdapAuthenticated, user.AdminRole, user.SettingsRole, user.StreamRole, user.JukeboxRole,
 		user.DownloadRole, user.UploadRole, user.PlaylistRole, user.CoverArtRole,
 		user.CommentRole, user.PodcastRole, user.ShareRole, user.VideoConversionRole)
 	if err != nil {

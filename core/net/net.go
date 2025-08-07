@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 	"zene/core/config"
 	zene_io "zene/core/io"
@@ -91,4 +92,41 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
 		xml.NewEncoder(w).Encode(response)
 	}
+}
+
+func ParseBooleanFormValue(w http.ResponseWriter, r *http.Request, key string) bool {
+	formValue := r.FormValue(key)
+	if formValue != "" {
+		parsedBool, err := strconv.ParseBool(formValue)
+		if err != nil {
+			errString := fmt.Sprintf("%s must be true or false", key)
+			WriteSubsonicError(w, r, types.ErrorMissingParameter, errString, "")
+			return false
+		}
+		return parsedBool
+	} else {
+		return false
+	}
+}
+
+func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true
+	if err := r.ParseForm(); err != nil {
+		logger.Printf("Error parsing form: %v", err)
+		return nil, nil, fmt.Errorf("error parsing form: %w", err)
+	}
+
+	intSlice := []int{}
+	stringSlice := r.Form[key]
+
+	if intArray {
+		for _, idStr := range stringSlice {
+			id, err := strconv.Atoi(idStr)
+			if err != nil {
+				logger.Printf("Error parsing %s in parseDuplicateFormKeys: %v", key, err)
+				return intSlice, []string{}, fmt.Errorf("error parsing %s: %w", key, err)
+			}
+			intSlice = append(intSlice, id)
+		}
+	}
+	return intSlice, stringSlice, nil
 }
