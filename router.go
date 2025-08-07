@@ -72,6 +72,8 @@ func StartServer() {
 	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))         // returns types.SubsonicTokenInfoResponse
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
+	// User Management
+	router.Handle("/rest/getUser.view", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUser))) // returns types.SubsonicUsersResponse
 
 	handler := cors.AllowAll().Handler(router)
 

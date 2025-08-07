@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/rand"
 	"math/big"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"zene/core/logger"
@@ -72,4 +74,21 @@ func GenerateRandomPassword(length int) (string, error) {
 	}
 
 	return string(password), nil
+}
+
+func StringToIntSlice(folderString string) []int {
+	if folderString == "" {
+		return nil
+	}
+
+	var folderIds []int
+	for _, idStr := range strings.Split(folderString, ",") {
+		if id, err := strconv.Atoi(idStr); err == nil {
+			folderIds = append(folderIds, id)
+		} else {
+			logger.Printf("Error parsing folder ID from string '%s': %v", idStr, err)
+		}
+	}
+
+	return folderIds
 }

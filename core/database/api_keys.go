@@ -22,17 +22,19 @@ func createApiKeysTable(ctx context.Context) {
 }
 
 func ValidateApiKey(ctx context.Context, apiKey string) (types.User, error) {
-	query := `SELECT u.* FROM subsonic_users u join api_keys k on u.user_id = k.user_id WHERE k.api_key = ?`
+	query := `SELECT u.* FROM users_with_folders u join api_keys k on u.user_id = k.user_id WHERE k.api_key = ?`
 	var row types.User
+	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Password, &row.Email, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.Folders)
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users in GetUserByApiKey: %v", err)
 	}
+	row.Folders = logic.StringToIntSlice(foldersString)
 	return row, nil
 }
 

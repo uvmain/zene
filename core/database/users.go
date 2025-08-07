@@ -43,8 +43,8 @@ func createUsersTable(ctx context.Context) {
 	);`
 	createTable(ctx, schema)
 
-	schema = `CREATE VIEW subsonic_users AS
-		SELECT u.id AS user_id, u.username, u.email, u.scrobbling_enabled, u.ldap_authenticated, u.admin_role, u.settings_role,
+	schema = `CREATE VIEW users_with_folders AS
+		SELECT u.id AS user_id, u.username, u.email, u.password, u.scrobbling_enabled, u.ldap_authenticated, u.admin_role, u.settings_role,
 			u.stream_role, u.jukebox_role, u.download_role, u.upload_role, u.playlist_role, u.cover_art_role,
 			u.comment_role, u.podcast_role, u.share_role, u.video_conversion_role, GROUP_CONCAT(f.folder_id) AS music_folder_ids
 		FROM users u
@@ -146,37 +146,41 @@ func GetUserByContext(ctx context.Context) (types.User, error) {
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
-	query := `SELECT * FROM users subsonic_users username = ?;`
+	query := `SELECT * FROM users users_with_folders username = ?;`
 	var row types.User
+	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Password, &row.Email, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.Folders)
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
+	row.Folders = logic.StringToIntSlice(foldersString)
 	return row, nil
 }
 
 func GetUserById(ctx context.Context, id int64) (types.User, error) {
-	query := `SELECT * FROM subsonic_users WHERE user_id = ?;`
+	query := `SELECT * FROM users_with_folders WHERE user_id = ?;`
 	var row types.User
+	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.Password, &row.Email, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.Folders)
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
+	row.Folders = logic.StringToIntSlice(foldersString)
 	return row, nil
 }
 
 func GetAllUsers(ctx context.Context) ([]types.User, error) {
-	query := `SELECT * FROM subsonic_users order by user_id desc;`
+	query := `SELECT * FROM users_with_folders order by user_id desc;`
 	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
 		return []types.User{}, fmt.Errorf("querying all users: %v", err)
@@ -186,12 +190,14 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	var users []types.User
 	for rows.Next() {
 		var row types.User
-		err := rows.Scan(&row.Id, &row.Username, &row.Password, &row.Email, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
+		var foldersString string
+		err := rows.Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LDAPAuthenticated,
 			&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-			&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.Folders)
+			&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
 		if err != nil {
 			return []types.User{}, fmt.Errorf("scanning user row: %v", err)
 		}
+		row.Folders = logic.StringToIntSlice(foldersString)
 		users = append(users, row)
 	}
 

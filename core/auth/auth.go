@@ -98,12 +98,10 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 	}
 
 	if password != "" && validateWithPassword(username, password, encryptedPassword, w, r) {
-		logger.Printf("User %s authenticated with plaintext password", username)
 		return username, userId, true
 	}
 
 	if token != "" && salt != "" && validateWithTokenAndSalt(username, salt, token, encryptedPassword, w, r) {
-		logger.Printf("User %s authenticated with salted password", username)
 		return username, userId, true
 	}
 
@@ -123,11 +121,6 @@ func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWrite
 		logger.Printf("API key %s not found", apiKey)
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key not found", "")
 		return "", 0, false
-	}
-	if user.AdminRole {
-		logger.Printf("API key used for admin user %s", user.Username)
-	} else {
-		logger.Printf("API key used for user %s", user.Username)
 	}
 	return user.Username, user.Id, true
 }
@@ -192,7 +185,6 @@ func AdminAuthMiddleware(next http.Handler) http.Handler {
 			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "User is not authorized for this operation", "")
 			return
 		}
-		logger.Printf("Admin user %s (ID: %d) authenticated", userName, userId)
 		ctx := context.WithValue(r.Context(), "username", userName)
 		ctx = context.WithValue(r.Context(), "userId", userId)
 		r = r.WithContext(ctx)
