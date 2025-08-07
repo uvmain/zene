@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"path/filepath"
 	"zene/core/config"
@@ -43,25 +44,8 @@ func openDatabase(ctx context.Context) {
 		logger.Println("Creating new database file")
 	}
 
-	DB, err = sql.Open("sqlite3", dbFilePath)
-	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
-	}
-	log.Printf("Database file opened: %s", dbFilePath)
-
-	_, err = DB.Exec("pragma foreign_keys = 1;")
-	if err != nil {
-		log.Fatalf("Error enabling foreign keys: %s", err)
-	} else {
-		log.Println("Foreign keys enabled")
-	}
-
-	_, err = DB.Exec("pragma journal_mode = wal;")
-	if err != nil {
-		log.Fatalf("Error entering WAL mode: %s", err)
-	} else {
-		log.Println("Database is in WAL mode")
-	}
+	dataSource := fmt.Sprintf("file:%s?_journal_mode=WAL&_foreign_keys=on", dbFilePath)
+	DB, err = sql.Open("sqlite3", dataSource)
 
 	// DB.SetMaxOpenConns(10)
 	DB.SetMaxIdleConns(5)

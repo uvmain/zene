@@ -8,6 +8,7 @@ import (
 	"zene/core/database"
 	"zene/core/encryption"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/net"
 	"zene/core/types"
 )
@@ -34,17 +35,6 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := types.SubsonicUserResponseWrapper{}
-	stdRes := types.GetPopulatedSubsonicResponse(false)
-
-	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
-	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns
-	response.SubsonicResponse.Status = stdRes.SubsonicResponse.Status
-	response.SubsonicResponse.Version = stdRes.SubsonicResponse.Version
-	response.SubsonicResponse.Type = stdRes.SubsonicResponse.Type
-	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
-	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
-
 	userToCreate := types.User{}
 
 	username := r.FormValue("username")
@@ -61,7 +51,7 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(password) > 4 && password[:4] == "enc:" {
-		decryptedPassword, err := encryption.DecryptHexAES(password[4:])
+		decryptedPassword, err := encryption.HexDecrypt(password[4:])
 		if err != nil {
 			logger.Printf("Error decrypting hex encoded password for user %s: %v", username, err)
 			net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
@@ -70,7 +60,13 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		password = decryptedPassword
 	}
 
-	userToCreate.Password = password
+	encryptedPassword, err := encryption.EncryptAES(password)
+	if err != nil {
+		logger.Printf("Error decrypting hex encoded password for user %s: %v", username, err)
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
+	}
+
+	userToCreate.Password = encryptedPassword
 
 	email := r.FormValue("email")
 	if email == "" {
@@ -82,66 +78,99 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	ldapAuthenticated := r.FormValue("ldapAuthenticated")
 	if ldapAuthenticated != "" {
 		userToCreate.LdapAuthenticated = net.ParseBooleanFormValue(w, r, ldapAuthenticated)
+	} else {
+		userToCreate.LdapAuthenticated = logic.GetDefaultRoleValue("ldapAuthenticated")
 	}
 
 	adminRole := r.FormValue("adminRole")
 	if adminRole != "" {
 		userToCreate.AdminRole = net.ParseBooleanFormValue(w, r, adminRole)
+	} else {
+		userToCreate.AdminRole = logic.GetDefaultRoleValue("adminRole")
 	}
 
 	settingsRole := r.FormValue("settingsRole")
 	if settingsRole != "" {
 		userToCreate.SettingsRole = net.ParseBooleanFormValue(w, r, settingsRole)
+	} else {
+		userToCreate.SettingsRole = logic.GetDefaultRoleValue("settingsRole")
 	}
 
 	streamRole := r.FormValue("streamRole")
 	if streamRole != "" {
 		userToCreate.StreamRole = net.ParseBooleanFormValue(w, r, streamRole)
+	} else {
+		userToCreate.StreamRole = logic.GetDefaultRoleValue("streamRole")
 	}
 
 	jukeboxRole := r.FormValue("jukeboxRole")
 	if jukeboxRole != "" {
 		userToCreate.JukeboxRole = net.ParseBooleanFormValue(w, r, jukeboxRole)
+	} else {
+		userToCreate.JukeboxRole = logic.GetDefaultRoleValue("jukeboxRole")
 	}
 
 	downloadRole := r.FormValue("downloadRole")
 	if downloadRole != "" {
 		userToCreate.DownloadRole = net.ParseBooleanFormValue(w, r, downloadRole)
+	} else {
+		userToCreate.DownloadRole = logic.GetDefaultRoleValue("downloadRole")
 	}
 
 	uploadRole := r.FormValue("uploadRole")
 	if uploadRole != "" {
 		userToCreate.UploadRole = net.ParseBooleanFormValue(w, r, uploadRole)
+	} else {
+		userToCreate.UploadRole = logic.GetDefaultRoleValue("uploadRole")
 	}
 
 	playlistRole := r.FormValue("playlistRole")
 	if playlistRole != "" {
 		userToCreate.PlaylistRole = net.ParseBooleanFormValue(w, r, playlistRole)
+	} else {
+		userToCreate.PlaylistRole = logic.GetDefaultRoleValue("playlistRole")
 	}
 
 	coverArtRole := r.FormValue("coverArtRole")
 	if coverArtRole != "" {
 		userToCreate.CoverArtRole = net.ParseBooleanFormValue(w, r, coverArtRole)
+	} else {
+		userToCreate.CoverArtRole = logic.GetDefaultRoleValue("coverArtRole")
 	}
 
 	commentRole := r.FormValue("commentRole")
 	if commentRole != "" {
 		userToCreate.CommentRole = net.ParseBooleanFormValue(w, r, commentRole)
+	} else {
+		userToCreate.CommentRole = logic.GetDefaultRoleValue("commentRole")
 	}
 
 	podcastRole := r.FormValue("podcastRole")
 	if podcastRole != "" {
 		userToCreate.PodcastRole = net.ParseBooleanFormValue(w, r, podcastRole)
+	} else {
+		userToCreate.PodcastRole = logic.GetDefaultRoleValue("podcastRole")
 	}
 
 	shareRole := r.FormValue("shareRole")
 	if shareRole != "" {
 		userToCreate.ShareRole = net.ParseBooleanFormValue(w, r, shareRole)
+	} else {
+		userToCreate.ShareRole = logic.GetDefaultRoleValue("shareRole")
+	}
+
+	scrobblingEnabled := r.FormValue("scrobblingEnabled")
+	if scrobblingEnabled != "" {
+		userToCreate.ScrobblingEnabled = net.ParseBooleanFormValue(w, r, scrobblingEnabled)
+	} else {
+		userToCreate.ScrobblingEnabled = logic.GetDefaultRoleValue("scrobblingEnabled")
 	}
 
 	videoConversionRole := r.FormValue("videoConversionRole")
 	if videoConversionRole != "" {
 		userToCreate.VideoConversionRole = net.ParseBooleanFormValue(w, r, videoConversionRole)
+	} else {
+		userToCreate.VideoConversionRole = logic.GetDefaultRoleValue("videoConversionRole")
 	}
 
 	musicFolderId := r.FormValue("musicFolderId")
@@ -187,6 +216,8 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Printf("User %s created with ID %d", username, userId)
+
+	response := types.GetPopulatedSubsonicResponse(false)
 
 	format := r.FormValue("f")
 	if format == "json" {

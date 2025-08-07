@@ -89,6 +89,40 @@ func StringToIntSlice(folderString string) []int {
 			logger.Printf("Error parsing folder ID from string '%s': %v", idStr, err)
 		}
 	}
-
 	return folderIds
+}
+
+func GetDefaultRoleValue(roleName string) bool {
+	switch roleName {
+	case "admin_role":
+		return false
+	case "settings_role":
+		return true
+	case "stream_role":
+		return true
+	case "jukebox_role":
+		return false
+	case "download_role":
+		return false
+	case "upload_role":
+		return false
+	case "playlist_role":
+		return false
+	case "cover_art_role":
+		return false
+	case "comment_role":
+		return false
+	case "podcast_role":
+		return false
+	case "share_role":
+		return false
+	case "video_conversion_role":
+		return false
+	case "scrobbling_enabled":
+		return true
+	case "ldap_authenticated":
+		return false
+	default:
+		return true
+	}
 }

@@ -135,7 +135,7 @@ func validateWithPassword(username, password, encryptedPassword string, w http.R
 	}
 	// if password starts with "enc:" it is hex encrypted, we need to decrypt it first
 	if len(password) > 4 && password[:4] == "enc:" {
-		password, err = encryption.DecryptHexAES(password[4:])
+		password, err = encryption.HexDecrypt(password[4:])
 		if err != nil {
 			logger.Printf("Error decrypting hex encoded password for user %s: %v", username, err)
 			net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")

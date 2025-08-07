@@ -72,28 +72,21 @@ func DecryptAES(cipherTextBase64 string) (string, error) {
 	return string(plaintext), err
 }
 
-func DecryptHexAES(cipherTextHex string) (string, error) {
-	ciphertext, err := hex.DecodeString(cipherTextHex)
+func HexDecrypt(hexEncodedString string) (string, error) {
+	decoded, err := hex.DecodeString(hexEncodedString)
 	if err != nil {
 		return "", err
 	}
-
-	block, err := aes.NewCipher(encryptionKey)
-	if err != nil {
-		return "", err
+	// convert []byte to string
+	if len(decoded) == 0 {
+		return "", errors.New("decoded string is empty")
 	}
-
-	aesGCM, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
+	if decoded[len(decoded)-1] == 0 {
+		decoded = decoded[:len(decoded)-1]
 	}
-
-	nonceSize := aesGCM.NonceSize()
-	if len(ciphertext) < nonceSize {
-		return "", errors.New("ciphertext too short")
+	decodedString := string(decoded)
+	if decodedString == "" {
+		return "", errors.New("decoded string is empty")
 	}
-
-	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
-	plaintext, err := aesGCM.Open(nil, nonce, ciphertext, nil)
-	return string(plaintext), err
+	return decodedString, err
 }
