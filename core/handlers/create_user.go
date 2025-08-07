@@ -61,11 +61,13 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(password) > 4 && password[:4] == "enc:" {
-		password, err = encryption.DecryptHexAES(password[4:])
+		decryptedPassword, err := encryption.DecryptHexAES(password[4:])
 		if err != nil {
 			logger.Printf("Error decrypting hex encoded password for user %s: %v", username, err)
 			net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
+			return
 		}
+		password = decryptedPassword
 	}
 
 	userToCreate.Password = password
