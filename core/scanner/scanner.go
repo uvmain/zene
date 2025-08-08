@@ -43,7 +43,6 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	metadataFiles, err := database.SelectTrackFilesForScanner(ctx)
 	if err != nil {
 		return scanError("Error scanning database for metadata files: %v", err)
-
 	}
 
 	// for each file found, either insert or update a metadata row

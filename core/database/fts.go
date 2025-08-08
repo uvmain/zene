@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"log"
 	"zene/core/logger"
 )
 
@@ -58,7 +59,7 @@ func insertFtsMetadataData(ctx context.Context) {
 
 	_, err := DB.ExecContext(ctx, query)
 	if err != nil {
-		logger.Printf("Error inserting data into metadata_fts table: %v", err)
+		log.Fatalf("Error inserting data into metadata_fts table: %v", err)
 	} else {
 		logger.Println("Data inserted into metadata_fts table")
 	}
@@ -92,7 +93,7 @@ func insertFtsArtistsData(ctx context.Context) {
 
 	_, err := DB.ExecContext(ctx, query)
 	if err != nil {
-		logger.Printf("Database: error inserting data into artists_fts table: %v", err)
+		log.Fatalf("Database: error inserting data into artists_fts table: %v", err)
 	} else {
 		logger.Println("Database: data inserted into artists_fts table")
 	}

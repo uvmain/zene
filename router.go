@@ -24,7 +24,7 @@ var dist embed.FS
 var distSubFS fs.FS
 var err error
 
-func StartServer() {
+func StartServer() *http.Server {
 	router := http.NewServeMux()
 
 	distSubFS, err = fs.Sub(dist, "frontend/dist")
@@ -87,7 +87,11 @@ func StartServer() {
 		logger.Println("Application running at :8080")
 	}
 
-	http.ListenAndServe(serverAddress, handler)
+	server := &http.Server{
+		Addr:    serverAddress,
+		Handler: handler,
+	}
+	return server
 }
 
 func HandleFrontend(w http.ResponseWriter, r *http.Request) {
