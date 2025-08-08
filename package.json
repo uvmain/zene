@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "setup": "go install github.com/air-verse/air@latest && go mod download",
-    "clean:build": "rimraf -v -I zene zene.exe frontend/dist",
+    "clean:build": "rimraf -v -I zene zene.exe frontend/dist tmp",
     "clean:modules": "rimraf -v -I frontend/node_modules node_modules",
     "clean": "npm run clean:build && npm run clean:modules",
     "dev:backend": "air",

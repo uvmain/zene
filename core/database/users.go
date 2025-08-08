@@ -146,7 +146,7 @@ func GetUserByContext(ctx context.Context) (types.User, error) {
 }
 
 func GetUserByUsername(ctx context.Context, username string) (types.User, error) {
-	query := `SELECT * FROM users users_with_folders username = ?;`
+	query := `SELECT * FROM users_with_folders where username = ?;`
 	var row types.User
 	var foldersString string
 
@@ -180,7 +180,7 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 }
 
 func GetAllUsers(ctx context.Context) ([]types.User, error) {
-	query := `SELECT * FROM users_with_folders order by user_id desc;`
+	query := `SELECT * FROM users_with_folders order by user_id asc;`
 	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
 		return []types.User{}, fmt.Errorf("querying all users: %v", err)

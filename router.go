@@ -64,7 +64,7 @@ func StartServer() *http.Server {
 	router.Handle("PATCH /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))   // return userId int64
 	router.Handle("DELETE /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById))) // return { Status: string }
 
-	// subsonic routes
+	// OpenSubsonic routes
 	/// System
 	router.Handle("/rest/ping.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePing)))                   // returns types.SubsonicResponse
 	router.Handle("/rest/getLicense.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense)))          // returns types.SubsonicLicenseResponse
@@ -73,7 +73,8 @@ func StartServer() *http.Server {
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
 	// User Management
-	router.Handle("/rest/getUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))       // returns types.SubsonicUsersResponse
+	router.Handle("/rest/getUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))       // returns types.SubsonicUserResponse
+	router.Handle("/rest/getUsers.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUsers)))     // returns types.SubsonicUsersResponse
 	router.Handle("/rest/createUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateUser))) // returns types.SubsonicResponse
 
 	handler := cors.AllowAll().Handler(router)

@@ -9,6 +9,7 @@
         "frontend/components.d.ts",
         "go.sum",
         "go.mod",
+        ".air.toml"
     ],
     "dictionaryDefinitions": [],
     "dictionaries": [],
