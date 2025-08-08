@@ -94,33 +94,33 @@ func StringToIntSlice(folderString string) []int {
 
 func GetDefaultRoleValue(roleName string) bool {
 	switch roleName {
-	case "admin_role":
+	case "adminRole":
 		return false
-	case "settings_role":
+	case "settingsRole":
 		return true
-	case "stream_role":
+	case "streamRole":
 		return true
-	case "jukebox_role":
+	case "jukeboxRole":
 		return false
-	case "download_role":
+	case "downloadRole":
 		return false
-	case "upload_role":
+	case "uploadRole":
 		return false
-	case "playlist_role":
+	case "playlistRole":
 		return false
-	case "cover_art_role":
+	case "coverArtRole":
 		return false
-	case "comment_role":
+	case "commentRole":
 		return false
-	case "podcast_role":
+	case "podcastRole":
 		return false
-	case "share_role":
+	case "shareRole":
 		return false
-	case "video_conversion_role":
+	case "videoConversionRole":
 		return false
-	case "scrobbling_enabled":
+	case "scrobblingEnabled":
 		return true
-	case "ldap_authenticated":
+	case "ldapAuthenticated":
 		return false
 	default:
 		return true

@@ -1,1 +1,2 @@
-[ ] add proper support for multiple music folders
+- [ ] add proper support for multiple music folders
+- [ ] use User.MaxBitRate to limit bitrate

@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"strconv"
 	"zene/core/database"
 	"zene/core/encryption"
 	"zene/core/logger"
@@ -42,6 +43,13 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Username is required", "")
 		return
 	}
+
+	usernameAlreadyExists, _ := database.GetUserByUsername(ctx, username)
+	if usernameAlreadyExists.Id > 0 {
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "User already exists", "")
+		return
+	}
+
 	userToCreate.Username = username
 
 	password := r.FormValue("password")
@@ -168,9 +176,24 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	videoConversionRole := r.FormValue("videoConversionRole")
 	if videoConversionRole != "" {
+		logger.Printf("Setting videoConversionRole for user %s to %s", username, videoConversionRole)
 		userToCreate.VideoConversionRole = net.ParseBooleanFormValue(w, r, videoConversionRole)
 	} else {
 		userToCreate.VideoConversionRole = logic.GetDefaultRoleValue("videoConversionRole")
+		logger.Printf("Setting default videoConversionRole for user %s to %t", username, userToCreate.VideoConversionRole)
+	}
+
+	maxBitRate := r.FormValue("maxBitRate")
+	if maxBitRate != "" {
+		maxBitRateInt, err := strconv.Atoi(maxBitRate)
+		if err != nil {
+			logger.Printf("Error parsing maxBitRate: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid maxBitRate", "")
+			return
+		}
+		userToCreate.MaxBitRate = maxBitRateInt
+	} else {
+		userToCreate.MaxBitRate = 0
 	}
 
 	musicFolderId := r.FormValue("musicFolderId")

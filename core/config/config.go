@@ -29,6 +29,7 @@ var AudioCacheMaxMB int
 var AudioCacheMaxDays int
 var AdminUsername string
 var AdminPassword string
+var AdminEmail string
 
 func LoadConfig() {
 
@@ -107,6 +108,7 @@ func LoadConfig() {
 
 	AdminUsername = os.Getenv("ADMIN_USERNAME")
 	AdminPassword = os.Getenv("ADMIN_PASSWORD")
+	AdminEmail = os.Getenv("ADMIN_EMAIL")
 }
 
 func IsLocalDevEnv() bool {

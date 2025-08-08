@@ -98,11 +98,11 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 		return "", 0, false
 	}
 
-	if p != "" && validateWithPassword(u, p, encryptedPassword, w, r) {
+	if p != "" && validateWithPassword(u, p, encryptedPassword) {
 		return u, userId, true
 	}
 
-	if t != "" && s != "" && validateWithTokenAndSalt(u, s, t, encryptedPassword, w, r) {
+	if t != "" && s != "" && validateWithTokenAndSalt(u, s, t, encryptedPassword) {
 		return u, userId, true
 	}
 
@@ -127,7 +127,7 @@ func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWrite
 }
 
 // validateWithPassword checks if the provided password matches the decrypted password from the database and returns true if valid.
-func validateWithPassword(username, password, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
+func validateWithPassword(username, password, encryptedPassword string) bool {
 	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
@@ -145,7 +145,7 @@ func validateWithPassword(username, password, encryptedPassword string, w http.R
 }
 
 // validateWithTokenAndSalt checks if the provided token matches the computed token from the decrypted password and salt and returns true if valid.
-func validateWithTokenAndSalt(username, salt, token, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
+func validateWithTokenAndSalt(username, salt, token, encryptedPassword string) bool {
 	ok, err := validateToken(username, salt, token, encryptedPassword)
 	if err != nil || !ok {
 		logger.Printf("Error validating token for user %s: %v", username, err)

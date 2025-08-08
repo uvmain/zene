@@ -1,6 +1,7 @@
 package database
 
 import (
+	"cmp"
 	"context"
 	"database/sql"
 	"fmt"
@@ -30,7 +31,8 @@ func createUsersTable(ctx context.Context) {
     comment_role BOOLEAN NOT NULL DEFAULT 0,
     podcast_role BOOLEAN NOT NULL DEFAULT 0,
     share_role BOOLEAN NOT NULL DEFAULT 0,
-    video_conversion_role BOOLEAN NOT NULL DEFAULT 0
+    video_conversion_role BOOLEAN NOT NULL DEFAULT 0,
+		max_bit_rate INTEGER NOT NULL DEFAULT 0
 	);`
 	createTable(ctx, schema)
 
@@ -46,7 +48,7 @@ func createUsersTable(ctx context.Context) {
 	schema = `CREATE VIEW users_with_folders AS
 		SELECT u.id AS user_id, u.username, u.email, u.password, u.scrobbling_enabled, u.ldap_authenticated, u.admin_role, u.settings_role,
 			u.stream_role, u.jukebox_role, u.download_role, u.upload_role, u.playlist_role, u.cover_art_role,
-			u.comment_role, u.podcast_role, u.share_role, u.video_conversion_role, GROUP_CONCAT(f.folder_id) AS music_folder_ids
+			u.comment_role, u.podcast_role, u.share_role, u.video_conversion_role, u.max_bit_rate, GROUP_CONCAT(f.folder_id) AS music_folder_ids
 		FROM users u
 		LEFT JOIN user_music_folders f
 		ON u.id = f.user_id
@@ -67,6 +69,7 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 
 	adminUsername := config.AdminUsername
 	adminPassword := config.AdminPassword
+	adminEmail := cmp.Or(config.AdminEmail, "admin@localhost")
 
 	if adminUsername == "" {
 		adminUsername = "admin"
@@ -103,6 +106,7 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 
 	user := types.User{
 		Username:            adminUsername,
+		Email:               adminEmail,
 		Password:            encryptedPassword,
 		AdminRole:           true,
 		ScrobblingEnabled:   true,
@@ -117,6 +121,7 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 		PodcastRole:         true,
 		ShareRole:           true,
 		VideoConversionRole: true,
+		MaxBitRate:          0,
 		Folders:             folderIds,
 	}
 
@@ -152,13 +157,32 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 
 	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate, &foldersString)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
 		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
 	}
-	row.Folders = logic.StringToIntSlice(foldersString)
+	if foldersString == "" {
+		row.Folders = []int{}
+	} else {
+		row.Folders = logic.StringToIntSlice(foldersString)
+	}
+	return row, nil
+}
+
+func GetUserWithoutFoldersByUsername(ctx context.Context, username string) (types.User, error) {
+	query := `SELECT * FROM users where username = ?;`
+	var row types.User
+
+	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
+		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate)
+	if err == sql.ErrNoRows {
+		return types.User{}, fmt.Errorf("user not found")
+	} else if err != nil {
+		return types.User{}, fmt.Errorf("selecting user from users: %v", err)
+	}
 	return row, nil
 }
 
@@ -169,7 +193,7 @@ func GetUserById(ctx context.Context, id int64) (types.User, error) {
 
 	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate, &foldersString)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {
@@ -193,7 +217,7 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 		var foldersString string
 		err := rows.Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 			&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-			&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
+			&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate, &foldersString)
 		if err != nil {
 			return []types.User{}, fmt.Errorf("scanning user row: %v", err)
 		}
@@ -211,8 +235,8 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 	query := `INSERT INTO users (username, password, email, scrobbling_enabled, ldap_authenticated, admin_role, settings_role,
     	stream_role, jukebox_role, download_role, upload_role, playlist_role, cover_art_role, comment_role,
-    	podcast_role, share_role, video_conversion_role)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    	podcast_role, share_role, video_conversion_role, max_bit_rate)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT(username) DO UPDATE SET
 			password = excluded.password,
 			email = excluded.email,
@@ -229,37 +253,42 @@ func UpsertUser(ctx context.Context, user types.User) (int64, error) {
 			comment_role = excluded.comment_role,
 			podcast_role = excluded.podcast_role,
 			share_role = excluded.share_role,
-			video_conversion_role = excluded.video_conversion_role`
+			video_conversion_role = excluded.video_conversion_role,
+			max_bit_rate = excluded.max_bit_rate`
 
-	result, err := DB.ExecContext(ctx, query, user.Username, user.Password, user.Email, user.ScrobblingEnabled,
+	_, err := DB.ExecContext(ctx, query, user.Username, user.Password, user.Email, user.ScrobblingEnabled,
 		user.LdapAuthenticated, user.AdminRole, user.SettingsRole, user.StreamRole, user.JukeboxRole,
 		user.DownloadRole, user.UploadRole, user.PlaylistRole, user.CoverArtRole,
-		user.CommentRole, user.PodcastRole, user.ShareRole, user.VideoConversionRole)
+		user.CommentRole, user.PodcastRole, user.ShareRole, user.VideoConversionRole, user.MaxBitRate)
 	if err != nil {
 		return 0, fmt.Errorf("upserting user in users table: %v", err)
 	}
 
-	userId, err := result.LastInsertId()
+	upsertedUser, err := GetUserWithoutFoldersByUsername(ctx, user.Username)
 	if err != nil {
-		return 0, fmt.Errorf("getting last insert ID: %v", err)
+		return 0, fmt.Errorf("getting upsertedUser: %v", err)
 	}
+
+	query = `DELETE FROM user_music_folders WHERE user_id = ?`
+	DB.ExecContext(ctx, query, upsertedUser.Id)
 
 	for _, folderId := range user.Folders {
 		query = `INSERT INTO user_music_folders (user_id, folder_id) VALUES (?, ?) ON CONFLICT(user_id, folder_id) DO NOTHING`
-		_, err = DB.ExecContext(ctx, query, userId, folderId)
+		_, err = DB.ExecContext(ctx, query, upsertedUser.Id, folderId)
 		if err != nil {
-			return 0, fmt.Errorf("inserting user music folder: %v", err)
+			logger.Printf("Error inserting user music folder %d for user %d: %v", folderId, upsertedUser.Id, err)
+			return 0, fmt.Errorf("inserting user music folder %d: %v", folderId, err)
 		}
 	}
 
-	adminUser, err := logic.GetUsernameFromContext(ctx)
+	adminUser, err := GetUserByContext(ctx)
 	if err != nil {
-		logger.Printf("user %s created, failed to get name of the creating admin user: %v", user.Username, err)
+		logger.Printf("user %s upserted, failed to get name of the creating admin user: %v", user.Username, err)
 	} else {
-		logger.Printf("user %s created by admin user %s", user.Username, adminUser)
+		logger.Printf("user %s upserted by admin user %s", user.Username, adminUser.Username)
 	}
 
-	return userId, nil
+	return upsertedUser.Id, nil
 }
 
 func DeleteUserByUsername(ctx context.Context, username string) error {

@@ -28,7 +28,7 @@ func ValidateApiKey(ctx context.Context, apiKey string) (types.User, error) {
 
 	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
-		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &foldersString)
+		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate, &foldersString)
 	if err == sql.ErrNoRows {
 		return types.User{}, fmt.Errorf("user not found")
 	} else if err != nil {

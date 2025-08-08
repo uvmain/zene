@@ -70,6 +70,7 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 			PodcastRole:         user.PodcastRole,
 			ShareRole:           user.ShareRole,
 			VideoConversionRole: user.VideoConversionRole,
+			MaxBitRate:          user.MaxBitRate,
 			Folders:             user.Folders,
 		})
 	}

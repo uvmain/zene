@@ -69,6 +69,7 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.User.JukeboxRole = user.JukeboxRole
 	response.SubsonicResponse.User.ShareRole = user.ShareRole
 	response.SubsonicResponse.User.VideoConversionRole = user.VideoConversionRole
+	response.SubsonicResponse.User.MaxBitRate = user.MaxBitRate
 	response.SubsonicResponse.User.Folders = user.Folders
 
 	format := r.FormValue("f")
