@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cmp"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -33,21 +34,15 @@ func LoadConfig() {
 
 	godotenv.Load(".env")
 
-	musicDirEnv := os.Getenv("MUSIC_DIRS")
-	if musicDirEnv == "" {
-		MusicDirs = []string{"./music"}
-	} else {
-		MusicDirs = strings.Split(musicDirEnv, ",")
-		for i, dir := range MusicDirs {
-			MusicDirs[i], _ = filepath.Abs(dir)
-		}
+	musicDirs := cmp.Or(os.Getenv("MUSIC_DIRS"), "./music")
+
+	MusicDirs = strings.Split(musicDirs, ",")
+	for i, dir := range MusicDirs {
+		MusicDirs[i], _ = filepath.Abs(dir)
 	}
 	logger.Printf("Using music directories: %v", MusicDirs)
 
-	dataPath := os.Getenv("DATA_PATH")
-	if dataPath == "" {
-		dataPath = "./data"
-	}
+	dataPath := cmp.Or(os.Getenv("DATA_PATH"), "./data")
 
 	DatabaseDirectory = filepath.Join(dataPath, "database")
 	AudioCacheFolder = filepath.Join(dataPath, "audio-cache")
@@ -103,16 +98,10 @@ func LoadConfig() {
 		FfprobePath, _ = filepath.Abs(ffprobePath)
 	}
 
-	audioFileTypesEnv := os.Getenv("AUDIO_FILE_TYPES")
-	if audioFileTypesEnv == "" {
-		AudioFileTypes = []string{
-			".aac", ".alac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav", ".wma",
-		}
-	} else {
-		AudioFileTypes = strings.Split(audioFileTypesEnv, ",")
-		for i, ext := range AudioFileTypes {
-			AudioFileTypes[i] = strings.TrimSpace(ext)
-		}
+	audioFileTypesEnv := cmp.Or(os.Getenv("AUDIO_FILE_TYPES"), ".aac,.alac,.flac,.m4a,.mp3,.ogg,.opus,.wav,.wma")
+	AudioFileTypes = strings.Split(audioFileTypesEnv, ",")
+	for i, ext := range AudioFileTypes {
+		AudioFileTypes[i] = strings.TrimSpace(ext)
 	}
 	logger.Printf("Audio file types: %v", AudioFileTypes)
 
