@@ -15,6 +15,7 @@ import (
 	"zene/core/ffprobe"
 	"zene/core/io"
 	"zene/core/logger"
+	"zene/core/scanner"
 	"zene/core/scheduler"
 )
 
@@ -41,9 +42,9 @@ func main() {
 
 	scheduler.Initialise(ctx)
 
-	// go func() {
-	// 	scanner.RunScan(ctx)
-	// }()
+	go func() {
+		scanner.RunScan(ctx)
+	}()
 
 	server := StartServer()
 	go func() {
