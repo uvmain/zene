@@ -19,9 +19,10 @@ func computeToken(password, salt string) string {
 }
 
 // validateToken checks if the provided token matches the computed token from the password and salt.
-func validateToken(salt string, token string, encryptedPassword string) (bool, error) {
+func validateToken(username, salt string, token string, encryptedPassword string) (bool, error) {
 	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
 	if err != nil {
+		logger.Printf("Error validating token for user %s: %v", username, err)
 		return false, err
 	}
 	expectedToken := computeToken(decryptedPassword, salt)
@@ -48,30 +49,30 @@ func validateToken(salt string, token string, encryptedPassword string) (bool, e
 func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) {
 	ctx := r.Context()
 
-	username := r.FormValue("u")
-	password := r.FormValue("p")
-	token := r.FormValue("t")
-	salt := r.FormValue("s")
+	u := r.FormValue("u") // username
+	p := r.FormValue("p") // plaintext password, or hex encrypted password prefixed with "enc:"
+	t := r.FormValue("t") // token = sha256(password + salt)
+	s := r.FormValue("s") // salt, used with token for authentication
 	apiKey := r.FormValue("apiKey")
-	version := r.FormValue("v")
-	clientName := r.FormValue("c")
+	v := r.FormValue("v") // protocol version, required for all requests
+	c := r.FormValue("c") // client name, required for all requests
 
-	if clientName == "" {
+	if c == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'c' is missing", "")
 		return "", 0, false
 	}
 
-	if version == "" {
+	if v == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'v' is missing", "")
 		return "", 0, false
 	}
 
-	if apiKey != "" && (username != "" || password != "" || token != "" || salt != "") {
+	if apiKey != "" && (u != "" || p != "" || t != "" || s != "") {
 		net.WriteSubsonicError(w, r, types.ErrorTooManyAuthMechanisms, "Too many authentication mechanisms specified", "")
 		return "", 0, false
 	}
 
-	if password != "" && (token != "" || salt != "") {
+	if p != "" && (t != "" || s != "") {
 		net.WriteSubsonicError(w, r, types.ErrorTooManyAuthMechanisms, "Too many authentication mechanisms specified", "")
 		return "", 0, false
 	}
@@ -80,29 +81,29 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 		return validateWithApiKey(ctx, apiKey, w, r)
 	}
 
-	if username == "" {
+	if u == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'u' is missing", "")
 		return "", 0, false
 	}
 
-	if password == "" && (token == "" || salt == "") {
+	if p == "" && (t == "" || s == "") {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required", "")
 		return "", 0, false
 	}
 
-	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, username)
+	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, u)
 	if err != nil {
-		logger.Printf("Error getting encrypted password for user %s: %v", username, err)
+		logger.Printf("Error getting encrypted password for user %s: %v", u, err)
 		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 		return "", 0, false
 	}
 
-	if password != "" && validateWithPassword(username, password, encryptedPassword, w, r) {
-		return username, userId, true
+	if p != "" && validateWithPassword(u, p, encryptedPassword, w, r) {
+		return u, userId, true
 	}
 
-	if token != "" && salt != "" && validateWithTokenAndSalt(username, salt, token, encryptedPassword, w, r) {
-		return username, userId, true
+	if t != "" && s != "" && validateWithTokenAndSalt(u, s, t, encryptedPassword, w, r) {
+		return u, userId, true
 	}
 
 	net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
@@ -130,7 +131,6 @@ func validateWithPassword(username, password, encryptedPassword string, w http.R
 	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
 	if err != nil {
 		logger.Printf("Error decrypting password for user %s: %v", username, err)
-		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 		return false
 	}
 	// if password starts with "enc:" it is hex encrypted, we need to decrypt it first
@@ -138,7 +138,6 @@ func validateWithPassword(username, password, encryptedPassword string, w http.R
 		password, err = encryption.HexDecrypt(password[4:])
 		if err != nil {
 			logger.Printf("Error decrypting hex encoded password for user %s: %v", username, err)
-			net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 			return false
 		}
 	}
@@ -147,10 +146,9 @@ func validateWithPassword(username, password, encryptedPassword string, w http.R
 
 // validateWithTokenAndSalt checks if the provided token matches the computed token from the decrypted password and salt and returns true if valid.
 func validateWithTokenAndSalt(username, salt, token, encryptedPassword string, w http.ResponseWriter, r *http.Request) bool {
-	ok, err := validateToken(salt, token, encryptedPassword)
+	ok, err := validateToken(username, salt, token, encryptedPassword)
 	if err != nil || !ok {
 		logger.Printf("Error validating token for user %s: %v", username, err)
-		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
 		return false
 	}
 	return true
@@ -163,35 +161,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		userName, userId, ok := ValidateAuth(r, w)
 		if !ok {
 			// ValidateAuth already handled the error response.
-			return
-		}
-		ctx := context.WithValue(r.Context(), "username", userName)
-		ctx = context.WithValue(r.Context(), "userId", userId)
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-// AdminAuthMiddleware is an HTTP middleware that authenticates requests using ValidateAuth.
-// If authentication fails, it writes a 401 response and does not call the next handler.
-// It also ensures that the user is an admin by checking the "admin_role" field in the users table.
-// If the user is not an admin, it writes a 403 Forbidden response.
-func AdminAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userName, userId, ok := ValidateAuth(r, w)
-		if !ok {
-			// ValidateAuth already handled the error response.
-			return
-		}
-		user, err := database.GetUserById(r.Context(), userId)
-		if err != nil {
-			logger.Printf("Error getting user by ID %d: %v", userId, err)
-			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Internal server error", "")
-			return
-		}
-		if !user.AdminRole {
-			logger.Printf("User %s (ID: %d) is not an admin", userName, userId)
-			net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "User is not authorized for this operation", "")
 			return
 		}
 		ctx := context.WithValue(r.Context(), "username", userName)

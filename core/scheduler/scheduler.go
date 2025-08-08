@@ -11,11 +11,19 @@ func Initialise(ctx context.Context) {
 }
 
 func startAudioCacheCleanupRoutine(ctx context.Context) {
-	logger.Println("Starting audio cache cleanup routine")
+	logger.Println("Scheduler: starting audio cache cleanup routine")
 	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
 		for {
-			cleanupAudioCache(ctx)
-			time.Sleep(1 * time.Hour)
+			select {
+			case <-ctx.Done():
+				logger.Println("Scheduler: stopping audio cache cleanup routine")
+				return
+			case <-ticker.C:
+				cleanupAudioCache(ctx)
+			}
 		}
 	}()
 }
