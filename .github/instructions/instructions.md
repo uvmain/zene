@@ -3,6 +3,7 @@
 - This project uses Golang for the backend, with the ncruces database/sql driver for SQLite.
 - The backend is main.go and router.go in the root directory, and uses modularised services in the /core directory.
 - The backend uses stdlib net/http for HTTP handling and routing.
+- The backend presents http handlers compatible with the OpenSubsonic api spec: https://opensubsonic.netlify.app/docs/api-reference/
 ## Frontend
 - The frontend is built with Vue 3, using the Composition API and TypeScript.
 - The frontend uses @antfu/eslint-config for linting - this means no semi colons, and single quotes for strings.

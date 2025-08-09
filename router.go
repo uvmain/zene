@@ -24,7 +24,7 @@ var dist embed.FS
 var distSubFS fs.FS
 var err error
 
-func StartServer() {
+func StartServer() *http.Server {
 	router := http.NewServeMux()
 
 	distSubFS, err = fs.Sub(dist, "frontend/dist")
@@ -34,13 +34,8 @@ func StartServer() {
 
 	router.HandleFunc("/", HandleFrontend)
 
-	// auth
-	router.HandleFunc("POST /api/login", auth.LoginHandler)
-	router.HandleFunc("GET /api/logout", auth.LogoutHandler)
-	router.HandleFunc("GET /api/check-session", auth.CheckSessionHandler)
-
 	// authenticated routes
-	router.Handle("GET /api/artists", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))                              // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
+	router.Handle("GET /api/artists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
 	router.Handle("GET /api/artists/{musicBrainzArtistId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))              // returns types.ArtistResponse
 	router.Handle("GET /api/artists/{musicBrainzArtistId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistTracks))) // returns []types.MetadataWithPlaycounts; query params: recent=true, random=false, limit=10, offset=10
 	router.Handle("GET /api/artists/{musicBrainzArtistId}/art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt)))       // returns image/jpeg blob
@@ -58,18 +53,32 @@ func StartServer() {
 	router.Handle("GET /api/genres/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracksByGenre)))                       // query params: genres=genre1,genre2 condition=and|or
 	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
 	router.Handle("GET /api/user", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))                                  // return types.User - current user
-	router.Handle("GET /api/temporary_token", auth.AuthMiddleware(http.HandlerFunc(auth.GetTemporaryTokenHandler)))                       // returns an expiresAt string; query params: duration=30
-	router.Handle("POST /api/temporary_token", auth.AuthMiddleware(http.HandlerFunc(auth.ExtendTemporaryTokenDurationHandler)))           // returns an expiresAt string; query params: duration=30
 	router.Handle("GET /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                             // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
 	router.Handle("POST /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpsertPlaycount)))                          // return handlers.StandardResponse; form body: user_id=1, musicbrainz_track_id=musicBrainzTrackId
 
 	// admin routes
-	router.Handle("POST /api/scan", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                   // triggers a scan of the music library if one is not already running
-	router.Handle("GET /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))                // return []types.User - all users
-	router.Handle("POST /api/users", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))               // return userId int64
-	router.Handle("GET /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))       // return types.User - user by ID
-	router.Handle("PATCH /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))   // return userId int64
-	router.Handle("DELETE /api/users/{userId}", auth.AdminAuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById))) // return { Status: string }
+	router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                   // triggers a scan of the music library if one is not already running
+	router.Handle("GET /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))                // return []types.User - all users
+	router.Handle("POST /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))               // return userId int64
+	router.Handle("GET /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))       // return types.User - user by ID
+	router.Handle("PATCH /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))   // return userId int64
+	router.Handle("DELETE /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById))) // return { Status: string }
+
+	// OpenSubsonic routes
+	/// System
+	router.Handle("/rest/ping.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePing)))                   // returns types.SubsonicResponse
+	router.Handle("/rest/getLicense.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense)))          // returns types.SubsonicLicenseResponse
+	router.Handle("/rest/getOpenSubsonicExtensions.view", http.HandlerFunc(handlers.HandleOpenSubsonicExtensions)) // returns types.SubsonicOpenSubsonicExtensionsResponse
+	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))         // returns types.SubsonicTokenInfoResponse
+	/// Browsing
+	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
+	// User Management
+	router.Handle("/rest/getUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))               // returns types.SubsonicUserResponse
+	router.Handle("/rest/getUsers.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUsers)))             // returns types.SubsonicUsersResponse
+	router.Handle("/rest/createUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateUser)))         // returns types.SubsonicResponse
+	router.Handle("/rest/updateUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateUser)))         // returns types.SubsonicResponse
+	router.Handle("/rest/deleteUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUser)))         // returns types.SubsonicResponse
+	router.Handle("/rest/changePassword.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleChangePassword))) // returns types.SubsonicResponse
 
 	handler := cors.AllowAll().Handler(router)
 
@@ -82,7 +91,11 @@ func StartServer() {
 		logger.Println("Application running at :8080")
 	}
 
-	http.ListenAndServe(serverAddress, handler)
+	server := &http.Server{
+		Addr:    serverAddress,
+		Handler: handler,
+	}
+	return server
 }
 
 func HandleFrontend(w http.ResponseWriter, r *http.Request) {

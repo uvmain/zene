@@ -81,6 +81,13 @@ func GetFiles(ctx context.Context, directoryPath string, extensions []string) ([
 			logger.Printf("Error scanning file path %s: %v", path, err)
 			return err
 		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+
 		if d.IsDir() {
 			return nil
 		}

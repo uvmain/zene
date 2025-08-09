@@ -14,6 +14,7 @@ import (
 	"zene/core/ffmpeg"
 	"zene/core/io"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/musicbrainz"
 )
 
@@ -100,7 +101,7 @@ func getArtFromBytes(ctx context.Context, musicBrainzAlbumId string, artBytes []
 	go resizeBytesAndSaveAsJPG(artBytes, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 128)
 	go resizeBytesAndSaveAsJPG(artBytes, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 256)
 	go resizeBytesAndSaveAsJPG(artBytes, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
-	err := database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	err := database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		logger.Printf("Database: Error inserting album art row: %v", err)
 	}
@@ -111,7 +112,7 @@ func getArtFromFolder(ctx context.Context, musicBrainzAlbumId string, imagePath 
 	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 128)
 	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 256)
 	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
-	err := database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	err := database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		logger.Printf("Database: Error inserting album art row: %v", err)
 	}
@@ -139,7 +140,7 @@ func getAlbumArtFromInternet(ctx context.Context, musicBrainzAlbumId string, alb
 	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 256)
 	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
 
-	err = database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	err = database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		logger.Printf("Error inserting album art row: %v", err)
 	}

@@ -7,11 +7,11 @@
     "./frontend"
   ],
   "scripts": {
-    "setup": "go mod download",
-    "clean": "rimraf -v -I zene zene.exe frontend/dist",
-    "clean:build": "rimraf -v -I zene zene.exe frontend/dist",
-    "clean:full": "rimraf -v -I zene zene.exe data frontend/dist frontend/node_modules node_modules",
-    "dev:backend": "go run .",
+    "setup": "go install github.com/air-verse/air@latest && go mod download",
+    "clean:build": "rimraf -v -I zene zene.exe frontend/dist tmp",
+    "clean:modules": "rimraf -v -I frontend/node_modules node_modules",
+    "clean": "npm run clean:build && npm run clean:modules",
+    "dev:backend": "air",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
     "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && cpy zene . --rename=zene.exe",

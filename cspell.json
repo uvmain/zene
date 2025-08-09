@@ -6,7 +6,10 @@
         "frontend/node_modules",
         "frontend/dist",
         "frontend/auto-imports.d.ts",
-        "frontend/components.d.ts"
+        "frontend/components.d.ts",
+        "go.sum",
+        "go.mod",
+        ".air.toml"
     ],
     "dictionaryDefinitions": [],
     "dictionaries": [],
@@ -36,7 +39,9 @@
         "Lrclib",
         "mainsnak",
         "musicbrainz",
+        "ncruces",
         "nfnt",
+        "Scrobbling",
         "Snak",
         "sqlitex",
         "SSG",
@@ -47,6 +52,7 @@
         "Upserting",
         "uvmain",
         "vueuse",
+        "wal",
         "zene"
     ],
     "ignoreWords": [],

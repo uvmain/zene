@@ -71,6 +71,7 @@ type MetadataWithPlaycounts struct {
 	MusicBrainzAlbumID  string `json:"musicbrainz_album_id"`
 	MusicBrainzTrackID  string `json:"musicbrainz_track_id"`
 	Label               string `json:"label"`
+	MusicFolderId       int64  `json:"music_folder_id"`
 	UserPlayCount       int64  `json:"user_play_count"`
 	GlobalPlayCount     int64  `json:"global_play_count"`
 }
@@ -96,14 +97,6 @@ type File struct {
 	FileName     string `json:"file_name"`
 	FilePathAbs  string `json:"file_path_absolute"`
 	DateModified string `json:"date_modified"`
-}
-
-type User struct {
-	Id           int64  `json:"id"`
-	Username     string `json:"username"`
-	PasswordHash string `json:"-"`
-	CreatedAt    string `json:"created_at"`
-	IsAdmin      bool   `json:"is_admin"`
 }
 
 type Playcount struct {
