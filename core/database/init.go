@@ -27,6 +27,7 @@ func Initialise(ctx context.Context) {
 	CreateAdminUserIfRequired(ctx)
 	createMetadataTable(ctx)
 	createPlayCountsTable(ctx)
+	createChatsTable(ctx)
 	createLyricsTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
