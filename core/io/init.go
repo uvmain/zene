@@ -25,6 +25,12 @@ func CreateDirs() {
 		CreateDir(config.TempDirectory)
 	}
 
+	if FileExists(config.UserAvatarFolder) {
+		logger.Println("User avatar folder already exists")
+	} else {
+		CreateDir(config.UserAvatarFolder)
+	}
+
 	if FileExists(config.ArtworkFolder) {
 		logger.Println("Artwork folder already exists")
 	} else {

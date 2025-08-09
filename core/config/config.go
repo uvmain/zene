@@ -30,6 +30,7 @@ var AudioCacheMaxDays int
 var AdminUsername string
 var AdminPassword string
 var AdminEmail string
+var UserAvatarFolder string
 
 func LoadConfig() {
 
@@ -49,6 +50,7 @@ func LoadConfig() {
 	AudioCacheFolder = filepath.Join(dataPath, "audio-cache")
 	LibraryDirectory = filepath.Join(dataPath, "library")
 	TempDirectory = filepath.Join(dataPath, "temp")
+	UserAvatarFolder = filepath.Join(dataPath, "avatars")
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")

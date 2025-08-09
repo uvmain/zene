@@ -28,7 +28,11 @@ func HandleTokenInfo(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
 	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
 
-	user, _ := database.GetUserByContext(r.Context())
+	user, err := database.GetUserByContext(r.Context())
+	if err != nil {
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error getting user from context", "")
+		return
+	}
 
 	response.SubsonicResponse.TokenInfo = &types.TokenInfo{
 		Username: user.Username,

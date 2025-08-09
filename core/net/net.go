@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"net/http"
 	"os"
@@ -129,4 +133,18 @@ func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, 
 		}
 	}
 	return intSlice, stringSlice, nil
+}
+
+func GetImageFromRequest(r *http.Request, key string) (image.Image, error) {
+	file, _, err := r.FormFile(key)
+	if err != nil {
+		return nil, fmt.Errorf("error getting image from request: %w", err)
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding image: %w", err)
+	}
+	return img, nil
 }

@@ -32,8 +32,7 @@ func StartServer() *http.Server {
 		log.Fatal("Failed to create sub filesystem:", err)
 	}
 
-	router.HandleFunc("/", HandleFrontend)
-
+	router.HandleFunc("/", handleFrontend)
 	// authenticated routes
 	router.Handle("GET /api/artists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
 	router.Handle("GET /api/artists/{musicBrainzArtistId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))              // returns types.ArtistResponse
@@ -72,7 +71,12 @@ func StartServer() *http.Server {
 	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))         // returns types.SubsonicTokenInfoResponse
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
-	// User Management
+	// Media retrieval
+	router.Handle("/rest/getAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAvatar)))       // returns Image blob or types.SubsonicResponse error
+	router.Handle("/rest/createAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	router.Handle("/rest/updateAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	router.Handle("/rest/deleteAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	// User management
 	router.Handle("/rest/getUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))               // returns types.SubsonicUserResponse
 	router.Handle("/rest/getUsers.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUsers)))             // returns types.SubsonicUsersResponse
 	router.Handle("/rest/createUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateUser)))         // returns types.SubsonicResponse
@@ -101,7 +105,7 @@ func StartServer() *http.Server {
 	return server
 }
 
-func HandleFrontend(w http.ResponseWriter, r *http.Request) {
+func handleFrontend(w http.ResponseWriter, r *http.Request) {
 	bootTime := logic.GetBootTime().Truncate(time.Second).UTC()
 
 	cleanPath := path.Clean(r.URL.Path)
