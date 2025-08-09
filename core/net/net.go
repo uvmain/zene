@@ -136,6 +136,10 @@ func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, 
 }
 
 func GetImageFromRequest(r *http.Request, key string) (image.Image, error) {
+	if err := r.ParseMultipartForm(10); err != nil {
+		return nil, fmt.Errorf("error parsing multipart form: %w", err)
+	}
+
 	file, _, err := r.FormFile(key)
 	if err != nil {
 		return nil, fmt.Errorf("error getting image from request: %w", err)
