@@ -77,6 +77,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getUsers.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUsers)))     // returns types.SubsonicUsersResponse
 	router.Handle("/rest/createUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateUser))) // returns types.SubsonicResponse
 	router.Handle("/rest/updateUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateUser))) // returns types.SubsonicResponse
+	router.Handle("/rest/deleteUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUser))) // returns types.SubsonicResponse
 
 	handler := cors.AllowAll().Handler(router)
 
