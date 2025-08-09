@@ -79,6 +79,9 @@ func StartServer() *http.Server {
 	router.Handle("/rest/updateUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateUser)))         // returns types.SubsonicResponse
 	router.Handle("/rest/deleteUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUser)))         // returns types.SubsonicResponse
 	router.Handle("/rest/changePassword.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleChangePassword))) // returns types.SubsonicResponse
+	// Media library scanning
+	router.Handle("/rest/getScanStatus.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus))) // returns types.SubsonicScanStatusResponse
+	router.Handle("/rest/startScan.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStartScan)))         // returns types.SubsonicScanStatusResponse
 
 	handler := cors.AllowAll().Handler(router)
 
