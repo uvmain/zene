@@ -1,3 +1,4 @@
 - [ ] add proper support for multiple music folders
 - [ ] use User.MaxBitRate to limit bitrate
 - [ ] define an enum for allowed maxBitRate values to use in handlers
+- [ ] use goose (or an alternative) to manage future database migrations
