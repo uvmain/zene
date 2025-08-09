@@ -180,7 +180,6 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		userToCreate.VideoConversionRole = net.ParseBooleanFormValue(w, r, videoConversionRole)
 	} else {
 		userToCreate.VideoConversionRole = logic.GetDefaultRoleValue("videoConversionRole")
-		logger.Printf("Setting default videoConversionRole for user %s to %t", username, userToCreate.VideoConversionRole)
 	}
 
 	maxBitRate := r.FormValue("maxBitRate")
@@ -238,7 +237,7 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Printf("User %s created with ID %d", username, userId)
+	logger.Printf("User %s created with ID %d by %s", username, userId, ctx.Value("username"))
 
 	response := types.GetPopulatedSubsonicResponse(false)
 
