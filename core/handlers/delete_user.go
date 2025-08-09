@@ -23,7 +23,7 @@ func HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	requestUser, err := database.GetUserByContext(ctx)
 	if err != nil {
 		logger.Printf("Error getting user by context: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to delete users", "")
 		return
 	}
 

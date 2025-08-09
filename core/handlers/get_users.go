@@ -23,13 +23,13 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 	requestUser, err := database.GetUserByContext(ctx)
 	if err != nil {
 		logger.Printf("Error getting user by context: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get users", "")
 		return
 	}
 
 	if requestUser.AdminRole == false {
 		logger.Printf("User %s attempted to create a user without admin role", requestUser.Username)
-		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to create users", "")
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get users", "")
 		return
 	}
 
