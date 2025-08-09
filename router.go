@@ -78,6 +78,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/deleteAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
 	// Chat
 	router.Handle("/rest/getChatMessages.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages))) // returns types.SubsonicChatMessagesResponse
+	router.Handle("/rest/addChatMessage.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleAddChatMessage)))   // returns types.SubsonicResponse
 	// User management
 	router.Handle("/rest/getUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))               // returns types.SubsonicUserResponse
 	router.Handle("/rest/getUsers.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUsers)))             // returns types.SubsonicUsersResponse
