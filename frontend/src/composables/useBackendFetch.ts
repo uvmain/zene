@@ -13,6 +13,12 @@ export function useBackendFetch() {
     return response
   }
 
+  const openSubsonicFetchRequest = async (path: string, options = {}): Promise<Response> => {
+    const url = `/rest/${path}`
+    const response = await fetch(url, options)
+    return response
+  }
+
   const getAlbum = async (musicbrainz_album_id: string): Promise<AlbumMetadata> => {
     const response = await backendFetchRequest(`albums/${musicbrainz_album_id}`)
     if (!response.ok) {
@@ -104,6 +110,7 @@ export function useBackendFetch() {
 
   return {
     backendFetchRequest,
+    openSubsonicFetchRequest,
     getAlbum,
     getAlbumTracks,
     getArtistTracks,

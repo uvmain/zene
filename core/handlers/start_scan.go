@@ -5,7 +5,9 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"zene/core/logger"
 	"zene/core/net"
+	"zene/core/scanner"
 	"zene/core/types"
 )
 
@@ -13,6 +15,13 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
+		return
+	}
+
+	scanResult := scanner.RunScan(r.Context())
+	if scanResult.Success != true {
+		logger.Printf("Error starting scan: %v", scanResult.Status)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to start scan", "")
 		return
 	}
 
@@ -28,7 +37,7 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
 
 	response.SubsonicResponse.ScanStatus = &types.ScanStatus{
-		Scanning:    false,
+		Scanning:    scanResult.Success,
 		Count:       0,
 		FolderCount: 0,
 		LastScan:    "",

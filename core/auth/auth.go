@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"crypto/sha256"
+	"crypto/md5"
 	"encoding/hex"
 	"net/http"
 	"zene/core/database"
@@ -12,21 +12,14 @@ import (
 	"zene/core/types"
 )
 
-// computeToken generates a SHA-256 token from a password and salt.
-func computeToken(password, salt string) string {
-	hash := sha256.Sum256([]byte(password + salt))
-	return hex.EncodeToString(hash[:])
+func generateExpectedToken(password, salt string) string {
+	sum := md5.Sum([]byte(password + salt))
+	return hex.EncodeToString(sum[:])
 }
 
-// validateToken checks if the provided token matches the computed token from the password and salt.
-func validateToken(username, salt string, token string, encryptedPassword string) (bool, error) {
-	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
-	if err != nil {
-		logger.Printf("Error validating token for user %s: %v", username, err)
-		return false, err
-	}
-	expectedToken := computeToken(decryptedPassword, salt)
-	return token == expectedToken, nil
+func validateToken(salt string, token string, decryptedPassword string) bool {
+	expected := generateExpectedToken(decryptedPassword, salt)
+	return token == expected
 }
 
 // ValidateAuth authenticates a user by either plaintext password or token and salt.
@@ -102,7 +95,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 		return u, userId, true
 	}
 
-	if t != "" && s != "" && validateWithTokenAndSalt(u, s, t, encryptedPassword) {
+	if t != "" && s != "" && validateWithTokenAndSalt(s, t, encryptedPassword) {
 		return u, userId, true
 	}
 
@@ -145,13 +138,14 @@ func validateWithPassword(username, password, encryptedPassword string) bool {
 }
 
 // validateWithTokenAndSalt checks if the provided token matches the computed token from the decrypted password and salt and returns true if valid.
-func validateWithTokenAndSalt(username, salt, token, encryptedPassword string) bool {
-	ok, err := validateToken(username, salt, token, encryptedPassword)
-	if err != nil || !ok {
-		logger.Printf("Error validating token for user %s: %v", username, err)
+func validateWithTokenAndSalt(salt, token, encryptedPassword string) bool {
+	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
+	if err != nil {
+		logger.Printf("Error decrypting password: %v", err)
 		return false
 	}
-	return true
+	ok := validateToken(salt, token, decryptedPassword)
+	return ok
 }
 
 // AuthMiddleware is an HTTP middleware that authenticates requests using ValidateAuth.

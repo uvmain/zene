@@ -54,14 +54,12 @@ func StartServer() *http.Server {
 	router.Handle("GET /api/user", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))                                  // return types.User - current user
 	router.Handle("GET /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                             // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
 	router.Handle("POST /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpsertPlaycount)))                          // return handlers.StandardResponse; form body: user_id=1, musicbrainz_track_id=musicBrainzTrackId
-
-	// admin routes
-	router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                   // triggers a scan of the music library if one is not already running
-	router.Handle("GET /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))                // return []types.User - all users
-	router.Handle("POST /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))               // return userId int64
-	router.Handle("GET /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))       // return types.User - user by ID
-	router.Handle("PATCH /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))   // return userId int64
-	router.Handle("DELETE /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById))) // return { Status: string }
+	router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                                       // triggers a scan of the music library if one is not already running
+	router.Handle("GET /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))                                    // return []types.User - all users
+	router.Handle("POST /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))                                   // return userId int64
+	router.Handle("GET /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))                           // return types.User - user by ID
+	router.Handle("PATCH /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))                       // return userId int64
+	router.Handle("DELETE /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById)))                     // return { Status: string }
 
 	// OpenSubsonic routes
 	/// System

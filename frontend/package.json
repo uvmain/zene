@@ -15,6 +15,7 @@
   "dependencies": {
     "@vueuse/core": "^13.0.0",
     "dayjs": "^1.11.13",
+    "js-md5": "^0.8.3",
     "vue": "^3.4.29",
     "vue-router": "^4.5.1"
   },
