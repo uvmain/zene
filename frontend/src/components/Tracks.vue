@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '~/types'
 import { useIntersectionObserver } from '@vueuse/core'
+import { useAuth } from '~/composables/useAuth'
 import { useLogic } from '~/composables/useLogic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
@@ -18,6 +19,7 @@ const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQue
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
 const { getTrackUrl, getArtistUrl, getAlbumUrl, formatTime } = useLogic()
 const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
+const { userUsername, userSalt, userToken } = useAuth()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
@@ -50,6 +52,11 @@ function handlePlay(track: TrackMetadataWithImageUrl) {
   else {
     play(undefined, undefined, track)
   }
+}
+
+function getCoverArtUrl(albumId: string) {
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${albumId}`
+  return `/rest/getCoverArt.view${queryParamString}`
 }
 
 function onImageError(event: Event) {
@@ -181,7 +188,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 class="flex items-center"
                 @click.stop
               >
-                <img class="size-10 rounded-lg rounded-md object-cover" :src="track.image_url" alt="Album Cover" @error="onImageError" />
+                <img class="size-10 rounded-lg rounded-md object-cover" :src="getCoverArtUrl(track.musicbrainz_album_id)" alt="Album Cover" @error="onImageError" />
               </RouterLink>
               <RouterLink
                 class="text-white/80 no-underline hover:underline hover:underline-white"

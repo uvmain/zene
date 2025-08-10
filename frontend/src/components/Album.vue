@@ -17,8 +17,8 @@ const artistAndDate = computed(() => {
 })
 
 const coverArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&size=lg`
-  return `/api/albums/${props.album.musicbrainz_album_id}/art${queryParamString}` || '/default-square.png'
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${props.album.musicbrainz_album_id}`
+  return `/rest/getCoverArt.view${queryParamString}`
 })
 
 function onImageError(event: Event) {

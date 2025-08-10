@@ -9,8 +9,8 @@ const { userUsername, userSalt, userToken } = useAuth()
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&size=lg`
-  return currentlyPlayingTrack.value ? `/api/albums/${currentlyPlayingTrack.value.musicbrainz_album_id}/art${queryParamString}` : '/default-square.png'
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${currentlyPlayingTrack.value?.musicbrainz_album_id}`
+  return currentlyPlayingTrack.value ? `/rest/getCoverArt.view${queryParamString}` : '/default-square.png'
 })
 
 function onImageError(event: Event) {

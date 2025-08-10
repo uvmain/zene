@@ -3,10 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"zene/core/art"
 	"zene/core/database"
 	"zene/core/logger"
-	"zene/core/net"
 	"zene/core/types"
 )
 
@@ -74,25 +72,6 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
-}
-
-func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
-	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	imageBlob, lastModified, err := art.GetArtForArtist(r.Context(), musicBrainzArtistId)
-
-	if net.IfModifiedResponse(w, r, lastModified) {
-		return
-	}
-
-	if err != nil {
-		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
-		return
-	}
-
-	mimeType := http.DetectContentType(imageBlob)
-	w.Header().Set("Content-Type", mimeType)
-	w.WriteHeader(http.StatusOK)
-	w.Write(imageBlob)
 }
 
 func HandleGetArtistAlbums(w http.ResponseWriter, r *http.Request) {

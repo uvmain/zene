@@ -37,11 +37,9 @@ func StartServer() *http.Server {
 	router.Handle("/api/artists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
 	router.Handle("/api/artists/{musicBrainzArtistId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))              // returns types.ArtistResponse
 	router.Handle("/api/artists/{musicBrainzArtistId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistTracks))) // returns []types.MetadataWithPlaycounts; query params: recent=true, random=false, limit=10, offset=10
-	router.Handle("/api/artists/{musicBrainzArtistId}/art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt)))       // returns image/jpeg blob
 	router.Handle("/api/artists/{musicBrainzArtistId}/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistAlbums))) // returns []types.AlbumsResponse
 	router.Handle("/api/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbums)))                                     // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
 	router.Handle("/api/albums/{musicBrainzAlbumId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbum)))                 // returns types.AlbumsResponse
-	router.Handle("/api/albums/{musicBrainzAlbumId}/art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArt)))          // returns image/jpeg blob
 	router.Handle("/api/albums/{musicBrainzAlbumId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumTracks)))    // returns []types.MetadataWithPlaycounts
 	router.Handle("/api/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracks)))                                     // returns []types.Metadata; query params: recent=true, random=false, limit=10
 	router.Handle("/api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrack)))                 // returns types.MetadataWithPlaycounts
@@ -66,6 +64,8 @@ func StartServer() *http.Server {
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
 	// Media retrieval
+	router.Handle("/rest/getCoverArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))   // returns Image blob or types.SubsonicResponse error
+	router.Handle("/rest/getArtistArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt))) // returns Image blob or types.SubsonicResponse error
 	router.Handle("/rest/getAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAvatar)))       // returns Image blob or types.SubsonicResponse error
 	router.Handle("/rest/createAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
 	router.Handle("/rest/updateAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec

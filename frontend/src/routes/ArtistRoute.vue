@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '~/types'
 import dayjs from 'dayjs'
+import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()
 const { backendFetchRequest, getArtistAlbums, getArtistTracks } = useBackendFetch()
+const { userUsername, userSalt, userToken } = useAuth()
 
 const artist = ref<ArtistMetadata>()
 const tracks = ref<TrackMetadataWithImageUrl[]>()
 const albums = ref<AlbumMetadata[]>()
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
-const artistArtUrl = computed(() => `/api/artists/${musicbrainz_artist_id.value}/art?size=xl`)
+
+const artistArtUrl = computed(() => {
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${musicbrainz_artist_id.value}`
+  return `/rest/getArtistArt.view${queryParamString}`
+})
 
 async function getArtist() {
   const response = await backendFetchRequest(`artists/${musicbrainz_artist_id.value}`)

@@ -20,8 +20,8 @@ function onImageError(event: Event) {
 }
 
 const coverArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&size=lg`
-  return `/api/artists/${props.artist.musicbrainz_artist_id}/art${queryParamString}` || '/default-square.png'
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${props.artist.musicbrainz_artist_id}`
+  return `/rest/getArtistArt.view${queryParamString}`
 })
 
 function navigate() {
