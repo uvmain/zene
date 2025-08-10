@@ -51,9 +51,7 @@ async function login(username: string, password: string) {
 
   const jsonData = await response.json() as SubsonicUserResponse
   userLoginState.value = jsonData['subsonic-response'].status === 'ok'
-  if (userLoginState.value) {
-    userIsAdminState.value = jsonData['subsonic-response'].user.adminRole === 'true'
-  }
+  userIsAdminState.value = jsonData['subsonic-response'].user.adminRole === 'true'
   if (userLoginState.value) {
     router.push('/')
   }
