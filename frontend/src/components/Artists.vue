@@ -41,11 +41,14 @@ async function refreshArtists() {
 }
 
 async function getArtists() {
-  const params = new URLSearchParams()
-  params.set('recent', currentOrder.value === 'recentlyUpdated' ? 'true' : 'false')
-  params.set('random', currentOrder.value === 'random' ? `${randomArtistSeed.value}` : '')
-  params.set('limit', `${props.limit}`)
-  const response = await backendFetchRequest(`artists?${params.toString()}`)
+  const formData = new FormData()
+  formData.append('recent', currentOrder.value === 'recentlyUpdated' ? 'true' : 'false')
+  formData.append('random', randomArtistSeed.value.toString())
+  formData.append('limit', props.limit.toString())
+  const response = await backendFetchRequest('artists', {
+    method: 'POST',
+    body: formData,
+  })
   const json = await response.json() as ArtistMetadata[]
   artists.value = json
 }

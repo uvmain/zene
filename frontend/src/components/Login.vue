@@ -5,8 +5,8 @@ import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const router = useRouter()
-const { openSubsonicFetchRequest } = useBackendFetch()
-const { checkIfLoggedIn, userLoginState, userIsAdminState, userUsername, userSalt, userToken } = useAuth()
+const { checkIfLoggedIn, openSubsonicFetchRequest } = useBackendFetch()
+const { userLoginState, userIsAdminState, userUsername, userSalt, userToken } = useAuth()
 
 function generateSalt(length = 6) {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -46,7 +46,6 @@ async function login(username: string, password: string) {
 
   const response = await openSubsonicFetchRequest('getUser.view', {
     body: formData,
-    method: 'POST',
   })
 
   const jsonData = await response.json() as SubsonicUserResponse

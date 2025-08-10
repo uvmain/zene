@@ -11,8 +11,8 @@ import (
 )
 
 func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
-	searchParam := r.URL.Query().Get("search")
-	limitParam := r.URL.Query().Get("limit")
+	searchParam := r.FormValue("search")
+	limitParam := r.FormValue("limit")
 	rows, err := database.SelectDistinctGenres(r.Context(), limitParam, searchParam)
 	if err != nil {
 		logger.Printf("Error querying database in SelectDistinctGenres: %v", err)
@@ -29,10 +29,10 @@ func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetTracksByGenre(w http.ResponseWriter, r *http.Request) {
-	condition := r.URL.Query().Get("condition")
-	genres := r.URL.Query().Get("genres")
-	limit := r.URL.Query().Get("limit")
-	random := r.URL.Query().Get("random")
+	condition := r.FormValue("condition")
+	genres := r.FormValue("genres")
+	limit := r.FormValue("limit")
+	random := r.FormValue("random")
 
 	limitInt := 0
 	var err error

@@ -27,7 +27,6 @@ async function handleCreateUser() {
     return
   try {
     const response = await backendFetchRequest('users', {
-      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newUser.value),
     })
@@ -49,7 +48,6 @@ async function handleUpdateUser() {
     return
   try {
     const response = await backendFetchRequest(`users/${editingUser.value.id}`, {
-      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: editingUser.value.username,
@@ -74,9 +72,7 @@ async function handleDeleteUser() {
   if (!currentUser.value?.is_admin || !userToDelete.value)
     return
   try {
-    const response = await backendFetchRequest(`users/${userToDelete.value.id}`, {
-      method: 'DELETE',
-    })
+    const response = await backendFetchRequest(`users/${userToDelete.value.id}`)
     if (!response.ok) {
       const errData = await response.json()
       throw new Error(errData.message || `Failed to delete user: ${response.statusText}`)

@@ -11,12 +11,12 @@ import (
 )
 
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
-	searchParam := r.URL.Query().Get("search")
-	randomParam := r.URL.Query().Get("random")
-	recentParam := r.URL.Query().Get("recent")
-	chronoParam := r.URL.Query().Get("chronological")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
+	searchParam := r.FormValue("search")
+	randomParam := r.FormValue("random")
+	recentParam := r.FormValue("recent")
+	chronoParam := r.FormValue("chronological")
+	limitParam := r.FormValue("limit")
+	offsetParam := r.FormValue("offset")
 
 	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {
@@ -56,10 +56,10 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	randomParam := r.URL.Query().Get("random")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
-	recentParam := r.URL.Query().Get("recent")
+	randomParam := r.FormValue("random")
+	limitParam := r.FormValue("limit")
+	offsetParam := r.FormValue("offset")
+	recentParam := r.FormValue("recent")
 
 	rows, err := database.SelectTracksByArtistId(r.Context(), musicBrainzArtistId, randomParam, limitParam, offsetParam, recentParam)
 	if err != nil {
@@ -97,11 +97,11 @@ func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetArtistAlbums(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	randomParam := r.URL.Query().Get("random")
-	chronoParam := r.URL.Query().Get("chronological")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
-	recentParam := r.URL.Query().Get("recent")
+	randomParam := r.FormValue("random")
+	chronoParam := r.FormValue("chronological")
+	limitParam := r.FormValue("limit")
+	offsetParam := r.FormValue("offset")
+	recentParam := r.FormValue("recent")
 
 	rows, err := database.SelectAlbumsByArtistId(r.Context(), musicBrainzArtistId, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {

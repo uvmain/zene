@@ -6,7 +6,12 @@ const { backendFetchRequest } = useBackendFetch()
 const topGenres = ref<any[]>([])
 
 async function getGenres() {
-  const response = await backendFetchRequest('genres?limit=30')
+  const formData = new FormData()
+  formData.append('limit', '30')
+  const response = await backendFetchRequest('genres', {
+    method: 'POST',
+    body: formData,
+  })
   const json = await response.json()
   topGenres.value = json
 }

@@ -10,8 +10,8 @@ import (
 )
 
 func HandleGetPlaycounts(w http.ResponseWriter, r *http.Request) {
-	userIdParam := r.URL.Query().Get("user_id")
-	musicbrainzTrackId := r.URL.Query().Get("musicbrainz_track_id")
+	userIdParam := r.FormValue("user_id")
+	musicbrainzTrackId := r.FormValue("musicbrainz_track_id")
 	userId, err := strconv.ParseInt(userIdParam, 10, 64)
 	if err != nil {
 		userId = 0

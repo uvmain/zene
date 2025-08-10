@@ -10,9 +10,9 @@ import (
 )
 
 func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
-	randomParam := r.URL.Query().Get("random")
-	limitParam := r.URL.Query().Get("limit")
-	recentParam := r.URL.Query().Get("recent")
+	randomParam := r.FormValue("random")
+	limitParam := r.FormValue("limit")
+	recentParam := r.FormValue("recent")
 
 	rows, err := database.SelectAllAlbums(r.Context(), randomParam, limitParam, recentParam)
 	if err != nil {
@@ -67,7 +67,7 @@ func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
 	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
-	sizeParam := r.URL.Query().Get("size")
+	sizeParam := r.FormValue("size")
 	if sizeParam == "" {
 		sizeParam = "xl"
 	}

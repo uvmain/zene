@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import type { ArtistMetadata } from '~/types'
+import { useAuth } from '~/composables/useAuth'
 import { useSearch } from '~/composables/useSearch'
 
 const props = defineProps({
   artist: { type: Object as PropType<ArtistMetadata>, required: true },
 })
+
+const { userUsername, userSalt, userToken } = useAuth()
 
 const { closeSearch } = useSearch()
 
@@ -15,6 +18,11 @@ function onImageError(event: Event) {
   target.onerror = null
   target.src = '/default-square.png'
 }
+
+const coverArtUrl = computed(() => {
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&size=lg`
+  return `/api/artists/${props.artist.musicbrainz_artist_id}/art${queryParamString}` || '/default-square.png'
+})
 
 function navigate() {
   closeSearch()
@@ -27,7 +35,7 @@ function navigate() {
     <div class="group size-30">
       <img
         class="h-full w-full rounded-md object-cover"
-        :src="artist.image_url"
+        :src="coverArtUrl"
         @error="onImageError"
       />
       <div class="relative">

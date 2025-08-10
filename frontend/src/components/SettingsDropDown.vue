@@ -25,9 +25,7 @@ function handleClickOutside(event) {
 }
 
 async function runScan() {
-  const response = await backendFetchRequest('scan', {
-    method: 'POST',
-  })
+  const response = await backendFetchRequest('scan')
   const json = await response.json()
   debugLog(JSON.stringify(json))
 }

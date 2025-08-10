@@ -16,7 +16,12 @@ export function useSearch() {
   }
 
   const getGenres = async () => {
-    const response = await backendFetchRequest(`genres?search=${searchInput.value}`)
+    const formData = new FormData()
+    formData.append('search', searchInput.value)
+    const response = await backendFetchRequest('genres', {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as GenreMetadata[]
     if (json.length === 0) {
       searchResultsGenres.value = []
@@ -26,7 +31,12 @@ export function useSearch() {
   }
 
   const getArtists = async () => {
-    const response = await backendFetchRequest(`artists?search=${searchInput.value}`)
+    const formData = new FormData()
+    formData.append('search', searchInput.value)
+    const response = await backendFetchRequest('artists', {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as ArtistMetadata[]
     if (json.length === 0) {
       searchResultsArtists.value = []
@@ -40,7 +50,12 @@ export function useSearch() {
       searchResults.value = []
       return
     }
-    const response = await backendFetchRequest(`search?search=${searchInput.value}`)
+    const formData = new FormData()
+    formData.append('search', searchInput.value)
+    const response = await backendFetchRequest('search', {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as TrackMetadata[]
     const albumMetadata: TrackMetadataWithImageUrl[] = []
     json.forEach((metadata) => {

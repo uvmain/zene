@@ -14,7 +14,7 @@ import (
 
 func HandleStreamTrack(w http.ResponseWriter, r *http.Request) {
 	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
-	qualityQuery := r.URL.Query().Get("quality")
+	qualityQuery := r.FormValue("quality")
 	ctx := r.Context()
 
 	track, err := database.SelectTrack(ctx, musicBrainzTrackId)

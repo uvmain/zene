@@ -18,7 +18,14 @@ const canLoadMore = ref(true)
 async function loadMore() {
   offset.value += LIMIT
   const randomSeed = getRandomSeed()
-  const response = await backendFetchRequest(`tracks?random=${randomSeed}&limit=${LIMIT}&offset=${offset.value}`)
+  const formData = new FormData()
+  formData.append('random', randomSeed.toString())
+  formData.append('limit', LIMIT.toString())
+  formData.append('offset', offset.value.toString())
+  const response = await backendFetchRequest('albums', {
+    method: 'POST',
+    body: formData,
+  })
   const json = await response.json() as TrackMetadataWithImageUrl[]
   if (json.length === 0) {
     canLoadMore.value = false
@@ -35,7 +42,13 @@ async function loadMore() {
 onMounted(async () => {
   try {
     const randomSeed = getRandomSeed()
-    const response = await backendFetchRequest(`tracks?random=${randomSeed}&limit=${LIMIT}`)
+    const formData = new FormData()
+    formData.append('random', randomSeed.toString())
+    formData.append('limit', LIMIT.toString())
+    const response = await backendFetchRequest('tracks', {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as TrackMetadataWithImageUrl[]
 
     const tracksWithImages = json.map((track) => {

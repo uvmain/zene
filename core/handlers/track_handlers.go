@@ -29,11 +29,11 @@ func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
-	randomParam := r.URL.Query().Get("random")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
-	recentParam := r.URL.Query().Get("recent")
-	chronoParam := r.URL.Query().Get("chronological")
+	randomParam := r.FormValue("random")
+	limitParam := r.FormValue("limit")
+	offsetParam := r.FormValue("offset")
+	recentParam := r.FormValue("recent")
+	chronoParam := r.FormValue("chronological")
 
 	rows, err := database.SelectAllTracks(r.Context(), randomParam, limitParam, offsetParam, recentParam, chronoParam)
 	if err != nil {
@@ -87,7 +87,7 @@ func HandleGetTrackLyrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
-	searchQuery := r.URL.Query().Get("search")
+	searchQuery := r.FormValue("search")
 
 	rows, err := database.SearchMetadata(r.Context(), searchQuery)
 	if err != nil {

@@ -11,7 +11,6 @@ export function usePlaycounts() {
 
     const response = await backendFetchRequest('playcounts', {
       body: formData,
-      method: 'POST',
     })
     if (!response.ok) {
       throw new Error(`Failed to post playcount: ${response.statusText}`)

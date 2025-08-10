@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useAuth } from './composables/useAuth'
+import { useBackendFetch } from './composables/useBackendFetch'
 
-const { checkIfLoggedIn, userLoginState } = useAuth()
+const { userLoginState } = useAuth()
+const { checkIfLoggedIn } = useBackendFetch()
 const router = useRouter()
 
 onBeforeMount(async () => {
-  const loggedIn = checkIfLoggedIn()
-  if (!loggedIn) {
+  await checkIfLoggedIn()
+  if (!userLoginState.value) {
     router.push('/login')
   }
 })

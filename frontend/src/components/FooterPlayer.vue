@@ -2,6 +2,7 @@
 import type { TrackMetadataWithImageUrl } from '~/types'
 import type { TokenResponse } from '~/types/auth'
 import { onKeyStroke } from '@vueuse/core'
+import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 import { useDebug } from '~/composables/useDebug'
 import { useLogic } from '~/composables/useLogic'
@@ -12,6 +13,7 @@ import { useRouteTracks } from '~/composables/useRouteTracks'
 import { useSettings } from '~/composables/useSettings'
 
 const { getMimeType, getTemporaryToken, refreshTemporaryToken } = useBackendFetch()
+const { userUsername, userSalt, userToken } = useAuth()
 const { debugLog } = useDebug()
 const { formatTime } = useLogic()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue, setCurrentlyPlayingTrack } = usePlaybackQueue()
@@ -40,8 +42,9 @@ const isTransitioningToCast = ref<boolean>(false)
 const isTransitioningFromCast = ref<boolean>(false)
 const showLyrics = ref<boolean>(false)
 
-const trackUrl = computed<string>(() => {
-  return currentlyPlayingTrack.value?.musicbrainz_track_id ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream?quality=${streamQuality.value}` : ''
+const trackUrl = computed(() => {
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&quality=${streamQuality.value}`
+  return currentlyPlayingTrack.value ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream${queryParamString}` : '/default-square.png'
 })
 
 async function togglePlayback() {

@@ -34,32 +34,28 @@ func StartServer() *http.Server {
 
 	router.HandleFunc("/", handleFrontend)
 	// authenticated routes
-	router.Handle("GET /api/artists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
-	router.Handle("GET /api/artists/{musicBrainzArtistId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))              // returns types.ArtistResponse
-	router.Handle("GET /api/artists/{musicBrainzArtistId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistTracks))) // returns []types.MetadataWithPlaycounts; query params: recent=true, random=false, limit=10, offset=10
-	router.Handle("GET /api/artists/{musicBrainzArtistId}/art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt)))       // returns image/jpeg blob
-	router.Handle("GET /api/artists/{musicBrainzArtistId}/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistAlbums))) // returns []types.AlbumsResponse
-	router.Handle("GET /api/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbums)))                                     // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
-	router.Handle("GET /api/albums/{musicBrainzAlbumId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbum)))                 // returns types.AlbumsResponse
-	router.Handle("GET /api/albums/{musicBrainzAlbumId}/art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArt)))          // returns image/jpeg blob
-	router.Handle("GET /api/albums/{musicBrainzAlbumId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumTracks)))    // returns []types.MetadataWithPlaycounts
-	router.Handle("GET /api/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracks)))                                     // returns []types.Metadata; query params: recent=true, random=false, limit=10
-	router.Handle("GET /api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrack)))                 // returns types.MetadataWithPlaycounts
-	router.Handle("GET /api/tracks/{musicBrainzTrackId}/lyrics", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrackLyrics)))    // returns types.Lyrics
-	router.Handle("GET /api/tracks/{musicBrainzTrackId}/download", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownloadTrack)))   // returns blob
-	router.Handle("GET /api/tracks/{musicBrainzTrackId}/stream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStreamTrack)))       // returns blob range
-	router.Handle("GET /api/genres", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))                                     // query params: search=searchTerm
-	router.Handle("GET /api/genres/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracksByGenre)))                       // query params: genres=genre1,genre2 condition=and|or
-	router.Handle("GET /api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
-	router.Handle("GET /api/user", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))                                  // return types.User - current user
-	router.Handle("GET /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                             // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
-	router.Handle("POST /api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpsertPlaycount)))                          // return handlers.StandardResponse; form body: user_id=1, musicbrainz_track_id=musicBrainzTrackId
-	router.Handle("POST /api/scan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                                       // triggers a scan of the music library if one is not already running
-	router.Handle("GET /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))                                    // return []types.User - all users
-	router.Handle("POST /api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostNewUser)))                                   // return userId int64
-	router.Handle("GET /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))                           // return types.User - user by ID
-	router.Handle("PATCH /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePatchUserById)))                       // return userId int64
-	router.Handle("DELETE /api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUserById)))                     // return { Status: string }
+	router.Handle("/api/artists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))                                   // returns []types.ArtistResponse; query params: search=searchTerm, recent=true, random=false, limit=10, offset=10
+	router.Handle("/api/artists/{musicBrainzArtistId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))              // returns types.ArtistResponse
+	router.Handle("/api/artists/{musicBrainzArtistId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistTracks))) // returns []types.MetadataWithPlaycounts; query params: recent=true, random=false, limit=10, offset=10
+	router.Handle("/api/artists/{musicBrainzArtistId}/art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt)))       // returns image/jpeg blob
+	router.Handle("/api/artists/{musicBrainzArtistId}/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistAlbums))) // returns []types.AlbumsResponse
+	router.Handle("/api/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbums)))                                     // returns []types.AlbumsResponse; query params: recent=true, random=false, limit=10
+	router.Handle("/api/albums/{musicBrainzAlbumId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbum)))                 // returns types.AlbumsResponse
+	router.Handle("/api/albums/{musicBrainzAlbumId}/art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArt)))          // returns image/jpeg blob
+	router.Handle("/api/albums/{musicBrainzAlbumId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumTracks)))    // returns []types.MetadataWithPlaycounts
+	router.Handle("/api/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracks)))                                     // returns []types.Metadata; query params: recent=true, random=false, limit=10
+	router.Handle("/api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrack)))                 // returns types.MetadataWithPlaycounts
+	router.Handle("/api/tracks/{musicBrainzTrackId}/lyrics", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrackLyrics)))    // returns types.Lyrics
+	router.Handle("/api/tracks/{musicBrainzTrackId}/download", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownloadTrack)))   // returns blob
+	router.Handle("/api/tracks/{musicBrainzTrackId}/stream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStreamTrack)))       // returns blob range
+	router.Handle("/api/genres", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))                                     // query params: search=searchTerm
+	router.Handle("/api/genres/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracksByGenre)))                       // query params: genres=genre1,genre2 condition=and|or
+	router.Handle("/api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
+	router.Handle("/api/user", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCurrentUser)))                                  // return types.User - current user
+	router.Handle("/api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                             // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
+	router.Handle("/api/scan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                                        // triggers a scan of the music library if one is not already running
+	router.Handle("/api/users", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAllUsers)))                                    // return []types.User - all users
+	router.Handle("/api/users/{userId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUserById)))                           // return types.User - user by ID
 
 	// OpenSubsonic routes
 	/// System

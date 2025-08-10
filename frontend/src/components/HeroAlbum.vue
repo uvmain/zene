@@ -30,7 +30,13 @@ function prevIndex() {
 
 async function getRandomAlbums(limit: number): Promise<AlbumMetadata[]> {
   const randomSeed = getRandomSeed()
-  const response = await backendFetchRequest(`albums?random=${randomSeed}&limit=${limit}`)
+  const formData = new FormData()
+  formData.append('random', randomSeed.toString())
+  formData.append('limit', limit.toString())
+  const response = await backendFetchRequest('albums', {
+    method: 'POST',
+    body: formData,
+  })
   const json = await response.json()
   const albumMetadata: AlbumMetadata[] = []
   json.forEach((metadata: any) => {
