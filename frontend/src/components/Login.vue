@@ -5,7 +5,7 @@ import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const router = useRouter()
-const { checkIfLoggedIn, openSubsonicFetchRequest } = useBackendFetch()
+const { openSubsonicFetchRequest } = useBackendFetch()
 const { userLoginState, userIsAdminState, userUsername, userSalt, userToken } = useAuth()
 
 function generateSalt(length = 6) {
@@ -26,28 +26,17 @@ function md5Hash(password: string, salt: string): string {
   return hash.hex()
 }
 
-async function generateSaltAndTokenForOpenSubsonic(password: string): Promise<void> {
+async function generateSaltAndTokenForOpenSubsonic(username: string, password: string): Promise<void> {
   const salt = generateSalt()
   const token = md5Hash(password, salt)
+  userUsername.value = username
   userSalt.value = salt
   userToken.value = token
 }
 
 async function login(username: string, password: string) {
-  const formData = new FormData()
-  await generateSaltAndTokenForOpenSubsonic(password)
-  userUsername.value = username
-  formData.append('u', username)
-  formData.append('s', userSalt.value)
-  formData.append('t', userToken.value)
-  formData.append('f', 'json')
-  formData.append('v', '1.16.0')
-  formData.append('c', 'zene-frontend')
-
-  const response = await openSubsonicFetchRequest('getUser.view', {
-    body: formData,
-  })
-
+  await generateSaltAndTokenForOpenSubsonic(username, password)
+  const response = await openSubsonicFetchRequest('getUser.view')
   const jsonData = await response.json() as SubsonicUserResponse
   userLoginState.value = jsonData['subsonic-response'].status === 'ok'
   userIsAdminState.value = jsonData['subsonic-response'].user.adminRole === 'true'
@@ -58,10 +47,6 @@ async function login(username: string, password: string) {
 
 const username = ref('')
 const password = ref('')
-
-onBeforeMount(() => {
-  checkIfLoggedIn()
-})
 </script>
 
 <template>

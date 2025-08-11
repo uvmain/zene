@@ -1,14 +1,12 @@
 import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
-import type { TokenResponse, User, UsersResponse } from '~/types/auth'
-import type { SubsonicUserResponse } from '~/types/getUser'
+import type { SubsonicUser, SubsonicUserResponse, SubsonicUsers, SubsonicUsersResponse } from '~/types/subsonicUser'
 import { useAuth } from '~/composables/useAuth'
 import { useRandomSeed } from '~/composables/useRandomSeed'
 import { useLogic } from './useLogic'
 
-const { userApiKey, userSalt, userToken, userUsername, userLoginState, userIsAdminState } = useAuth()
+const { userApiKey, userSalt, userToken, userUsername } = useAuth()
 const { getRandomSeed } = useRandomSeed()
 const { trackWithImageUrl } = useLogic()
-const router = useRouter()
 
 export function useBackendFetch() {
   const backendFetchRequest = async (path: string, options: RequestInit = {}): Promise<Response> => {
@@ -23,6 +21,7 @@ export function useBackendFetch() {
       formData.append('t', userToken.value)
     }
     else {
+      const router = useRouter()
       await router.push('/login')
     }
     formData.append('f', 'json')
@@ -56,6 +55,7 @@ export function useBackendFetch() {
       formData.append('t', userToken.value)
     }
     else {
+      const router = useRouter()
       await router.push('/login')
     }
     formData.append('f', 'json')
@@ -128,16 +128,16 @@ export function useBackendFetch() {
     return json
   }
 
-  const getCurrentUser = async (): Promise<User> => {
-    const response = await backendFetchRequest('user')
-    const json = await response.json() as User
-    return json
+  const getCurrentUser = async (): Promise<SubsonicUser> => {
+    const response = await openSubsonicFetchRequest('getUser.view')
+    const json = await response.json() as SubsonicUserResponse
+    return json['subsonic-response'].user
   }
 
-  const getUsers = async (): Promise<User[]> => {
-    const response = await backendFetchRequest('users')
-    const json = await response.json() as UsersResponse
-    return json.users
+  const getUsers = async (): Promise<SubsonicUser[]> => {
+    const response = await openSubsonicFetchRequest('getUsers.view')
+    const json = await response.json() as SubsonicUsersResponse
+    return json['subsonic-response'].users.user
   }
 
   const getGenreTracks = async (genre: string, limit = 0, random = false): Promise<TrackMetadataWithImageUrl[]> => {
@@ -150,28 +150,6 @@ export function useBackendFetch() {
       body: formData,
     })
     return await response.json() as TrackMetadataWithImageUrl[]
-  }
-
-  const getTemporaryToken = async (duration = 30): Promise<TokenResponse> => {
-    const formData = new FormData()
-    formData.append('duration', duration.toString())
-    const response = await backendFetchRequest('temporary_token', {
-      method: 'POST',
-      body: formData,
-    })
-    return await response.json() as TokenResponse
-  }
-
-  const refreshTemporaryToken = async (currentToken: string, duration = 30): Promise<TokenResponse> => {
-    const formData = new FormData()
-    formData.append('token', currentToken)
-    formData.append('duration', duration.toString())
-
-    const response = await backendFetchRequest('temporary_token', {
-      method: 'POST',
-      body: formData,
-    })
-    return await response.json() as TokenResponse
   }
 
   const getMimeType = async (url: string): Promise<string> => {
@@ -189,45 +167,6 @@ export function useBackendFetch() {
     return data
   }
 
-  const checkIfLoggedIn = async (): Promise<boolean> => {
-    try {
-      const formData = new FormData()
-      if (userApiKey.value) {
-        formData.append('apiKey', userApiKey.value)
-      }
-      else if (userSalt.value && userToken.value) {
-        formData.append('u', userUsername.value)
-        formData.append('s', userSalt.value)
-        formData.append('t', userToken.value)
-      }
-      else {
-        await router.push('/login')
-      }
-      formData.append('f', 'json')
-      formData.append('v', '1.16.0')
-      formData.append('c', 'zene-frontend')
-
-      const response = await openSubsonicFetchRequest('getUser.view', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const json = await response.json() as SubsonicUserResponse
-      const subsonicResponse = json['subsonic-response']
-      if (subsonicResponse.error) {
-        throw new Error(subsonicResponse.error.message)
-      }
-      userLoginState.value = subsonicResponse.status === 'ok'
-      userIsAdminState.value = subsonicResponse.user.adminRole === 'true'
-      return userLoginState.value
-    }
-    catch {
-      userLoginState.value = false
-      userIsAdminState.value = false
-      return false
-    }
-  }
-
   return {
     backendFetchRequest,
     openSubsonicFetchRequest,
@@ -238,10 +177,7 @@ export function useBackendFetch() {
     getCurrentUser,
     getGenreTracks,
     getUsers,
-    getTemporaryToken,
-    refreshTemporaryToken,
     getMimeType,
     getLyrics,
-    checkIfLoggedIn,
   }
 }

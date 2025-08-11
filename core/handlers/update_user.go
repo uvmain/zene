@@ -76,72 +76,72 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	ldapAuthenticated := r.FormValue("ldapAuthenticated")
 	if ldapAuthenticated != "" {
-		userToUpdate.LdapAuthenticated = net.ParseBooleanFormValue(w, r, ldapAuthenticated)
+		userToUpdate.LdapAuthenticated = net.ParseBooleanFromString(w, r, ldapAuthenticated)
 	}
 
 	adminRole := r.FormValue("adminRole")
 	if adminRole != "" {
-		userToUpdate.AdminRole = net.ParseBooleanFormValue(w, r, adminRole)
+		userToUpdate.AdminRole = net.ParseBooleanFromString(w, r, adminRole)
 	}
 
 	settingsRole := r.FormValue("settingsRole")
 	if settingsRole != "" {
-		userToUpdate.SettingsRole = net.ParseBooleanFormValue(w, r, settingsRole)
+		userToUpdate.SettingsRole = net.ParseBooleanFromString(w, r, settingsRole)
 	}
 
 	streamRole := r.FormValue("streamRole")
 	if streamRole != "" {
-		userToUpdate.StreamRole = net.ParseBooleanFormValue(w, r, streamRole)
+		userToUpdate.StreamRole = net.ParseBooleanFromString(w, r, streamRole)
 	}
 
 	jukeboxRole := r.FormValue("jukeboxRole")
 	if jukeboxRole != "" {
-		userToUpdate.JukeboxRole = net.ParseBooleanFormValue(w, r, jukeboxRole)
+		userToUpdate.JukeboxRole = net.ParseBooleanFromString(w, r, jukeboxRole)
 	}
 
 	downloadRole := r.FormValue("downloadRole")
 	if downloadRole != "" {
-		userToUpdate.DownloadRole = net.ParseBooleanFormValue(w, r, downloadRole)
+		userToUpdate.DownloadRole = net.ParseBooleanFromString(w, r, downloadRole)
 	}
 
 	uploadRole := r.FormValue("uploadRole")
 	if uploadRole != "" {
-		userToUpdate.UploadRole = net.ParseBooleanFormValue(w, r, uploadRole)
+		userToUpdate.UploadRole = net.ParseBooleanFromString(w, r, uploadRole)
 	}
 
 	playlistRole := r.FormValue("playlistRole")
 	if playlistRole != "" {
-		userToUpdate.PlaylistRole = net.ParseBooleanFormValue(w, r, playlistRole)
+		userToUpdate.PlaylistRole = net.ParseBooleanFromString(w, r, playlistRole)
 	}
 
 	coverArtRole := r.FormValue("coverArtRole")
 	if coverArtRole != "" {
-		userToUpdate.CoverArtRole = net.ParseBooleanFormValue(w, r, coverArtRole)
+		userToUpdate.CoverArtRole = net.ParseBooleanFromString(w, r, coverArtRole)
 	}
 
 	commentRole := r.FormValue("commentRole")
 	if commentRole != "" {
-		userToUpdate.CommentRole = net.ParseBooleanFormValue(w, r, commentRole)
+		userToUpdate.CommentRole = net.ParseBooleanFromString(w, r, commentRole)
 	}
 
 	podcastRole := r.FormValue("podcastRole")
 	if podcastRole != "" {
-		userToUpdate.PodcastRole = net.ParseBooleanFormValue(w, r, podcastRole)
+		userToUpdate.PodcastRole = net.ParseBooleanFromString(w, r, podcastRole)
 	}
 
 	shareRole := r.FormValue("shareRole")
 	if shareRole != "" {
-		userToUpdate.ShareRole = net.ParseBooleanFormValue(w, r, shareRole)
+		userToUpdate.ShareRole = net.ParseBooleanFromString(w, r, shareRole)
 	}
 
 	scrobblingEnabled := r.FormValue("scrobblingEnabled")
 	if scrobblingEnabled != "" {
-		userToUpdate.ScrobblingEnabled = net.ParseBooleanFormValue(w, r, scrobblingEnabled)
+		userToUpdate.ScrobblingEnabled = net.ParseBooleanFromString(w, r, scrobblingEnabled)
 	}
 
 	videoConversionRole := r.FormValue("videoConversionRole")
 	if videoConversionRole != "" {
-		userToUpdate.VideoConversionRole = net.ParseBooleanFormValue(w, r, videoConversionRole)
+		userToUpdate.VideoConversionRole = net.ParseBooleanFromString(w, r, videoConversionRole)
 	}
 
 	maxBitRate := r.FormValue("maxBitRate")

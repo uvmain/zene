@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { TokenResponse } from '~/types/auth'
-import { useBackendFetch } from '~/composables/useBackendFetch'
 import { useDebug } from '~/composables/useDebug'
 
-const { getTemporaryToken } = useBackendFetch()
 const { debugLog } = useDebug()
 
 const audioUrl = ref('https://static.ianbaron.com/dc2b0ca2-ff9c-41ec-9672-58a96f5e58bd-160.aac')
@@ -67,7 +65,6 @@ function initializeCast() {
 }
 
 onMounted(async () => {
-  temporaryToken.value = await getTemporaryToken()
   debugLog('Waiting for Cast SDK...')
 
   // Hook for when the SDK becomes available (in case it's not already)

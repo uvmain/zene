@@ -99,19 +99,14 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 	}
 }
 
-func ParseBooleanFormValue(w http.ResponseWriter, r *http.Request, key string) bool {
-	formValue := r.FormValue(key)
-	if formValue != "" {
-		parsedBool, err := strconv.ParseBool(formValue)
-		if err != nil {
-			errString := fmt.Sprintf("%s must be true or false", key)
-			WriteSubsonicError(w, r, types.ErrorMissingParameter, errString, "")
-			return false
-		}
-		return parsedBool
-	} else {
+func ParseBooleanFromString(w http.ResponseWriter, r *http.Request, key string) bool {
+	parsedBool, err := strconv.ParseBool(key)
+	if err != nil {
+		errString := fmt.Sprintf("%s must be true or false", key)
+		WriteSubsonicError(w, r, types.ErrorMissingParameter, errString, "")
 		return false
 	}
+	return parsedBool
 }
 
 func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true

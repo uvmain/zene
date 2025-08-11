@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import type { User } from '~/types/auth'
+import type { SubsonicUser } from '~/types/subsonicUser'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const { getCurrentUser } = useBackendFetch()
 
-const currentUser = ref<User | null>(null)
+const currentUser = ref<SubsonicUser | null>(null)
 
 async function fetchCurrentUser() {
   currentUser.value = await getCurrentUser()
+  console.log('Current user:', currentUser.value)
 }
 
 onBeforeMount(async () => {
@@ -17,7 +18,7 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <div v-if="!currentUser?.is_admin" class="text-red-500">
+    <div v-if="!currentUser?.adminRole" class="text-red-500">
       You do not have permission to manage users.
     </div>
     <UserManagement v-else />

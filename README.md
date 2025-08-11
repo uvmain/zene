@@ -26,7 +26,8 @@ Supports the following OpenSubsonic API extensions:
 - `createAvatar`
 - `updateAvatar`
 - `deleteAvatar`
-  The above endpoints enable dynamic functionality consistent with the existing getAvatar endpoint
+
+The above endpoints enable dynamic functionality consistent with the existing getAvatar endpoint
 - `getArtistArt`
 
 ### Tech stack

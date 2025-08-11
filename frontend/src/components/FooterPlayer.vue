@@ -12,7 +12,7 @@ import { useRandomSeed } from '~/composables/useRandomSeed'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 import { useSettings } from '~/composables/useSettings'
 
-const { getMimeType, getTemporaryToken, refreshTemporaryToken } = useBackendFetch()
+const { getMimeType } = useBackendFetch()
 const { userUsername, userSalt, userToken } = useAuth()
 const { debugLog } = useDebug()
 const { formatTime } = useLogic()
@@ -282,18 +282,6 @@ async function castAudio() {
   if (!trackUrl.value) {
     console.error('No track URL available for casting')
     return
-  }
-
-  // Refresh the temporary token before casting to ensure it's valid
-  if (temporaryToken.value?.token) {
-    try {
-      temporaryToken.value = await refreshTemporaryToken(temporaryToken.value.token, 30)
-      debugLog('Temporary token refreshed for casting')
-    }
-    catch (err) {
-      console.error('Failed to refresh temporary token:', err)
-      // Continue with existing token as fallback
-    }
   }
 
   // Capture current local playback state and position before switching to cast
@@ -640,7 +628,6 @@ async function onCastMediaInfoChanged() {
 }
 
 onMounted(async () => {
-  temporaryToken.value = await getTemporaryToken()
   debugLog('Waiting for Cast SDK...')
 
   // Hook for when the SDK becomes available (in case it's not already)

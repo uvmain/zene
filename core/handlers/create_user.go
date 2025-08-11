@@ -86,91 +86,91 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	ldapAuthenticated := r.FormValue("ldapAuthenticated")
 	if ldapAuthenticated != "" {
-		userToCreate.LdapAuthenticated = net.ParseBooleanFormValue(w, r, ldapAuthenticated)
+		userToCreate.LdapAuthenticated = net.ParseBooleanFromString(w, r, ldapAuthenticated)
 	} else {
 		userToCreate.LdapAuthenticated = logic.GetDefaultRoleValue("ldapAuthenticated")
 	}
 
 	adminRole := r.FormValue("adminRole")
 	if adminRole != "" {
-		userToCreate.AdminRole = net.ParseBooleanFormValue(w, r, adminRole)
+		userToCreate.AdminRole = net.ParseBooleanFromString(w, r, adminRole)
 	} else {
 		userToCreate.AdminRole = logic.GetDefaultRoleValue("adminRole")
 	}
 
 	settingsRole := r.FormValue("settingsRole")
 	if settingsRole != "" {
-		userToCreate.SettingsRole = net.ParseBooleanFormValue(w, r, settingsRole)
+		userToCreate.SettingsRole = net.ParseBooleanFromString(w, r, settingsRole)
 	} else {
 		userToCreate.SettingsRole = logic.GetDefaultRoleValue("settingsRole")
 	}
 
 	streamRole := r.FormValue("streamRole")
 	if streamRole != "" {
-		userToCreate.StreamRole = net.ParseBooleanFormValue(w, r, streamRole)
+		userToCreate.StreamRole = net.ParseBooleanFromString(w, r, streamRole)
 	} else {
 		userToCreate.StreamRole = logic.GetDefaultRoleValue("streamRole")
 	}
 
 	jukeboxRole := r.FormValue("jukeboxRole")
 	if jukeboxRole != "" {
-		userToCreate.JukeboxRole = net.ParseBooleanFormValue(w, r, jukeboxRole)
+		userToCreate.JukeboxRole = net.ParseBooleanFromString(w, r, jukeboxRole)
 	} else {
 		userToCreate.JukeboxRole = logic.GetDefaultRoleValue("jukeboxRole")
 	}
 
 	downloadRole := r.FormValue("downloadRole")
 	if downloadRole != "" {
-		userToCreate.DownloadRole = net.ParseBooleanFormValue(w, r, downloadRole)
+		userToCreate.DownloadRole = net.ParseBooleanFromString(w, r, downloadRole)
 	} else {
 		userToCreate.DownloadRole = logic.GetDefaultRoleValue("downloadRole")
 	}
 
 	uploadRole := r.FormValue("uploadRole")
 	if uploadRole != "" {
-		userToCreate.UploadRole = net.ParseBooleanFormValue(w, r, uploadRole)
+		userToCreate.UploadRole = net.ParseBooleanFromString(w, r, uploadRole)
 	} else {
 		userToCreate.UploadRole = logic.GetDefaultRoleValue("uploadRole")
 	}
 
 	playlistRole := r.FormValue("playlistRole")
 	if playlistRole != "" {
-		userToCreate.PlaylistRole = net.ParseBooleanFormValue(w, r, playlistRole)
+		userToCreate.PlaylistRole = net.ParseBooleanFromString(w, r, playlistRole)
 	} else {
 		userToCreate.PlaylistRole = logic.GetDefaultRoleValue("playlistRole")
 	}
 
 	coverArtRole := r.FormValue("coverArtRole")
 	if coverArtRole != "" {
-		userToCreate.CoverArtRole = net.ParseBooleanFormValue(w, r, coverArtRole)
+		userToCreate.CoverArtRole = net.ParseBooleanFromString(w, r, coverArtRole)
 	} else {
 		userToCreate.CoverArtRole = logic.GetDefaultRoleValue("coverArtRole")
 	}
 
 	commentRole := r.FormValue("commentRole")
 	if commentRole != "" {
-		userToCreate.CommentRole = net.ParseBooleanFormValue(w, r, commentRole)
+		userToCreate.CommentRole = net.ParseBooleanFromString(w, r, commentRole)
 	} else {
 		userToCreate.CommentRole = logic.GetDefaultRoleValue("commentRole")
 	}
 
 	podcastRole := r.FormValue("podcastRole")
 	if podcastRole != "" {
-		userToCreate.PodcastRole = net.ParseBooleanFormValue(w, r, podcastRole)
+		userToCreate.PodcastRole = net.ParseBooleanFromString(w, r, podcastRole)
 	} else {
 		userToCreate.PodcastRole = logic.GetDefaultRoleValue("podcastRole")
 	}
 
 	shareRole := r.FormValue("shareRole")
 	if shareRole != "" {
-		userToCreate.ShareRole = net.ParseBooleanFormValue(w, r, shareRole)
+		userToCreate.ShareRole = net.ParseBooleanFromString(w, r, shareRole)
 	} else {
 		userToCreate.ShareRole = logic.GetDefaultRoleValue("shareRole")
 	}
 
 	scrobblingEnabled := r.FormValue("scrobblingEnabled")
 	if scrobblingEnabled != "" {
-		userToCreate.ScrobblingEnabled = net.ParseBooleanFormValue(w, r, scrobblingEnabled)
+		userToCreate.ScrobblingEnabled = net.ParseBooleanFromString(w, r, scrobblingEnabled)
 	} else {
 		userToCreate.ScrobblingEnabled = logic.GetDefaultRoleValue("scrobblingEnabled")
 	}
@@ -178,7 +178,7 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	videoConversionRole := r.FormValue("videoConversionRole")
 	if videoConversionRole != "" {
 		logger.Printf("Setting videoConversionRole for user %s to %s", username, videoConversionRole)
-		userToCreate.VideoConversionRole = net.ParseBooleanFormValue(w, r, videoConversionRole)
+		userToCreate.VideoConversionRole = net.ParseBooleanFromString(w, r, videoConversionRole)
 	} else {
 		userToCreate.VideoConversionRole = logic.GetDefaultRoleValue("videoConversionRole")
 	}
