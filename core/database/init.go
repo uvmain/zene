@@ -21,6 +21,7 @@ var err error
 
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
+	createVersionsTable(ctx)
 	createMusicFoldersTable(ctx)
 	createUsersTable(ctx)
 	createApiKeysTable(ctx)

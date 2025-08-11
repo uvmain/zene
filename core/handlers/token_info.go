@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"zene/core/database"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -18,7 +19,7 @@ func HandleTokenInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := types.SubsonicTokenInfoResponse{}
-	stdRes := types.GetPopulatedSubsonicResponse(false)
+	stdRes := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
 	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
 	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns

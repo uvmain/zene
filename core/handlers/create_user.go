@@ -11,6 +11,7 @@ import (
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -239,7 +240,7 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	logger.Printf("User %s created with ID %d by %s", username, userId, ctx.Value("username"))
 
-	response := types.GetPopulatedSubsonicResponse(false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	format := r.FormValue("f")
 	if format == "json" {

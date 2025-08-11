@@ -42,28 +42,6 @@ const (
 	ErrorDataNotFound              = 70
 )
 
-func GetPopulatedSubsonicResponse(withError bool) SubsonicResponse {
-	response := SubsonicResponse{
-		SubsonicResponse: SubsonicStandard{
-			Status:        "ok",
-			Version:       "1.16.1",
-			Type:          "zene",
-			ServerVersion: "0.1.0",
-			OpenSubsonic:  true,
-			Xmlns:         "http://subsonic.org/restapi",
-		},
-	}
-
-	if withError {
-		response.SubsonicResponse.Status = "error"
-		response.SubsonicResponse.Error = &SubsonicError{
-			Code:    ErrorGeneric,
-			Message: "An error occurred",
-		}
-	}
-	return response
-}
-
 type LicenseInfo struct {
 	Valid          bool   `xml:"valid,attr" json:"valid"`
 	Email          string `xml:"email,attr,omitempty" json:"email,omitempty"`

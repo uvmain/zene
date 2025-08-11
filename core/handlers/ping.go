@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -15,7 +16,7 @@ func HandlePing(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
 		return
 	}
-	response := types.GetPopulatedSubsonicResponse(false)
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
 	format := r.FormValue("f")
 	if format == "json" {

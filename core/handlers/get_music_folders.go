@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"zene/core/config"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -19,7 +20,7 @@ func HandleGetMusicFolders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := types.SubsonicMusicFoldersResponse{}
-	stdRes := types.GetPopulatedSubsonicResponse(false)
+	stdRes := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
 	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
 	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns

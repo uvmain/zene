@@ -10,6 +10,7 @@ import (
 	"zene/core/encryption"
 	"zene/core/logger"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -189,7 +190,7 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Printf("User %s updated successfully with ID %d", username, userId)
-	response := types.GetPopulatedSubsonicResponse(false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	format := r.FormValue("f")
 	if format == "json" {

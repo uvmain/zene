@@ -9,6 +9,7 @@ import (
 	"zene/core/encryption"
 	"zene/core/logger"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -80,7 +81,7 @@ func HandleChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Printf("Password for user %s updated successfully by %s", username, requestUser.Username)
-	response := types.GetPopulatedSubsonicResponse(false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	format := r.FormValue("f")
 	if format == "json" {

@@ -9,6 +9,7 @@ import (
 	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -50,7 +51,7 @@ func HandleDeleteAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := types.GetPopulatedSubsonicResponse(false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	format := r.FormValue("f")
 	if format == "json" {

@@ -8,6 +8,7 @@ import (
 	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -55,7 +56,7 @@ func HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	logger.Printf("User %s deleted with ID %d by %s", username, userToDelete.Id, requestUser.Username)
 
-	response := types.GetPopulatedSubsonicResponse(false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	format := r.FormValue("f")
 	if format == "json" {

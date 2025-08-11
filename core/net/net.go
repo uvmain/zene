@@ -17,6 +17,7 @@ import (
 	"zene/core/config"
 	zene_io "zene/core/io"
 	"zene/core/logger"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -78,7 +79,7 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 // The response includes the error code and message if there is an error.
 func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string, helpUrl string) {
 
-	response := types.GetPopulatedSubsonicResponse(true)
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), true)
 	response.SubsonicResponse.Error.Code = code
 	response.SubsonicResponse.Error.Message = message
 	if helpUrl != "" {

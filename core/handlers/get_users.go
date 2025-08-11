@@ -8,6 +8,7 @@ import (
 	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/net"
+	"zene/core/subsonic"
 	"zene/core/types"
 )
 
@@ -34,7 +35,7 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := types.SubsonicUsersResponseWrapper{}
-	stdRes := types.GetPopulatedSubsonicResponse(false)
+	stdRes := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
 	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns
