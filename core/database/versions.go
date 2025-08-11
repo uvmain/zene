@@ -25,7 +25,7 @@ func createVersionsTable(ctx context.Context) {
 	_, err := GetLatestVersion(ctx)
 	if err == sql.ErrNoRows {
 		newVersion := types.Version{
-			ServerVersion:          "0.1.0",
+			ServerVersion:          "0.1.1",
 			DatabaseVersion:        "1.0",
 			SubsonicApiVersion:     "1.16.1",
 			OpenSubsonicApiVersion: "1",
