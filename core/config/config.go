@@ -31,6 +31,7 @@ var AdminUsername string
 var AdminPassword string
 var AdminEmail string
 var UserAvatarFolder string
+var DefaultBitRate int64
 
 func LoadConfig() {
 
@@ -76,6 +77,18 @@ func LoadConfig() {
 			AudioCacheMaxDays = 30
 		} else {
 			AudioCacheMaxDays = audioCacheMaxDaysInt
+		}
+	}
+
+	defaultBitRate := os.Getenv("DEFAULT_BIT_RATE")
+	if defaultBitRate == "" {
+		DefaultBitRate = 160
+	} else {
+		defaultBitRateInt, err := strconv.ParseInt(defaultBitRate, 10, 64)
+		if err != nil {
+			DefaultBitRate = 160
+		} else {
+			DefaultBitRate = defaultBitRateInt
 		}
 	}
 

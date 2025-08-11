@@ -43,8 +43,8 @@ const isTransitioningFromCast = ref<boolean>(false)
 const showLyrics = ref<boolean>(false)
 
 const trackUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&quality=${streamQuality.value}`
-  return currentlyPlayingTrack.value ? `/api/tracks/${currentlyPlayingTrack.value.musicbrainz_track_id}/stream${queryParamString}` : '/default-square.png'
+  const queryParamString = `u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&maxBitRate=${streamQuality.value}&id=${currentlyPlayingTrack.value?.musicbrainz_track_id}`
+  return currentlyPlayingTrack.value ? `/rest/stream.view?${queryParamString}` : ''
 })
 
 async function togglePlayback() {
