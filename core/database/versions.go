@@ -23,7 +23,7 @@ func createVersionsTable(ctx context.Context) {
 	createTable(ctx, schema)
 
 	newVersion := types.Version{
-		ServerVersion:          "0.2.0",
+		ServerVersion:          "0.3.0",
 		DatabaseVersion:        "1.0",
 		SubsonicApiVersion:     "1.16.1",
 		OpenSubsonicApiVersion: "1",

@@ -40,7 +40,7 @@
 - [ ] updatePlaylist
 - [ ] deletePlaylist
 ## Media retrieval
-- [ ] stream
+- [x] stream
 - [ ] download
 - [ ] hls
 - [ ] getCaptions

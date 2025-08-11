@@ -71,37 +71,58 @@ func cleanupIncompleteCache(ctx context.Context, cachePath string, cacheKey stri
 	}
 }
 
-func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, quality int) error {
-	cacheKey := fmt.Sprintf("%s-%d.aac", trackId, quality)
+func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, maxBitRate int64, timeOffset int, format string) error {
+	cacheKey := fmt.Sprintf("%s-%d.%s", trackId, maxBitRate, format)
 	cachePath := filepath.Join(config.AudioCacheFolder, cacheKey)
 
-	// serve from cache if it exists
-	if _, err := os.Stat(cachePath); err == nil {
-		logger.Printf("Serving transcoded file from cache: %s", cachePath)
-		if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
-			logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
+	useCache := timeOffset <= 0
+
+	if useCache {
+		// serve from cache if it exists
+		if _, err := os.Stat(cachePath); err == nil {
+			logger.Printf("Serving transcoded file from cache: %s", cachePath)
+			if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
+				logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
+			}
+			f, err := os.Open(cachePath)
+			if err != nil {
+				return fmt.Errorf("opening cached file: %w", err)
+			}
+			defer f.Close()
+			fileInfo, err := f.Stat()
+			if err != nil {
+				return fmt.Errorf("getting file info: %w", err)
+			}
+			w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+			w.Header().Set("Cache-Control", "public, max-age=31536000")
+			w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
+			_, err = io.Copy(w, f)
+			return err
 		}
-		f, err := os.Open(cachePath)
-		if err != nil {
-			return fmt.Errorf("opening cached file: %w", err)
-		}
-		defer f.Close()
-		w.Header().Set("Content-Type", "audio/aac")
-		_, err = io.Copy(w, f)
-		return err
 	}
 
-	logger.Printf("Transcoding %s to stream at %dk", filePathAbs, quality)
+	if timeOffset > 0 {
+		logger.Printf("Transcoding %s to stream at %dk starting from %ds (no cache)", filePathAbs, maxBitRate, timeOffset)
+	} else {
+		logger.Printf("Transcoding %s to stream at %dk", filePathAbs, maxBitRate)
+	}
 
-	cmd := exec.CommandContext(ctx, config.FfmpegPath,
-		"-loglevel", "error",
+	// Build ffmpeg arguments
+	args := []string{"-loglevel", "error"}
+	if timeOffset > 0 {
+		// Place -ss before -i for faster seek
+		args = append(args, "-ss", fmt.Sprintf("%d", timeOffset))
+	}
+	args = append(args,
 		"-i", filePathAbs,
 		"-vn",
-		"-c:a", "aac",
-		"-b:a", fmt.Sprintf("%dk", quality),
+		"-c:a", format,
+		"-b:a", fmt.Sprintf("%dk", maxBitRate),
 		"-f", "adts",
 		"pipe:1",
 	)
+
+	cmd := exec.CommandContext(ctx, config.FfmpegPath, args...)
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -123,39 +144,50 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		}
 	}()
 
-	w.Header().Set("Content-Type", "audio/aac")
+	w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
 
-	cacheFile, err := os.Create(cachePath)
-	if err != nil {
-		return fmt.Errorf("creating cache file: %w", err)
+	var mw io.Writer = w
+	var cacheFile *os.File
+	if useCache {
+		cacheFile, err = os.Create(cachePath)
+		if err != nil {
+			return fmt.Errorf("creating cache file: %w", err)
+		}
+		defer cacheFile.Close()
+		mw = io.MultiWriter(w, cacheFile)
 	}
-	defer cacheFile.Close()
 
-	mw := io.MultiWriter(w, cacheFile)
 	_, err = io.Copy(mw, stdout)
-
 	waitErr := cmd.Wait()
 
 	if err != nil {
-		cacheFile.Close()
-		cleanupIncompleteCache(ctx, cachePath, cacheKey)
+		if useCache {
+			cacheFile.Close()
+			cleanupIncompleteCache(ctx, cachePath, cacheKey)
+		}
 		return fmt.Errorf("copy failed: %w", err)
-	} else {
+	}
+
+	if waitErr != nil {
+		if useCache {
+			cacheFile.Close()
+			cleanupIncompleteCache(ctx, cachePath, cacheKey)
+		}
+		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
+	}
+
+	if useCache {
 		logger.Printf("Transcoding %s complete, cached at %s", filePathAbs, cachePath)
-		err = database.UpsertAudioCacheEntry(ctx, cacheKey)
-		if err != nil {
+		if err = database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
 			cacheFile.Close()
 			cleanupIncompleteCache(ctx, cachePath, cacheKey)
 			logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
 			return err
 		}
-	}
-	if waitErr != nil {
 		cacheFile.Close()
-		cleanupIncompleteCache(ctx, cachePath, cacheKey)
-		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
+	} else {
+		logger.Printf("Transcoding %s complete (offset stream, not cached)", filePathAbs)
 	}
-	cacheFile.Close()
 
 	return nil
 }

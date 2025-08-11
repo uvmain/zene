@@ -23,7 +23,7 @@ import (
 
 func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified time.Time) bool {
 	w.Header().Set("Last-Modified", lastModified.Truncate(time.Second).UTC().Format(http.TimeFormat))
-	w.Header().Set("Cache-Control", "public, max-age=0, must-revalidate")
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
 	if ifModifiedSince != "" {
 		ifTime, err := time.Parse(http.TimeFormat, ifModifiedSince)
