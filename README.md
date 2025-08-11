@@ -2,7 +2,7 @@
 ![Zene screenshot](./docs/assets/zene-home.webp)
 
 ## Self hosted Music Server and Web player
-Fast and feature packed with smart caching
+### Fast and feature packed with smart caching
 - All transcoded audio is cached locally and cleaned with smart rules
 - Fast full text search
 - lyrics cached in database on retrieval
@@ -18,10 +18,11 @@ Supports the following OpenSubsonic API extensions:
 - songLyrics (lyrics are pulled from lrclib on request, and saved locally in the database for future calls)
 - transcodeOffset (supports streaming from an offset)
 
-Supports the following OpenSubsonic API endpoints:
+### Supports the following OpenSubsonic API endpoints:
+
 [Implemented OpenSubsonic API endpoints](./docs/implemented-opensubsonic-endpoints.md)
 
-additional custom API endpoints include:
+### additional custom API endpoints include:
 - createAvatar
 - updateAvatar
 - deleteAvatar
@@ -50,7 +51,7 @@ Then install the Golang requirements
 npm run setup
 ```
 
-### resolve Caddy cert issues on debian/ubuntu
+resolving Caddy cert issues on debian/ubuntu
 - Ensure libnss3-tools is installed
   ```bash
   sudo apt install libnss3-tools
