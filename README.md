@@ -13,28 +13,28 @@
 
 ### Uses the OpenSubsonic API, with a few extras
 Supports the following OpenSubsonic API extensions:
-- apiKeyAuthentication (this project supports password, enc:password, salt & token, and ApiKey auth)
-- formPost (all endpoints support GET and POST, with either formData values OR query parameters)
-- songLyrics (lyrics are pulled from lrclib on request, and saved locally in the database for future calls)
-- transcodeOffset (supports streaming from an offset)
+- `apiKeyAuthentication` (this project supports password, enc:password, salt & token, and ApiKey auth)
+- `formPost` (all endpoints support GET and POST, with either formData values OR query parameters)
+- `songLyrics` (lyrics are pulled from lrclib on request, and saved locally in the database for future calls)
+- `transcodeOffset` (supports streaming from an offset)
 
 ### Supports the following OpenSubsonic API endpoints:
 
 [Implemented OpenSubsonic API endpoints](./docs/implemented-opensubsonic-endpoints.md)
 
 ### additional custom API endpoints include:
-- createAvatar
-- updateAvatar
-- deleteAvatar
+- `createAvatar`
+- `updateAvatar`
+- `deleteAvatar`
   The above endpoints enable dynamic functionality consistent with the existing getAvatar endpoint
-- getArtistArt
+- `getArtistArt`
 
 ### Tech stack
-- Sqlite database
-- Go backend
-- Vue frontend (embedded during build)
+- `Sqlite` database
+- `Go` backend
+- `Vue` frontend (embedded during build)
 
-- uses Air and Vite for HMR, and Caddy for SSL in local development
+- uses `Air` and `Vite` for HMR, and `Caddy` for SSL in local development
 
 ## localdev
 ### requirements
