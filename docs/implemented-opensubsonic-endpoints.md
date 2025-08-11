@@ -1,9 +1,9 @@
-System
+## System
 - [x] ping
 - [x] getLicense
 - [x] getOpenSubsonicExtensions
 - [x] tokenInfo
-Browsing
+## Browsing
 - [x] getMusicFolders
 - [ ] getIndexes
 - [ ] getMusicDirectory
@@ -21,7 +21,7 @@ Browsing
 - [ ] getSimilarSongs
 - [ ] getSimilarSongs2
 - [ ] getTopSongs
-Album/song lists
+## Album/song lists
 - [ ] getAlbumList
 - [ ] getAlbumList2
 - [ ] getRandomSongs
@@ -29,17 +29,17 @@ Album/song lists
 - [ ] getNowPlaying
 - [ ] getStarred
 - [ ] getStarred2
-Searching
+## Searching
 - [ ] search
 - [ ] search2
 - [ ] search3
-Playlists
+## Playlists
 - [ ] getPlaylists
 - [ ] getPlaylist
 - [ ] createPlaylist
 - [ ] updatePlaylist
 - [ ] deletePlaylist
-Media retrieval
+## Media retrieval
 - [ ] stream
 - [ ] download
 - [ ] hls
@@ -48,17 +48,17 @@ Media retrieval
 - [ ] getLyrics
 - [x] getAvatar
 - [ ] getLyricsBySongId
-Media annotation
+## Media annotation
 - [ ] star
 - [ ] unstar
 - [ ] setRating
 - [ ] scrobble
-Sharing
+## Sharing
 - [ ] getShares
 - [ ] createShare
 - [ ] updateShare
 - [ ] deleteShare
-Podcast
+## Podcast
 - [ ] getPodcasts
 - [ ] getNewestPodcasts
 - [ ] refreshPodcasts
@@ -66,29 +66,29 @@ Podcast
 - [ ] deletePodcastChannel
 - [ ] deletePodcastEpisode
 - [ ] downloadPodcastEpisode
-Jukebox
+## Jukebox
 - [ ] jukeboxControl
-Internet radio
+## Internet radio
 - [ ] getInternetRadioStations
 - [ ] createInternetRadioStation
 - [ ] updateInternetRadioStation
 - [ ] deleteInternetRadioStation
-Chat
+## Chat
 - [x] getChatMessages
 - [x] addChatMessage
-User management
+## User management
 - [x] getUser
 - [x] getUsers
 - [x] createUser
 - [x] updateUser
 - [x] deleteUser
 - [x] changePassword
-Bookmarks
+## Bookmarks
 - [ ] getBookmarks
 - [ ] createBookmark
 - [ ] deleteBookmark
 - [ ] getPlayQueue
 - [ ] savePlayQueue
-Media library scanning
+## Media library scanning
 - [x] getScanStatus
 - [x] startScan
