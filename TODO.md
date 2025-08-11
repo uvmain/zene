@@ -1,6 +1,0 @@
-- [ ] add proper support for multiple music folders
-- [ ] use User.MaxBitRate to limit bitrate
-- [ ] define an enum for allowed maxBitRate values to use in handlers
-- [ ] use goose (or an alternative) to manage future database migrations
-- [ ] getScanStatus and startScan handlers exist but need implementing
-- [ ] HandleGetCoverArt and HandleGetArtistArt needs to handle size int param and resize if requested

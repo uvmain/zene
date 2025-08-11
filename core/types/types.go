@@ -46,6 +46,7 @@ type Metadata struct {
 	MusicBrainzAlbumID  string `json:"musicbrainz_album_id"`
 	MusicBrainzTrackID  string `json:"musicbrainz_track_id"`
 	Label               string `json:"label"`
+	MusicFolderId       int64  `json:"music_folder_id"`
 }
 
 type MetadataWithPlaycounts struct {

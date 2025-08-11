@@ -45,8 +45,37 @@ export function useBackendFetch() {
     return response
   }
 
-  const openSubsonicFetchRequest = async (path: string, options = {}): Promise<Response> => {
+  const openSubsonicFetchRequest = async (path: string, options: RequestInit = {}): Promise<Response> => {
+    const formData = new FormData()
+    if (userApiKey.value) {
+      formData.append('apiKey', userApiKey.value)
+    }
+    else if (userSalt.value && userToken.value) {
+      formData.append('u', userUsername.value)
+      formData.append('s', userSalt.value)
+      formData.append('t', userToken.value)
+    }
+    else {
+      await router.push('/login')
+    }
+    formData.append('f', 'json')
+    formData.append('v', '1.16.0')
+    formData.append('c', 'zene-frontend')
+
+    // append formdata to existing body
+    if (options.body instanceof FormData) {
+      formData.forEach((value, key) => {
+        (options.body as FormData).append(key, value)
+      })
+    }
+    else {
+      options.body = formData
+    }
+
+    options.method = options.method ?? 'POST'
+
     const url = `/rest/${path}`
+
     const response = await fetch(url, options)
     return response
   }

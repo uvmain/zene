@@ -1,15 +1,39 @@
 # Zene
-![Zene screenshot](./docs/Screenshot%202025-08-10%20165519.png)
+![Zene screenshot](./docs/assets/zene-home.webp)
 
 ## Self hosted Music Server and Web player
+Fast and feature packed with smart caching
+- All transcoded audio is cached locally and cleaned with smart rules
+- Fast full text search
+- lyrics cached in database on retrieval
+- Image endpoints and frontend make use of If-Modified-Since headers for 304 responses
+- ffmpeg and ffprobe automatically downloaded as required on first boot
+- album art automatically fetched from album folder || embedded in track || deezer || coverartarchive.org
+- artist art automatically fetched from artist folder || deezer || wikidata
 
 ### Uses the OpenSubsonic API, with a few extras
-additional API endpoints include:
+Supports the following OpenSubsonic API extensions:
+- apiKeyAuthentication (this project supports password, enc:password, salt & token, and ApiKey auth)
+- formPost (all endpoints support GET and POST, with either formData values OR query parameters)
+- songLyrics (lyrics are pulled from lrclib on request, and saved locally in the database for future calls)
+- transcodeOffset (supports streaming from an offset)
+
+Supports the following OpenSubsonic API endpoints:
+[Implemented OpenSubsonic API endpoints](./docs/implemented-opensubsonic-endpoints.md)
+
+additional custom API endpoints include:
 - createAvatar
 - updateAvatar
 - deleteAvatar
+  The above endpoints enable dynamic functionality consistent with the existing getAvatar endpoint
 - getArtistArt
 
+### Tech stack
+- Sqlite database
+- Go backend
+- Vue frontend (embedded during build)
+
+- uses Air and Vite for HMR, and Caddy for SSL in local development
 
 ## localdev
 ### requirements
