@@ -8,20 +8,13 @@ import (
 	"zene/core/types"
 )
 
-func createLyricsTable(ctx context.Context) error {
-	tableName := "track_lyrics"
-	schema := `CREATE TABLE IF NOT EXISTS track_lyrics (
+func createLyricsTable(ctx context.Context) {
+	schema := `CREATE TABLE track_lyrics (
 		musicbrainz_track_id TEXT PRIMARY KEY,
     plain_lyrics TEXT,
     synced_lyrics TEXT
 	);`
-
-	err := createTable(ctx, tableName, schema)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	createTable(ctx, schema)
 }
 
 func UpsertTrackLyrics(ctx context.Context, musicbrainzTrackId string, lyrics types.Lyrics) error {

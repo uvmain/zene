@@ -124,7 +124,7 @@ func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, r
 		if err := rows.Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
 			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
 			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
-			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
+			&result.MusicBrainzTrackID, &result.Label, &result.MusicFolderId, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
 			logger.Printf("Failed to scan row in SelectTracksByArtistId: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
 		}

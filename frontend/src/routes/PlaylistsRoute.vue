@@ -13,7 +13,7 @@ const session = ref<cast.framework.CastSession | null>(null)
 const temporaryToken = ref<TokenResponse | null>(null)
 
 async function getMimeType(): Promise<string> {
-  await fetch(audioUrl.value, { method: 'HEAD' })
+  await fetch(audioUrl.value)
     .then((response) => {
       const contentType = response.headers.get('content-type') ?? ''
       debugLog(contentType)

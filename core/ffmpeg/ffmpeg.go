@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"os/exec"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 	"zene/core/logger"
 )
 
-func InitializeFfmpeg(ctx context.Context) error {
+func InitializeFfmpeg(ctx context.Context) {
 	logger.Printf("FFMPEG_PATH: %s", config.FfmpegPath)
 
 	if io.FileExists(config.FfmpegPath) {
@@ -20,16 +21,15 @@ func InitializeFfmpeg(ctx context.Context) error {
 	} else {
 		err := downloadFfmpegBinary()
 		if err != nil {
-			return fmt.Errorf("downloading ffmpeg binary: %v", err)
+			log.Fatalf("downloading ffmpeg binary: %v", err)
 		}
 	}
 
 	version, err := exec.CommandContext(ctx, config.FfmpegPath, "-version").Output()
 	if err != nil {
-		return fmt.Errorf("ffmpeg not found at %s: %v", config.FfmpegPath, err)
+		log.Fatalf("ffmpeg not found at %s: %v", config.FfmpegPath, err)
 	} else {
 		logger.Printf("ffmpeg version is %v", strings.Split(string(version), "\n")[0])
-		return nil
 	}
 }
 

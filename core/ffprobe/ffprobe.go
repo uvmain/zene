@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -15,7 +16,7 @@ import (
 	"zene/core/types"
 )
 
-func InitializeFfprobe(ctx context.Context) error {
+func InitializeFfprobe(ctx context.Context) {
 	logger.Printf("FFPROBE_PATH: %s", config.FfprobePath)
 
 	if io.FileExists(config.FfprobePath) {
@@ -23,16 +24,15 @@ func InitializeFfprobe(ctx context.Context) error {
 	} else {
 		err := DownloadFfprobeBinary()
 		if err != nil {
-			return fmt.Errorf("failed to download ffprobe binary: %v", err)
+			log.Fatalf("failed to download ffprobe binary: %v", err)
 		}
 	}
 
 	version, err := exec.CommandContext(ctx, config.FfprobePath, "-version").Output()
 	if err != nil {
-		return fmt.Errorf("ffprobe not found at %s: %v", config.FfprobePath, err)
+		log.Fatalf("ffprobe not found at %s: %v", config.FfprobePath, err)
 	} else {
 		logger.Printf("ffprobe version is %v", strings.Split(string(version), "\n")[0])
-		return nil
 	}
 }
 

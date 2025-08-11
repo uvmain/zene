@@ -3,20 +3,18 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"zene/core/art"
 	"zene/core/database"
 	"zene/core/logger"
-	"zene/core/net"
 	"zene/core/types"
 )
 
 func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
-	searchParam := r.URL.Query().Get("search")
-	randomParam := r.URL.Query().Get("random")
-	recentParam := r.URL.Query().Get("recent")
-	chronoParam := r.URL.Query().Get("chronological")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
+	searchParam := r.FormValue("search")
+	randomParam := r.FormValue("random")
+	recentParam := r.FormValue("recent")
+	chronoParam := r.FormValue("chronological")
+	limitParam := r.FormValue("limit")
+	offsetParam := r.FormValue("offset")
 
 	rows, err := database.SelectAlbumArtists(r.Context(), searchParam, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {
@@ -56,10 +54,10 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 
 func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	randomParam := r.URL.Query().Get("random")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
-	recentParam := r.URL.Query().Get("recent")
+	randomParam := r.FormValue("random")
+	limitParam := r.FormValue("limit")
+	offsetParam := r.FormValue("offset")
+	recentParam := r.FormValue("recent")
 
 	rows, err := database.SelectTracksByArtistId(r.Context(), musicBrainzArtistId, randomParam, limitParam, offsetParam, recentParam)
 	if err != nil {
@@ -76,32 +74,13 @@ func HandleGetArtistTracks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
-	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	imageBlob, lastModified, err := art.GetArtForArtist(r.Context(), musicBrainzArtistId)
-
-	if net.IfModifiedResponse(w, r, lastModified) {
-		return
-	}
-
-	if err != nil {
-		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
-		return
-	}
-
-	mimeType := http.DetectContentType(imageBlob)
-	w.Header().Set("Content-Type", mimeType)
-	w.WriteHeader(http.StatusOK)
-	w.Write(imageBlob)
-}
-
 func HandleGetArtistAlbums(w http.ResponseWriter, r *http.Request) {
 	musicBrainzArtistId := r.PathValue("musicBrainzArtistId")
-	randomParam := r.URL.Query().Get("random")
-	chronoParam := r.URL.Query().Get("chronological")
-	limitParam := r.URL.Query().Get("limit")
-	offsetParam := r.URL.Query().Get("offset")
-	recentParam := r.URL.Query().Get("recent")
+	randomParam := r.FormValue("random")
+	chronoParam := r.FormValue("chronological")
+	limitParam := r.FormValue("limit")
+	offsetParam := r.FormValue("offset")
+	recentParam := r.FormValue("recent")
 
 	rows, err := database.SelectAlbumsByArtistId(r.Context(), musicBrainzArtistId, randomParam, recentParam, chronoParam, limitParam, offsetParam)
 	if err != nil {

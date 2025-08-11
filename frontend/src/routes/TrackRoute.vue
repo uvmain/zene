@@ -1,17 +1,24 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '~/types'
+import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 import { useLogic } from '~/composables/useLogic'
 
 const route = useRoute()
 const { backendFetchRequest } = useBackendFetch()
 const { getArtistUrl, getAlbumUrl, formatTime } = useLogic()
+const { userUsername, userSalt, userToken } = useAuth()
 
 const track = ref<TrackMetadataWithImageUrl | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
 const musicbrainzTrackId = computed(() => route.params.musicbrainz_track_id as string)
+
+const coverArtUrl = computed(() => {
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${track.value?.musicbrainz_album_id}`
+  return track.value ? `/rest/getCoverArt.view${queryParamString}` : '/default-square.png'
+})
 
 onMounted(async () => {
   if (!musicbrainzTrackId.value) {
@@ -57,7 +64,7 @@ function onImageError(event: Event) {
       {{ error }}
     </div>
     <div v-if="track && !loading && !error" class="flex flex-col gap-8 md:flex-row">
-      <img v-if="track.image_url" :src="track.image_url" alt="Album Art" class="h-auto max-w-30vw w-full rounded-lg shadow-lg" @error="onImageError">
+      <img v-if="coverArtUrl" :src="coverArtUrl" alt="Album Art" class="h-auto max-w-30vw w-full rounded-lg shadow-lg" @error="onImageError">
       <div class="flex flex-col md:w-2/3">
         <h1 class="mb-2 text-3xl font-bold">
           {{ track.title }}

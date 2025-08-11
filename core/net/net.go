@@ -1,15 +1,24 @@
 package net
 
 import (
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 	"zene/core/config"
 	zene_io "zene/core/io"
 	"zene/core/logger"
+	"zene/core/subsonic"
+	"zene/core/types"
 )
 
 func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified time.Time) bool {
@@ -63,4 +72,84 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 	}
 
 	return nil
+}
+
+// WriteSubsonicError writes a Subsonic API error response in XML or JSON format, defaulting to XML.
+// It always returns HTTP status 200 OK, as per Subsonic API specification.
+// The response includes the error code and message if there is an error.
+func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string, helpUrl string) {
+
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), true)
+	response.SubsonicResponse.Error.Code = code
+	response.SubsonicResponse.Error.Message = message
+	if helpUrl != "" {
+		response.SubsonicResponse.Error.HelpUrl = helpUrl
+	}
+
+	format := r.FormValue("f")
+	if format == "json" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
+	} else {
+		w.Header().Set("Content-Type", "application/xml")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
+		xml.NewEncoder(w).Encode(response)
+	}
+}
+
+func ParseBooleanFormValue(w http.ResponseWriter, r *http.Request, key string) bool {
+	formValue := r.FormValue(key)
+	if formValue != "" {
+		parsedBool, err := strconv.ParseBool(formValue)
+		if err != nil {
+			errString := fmt.Sprintf("%s must be true or false", key)
+			WriteSubsonicError(w, r, types.ErrorMissingParameter, errString, "")
+			return false
+		}
+		return parsedBool
+	} else {
+		return false
+	}
+}
+
+func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true
+	if err := r.ParseForm(); err != nil {
+		logger.Printf("Error parsing form: %v", err)
+		return nil, nil, fmt.Errorf("error parsing form: %w", err)
+	}
+
+	intSlice := []int{}
+	stringSlice := r.Form[key]
+
+	if intArray {
+		for _, idStr := range stringSlice {
+			id, err := strconv.Atoi(idStr)
+			if err != nil {
+				logger.Printf("Error parsing %s in parseDuplicateFormKeys: %v", key, err)
+				return intSlice, []string{}, fmt.Errorf("error parsing %s: %w", key, err)
+			}
+			intSlice = append(intSlice, id)
+		}
+	}
+	return intSlice, stringSlice, nil
+}
+
+func GetImageFromRequest(r *http.Request, key string) (image.Image, error) {
+	if err := r.ParseMultipartForm(10); err != nil {
+		return nil, fmt.Errorf("error parsing multipart form: %w", err)
+	}
+
+	file, _, err := r.FormFile(key)
+	if err != nil {
+		return nil, fmt.Errorf("error getting image from request: %w", err)
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding image: %w", err)
+	}
+	return img, nil
 }

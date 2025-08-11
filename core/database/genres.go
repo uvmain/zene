@@ -10,43 +10,36 @@ import (
 	"zene/core/types"
 )
 
-func createGenresTable(ctx context.Context) error {
-	tableName := "track_genres"
-	schema := `CREATE TABLE IF NOT EXISTS track_genres (
+func createGenresTable(ctx context.Context) {
+	schema := `CREATE TABLE track_genres (
 		file_path TEXT NOT NULL,
 		genre TEXT NOT NULL,
 		FOREIGN KEY(file_path) REFERENCES metadata(file_path) ON DELETE CASCADE
 	);`
 
-	err := createTable(ctx, tableName, schema)
-	if err != nil {
-		return err
-	}
-
+	createTable(ctx, schema)
 	createIndex(ctx, "idx_track_genres_genre", "track_genres", "genre", false)
 	createGenresTriggers(ctx)
 
 	var count int
 	err = DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM track_genres").Scan(&count)
 	if err != nil {
-		return fmt.Errorf("error checking count of track_genres table: %v", err)
+		log.Fatalf("error checking count of track_genres table: %v", err)
 	}
 
 	if count == 0 {
-		log.Println("track_genres table is empty, populating from metadata")
+		log.Println("Database: track_genres table is empty, populating from metadata")
 		err = populateGenresFromMetadata(ctx)
 		if err != nil {
-			return fmt.Errorf("error populating track_genres table from metadata: %v", err)
+			log.Fatalf("error populating track_genres table from metadata: %v", err)
 		} else {
-			log.Println("track_genres table populated from metadata")
+			log.Println("Database: track_genres table populated from metadata")
 		}
 	}
-
-	return nil
 }
 
 func createGenresTriggers(ctx context.Context) {
-	createTrigger(ctx, "tr_metadata_insert_genres", `CREATE TRIGGER tr_metadata_insert_genres AFTER INSERT ON metadata
+	createTrigger(ctx, `CREATE TRIGGER tr_metadata_insert_genres AFTER INSERT ON metadata
 	BEGIN
 		INSERT INTO track_genres (file_path, genre)
 		WITH RECURSIVE split_genre(file_path, genre, rest) AS (
@@ -68,12 +61,12 @@ func createGenresTriggers(ctx context.Context) {
 		WHERE genre <> '';
 	END;`)
 
-	createTrigger(ctx, "tr_metadata_delete_genres", `CREATE TRIGGER tr_metadata_delete_genres AFTER DELETE ON metadata
+	createTrigger(ctx, `CREATE TRIGGER tr_metadata_delete_genres AFTER DELETE ON metadata
     BEGIN
         DELETE FROM track_genres WHERE file_path = old.file_path;
     END;`)
 
-	createTrigger(ctx, "tr_metadata_update_genres", `CREATE TRIGGER tr_metadata_update_genres AFTER UPDATE ON metadata
+	createTrigger(ctx, `CREATE TRIGGER tr_metadata_update_genres AFTER UPDATE ON metadata
     BEGIN
 		DELETE FROM track_genres WHERE file_path = old.file_path;
         INSERT INTO track_genres (file_path, genre)
@@ -187,7 +180,7 @@ func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, li
 		if err := rows.Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
 			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
 			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
-			&result.MusicBrainzTrackID, &result.Label, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
+			&result.MusicBrainzTrackID, &result.Label, &result.MusicFolderId, &result.UserPlayCount, &result.GlobalPlayCount); err != nil {
 			logger.Printf("Failed to scan row in SelectTracksByGenres: %v", err)
 			return []types.MetadataWithPlaycounts{}, err
 		}

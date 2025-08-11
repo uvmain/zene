@@ -31,7 +31,7 @@ func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, 
 			&row.Title, &row.Artist, &row.Album, &row.AlbumArtist,
 			&row.Genre, &row.TrackNumber, &row.TotalTracks, &row.DiscNumber,
 			&row.TotalDiscs, &row.ReleaseDate, &row.MusicBrainzArtistID,
-			&row.MusicBrainzAlbumID, &row.MusicBrainzTrackID, &row.Label,
+			&row.MusicBrainzAlbumID, &row.MusicBrainzTrackID, &row.Label, &row.MusicFolderId,
 		)
 		if err != nil {
 			return []types.Metadata{}, fmt.Errorf("scanning metadata row: %v", err)

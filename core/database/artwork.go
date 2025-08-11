@@ -5,22 +5,18 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
-	"time"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
-func createAlbumArtTable(ctx context.Context) error {
-	tableName := "album_art"
-	schema := `CREATE TABLE IF NOT EXISTS album_art (musicbrainz_album_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
-	err := createTable(ctx, tableName, schema)
-	return err
+func createAlbumArtTable(ctx context.Context) {
+	schema := `CREATE TABLE album_art (musicbrainz_album_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
+	createTable(ctx, schema)
 }
 
-func createArtistArtTable(ctx context.Context) error {
-	tableName := "artist_art"
-	schema := `CREATE TABLE IF NOT EXISTS artist_art (musicbrainz_artist_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
-	err := createTable(ctx, tableName, schema)
-	return err
+func createArtistArtTable(ctx context.Context) {
+	schema := `CREATE TABLE artist_art (musicbrainz_artist_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
+	createTable(ctx, schema)
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {
@@ -41,7 +37,7 @@ func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModif
 		ON CONFLICT(musicbrainz_album_id) DO UPDATE SET date_modified=excluded.date_modified
 		WHERE excluded.date_modified>album_art.date_modified`
 
-	_, err := DB.ExecContext(ctx, query, musicbrainzAlbumId, time.Now().Format(time.RFC3339Nano))
+	_, err := DB.ExecContext(ctx, query, musicbrainzAlbumId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		return fmt.Errorf("inserting album art row: %v", err)
 	}
@@ -97,7 +93,7 @@ func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateMod
 		ON CONFLICT(musicbrainz_artist_id) DO UPDATE SET date_modified=excluded.date_modified
 		WHERE excluded.date_modified>artist_art.date_modified`
 
-	_, err := DB.ExecContext(ctx, query, musicbrainzArtistId, time.Now().Format(time.RFC3339Nano))
+	_, err := DB.ExecContext(ctx, query, musicbrainzArtistId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		return fmt.Errorf("inserting artist art row: %v", err)
 	}

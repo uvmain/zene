@@ -44,7 +44,13 @@ export function usePlaybackQueue() {
 
   const getRandomTrack = async (): Promise<TrackMetadataWithImageUrl> => {
     const seed = getRandomInteger()
-    const response = await backendFetchRequest(`tracks?random=${seed}&limit=1`)
+    const formData = new FormData()
+    formData.append('random', seed.toString())
+    formData.append('limit', '1')
+    const response = await backendFetchRequest(`tracks`, {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as TrackMetadata[]
     const randomTrack = trackWithImageUrl(json[0])
     setCurrentlyPlayingTrack(randomTrack)
@@ -71,7 +77,13 @@ export function usePlaybackQueue() {
     if (randomSeed.value === 0) {
       randomSeed.value = getRandomInteger()
     }
-    const response = await backendFetchRequest(`tracks?random=${randomSeed.value}&limit=100`)
+    const formData = new FormData()
+    formData.append('random', randomSeed.value.toString())
+    formData.append('limit', '100')
+    const response = await backendFetchRequest(`tracks`, {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as TrackMetadata[]
     const randomTracks = json.map((randomTrack) => {
       return trackWithImageUrl(randomTrack)

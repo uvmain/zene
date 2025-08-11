@@ -3,16 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"zene/core/art"
 	"zene/core/database"
 	"zene/core/logger"
-	"zene/core/net"
 )
 
 func HandleGetAlbums(w http.ResponseWriter, r *http.Request) {
-	randomParam := r.URL.Query().Get("random")
-	limitParam := r.URL.Query().Get("limit")
-	recentParam := r.URL.Query().Get("recent")
+	randomParam := r.FormValue("random")
+	limitParam := r.FormValue("limit")
+	recentParam := r.FormValue("recent")
 
 	rows, err := database.SelectAllAlbums(r.Context(), randomParam, limitParam, recentParam)
 	if err != nil {
@@ -63,26 +61,4 @@ func HandleGetAlbumTracks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
 		return
 	}
-}
-
-func HandleGetAlbumArt(w http.ResponseWriter, r *http.Request) {
-	musicBrainzAlbumId := r.PathValue("musicBrainzAlbumId")
-	sizeParam := r.URL.Query().Get("size")
-	if sizeParam == "" {
-		sizeParam = "xl"
-	}
-	imageBlob, lastModified, err := art.GetArtForAlbum(r.Context(), musicBrainzAlbumId, sizeParam)
-
-	if net.IfModifiedResponse(w, r, lastModified) {
-		return
-	}
-
-	if err != nil {
-		http.Redirect(w, r, "/default-square.png", http.StatusTemporaryRedirect)
-		return
-	}
-	mimeType := http.DetectContentType(imageBlob)
-	w.Header().Set("Content-Type", mimeType)
-	w.WriteHeader(http.StatusOK)
-	w.Write(imageBlob)
 }

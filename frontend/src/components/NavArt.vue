@@ -1,10 +1,17 @@
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth'
 import { useLogic } from '~/composables/useLogic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const { currentlyPlayingTrack } = usePlaybackQueue()
 const { getTrackUrl, getArtistUrl, getAlbumUrl } = useLogic()
+const { userUsername, userSalt, userToken } = useAuth()
 const router = useRouter()
+
+const coverArtUrl = computed(() => {
+  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${currentlyPlayingTrack.value?.musicbrainz_album_id}`
+  return currentlyPlayingTrack.value ? `/rest/getCoverArt.view${queryParamString}` : '/default-square.png'
+})
 
 function onImageError(event: Event) {
   const target = event.target as HTMLImageElement
@@ -33,6 +40,6 @@ function onImageError(event: Event) {
     >
       {{ currentlyPlayingTrack?.album }}
     </RouterLink>
-    <img :src="currentlyPlayingTrack?.image_url" class="w-full cursor-pointer rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.musicbrainz_album_id}`)">
+    <img :src="coverArtUrl" class="w-full cursor-pointer rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.musicbrainz_album_id}`)">
   </div>
 </template>

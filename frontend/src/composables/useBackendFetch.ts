@@ -1,14 +1,81 @@
 import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
 import type { TokenResponse, User, UsersResponse } from '~/types/auth'
+import type { SubsonicUserResponse } from '~/types/getUser'
+import { useAuth } from '~/composables/useAuth'
 import { useRandomSeed } from '~/composables/useRandomSeed'
 import { useLogic } from './useLogic'
 
+const { userApiKey, userSalt, userToken, userUsername, userLoginState, userIsAdminState } = useAuth()
 const { getRandomSeed } = useRandomSeed()
 const { trackWithImageUrl } = useLogic()
+const router = useRouter()
 
 export function useBackendFetch() {
-  const backendFetchRequest = async (path: string, options = {}): Promise<Response> => {
+  const backendFetchRequest = async (path: string, options: RequestInit = {}): Promise<Response> => {
     const url = `/api/${path}`
+    const formData = new FormData()
+    if (userApiKey.value) {
+      formData.append('apiKey', userApiKey.value)
+    }
+    else if (userSalt.value && userToken.value) {
+      formData.append('u', userUsername.value)
+      formData.append('s', userSalt.value)
+      formData.append('t', userToken.value)
+    }
+    else {
+      await router.push('/login')
+    }
+    formData.append('f', 'json')
+    formData.append('v', '1.16.0')
+    formData.append('c', 'zene-frontend')
+
+    // append formdata to existing body
+    if (options.body instanceof FormData) {
+      formData.forEach((value, key) => {
+        (options.body as FormData).append(key, value)
+      })
+    }
+    else {
+      options.body = formData
+    }
+
+    options.method = 'POST'
+
+    const response = await fetch(url, options)
+    return response
+  }
+
+  const openSubsonicFetchRequest = async (path: string, options: RequestInit = {}): Promise<Response> => {
+    const formData = new FormData()
+    if (userApiKey.value) {
+      formData.append('apiKey', userApiKey.value)
+    }
+    else if (userSalt.value && userToken.value) {
+      formData.append('u', userUsername.value)
+      formData.append('s', userSalt.value)
+      formData.append('t', userToken.value)
+    }
+    else {
+      await router.push('/login')
+    }
+    formData.append('f', 'json')
+    formData.append('v', '1.16.0')
+    formData.append('c', 'zene-frontend')
+
+    // append formdata to existing body
+    if (options.body instanceof FormData) {
+      formData.forEach((value, key) => {
+        (options.body as FormData).append(key, value)
+      })
+    }
+    else {
+      options.body = formData
+    }
+
+    options.method = options.method ?? 'POST'
+
+    const url = `/rest/${path}`
+
     const response = await fetch(url, options)
     return response
   }
@@ -34,11 +101,14 @@ export function useBackendFetch() {
 
   const getArtistTracks = async (musicbrainz_artist_id: string, limit = 0): Promise<TrackMetadataWithImageUrl[]> => {
     const randomSeed = getRandomSeed()
-    let url = `artists/${musicbrainz_artist_id}/tracks?random=${randomSeed}`
-    if (limit > 0) {
-      url = `${url}&limit=${limit}`
-    }
-    const response = await backendFetchRequest(url)
+    const formData = new FormData()
+    formData.append('limit', limit.toString())
+    formData.append('random', randomSeed.toString())
+    const url = `artists/${musicbrainz_artist_id}/tracks`
+    const response = await backendFetchRequest(url, {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as TrackMetadata[]
     const trackArray: TrackMetadataWithImageUrl[] = []
     json.forEach((track) => {
@@ -48,7 +118,12 @@ export function useBackendFetch() {
   }
 
   const getArtistAlbums = async (musicbrainz_artist_id: string): Promise<AlbumMetadata[]> => {
-    const response = await backendFetchRequest(`artists/${musicbrainz_artist_id}/albums?chronological=true`)
+    const formData = new FormData()
+    formData.append('chronological', 'true')
+    const response = await backendFetchRequest(`artists/${musicbrainz_artist_id}/albums`, {
+      method: 'POST',
+      body: formData,
+    })
     const json = await response.json() as AlbumMetadata[]
     return json
   }
@@ -66,12 +141,24 @@ export function useBackendFetch() {
   }
 
   const getGenreTracks = async (genre: string, limit = 0, random = false): Promise<TrackMetadataWithImageUrl[]> => {
-    const response = await backendFetchRequest(`genres/tracks?genres=${genre}&limit=${limit}&random=${random}`)
+    const formData = new FormData()
+    formData.append('genres', genre)
+    formData.append('limit', limit.toString())
+    formData.append('random', random.toString())
+    const response = await backendFetchRequest('genres/tracks', {
+      method: 'POST',
+      body: formData,
+    })
     return await response.json() as TrackMetadataWithImageUrl[]
   }
 
   const getTemporaryToken = async (duration = 30): Promise<TokenResponse> => {
-    const response = await backendFetchRequest(`temporary_token?duration=${duration}`)
+    const formData = new FormData()
+    formData.append('duration', duration.toString())
+    const response = await backendFetchRequest('temporary_token', {
+      method: 'POST',
+      body: formData,
+    })
     return await response.json() as TokenResponse
   }
 
@@ -102,8 +189,48 @@ export function useBackendFetch() {
     return data
   }
 
+  const checkIfLoggedIn = async (): Promise<boolean> => {
+    try {
+      const formData = new FormData()
+      if (userApiKey.value) {
+        formData.append('apiKey', userApiKey.value)
+      }
+      else if (userSalt.value && userToken.value) {
+        formData.append('u', userUsername.value)
+        formData.append('s', userSalt.value)
+        formData.append('t', userToken.value)
+      }
+      else {
+        await router.push('/login')
+      }
+      formData.append('f', 'json')
+      formData.append('v', '1.16.0')
+      formData.append('c', 'zene-frontend')
+
+      const response = await openSubsonicFetchRequest('getUser.view', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const json = await response.json() as SubsonicUserResponse
+      const subsonicResponse = json['subsonic-response']
+      if (subsonicResponse.error) {
+        throw new Error(subsonicResponse.error.message)
+      }
+      userLoginState.value = subsonicResponse.status === 'ok'
+      userIsAdminState.value = subsonicResponse.user.adminRole === 'true'
+      return userLoginState.value
+    }
+    catch {
+      userLoginState.value = false
+      userIsAdminState.value = false
+      return false
+    }
+  }
+
   return {
     backendFetchRequest,
+    openSubsonicFetchRequest,
     getAlbum,
     getAlbumTracks,
     getArtistTracks,
@@ -115,5 +242,6 @@ export function useBackendFetch() {
     refreshTemporaryToken,
     getMimeType,
     getLyrics,
+    checkIfLoggedIn,
   }
 }

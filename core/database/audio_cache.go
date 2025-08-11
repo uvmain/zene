@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"time"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
-func createAudioCacheTable(ctx context.Context) error {
-	tableName := "audio_cache"
-	schema := `CREATE TABLE IF NOT EXISTS audio_cache (
+func createAudioCacheTable(ctx context.Context) {
+	schema := `CREATE TABLE audio_cache (
 		cache_key TEXT PRIMARY KEY,
 		last_accessed TEXT NOT NULL
 	);`
-	err := createTable(ctx, tableName, schema)
-	return err
+	createTable(ctx, schema)
 }
 
 func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {
@@ -76,7 +75,7 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 		ON CONFLICT(cache_key) DO UPDATE SET last_accessed = ?
 	`
 
-	lastAccessed := time.Now().Format(time.RFC3339Nano)
+	lastAccessed := logic.GetCurrentTimeFormatted()
 	_, err := DB.ExecContext(ctx, stmt, cache_key, lastAccessed, lastAccessed)
 
 	if err != nil {

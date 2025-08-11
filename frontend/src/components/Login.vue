@@ -1,24 +1,57 @@
 <script setup lang="ts">
-import type { SessionCheck } from '~/types/auth'
+import type { SubsonicUserResponse } from '~/types/getUser'
+import { md5 } from 'js-md5'
 import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const router = useRouter()
-const { backendFetchRequest } = useBackendFetch()
-const { checkIfLoggedIn, userLoginState } = useAuth()
+const { checkIfLoggedIn, openSubsonicFetchRequest } = useBackendFetch()
+const { userLoginState, userIsAdminState, userUsername, userSalt, userToken } = useAuth()
+
+function generateSalt(length = 6) {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let result = ''
+  const array = new Uint32Array(length)
+  crypto.getRandomValues(array)
+  for (let i = 0; i < length; i++) {
+    result += chars[array[i] % chars.length]
+  }
+  return result
+}
+
+function md5Hash(password: string, salt: string): string {
+  const messageToHash = password + salt
+  const hash = md5.create()
+  hash.update(messageToHash)
+  return hash.hex()
+}
+
+async function generateSaltAndTokenForOpenSubsonic(password: string): Promise<void> {
+  const salt = generateSalt()
+  const token = md5Hash(password, salt)
+  userSalt.value = salt
+  userToken.value = token
+}
 
 async function login(username: string, password: string) {
   const formData = new FormData()
-  formData.append('username', username)
-  formData.append('password', password)
+  await generateSaltAndTokenForOpenSubsonic(password)
+  userUsername.value = username
+  formData.append('u', username)
+  formData.append('s', userSalt.value)
+  formData.append('t', userToken.value)
+  formData.append('f', 'json')
+  formData.append('v', '1.16.0')
+  formData.append('c', 'zene-frontend')
 
-  const response = await backendFetchRequest('login', {
+  const response = await openSubsonicFetchRequest('getUser.view', {
     body: formData,
-    method: 'POST',
   })
-  const jsonData = await response.json() as SessionCheck
-  userLoginState.value = jsonData.loggedIn
-  if (jsonData.loggedIn === true) {
+
+  const jsonData = await response.json() as SubsonicUserResponse
+  userLoginState.value = jsonData['subsonic-response'].status === 'ok'
+  userIsAdminState.value = jsonData['subsonic-response'].user.adminRole === 'true'
+  if (userLoginState.value) {
     router.push('/')
   }
 }

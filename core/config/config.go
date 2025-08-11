@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cmp"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -11,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var MusicDir string
+var MusicDirs []string
 var DatabaseDirectory string
 var LibraryDirectory string
 var TempDirectory string
@@ -26,27 +27,30 @@ var ArtistArtFolder string
 var AudioCacheFolder string
 var AudioCacheMaxMB int
 var AudioCacheMaxDays int
+var AdminUsername string
+var AdminPassword string
+var AdminEmail string
+var UserAvatarFolder string
 
 func LoadConfig() {
 
 	godotenv.Load(".env")
 
-	musicDir := os.Getenv("MUSIC_DIR")
-	if musicDir == "" {
-		musicDir = "./music"
-	}
-	MusicDir, _ = filepath.Abs(musicDir)
-	logger.Printf("Using music directory: %s", MusicDir)
+	musicDirs := cmp.Or(os.Getenv("MUSIC_DIRS"), "./music")
 
-	dataPath := os.Getenv("DATA_PATH")
-	if dataPath == "" {
-		dataPath = "./data"
+	MusicDirs = strings.Split(musicDirs, ",")
+	for i, dir := range MusicDirs {
+		MusicDirs[i], _ = filepath.Abs(dir)
 	}
+	logger.Printf("Using music directories: %v", MusicDirs)
+
+	dataPath := cmp.Or(os.Getenv("DATA_PATH"), "./data")
 
 	DatabaseDirectory = filepath.Join(dataPath, "database")
 	AudioCacheFolder = filepath.Join(dataPath, "audio-cache")
 	LibraryDirectory = filepath.Join(dataPath, "library")
 	TempDirectory = filepath.Join(dataPath, "temp")
+	UserAvatarFolder = filepath.Join(dataPath, "avatars")
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")
@@ -97,18 +101,16 @@ func LoadConfig() {
 		FfprobePath, _ = filepath.Abs(ffprobePath)
 	}
 
-	audioFileTypesEnv := os.Getenv("AUDIO_FILE_TYPES")
-	if audioFileTypesEnv == "" {
-		AudioFileTypes = []string{
-			".aac", ".alac", ".flac", ".m4a", ".mp3", ".ogg", ".opus", ".wav", ".wma",
-		}
-	} else {
-		AudioFileTypes = strings.Split(audioFileTypesEnv, ",")
-		for i, ext := range AudioFileTypes {
-			AudioFileTypes[i] = strings.TrimSpace(ext)
-		}
+	audioFileTypesEnv := cmp.Or(os.Getenv("AUDIO_FILE_TYPES"), ".aac,.alac,.flac,.m4a,.mp3,.ogg,.opus,.wav,.wma")
+	AudioFileTypes = strings.Split(audioFileTypesEnv, ",")
+	for i, ext := range AudioFileTypes {
+		AudioFileTypes[i] = strings.TrimSpace(ext)
 	}
 	logger.Printf("Audio file types: %v", AudioFileTypes)
+
+	AdminUsername = os.Getenv("ADMIN_USERNAME")
+	AdminPassword = os.Getenv("ADMIN_PASSWORD")
+	AdminEmail = os.Getenv("ADMIN_EMAIL")
 }
 
 func IsLocalDevEnv() bool {

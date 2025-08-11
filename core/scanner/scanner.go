@@ -43,7 +43,6 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	metadataFiles, err := database.SelectTrackFilesForScanner(ctx)
 	if err != nil {
 		return scanError("Error scanning database for metadata files: %v", err)
-
 	}
 
 	// for each file found, either insert or update a metadata row
@@ -97,7 +96,7 @@ func RunScan(ctx context.Context) types.ScanResponse {
 }
 
 func getAudioFiles(ctx context.Context) ([]types.File, error) {
-	audioFiles, err := io.GetFiles(ctx, config.MusicDir, config.AudioFileTypes)
+	audioFiles, err := io.GetFiles(ctx, config.MusicDirs[0], config.AudioFileTypes)
 	if err != nil {
 		return []types.File{}, fmt.Errorf("Error getting slice of audio files from the filesystem: %v", err)
 	}
@@ -143,7 +142,7 @@ func upsertMetadataForFile(ctx context.Context, file types.File) error {
 
 	metadata.FilePath = file.FilePathAbs
 	metadata.FileName = filepath.Base(file.FilePathAbs)
-	metadata.DateAdded = time.Now().Format(time.RFC3339Nano)
+	metadata.DateAdded = logic.GetCurrentTimeFormatted()
 	metadata.DateModified = file.DateModified
 	metadata.Format = tags.Format
 	metadata.Duration = tags.Duration

@@ -40,11 +40,14 @@ async function refreshAlbums() {
 }
 
 async function getAlbums() {
-  const params = new URLSearchParams()
-  params.set('recent', currentOrder.value === 'recentlyUpdated' ? 'true' : 'false')
-  params.set('random', currentOrder.value === 'random' ? `${randomAlbumSeed.value}` : '')
-  params.set('limit', `${props.limit}`)
-  const response = await backendFetchRequest(`albums?${params.toString()}`)
+  const formData = new FormData()
+  formData.append('recent', randomAlbumSeed.value.toString())
+  formData.append('random', randomAlbumSeed.value.toString())
+  formData.append('limit', props.limit.toString())
+  const response = await backendFetchRequest('albums', {
+    method: 'POST',
+    body: formData,
+  })
   const json = await response.json()
   const albums = json.map((album: any) => ({
     album: album.album,

@@ -12,3 +12,4 @@ frontend/node_modules
 frontend/dist
 data
 .DS_Store
+tmp

@@ -2,250 +2,164 @@ package auth
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
+	"crypto/md5"
+	"encoding/hex"
 	"net/http"
-	"time"
 	"zene/core/database"
+	"zene/core/encryption"
 	"zene/core/logger"
-	"zene/core/logic"
+	"zene/core/net"
 	"zene/core/types"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
-func hashPassword(password string) (string, error) {
-	hashBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hashBytes), nil
+func generateExpectedToken(password, salt string) string {
+	sum := md5.Sum([]byte(password + salt))
+	return hex.EncodeToString(sum[:])
 }
 
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+func validateToken(salt string, token string, decryptedPassword string) bool {
+	expected := generateExpectedToken(decryptedPassword, salt)
+	return token == expected
 }
 
-func generateToken() (string, error) {
-	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	return base64.URLEncoding.EncodeToString(b), nil
-}
-
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+// ValidateAuth authenticates a user by either plaintext password or token and salt.
+// It returns:
+// string: the authenticated username
+// int64: the authenticated userId
+// bool: true if successful; otherwise returns false and writes a 401 response.
+//
+// This supports the following request parameters in either form data or query parameters:
+// - u: username
+// - p: plaintext password, or hex encrypted password prefixed with "enc:"
+// - t: token = sha256(password + salt)
+// - s: salt
+// - apiKey: API key for authentication
+// - v: protocol version
+// - c: client name (required for all requests)
+//
+// If apiKey is specified, then none of p, t, s, nor u can be specified.
+// Else either p or both t and s must be specified.
+func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) {
 	ctx := r.Context()
-	passedUsername := r.FormValue("username")
-	passedPassword := r.FormValue("password")
-	var user types.User
 
-	logger.Println("User logging in")
+	u := r.FormValue("u") // username
+	p := r.FormValue("p") // plaintext password, or hex encrypted password prefixed with "enc:"
+	t := r.FormValue("t") // token = sha256(password + salt)
+	s := r.FormValue("s") // salt, used with token for authentication
+	apiKey := r.FormValue("apiKey")
+	v := r.FormValue("v") // protocol version, required for all requests
+	c := r.FormValue("c") // client name, required for all requests
 
-	// Check if users exist
-	usersExist, err := database.AnyUsersExist(ctx)
+	if c == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'c' is missing", "")
+		return "", 0, false
+	}
+
+	if v == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'v' is missing", "")
+		return "", 0, false
+	}
+
+	if apiKey != "" && (u != "" || p != "" || t != "" || s != "") {
+		net.WriteSubsonicError(w, r, types.ErrorTooManyAuthMechanisms, "Too many authentication mechanisms specified", "")
+		return "", 0, false
+	}
+
+	if p != "" && (t != "" || s != "") {
+		net.WriteSubsonicError(w, r, types.ErrorTooManyAuthMechanisms, "Too many authentication mechanisms specified", "")
+		return "", 0, false
+	}
+
+	if apiKey != "" {
+		return validateWithApiKey(ctx, apiKey, w, r)
+	}
+
+	if u == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'u' is missing", "")
+		return "", 0, false
+	}
+
+	if p == "" && (t == "" || s == "") {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Either 'p' or both 't' and 's' parameters are required", "")
+		return "", 0, false
+	}
+
+	encryptedPassword, userId, err := database.GetEncryptedPasswordFromDB(ctx, u)
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+		logger.Printf("Error getting encrypted password for user %s: %v", u, err)
+		net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
+		return "", 0, false
 	}
 
-	if !usersExist {
-		// create first admin user
-		hashedPassword, err := hashPassword(passedPassword)
-		if err != nil {
-			logger.Printf("Error hashing password: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		newId, err := database.UpsertUser(ctx, types.User{
-			Username:     passedUsername,
-			PasswordHash: hashedPassword,
-			IsAdmin:      true,
-		})
-		if err != nil {
-			logger.Printf("Error creating initial admin user: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		logger.Printf("Initial admin user created: ID %d", newId)
-		user, err = database.GetUserByUsername(ctx, passedUsername)
-		if err != nil {
-			logger.Printf("Error fetching new admin user details from database: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		// normal login flow: verify credentials
-		user, err = database.GetUserByUsername(ctx, passedUsername)
-		if err != nil || !checkPasswordHash(passedPassword, user.PasswordHash) {
-			logger.Println("Login unsuccessful, invalid credentials")
-			http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-			return
-		}
+	if p != "" && validateWithPassword(u, p, encryptedPassword) {
+		return u, userId, true
 	}
 
-	// Generate token, save session, set cookie as before
-	token, err := generateToken()
-	if err != nil {
-		logger.Println("Error generating token:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
+	if t != "" && s != "" && validateWithTokenAndSalt(s, t, encryptedPassword) {
+		return u, userId, true
 	}
 
-	err = database.SaveSessionToken(ctx, user.Id, token, time.Hour*24*7)
-	if err != nil {
-		logger.Println("Error saving session token:", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "appSession",
-		Value:    token,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-		Path:     "/",
-		MaxAge:   604800,
-	})
-
-	sessionCheck := types.SessionCheck{
-		LoggedIn: true,
-		IsAdmin:  user.IsAdmin,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		logger.Println("Error encoding database response:", err)
-		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
-		return
-	}
+	net.WriteSubsonicError(w, r, types.ErrorWrongCredentials, "Wrong username or password", "")
+	return "", 0, false
 }
 
+// validateWithApiKey checks if the provided API key is valid and returns the username and userId if successful.
+func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWriter, r *http.Request) (string, int64, bool) {
+	user, err := database.ValidateApiKey(ctx, apiKey)
+	if err != nil {
+		logger.Printf("Error validating API key %s: %v", apiKey, err)
+		net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Server Error", "")
+		return "", 0, false
+	}
+	if user.Username == "" {
+		logger.Printf("API key %s not found", apiKey)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key not found", "")
+		return "", 0, false
+	}
+	return user.Username, user.Id, true
+}
+
+// validateWithPassword checks if the provided password matches the decrypted password from the database and returns true if valid.
+func validateWithPassword(username, password, encryptedPassword string) bool {
+	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
+	if err != nil {
+		logger.Printf("Error decrypting password for user %s: %v", username, err)
+		return false
+	}
+	// if password starts with "enc:" it is hex encrypted, we need to decrypt it first
+	if len(password) > 4 && password[:4] == "enc:" {
+		password, err = encryption.HexDecrypt(password[4:])
+		if err != nil {
+			logger.Printf("Error decrypting hex encoded password for user %s: %v", username, err)
+			return false
+		}
+	}
+	return decryptedPassword == password
+}
+
+// validateWithTokenAndSalt checks if the provided token matches the computed token from the decrypted password and salt and returns true if valid.
+func validateWithTokenAndSalt(salt, token, encryptedPassword string) bool {
+	decryptedPassword, err := encryption.DecryptAES(encryptedPassword)
+	if err != nil {
+		logger.Printf("Error decrypting password: %v", err)
+		return false
+	}
+	ok := validateToken(salt, token, decryptedPassword)
+	return ok
+}
+
+// AuthMiddleware is an HTTP middleware that authenticates requests using ValidateAuth.
+// If authentication fails, it writes a 401 response and does not call the next handler.
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.URL.Query().Get("token")
-		ctx := r.Context()
-
-		if token != "" {
-			isValidToken, err := ValidateToken(ctx, token)
-			logger.Printf("%s accessed with temporary token", r.RequestURI)
-			if err != nil || !isValidToken {
-				logger.Printf("Unauthorized access attempt, invalid token: %v", err)
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			next.ServeHTTP(w, r)
-		} else {
-			user, isValidSession, err := GetUserFromRequest(r)
-			if err != nil || !isValidSession {
-				logger.Printf("Unauthorized access attempt, invalid session: %v", err)
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			ctx = context.WithValue(ctx, logic.UserIdKey, user.Id)
-			ctx = context.WithValue(ctx, logic.UsernameKey, user.Username)
-			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
-		}
-	})
-}
-
-func AdminAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, isValidSession, err := GetUserFromRequest(r)
-		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		userName, userId, ok := ValidateAuth(r, w)
+		if !ok {
+			// ValidateAuth already handled the error response.
 			return
 		}
-
-		if !user.IsAdmin {
-			logger.Printf("Unauthorized access attempt, user is not an admin: %v", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		if !isValidSession {
-			logger.Printf("Unauthorized access attempt, invalid session: %v", err)
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-			return
-		}
-
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, logic.UserIdKey, user.Id)
-		ctx = context.WithValue(ctx, logic.UsernameKey, user.Username)
+		ctx := context.WithValue(r.Context(), "username", userName)
+		ctx = context.WithValue(ctx, "userId", userId)
 		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	logger.Println("User logging out")
-	cookie, err := r.Cookie("appSession")
-	if err == nil {
-		err := database.DeleteSessionToken(r.Context(), cookie.Value)
-		if err != nil {
-			logger.Printf("Error deleting session token: %v", err)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-		// expire cookie client-side
-		http.SetCookie(w, &http.Cookie{
-			Name:     "appSession",
-			Value:    "",
-			Path:     "/",
-			MaxAge:   -1,
-			HttpOnly: true,
-			Secure:   true,
-			SameSite: http.SameSiteNoneMode,
-		})
-	}
-
-	sessionCheck := types.SessionCheck{
-		LoggedIn: false,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		logger.Println("Error encoding database response:", err)
-		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
-		return
-	}
-}
-
-func CheckSessionHandler(w http.ResponseWriter, r *http.Request) {
-	sessionCheck := types.SessionCheck{}
-
-	user, isValidSession, err := GetUserFromRequest(r)
-	if err != nil {
-		http.Error(w, "Error getting user from request", http.StatusInternalServerError)
-		return
-	}
-
-	sessionCheck.LoggedIn = isValidSession || false // default to false if user is not found
-	sessionCheck.IsAdmin = user.IsAdmin || false    // default to false if user is not found
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(sessionCheck); err != nil {
-		logger.Println("Error encoding database response:", err)
-		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
-		return
-	}
-}
-
-// returns types.User, isValidSession bool, error
-func GetUserFromRequest(r *http.Request) (types.User, bool, error) {
-	cookie, err := r.Cookie("appSession")
-	if err == nil {
-		id, isValid, err := database.GetUserIdFromSession(r.Context(), cookie.Value)
-		if err == nil && isValid {
-			user, err := database.GetUserById(r.Context(), id)
-			if err == nil && user.Username != "" {
-				return user, isValid, nil
-			}
-		}
-	}
-	return types.User{}, false, fmt.Errorf("getting user from request: %v", err)
 }
