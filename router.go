@@ -43,7 +43,6 @@ func StartServer() *http.Server {
 	router.Handle("/api/albums/{musicBrainzAlbumId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumTracks)))    // returns []types.MetadataWithPlaycounts
 	router.Handle("/api/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracks)))                                     // returns []types.Metadata; query params: recent=true, random=false, limit=10
 	router.Handle("/api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrack)))                 // returns types.MetadataWithPlaycounts
-	router.Handle("/api/tracks/{musicBrainzTrackId}/lyrics", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrackLyrics)))    // returns types.Lyrics
 	router.Handle("/api/tracks/{musicBrainzTrackId}/download", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownloadTrack)))   // returns blob
 	router.Handle("/api/tracks/{musicBrainzTrackId}/stream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStreamTrack)))       // returns blob range
 	router.Handle("/api/genres", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))                                     // query params: search=searchTerm
@@ -61,12 +60,14 @@ func StartServer() *http.Server {
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
 	// Media retrieval
-	router.Handle("/rest/getCoverArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))   // returns Image blob or types.SubsonicResponse error
-	router.Handle("/rest/getArtistArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt))) // returns Image blob or types.SubsonicResponse error
-	router.Handle("/rest/getAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAvatar)))       // returns Image blob or types.SubsonicResponse error
-	router.Handle("/rest/createAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
-	router.Handle("/rest/updateAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
-	router.Handle("/rest/deleteAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar))) // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	router.Handle("/rest/getCoverArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))             // returns Image blob or types.SubsonicResponse error
+	router.Handle("/rest/getArtistArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt)))           // returns Image blob or types.SubsonicResponse error
+	router.Handle("/rest/getLyrics.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyrics)))                 // returns types.SubsonicLyricsResponse
+	router.Handle("/rest/getLyricsBySongId.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyricsBySongId))) // returns types.SubsonicLyricsListResponse
+	router.Handle("/rest/getAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAvatar)))                 // returns Image blob or types.SubsonicResponse error
+	router.Handle("/rest/createAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	router.Handle("/rest/updateAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	router.Handle("/rest/deleteAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
 	// Chat
 	router.Handle("/rest/getChatMessages.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages))) // returns types.SubsonicChatMessagesResponse
 	router.Handle("/rest/addChatMessage.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleAddChatMessage)))   // returns types.SubsonicResponse

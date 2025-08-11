@@ -6,7 +6,6 @@ import (
 	"zene/core/database"
 	"zene/core/io"
 	"zene/core/logger"
-	"zene/core/lyrics"
 )
 
 func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
@@ -64,24 +63,6 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(row); err != nil {
 		logger.Println("Error encoding database response:", err)
 		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
-		return
-	}
-}
-
-func HandleGetTrackLyrics(w http.ResponseWriter, r *http.Request) {
-	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
-
-	lyrics, err := lyrics.GetLyricsForMusicBrainzTrackId(r.Context(), musicBrainzTrackId)
-	if err != nil {
-		logger.Printf("Error querying lyrics in GetLyricsForMusicBrainzTrackId: %v", err)
-		http.Error(w, "Failed to fetch lyrics", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(lyrics); err != nil {
-		logger.Println("Error encoding lyrics response:", err)
-		http.Error(w, "Error encoding lyrics response", http.StatusInternalServerError)
 		return
 	}
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SubsonicUserResponse } from '~/types/getUser'
+import type { SubsonicUserResponse } from '~/types/subsonicUser'
 import { md5 } from 'js-md5'
 import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
