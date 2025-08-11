@@ -22,16 +22,25 @@ func createVersionsTable(ctx context.Context) {
 	);`
 	createTable(ctx, schema)
 
-	_, err := GetLatestVersion(ctx)
+	newVersion := types.Version{
+		ServerVersion:          "0.1.2",
+		DatabaseVersion:        "1.0",
+		SubsonicApiVersion:     "1.16.1",
+		OpenSubsonicApiVersion: "1",
+		Timestamp:              logic.GetCurrentTimeFormatted(),
+	}
+
+	latestVersion, err := GetLatestVersion(ctx)
 	if err == sql.ErrNoRows {
-		newVersion := types.Version{
-			ServerVersion:          "0.1.1",
-			DatabaseVersion:        "1.0",
-			SubsonicApiVersion:     "1.16.1",
-			OpenSubsonicApiVersion: "1",
-			Timestamp:              logic.GetCurrentTimeFormatted(),
-		}
 		logger.Printf("No versions found, inserting initial version: %v", newVersion)
+		err := InsertVersion(ctx, newVersion)
+		if err != nil {
+			log.Fatalf("Error inserting version: %v", err)
+		}
+	}
+
+	if latestVersion.ServerVersion != newVersion.ServerVersion {
+		logger.Printf("updating versions table: %v", newVersion)
 		err := InsertVersion(ctx, newVersion)
 		if err != nil {
 			log.Fatalf("Error inserting version: %v", err)
