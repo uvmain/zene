@@ -45,9 +45,9 @@
 - [ ] hls
 - [ ] getCaptions
 - [x] getCoverArt
-- [ ] getLyrics
+- [x] getLyrics
 - [x] getAvatar
-- [ ] getLyricsBySongId
+- [x] getLyricsBySongId
 ## Media annotation
 - [ ] star
 - [ ] unstar

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"zene/core/database"
 	"zene/core/logger"
@@ -17,11 +18,11 @@ import (
 	"zene/core/types"
 )
 
-func GetLyricsForMusicBrainzTrackId(ctx context.Context, musicBrainzTrackId string) (types.Lyrics, error) {
+func GetLyricsForMusicBrainzTrackId(ctx context.Context, musicBrainzTrackId string) (types.LyricsDatabaseRow, error) {
 	lyrics, err := database.GetLyricsForMusicBrainzTrackId(ctx, musicBrainzTrackId)
 	if err != nil {
 		logger.Printf("Error querying database in GetLyricsForMusicBrainzTrackId: %v", err)
-		return types.Lyrics{}, fmt.Errorf("failed to query database for lyrics: %w", err)
+		return types.LyricsDatabaseRow{}, fmt.Errorf("failed to query database for lyrics: %w", err)
 	}
 	if lyrics.PlainLyrics == "" && lyrics.SyncedLyrics == "" {
 		logger.Printf("No lyrics found in database for track ID: %s", musicBrainzTrackId)
@@ -31,13 +32,13 @@ func GetLyricsForMusicBrainzTrackId(ctx context.Context, musicBrainzTrackId stri
 	return lyrics, nil
 }
 
-func GetLyricsForMusicBrainzTrackIdFromLrclib(ctx context.Context, musicBrainzTrackId string) (types.Lyrics, error) {
+func GetLyricsForMusicBrainzTrackIdFromLrclib(ctx context.Context, musicBrainzTrackId string) (types.LyricsDatabaseRow, error) {
 	logger.Printf("Fetching lyrics from lrclib.net for track ID: %s", musicBrainzTrackId)
 
 	trackMetadata, err := database.SelectTrack(ctx, musicBrainzTrackId)
 
 	if err != nil {
-		return types.Lyrics{}, err
+		return types.LyricsDatabaseRow{}, err
 	}
 
 	trackName := url.QueryEscape(trackMetadata.Title)
@@ -46,7 +47,7 @@ func GetLyricsForMusicBrainzTrackIdFromLrclib(ctx context.Context, musicBrainzTr
 
 	durationFloat, err := strconv.ParseFloat(trackMetadata.Duration, 64)
 	if err != nil {
-		return types.Lyrics{}, fmt.Errorf("converting string to float: %v", err)
+		return types.LyricsDatabaseRow{}, fmt.Errorf("converting string to float: %v", err)
 	}
 
 	durationInt := int(math.Round(durationFloat))
@@ -56,53 +57,96 @@ func GetLyricsForMusicBrainzTrackIdFromLrclib(ctx context.Context, musicBrainzTr
 	logger.Printf("Constructed URL for lyrics: %s", url)
 
 	if err := logic.CheckContext(ctx); err != nil {
-		return types.Lyrics{}, err
+		return types.LyricsDatabaseRow{}, err
 	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return types.Lyrics{}, fmt.Errorf("HTTP New Request failed: %v", err)
+		return types.LyricsDatabaseRow{}, fmt.Errorf("HTTP New Request failed: %v", err)
 	}
 
 	net.AddUserAgentHeaderToRequest(req)
 
 	if err := logic.CheckContext(ctx); err != nil {
-		return types.Lyrics{}, err
+		return types.LyricsDatabaseRow{}, err
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		return types.Lyrics{}, fmt.Errorf("HTTP error: %w", err)
+		return types.LyricsDatabaseRow{}, fmt.Errorf("HTTP error: %w", err)
 	}
 	defer res.Body.Close()
 
 	if err := logic.CheckContext(ctx); err != nil {
-		return types.Lyrics{}, err
+		return types.LyricsDatabaseRow{}, err
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return types.Lyrics{}, fmt.Errorf("unexpected status: %s", res.Status)
+		return types.LyricsDatabaseRow{}, fmt.Errorf("unexpected status: %s", res.Status)
 	}
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return types.Lyrics{}, err
+		return types.LyricsDatabaseRow{}, err
 	}
 
-	var data types.Lyrics
+	var data types.LrclibLyricsResponse
 	if err := json.Unmarshal(body, &data); err != nil {
-		return types.Lyrics{}, err
+		return types.LyricsDatabaseRow{}, err
 	}
 
 	if err := logic.CheckContext(ctx); err != nil {
-		return types.Lyrics{}, err
+		return types.LyricsDatabaseRow{}, err
 	}
 
-	err = database.UpsertTrackLyrics(ctx, musicBrainzTrackId, data)
+	var upsertData types.LyricsDatabaseRow
+	upsertData.MusicBrainzTrackID = musicBrainzTrackId
+	upsertData.PlainLyrics = data.PlainLyrics
+	upsertData.SyncedLyrics = data.SyncedLyrics
+
+	err = database.UpsertTrackLyrics(ctx, musicBrainzTrackId, upsertData)
 	if err != nil {
 		logger.Printf("Error upserting track lyrics for %s: %v", musicBrainzTrackId, err)
 	}
 
-	return data, nil
+	return upsertData, nil
+}
+
+func ParseSyncLyricTimeToMilliseconds(timeStr string) (int, error) {
+	parts := strings.Split(timeStr, ":")
+	if len(parts) != 2 {
+		return 0, fmt.Errorf("invalid format: %s", timeStr)
+	}
+
+	// Parse minutes
+	minutes, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, fmt.Errorf("invalid minutes: %v", err)
+	}
+
+	// parse seconds and milliseconds
+	secParts := strings.Split(parts[1], ".")
+	if len(secParts) != 2 {
+		return 0, fmt.Errorf("invalid seconds format: %s", parts[1])
+	}
+
+	seconds, err := strconv.Atoi(secParts[0])
+	if err != nil {
+		return 0, fmt.Errorf("invalid seconds: %v", err)
+	}
+
+	millis, err := strconv.Atoi(secParts[1])
+	if err != nil {
+		return 0, fmt.Errorf("invalid milliseconds: %v", err)
+	}
+	// scale millis to be actual milliseconds (e.g., ".35" means 350 ms)
+	if len(secParts[1]) == 1 {
+		millis *= 100
+	} else if len(secParts[1]) == 2 {
+		millis *= 10
+	}
+
+	totalMillis := (minutes*60+seconds)*1000 + millis
+	return totalMillis, nil
 }

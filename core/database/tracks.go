@@ -121,3 +121,15 @@ func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
 
 	return results, nil
 }
+
+func GetTrackIdByArtistAndTitle(artist string, title string) (string, error) {
+	query := "SELECT musicbrainz_track_id FROM metadata WHERE lower(artist) = lower(?) AND lower(title) = lower(?) LIMIT 1;"
+	var musicBrainzTrackId string
+	err := DB.QueryRow(query, artist, title).Scan(&musicBrainzTrackId)
+	if err == sql.ErrNoRows {
+		return "", fmt.Errorf("no track found for artist '%s' and title '%s'", artist, title)
+	} else if err != nil {
+		return "", fmt.Errorf("error querying track ID: %v", err)
+	}
+	return musicBrainzTrackId, nil
+}

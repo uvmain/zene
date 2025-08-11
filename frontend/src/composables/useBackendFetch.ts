@@ -1,5 +1,6 @@
 import type { AlbumMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
-import type { SubsonicUser, SubsonicUserResponse, SubsonicUsers, SubsonicUsersResponse } from '~/types/subsonicUser'
+import type { SubsonicLyricsResponse } from '~/types/subsonicLyrics'
+import type { SubsonicUser, SubsonicUserResponse, SubsonicUsersResponse } from '~/types/subsonicUser'
 import { useAuth } from '~/composables/useAuth'
 import { useRandomSeed } from '~/composables/useRandomSeed'
 import { useLogic } from './useLogic'
@@ -158,12 +159,16 @@ export function useBackendFetch() {
     return contentType
   }
 
-  const getLyrics = async (musicbrainzTrackId: string): Promise<{ plainLyrics: string, syncedLyrics: string }> => {
-    const response = await backendFetchRequest(`tracks/${musicbrainzTrackId}/lyrics`)
+  const getLyrics = async (musicbrainzTrackId: string): Promise<SubsonicLyricsResponse> => {
+    const formData = new FormData()
+    formData.append('id', musicbrainzTrackId)
+    const response = await openSubsonicFetchRequest('getLyricsBySongId.view', {
+      body: formData,
+    })
     if (!response.ok) {
       throw new Error(`Failed to fetch lyrics for track ${musicbrainzTrackId}: ${response.statusText}`)
     }
-    const data = await response.json() as { plainLyrics: string, syncedLyrics: string }
+    const data = await response.json() as SubsonicLyricsResponse
     return data
   }
 
