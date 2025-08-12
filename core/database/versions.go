@@ -11,6 +11,11 @@ import (
 	"zene/core/types"
 )
 
+var serverVersion string = "0.3.1"
+var databaseVersion string = "1.0"
+var subsonicApiVersion string = "1.16.1"
+var openSubsonicApiVersion string = "1"
+
 func createVersionsTable(ctx context.Context) {
 	schema := `CREATE TABLE versions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,10 +28,10 @@ func createVersionsTable(ctx context.Context) {
 	createTable(ctx, schema)
 
 	newVersion := types.Version{
-		ServerVersion:          "0.3.0",
-		DatabaseVersion:        "1.0",
-		SubsonicApiVersion:     "1.16.1",
-		OpenSubsonicApiVersion: "1",
+		ServerVersion:          serverVersion,
+		DatabaseVersion:        databaseVersion,
+		SubsonicApiVersion:     subsonicApiVersion,
+		OpenSubsonicApiVersion: openSubsonicApiVersion,
 		Timestamp:              logic.GetCurrentTimeFormatted(),
 	}
 
