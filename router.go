@@ -57,9 +57,12 @@ func StartServer() *http.Server {
 	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))         // returns types.SubsonicTokenInfoResponse
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
+	router.Handle("/rest/getVideos.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideos)))             // returns types.SubsonicResponse error
+	router.Handle("/rest/getVideoInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideoInfo)))       // returns types.SubsonicResponse error
 	// Media retrieval
 	router.Handle("/rest/stream.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))                       // returns audio stream or types.SubsonicResponse error
 	router.Handle("/rest/download.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))                   // returns blob or types.SubsonicResponse error
+	router.Handle("/rest/getCaptions.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCaptions)))             // returns types.SubsonicResponse error
 	router.Handle("/rest/getCoverArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))             // returns Image blob or types.SubsonicResponse error
 	router.Handle("/rest/getArtistArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt)))           // returns Image blob or types.SubsonicResponse error
 	router.Handle("/rest/getLyrics.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyrics)))                 // returns types.SubsonicLyricsResponse
@@ -68,6 +71,8 @@ func StartServer() *http.Server {
 	router.Handle("/rest/createAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
 	router.Handle("/rest/updateAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
 	router.Handle("/rest/deleteAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	// Jukebox
+	router.Handle("/rest/jukeboxControl.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl))) // returns types.SubsonicResponse error
 	// Chat
 	router.Handle("/rest/getChatMessages.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages))) // returns types.SubsonicChatMessagesResponse
 	router.Handle("/rest/addChatMessage.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleAddChatMessage)))   // returns types.SubsonicResponse

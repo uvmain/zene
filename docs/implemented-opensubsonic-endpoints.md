@@ -12,8 +12,8 @@
 - [ ] getArtist
 - [ ] getAlbum
 - [ ] getSong
-- [ ] getVideos
-- [ ] getVideoInfo
+- [x] getVideos[^1]
+- [x] getVideoInfo[^1]
 - [ ] getArtistInfo
 - [ ] getArtistInfo2
 - [ ] getAlbumInfo
@@ -43,7 +43,7 @@
 - [x] stream
 - [x] download
 - [ ] hls
-- [ ] getCaptions
+- [x] getCaptions[^1]
 - [x] getCoverArt
 - [x] getLyrics
 - [x] getAvatar
@@ -67,7 +67,7 @@
 - [ ] deletePodcastEpisode
 - [ ] downloadPodcastEpisode
 ## Jukebox
-- [ ] jukeboxControl
+- [x] jukeboxControl[^1]
 ## Internet radio
 - [ ] getInternetRadioStations
 - [ ] createInternetRadioStation
@@ -92,3 +92,5 @@
 ## Media library scanning
 - [x] getScanStatus
 - [x] startScan
+
+[^1]: Endpoint implented but returns an unsupported error
