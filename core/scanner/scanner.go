@@ -26,21 +26,36 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	}
 
 	globals.IsScanning = true
-	logger.Printf("Starting scan of music dir")
 	start := time.Now()
 	defer func() { logger.Printf("Scan completed in %s", time.Since(start)) }()
 	defer func() { globals.IsScanning = false }()
 
+	for _, musicDir := range config.MusicDirs {
+		scanResult := scanMusicDir(ctx, musicDir)
+		if !scanResult.Success {
+			return scanResult
+		}
+	}
+
+	return types.ScanResponse{
+		Success: true,
+		Status:  "Scan run triggered",
+	}
+}
+
+func scanMusicDir(ctx context.Context, musicDir string) types.ScanResponse {
+	logger.Printf("Starting scan of music dir %s", musicDir)
+
 	// get a list of files from the filesystem
 	logger.Printf("Scan: Getting list of audio files in the filesystem")
-	audioFiles, err := getAudioFiles(ctx)
+	audioFiles, err := getAudioFiles(ctx, musicDir)
 	if err != nil {
 		return scanError("Error scanning music directory for audio files: %v", err)
 	}
 
 	// get a current list of files from the metadata table
 	logger.Printf("Scan: Getting list of metadata in the database")
-	metadataFiles, err := database.SelectTrackFilesForScanner(ctx)
+	metadataFiles, err := database.SelectTrackFilesForScanner(ctx, musicDir)
 	if err != nil {
 		return scanError("Error scanning database for metadata files: %v", err)
 	}
@@ -77,14 +92,14 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	}
 	logger.Printf("Scan: %d orphaned metadata rows removed", fileCount)
 
-	err = getAlbumArtwork(ctx)
+	err = getAlbumArtworkForMusicDir(ctx, musicDir)
 	if err != nil {
-		return scanError("Error getting album artwork: %v", err)
+		return scanError(fmt.Sprintf("Error getting album artwork for music dir %s", musicDir), err)
 	}
 
-	err = getArtistArtwork(ctx)
+	err = getArtistArtworkForMusicDir(ctx, musicDir)
 	if err != nil {
-		return scanError("Error getting artist artwork: %v", err)
+		return scanError(fmt.Sprintf("Error getting artist artwork for music dir %s", musicDir), err)
 	}
 
 	musicbrainz.ClearMbCache()
@@ -95,8 +110,8 @@ func RunScan(ctx context.Context) types.ScanResponse {
 	}
 }
 
-func getAudioFiles(ctx context.Context) ([]types.File, error) {
-	audioFiles, err := io.GetFiles(ctx, config.MusicDirs[0], config.AudioFileTypes)
+func getAudioFiles(ctx context.Context, musicDir string) ([]types.File, error) {
+	audioFiles, err := io.GetFiles(ctx, musicDir, config.AudioFileTypes)
 	if err != nil {
 		return []types.File{}, fmt.Errorf("Error getting slice of audio files from the filesystem: %v", err)
 	}
@@ -170,7 +185,7 @@ func upsertMetadataForFile(ctx context.Context, file types.File) error {
 	return nil
 }
 
-func getAlbumArtwork(ctx context.Context) error {
+func getAlbumArtworkForMusicDir(ctx context.Context, musicDir string) error {
 	logger.Println("Getting album artwork")
 	albums, err := database.SelectAllAlbums(ctx, "false", "", "")
 	if err != nil {
@@ -183,8 +198,8 @@ func getAlbumArtwork(ctx context.Context) error {
 	return nil
 }
 
-func getArtistArtwork(ctx context.Context) error {
-	logger.Println("Getting artist artwork")
+func getArtistArtworkForMusicDir(ctx context.Context, musicDir string) error {
+	logger.Printf("Getting artist artwork for music dir %s", musicDir)
 
 	albumArtists, err := database.SelectAlbumArtists(ctx, "", "", "", "", "", "")
 

@@ -93,10 +93,10 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 	return result, nil
 }
 
-func SelectTrackFilesForScanner(ctx context.Context) ([]types.File, error) {
-	query := "SELECT file_path, file_name, date_modified FROM metadata;"
+func SelectTrackFilesForScanner(ctx context.Context, musicDir string) ([]types.File, error) {
+	query := "SELECT m.file_path, m.file_name, m.date_modified FROM metadata m join music_folders f on m.music_folder_id = f.id where f.name = ?;"
 
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DB.QueryContext(ctx, query, musicDir)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.File{}, err

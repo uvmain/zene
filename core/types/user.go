@@ -19,7 +19,7 @@ type SubsonicUser struct {
 	PodcastRole         bool   `json:"podcastRole" xml:"podcastRole,attr"`                 // Optional: Manage podcasts. Default: false
 	ShareRole           bool   `json:"shareRole" xml:"shareRole,attr"`                     // Optional: Share files. Default: false
 	VideoConversionRole bool   `json:"videoConversionRole" xml:"videoConversionRole,attr"` // Optional: Start video conversions. Default: false
-	MaxBitRate          int    `json:"maxBitRate" xml:"maxBitRate,attr"`                   // Optional: Maximum bitrate for streaming. Default: 0 (no limit)
+	MaxBitRate          int64  `json:"maxBitRate" xml:"maxBitRate,attr"`                   // Optional: Maximum bitrate for streaming. Default: 0 (no limit)
 }
 
 type SubsonicUsers struct {
@@ -77,6 +77,6 @@ type User struct {
 	PodcastRole         bool   `json:"podcastRole" xml:"podcastRole"`                 // Optional: Manage podcasts. Default: false
 	ShareRole           bool   `json:"shareRole" xml:"shareRole"`                     // Optional: Share files. Default: false
 	VideoConversionRole bool   `json:"videoConversionRole" xml:"videoConversionRole"` // Optional: Start video conversions. Default: false
-	MaxBitRate          int    `json:"maxBitRate" xml:"maxBitRate"`                   // Optional: Maximum bitrate for streaming. Default: 0 (no limit)
+	MaxBitRate          int64  `json:"maxBitRate" xml:"maxBitRate"`                   // Optional: Maximum bitrate for streaming. Default: 0 (no limit)
 	Folders             []int  `json:"folder" xml:"folder"`                           // Optional: IDs of music folders the user can access.
 }

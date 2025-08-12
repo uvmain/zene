@@ -185,7 +185,7 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	maxBitRate := r.FormValue("maxBitRate")
 	if maxBitRate != "" {
-		maxBitRateInt, err := strconv.Atoi(maxBitRate)
+		maxBitRateInt, err := strconv.ParseInt(maxBitRate, 10, 64)
 		if err != nil {
 			logger.Printf("Error parsing maxBitRate: %v", err)
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid maxBitRate", "")

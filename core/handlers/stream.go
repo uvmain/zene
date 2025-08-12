@@ -12,6 +12,7 @@ import (
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/ffmpeg"
+	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/types"
 )
@@ -30,6 +31,13 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	requestUser, err := database.GetUserByContext(ctx)
+	if err != nil {
+		logger.Printf("Error getting user by context: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
+		return
+	}
+
 	var maxBitRate int64
 	maxBitRateString := r.FormValue("maxBitRate")
 	if maxBitRateString == "" {
@@ -41,6 +49,10 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "maxBitRate parameter must be an integer", "")
 			return
 		}
+	}
+
+	if requestUser.MaxBitRate > 0 && requestUser.MaxBitRate < maxBitRate {
+		maxBitRate = requestUser.MaxBitRate
 	}
 
 	format := r.FormValue("format")

@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"zene/core/config"
 	"zene/core/net"
 	"zene/core/subsonic"
@@ -30,15 +29,18 @@ func HandleGetMusicFolders(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
 	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
 
-	musicFolder1 := types.MusicFolder{
-		Id:   1,
-		Name: filepath.Base(config.MusicDirs[0]),
+	var musicFolders []types.MusicFolder
+
+	for i := range config.MusicDirs {
+		musicFolder := types.MusicFolder{
+			Id:   i + 1,
+			Name: config.MusicDirs[i],
+		}
+		musicFolders = append(musicFolders, musicFolder)
 	}
 
 	response.SubsonicResponse.MusicFolders = &types.MusicFolders{
-		MusicFolder: []types.MusicFolder{
-			musicFolder1,
-		},
+		MusicFolder: musicFolders,
 	}
 
 	format := r.FormValue("f")
