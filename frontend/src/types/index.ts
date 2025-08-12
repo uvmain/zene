@@ -28,9 +28,10 @@ export interface ImageMetadata {
   panoramic: boolean
 }
 
-export interface GenreMetadata {
-  genre: string
-  count: string
+export interface GenreResponse {
+  value: string
+  song_count: number
+  album_count: number
 }
 
 export interface ArtistMetadata {

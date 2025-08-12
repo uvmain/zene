@@ -1,19 +1,16 @@
 <script setup lang="ts">
+import type { Genre, SubsonicGenresResponse } from '~/types/subsonicGenres'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 
-const { backendFetchRequest } = useBackendFetch()
+const { openSubsonicFetchRequest } = useBackendFetch()
 
-const topGenres = ref<any[]>([])
+const genres = ref<Genre[]>()
 
 async function getGenres() {
-  const formData = new FormData()
-  formData.append('limit', '30')
-  const response = await backendFetchRequest('genres', {
-    method: 'POST',
-    body: formData,
-  })
-  const json = await response.json()
-  topGenres.value = json
+  const response = await openSubsonicFetchRequest('getGenres.view')
+  const json = await response.json() as SubsonicGenresResponse
+  const allGenres = json['subsonic-response'].genres.genre
+  genres.value = allGenres.slice(0, 30)
 }
 
 onBeforeMount(async () => {
@@ -25,7 +22,7 @@ onBeforeMount(async () => {
   <div>
     <RefreshHeader title="Top Genres" @refreshed="getGenres()" />
     <div class="flex flex-wrap justify-center gap-2 md:justify-start">
-      <GenreBottle v-for="genre in topGenres" :key="genre" :genre="genre.genre" />
+      <GenreBottle v-for="genre in genres" :key="genre.value" :genre="genre.value" />
     </div>
   </div>
 </template>

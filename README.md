@@ -7,6 +7,7 @@
 - Fast full text search
 - lyrics cached in database on retrieval
 - Image endpoints and frontend make use of If-Modified-Since headers for 304 responses
+- All endpoints use Accept-Encoding headers and support gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
 - album art automatically fetched from album folder || embedded in track || deezer || coverartarchive.org
 - artist art automatically fetched from artist folder || deezer || wikidata

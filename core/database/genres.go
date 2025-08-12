@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
@@ -123,31 +122,25 @@ func populateGenresFromMetadata(ctx context.Context) error {
 	return nil
 }
 
-func SelectDistinctGenres(ctx context.Context, limitParam string, searchParam string) ([]types.GenreResponse, error) {
-	query := "select genre, count(file_path) as count from track_genres group by genre order by count desc"
-
-	if limitParam != "" {
-		limitInt, err := strconv.Atoi(limitParam)
-		if err != nil {
-			return []types.GenreResponse{}, fmt.Errorf("invalid limit value: %v", err)
-		}
-		query += fmt.Sprintf(" limit %d", limitInt)
-	}
-
-	query += ";"
+func SelectDistinctGenres(ctx context.Context) ([]types.Genre, error) {
+	query := `select g.genre, count(m.musicbrainz_track_id) as song_count, count(distinct m.musicbrainz_album_id) as album_count
+		from track_genres g
+		join metadata m on m.file_path = g.file_path
+		group by g.genre
+		order by song_count desc`
 
 	rows, err := DB.QueryContext(ctx, query)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
-		return []types.GenreResponse{}, err
+		return []types.Genre{}, err
 	}
 	defer rows.Close()
 
-	var results []types.GenreResponse
+	var results []types.Genre
 
 	for rows.Next() {
-		var result types.GenreResponse
-		if err := rows.Scan(&result.Genre, &result.Count); err != nil {
+		var result types.Genre
+		if err := rows.Scan(&result.Value, &result.SongCount, &result.AlbumCount); err != nil {
 			logger.Printf("Failed to scan row in SelectDistinctGenres: %v", err)
 			return nil, err
 		}

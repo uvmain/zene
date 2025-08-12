@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import type { GenreMetadata } from '~/types'
+import type { Genre, SubsonicGenresResponse } from '~/types/subsonicGenres'
 import { useBackendFetch } from '~/composables/useBackendFetch'
 
 const router = useRouter()
-const { backendFetchRequest } = useBackendFetch()
+const { openSubsonicFetchRequest } = useBackendFetch()
 
-const genres = ref<GenreMetadata[]>()
+const genres = ref<Genre[]>()
 
-async function getArtists() {
-  const response = await backendFetchRequest('genres')
-  const json = await response.json() as GenreMetadata[]
-  genres.value = json
+async function getGenres() {
+  const response = await openSubsonicFetchRequest('getGenres.view')
+  const json = await response.json() as SubsonicGenresResponse
+  genres.value = json['subsonic-response'].genres.genre
 }
 
 onBeforeMount(async () => {
-  await getArtists()
+  await getGenres()
 })
 </script>
 
@@ -25,8 +25,8 @@ onBeforeMount(async () => {
     </h2>
     <div class="flex flex-wrap gap-6">
       <div v-if="genres" class="flex flex-wrap cursor-pointer gap-2">
-        <div v-for="genre in genres" :key="genre.genre">
-          <GenreBottle :genre="genre.genre" class="cursor-pointer" @click="() => router.push(`/genres/${genre.genre}`)" />
+        <div v-for="genre in genres" :key="genre.value">
+          <GenreBottle :genre="genre.value" class="cursor-pointer" @click="() => router.push(`/genres/${genre.value}`)" />
         </div>
       </div>
     </div>

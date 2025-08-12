@@ -7,7 +7,7 @@
 - [x] getMusicFolders
 - [ ] getIndexes
 - [ ] getMusicDirectory
-- [ ] getGenres
+- [x] getGenres
 - [ ] getArtists
 - [ ] getArtist
 - [ ] getAlbum

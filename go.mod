@@ -3,6 +3,7 @@ module zene
 go 1.24.2
 
 require (
+	github.com/NYTimes/gziphandler v1.1.1
 	github.com/djherbis/times v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/ncruces/go-sqlite3 v0.27.1

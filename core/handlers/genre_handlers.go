@@ -10,24 +10,6 @@ import (
 	"zene/core/types"
 )
 
-func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
-	searchParam := r.FormValue("search")
-	limitParam := r.FormValue("limit")
-	rows, err := database.SelectDistinctGenres(r.Context(), limitParam, searchParam)
-	if err != nil {
-		logger.Printf("Error querying database in SelectDistinctGenres: %v", err)
-		http.Error(w, "Failed to query database", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		logger.Println("Error encoding database response:", err)
-		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
-		return
-	}
-}
-
 func HandleGetTracksByGenre(w http.ResponseWriter, r *http.Request) {
 	condition := r.FormValue("condition")
 	genres := r.FormValue("genres")
