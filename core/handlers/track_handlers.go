@@ -4,28 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"zene/core/database"
-	"zene/core/io"
 	"zene/core/logger"
 )
-
-func HandleDownloadTrack(w http.ResponseWriter, r *http.Request) {
-	musicBrainzTrackId := r.PathValue("musicBrainzTrackId")
-	track, err := database.SelectTrack(r.Context(), musicBrainzTrackId)
-	if err != nil {
-		http.Error(w, "File not found", http.StatusNotFound)
-		return
-	}
-	fileBlob, err := io.GetFileBlob(r.Context(), track.FilePath)
-
-	if err != nil {
-		http.Error(w, "File not found", http.StatusNotFound)
-		return
-	}
-	mimeType := http.DetectContentType(fileBlob)
-	w.Header().Set("Content-Type", mimeType)
-	w.WriteHeader(http.StatusOK)
-	w.Write(fileBlob)
-}
 
 func HandleGetTracks(w http.ResponseWriter, r *http.Request) {
 	randomParam := r.FormValue("random")

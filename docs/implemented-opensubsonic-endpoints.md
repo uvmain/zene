@@ -41,7 +41,7 @@
 - [ ] deletePlaylist
 ## Media retrieval
 - [x] stream
-- [ ] download
+- [x] download
 - [ ] hls
 - [ ] getCaptions
 - [x] getCoverArt
