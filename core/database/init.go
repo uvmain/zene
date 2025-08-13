@@ -35,6 +35,8 @@ func Initialise(ctx context.Context) {
 	createFtsTables(ctx)
 	createGenresTable(ctx)
 	createAudioCacheTable(ctx)
+	createUserStarsTable(ctx)
+	createUserRatingsTable(ctx)
 }
 
 func openDatabase(ctx context.Context) {

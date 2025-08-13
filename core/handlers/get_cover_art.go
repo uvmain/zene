@@ -18,8 +18,8 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	musicBrainzAlbumId := r.FormValue("id")
-	if musicBrainzAlbumId == "" {
+	idParameter := r.FormValue("id")
+	if idParameter == "" {
 		errorString := "invalid id parameter"
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
 		return
@@ -37,11 +37,14 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 	// 	}
 	// }
 
-	imageBlob, lastModified, err := art.GetArtForAlbum(ctx, musicBrainzAlbumId, "xl")
+	imageBlob, lastModified, err := art.GetArtForAlbum(ctx, idParameter, "xl")
 	if err != nil {
-		logger.Printf("Error getting cover art for album %s: %v", musicBrainzAlbumId, err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
-		return
+		imageBlob, lastModified, err = art.GetArtForArtist(ctx, idParameter)
+		if err != nil {
+			logger.Printf("Error getting cover art for %s: %v", idParameter, err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+			return
+		}
 	}
 
 	if net.IfModifiedResponse(w, r, lastModified) {

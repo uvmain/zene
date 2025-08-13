@@ -68,9 +68,10 @@ resolving Caddy cert issues on debian/ubuntu
   ```
 
 ## TODO
-- [ ] add proper support for multiple music folders
+- [ ] limit user requests to configured music folder IDs
 - [x] use User.MaxBitRate to limit bitrate
 - [ ] define an enum for allowed maxBitRate values to use in handlers
-- [ ] use goose (or an alternative) to manage future database migrations
+- [ ] enable future database migrations
 - [ ] getScanStatus and startScan handlers exist but need implementing
 - [ ] HandleGetCoverArt and HandleGetArtistArt needs to handle size int param and resize if requested
+- [ ] Enable last.fm integration for notes/lastFmUrl in getAlbumInfo.view
