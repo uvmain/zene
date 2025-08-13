@@ -157,3 +157,25 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 
 	return fileModTimes, nil
 }
+
+type isValidMetadataResponse struct {
+	MusicbrainzTrackId  string `json:"musicbrainz_track_id"`
+	MusicbrainzAlbumId  string `json:"musicbrainz_album_id"`
+	MusicbrainzArtistId string `json:"musicbrainz_artist_id"`
+}
+
+func IsValidMetadataId(ctx context.Context, metadataId string) (bool, isValidMetadataResponse, error) {
+	query := `SELECT musicbrainz_track_id, musicbrainz_album_id, musicbrainz_artist_id
+		FROM metadata
+		WHERE musicbrainz_track_id = ?
+		OR musicbrainz_album_id = ?
+		OR musicbrainz_artist_id = ?`
+	row := DB.QueryRowContext(ctx, query, metadataId, metadataId, metadataId)
+
+	var response isValidMetadataResponse
+	if err := row.Scan(&response.MusicbrainzTrackId, &response.MusicbrainzAlbumId, &response.MusicbrainzArtistId); err != nil {
+		return false, isValidMetadataResponse{}, fmt.Errorf("checking metadata ID validity: %v", err)
+	}
+
+	return response != (isValidMetadataResponse{}), response, nil
+}

@@ -72,6 +72,10 @@ func StartServer() *http.Server {
 	router.Handle("/rest/createAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
 	router.Handle("/rest/updateAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
 	router.Handle("/rest/deleteAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar)))           // returns types.SubsonicResponse - not in the OpenSubsonic API spec
+	// Media annotation
+	router.Handle("/rest/star.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStar)))           // returns types.SubsonicResponse
+	router.Handle("/rest/unstar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUnStar)))       // returns types.SubsonicResponse
+	router.Handle("/rest/setRating.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSetRating))) // returns types.SubsonicResponse
 	// Jukebox
 	router.Handle("/rest/jukeboxControl.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl))) // returns types.SubsonicResponse error
 	// Chat

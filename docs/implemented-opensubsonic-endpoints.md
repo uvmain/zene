@@ -49,9 +49,9 @@
 - [x] getAvatar
 - [x] getLyricsBySongId
 ## Media annotation
-- [ ] star
-- [ ] unstar
-- [ ] setRating
+- [x] star
+- [x] unstar
+- [x] setRating
 - [ ] scrobble
 ## Sharing
 - [ ] getShares
