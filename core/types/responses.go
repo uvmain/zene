@@ -19,8 +19,3 @@ type ScanResponse struct {
 	Success bool   `json:"success"`
 	Status  string `json:"status"`
 }
-
-type GenreResponse struct {
-	Genre string `json:"genre"`
-	Count int    `json:"count"`
-}

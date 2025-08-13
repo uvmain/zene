@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 	"zene/core/logger"
 )
 
@@ -160,7 +161,7 @@ func createTrigger(ctx context.Context, schema string) {
 	}
 }
 
-func createIndex(ctx context.Context, indexName, indexTable, indexColumn string, indexUnique bool) {
+func createIndex(ctx context.Context, indexName, indexTable string, indexColumns []string, indexUnique bool) {
 	query := "SELECT name FROM sqlite_master WHERE type='index' AND name=?"
 	var name string
 	err := DB.QueryRowContext(ctx, query, indexName).Scan(&name)
@@ -168,9 +169,9 @@ func createIndex(ctx context.Context, indexName, indexTable, indexColumn string,
 	if err == sql.ErrNoRows {
 		var sql string
 		if indexUnique {
-			sql = fmt.Sprintf("CREATE UNIQUE INDEX %q ON %q (%s);", indexName, indexTable, indexColumn)
+			sql = fmt.Sprintf("CREATE UNIQUE INDEX %q ON %q (%s);", indexName, indexTable, strings.Join(indexColumns, ", "))
 		} else {
-			sql = fmt.Sprintf("CREATE INDEX %q ON %q (%s);", indexName, indexTable, indexColumn)
+			sql = fmt.Sprintf("CREATE INDEX %q ON %q (%s);", indexName, indexTable, strings.Join(indexColumns, ", "))
 		}
 
 		_, err := DB.ExecContext(ctx, sql)

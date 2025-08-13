@@ -45,16 +45,7 @@ func HandleGetChatMessages(w http.ResponseWriter, r *http.Request) {
 
 	logger.Printf("Fetched %d chats since %d", len(chats), timeSince)
 
-	response := types.SubsonicChatMessagesResponse{}
-	stdRes := subsonic.GetPopulatedSubsonicResponse(ctx, false)
-
-	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
-	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns
-	response.SubsonicResponse.Status = stdRes.SubsonicResponse.Status
-	response.SubsonicResponse.Version = stdRes.SubsonicResponse.Version
-	response.SubsonicResponse.Type = stdRes.SubsonicResponse.Type
-	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
-	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	response.SubsonicResponse.ChatMessages = &types.ChatMessages{
 		ChatMessage: chats,

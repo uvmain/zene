@@ -16,7 +16,7 @@ func createChatsTable(ctx context.Context) {
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
 	createTable(ctx, schema)
-	createIndex(ctx, "idx_chats_user", "chats", "user_id", false)
+	createIndex(ctx, "idx_chats_user", "chats", []string{"user_id"}, false)
 }
 
 func InsertChat(ctx context.Context, userId int64, message string) error {

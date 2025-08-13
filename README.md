@@ -75,3 +75,4 @@ resolving Caddy cert issues on debian/ubuntu
 - [ ] getScanStatus and startScan handlers exist but need implementing
 - [ ] HandleGetCoverArt and HandleGetArtistArt needs to handle size int param and resize if requested
 - [ ] Enable last.fm integration for notes/lastFmUrl in getAlbumInfo.view
+- [ ] Create trigger-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome)

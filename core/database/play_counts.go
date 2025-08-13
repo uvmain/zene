@@ -18,9 +18,9 @@ func createPlayCountsTable(ctx context.Context) {
 		UNIQUE (user_id, musicbrainz_track_id)
 	);`
 	createTable(ctx, schema)
-	createIndex(ctx, "idx_playcounts_user_track ", "play_counts", "user_id, musicbrainz_track_id", false)
-	createIndex(ctx, "idx_playcounts_track ", "play_counts", "musicbrainz_track_id", false)
-	createIndex(ctx, "idx_play_counts_user", "play_counts", "user_id", false)
+	createIndex(ctx, "idx_playcounts_user_track ", "play_counts", []string{"user_id", "musicbrainz_track_id"}, true)
+	createIndex(ctx, "idx_playcounts_track ", "play_counts", []string{"musicbrainz_track_id"}, false)
+	createIndex(ctx, "idx_play_counts_user", "play_counts", []string{"user_id"}, false)
 }
 
 func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId string) error {

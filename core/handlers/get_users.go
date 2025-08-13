@@ -34,16 +34,8 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := types.SubsonicUsersResponseWrapper{}
-	stdRes := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
-	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns
-	response.SubsonicResponse.Status = stdRes.SubsonicResponse.Status
-	response.SubsonicResponse.Version = stdRes.SubsonicResponse.Version
-	response.SubsonicResponse.Type = stdRes.SubsonicResponse.Type
-	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
-	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
 	response.SubsonicResponse.Users = &types.SubsonicUsers{}
 	response.SubsonicResponse.Users.User = make([]types.SubsonicUser, 0)
 

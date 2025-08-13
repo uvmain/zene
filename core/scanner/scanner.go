@@ -37,6 +37,8 @@ func RunScan(ctx context.Context) types.ScanResponse {
 		}
 	}
 
+	musicbrainz.ClearMbCache()
+
 	return types.ScanResponse{
 		Success: true,
 		Status:  "Scan run triggered",
@@ -101,8 +103,6 @@ func scanMusicDir(ctx context.Context, musicDir string) types.ScanResponse {
 	if err != nil {
 		return scanError(fmt.Sprintf("Error getting artist artwork for music dir %s", musicDir), err)
 	}
-
-	musicbrainz.ClearMbCache()
 
 	return types.ScanResponse{
 		Success: true,

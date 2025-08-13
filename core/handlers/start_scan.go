@@ -26,16 +26,7 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := types.SubsonicScanStatusResponse{}
-	stdRes := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
-
-	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
-	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns
-	response.SubsonicResponse.Status = stdRes.SubsonicResponse.Status
-	response.SubsonicResponse.Version = stdRes.SubsonicResponse.Version
-	response.SubsonicResponse.Type = stdRes.SubsonicResponse.Type
-	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
-	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
 	response.SubsonicResponse.ScanStatus = &types.ScanStatus{
 		Scanning:    scanResult.Success,

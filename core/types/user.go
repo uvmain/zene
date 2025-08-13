@@ -1,7 +1,5 @@
 package types
 
-import "encoding/xml"
-
 type SubsonicUser struct {
 	Folders             []int  `json:"folder" xml:"folder,attr"`                           // Optional: IDs of music folders the user can access.
 	Username            string `json:"username" xml:"username,attr"`                       // Required: The name of the new user.
@@ -24,38 +22,6 @@ type SubsonicUser struct {
 
 type SubsonicUsers struct {
 	User []SubsonicUser `xml:"user" json:"user"`
-}
-
-type SubsonicUserResponse struct {
-	XMLName       xml.Name       `xml:"subsonic-response" json:"-"`
-	Xmlns         string         `xml:"xmlns,attr" json:"-"`
-	Status        string         `xml:"status,attr" json:"status"`
-	Version       string         `xml:"version,attr" json:"version"`
-	Type          string         `xml:"type,attr" json:"type"`
-	ServerVersion string         `xml:"serverVersion,attr" json:"serverVersion"`
-	OpenSubsonic  bool           `xml:"openSubsonic,attr" json:"openSubsonic"`
-	Error         *SubsonicError `xml:"error,omitempty" json:"error,omitempty"`
-	User          *SubsonicUser  `xml:"user" json:"user"`
-}
-
-type SubsonicUserResponseWrapper struct {
-	SubsonicResponse SubsonicUserResponse `json:"subsonic-response"`
-}
-
-type SubsonicUsersResponse struct {
-	XMLName       xml.Name       `xml:"subsonic-response" json:"-"`
-	Xmlns         string         `xml:"xmlns,attr" json:"-"`
-	Status        string         `xml:"status,attr" json:"status"`
-	Version       string         `xml:"version,attr" json:"version"`
-	Type          string         `xml:"type,attr" json:"type"`
-	ServerVersion string         `xml:"serverVersion,attr" json:"serverVersion"`
-	OpenSubsonic  bool           `xml:"openSubsonic,attr" json:"openSubsonic"`
-	Error         *SubsonicError `xml:"error,omitempty" json:"error,omitempty"`
-	Users         *SubsonicUsers `xml:"users" json:"users"`
-}
-
-type SubsonicUsersResponseWrapper struct {
-	SubsonicResponse SubsonicUsersResponse `json:"subsonic-response"`
 }
 
 type User struct {

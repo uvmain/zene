@@ -77,7 +77,7 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 // WriteSubsonicError writes a Subsonic API error response in XML or JSON format, defaulting to XML.
 // It always returns HTTP status 200 OK, as per Subsonic API specification.
 // The response includes the error code and message if there is an error.
-func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string, helpUrl string) {
+func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int64, message string, helpUrl string) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), true)
 	response.SubsonicResponse.Error.Code = code

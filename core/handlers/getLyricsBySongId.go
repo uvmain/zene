@@ -22,16 +22,7 @@ func HandleGetLyricsBySongId(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	response := types.SubsonicLyricsListResponseWrapper{}
-	stdRes := subsonic.GetPopulatedSubsonicResponse(ctx, false)
-
-	response.SubsonicResponse.XMLName = stdRes.SubsonicResponse.XMLName
-	response.SubsonicResponse.Xmlns = stdRes.SubsonicResponse.Xmlns
-	response.SubsonicResponse.Status = stdRes.SubsonicResponse.Status
-	response.SubsonicResponse.Version = stdRes.SubsonicResponse.Version
-	response.SubsonicResponse.Type = stdRes.SubsonicResponse.Type
-	response.SubsonicResponse.ServerVersion = stdRes.SubsonicResponse.ServerVersion
-	response.SubsonicResponse.OpenSubsonic = stdRes.SubsonicResponse.OpenSubsonic
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	musicBrainzTrackId := r.FormValue("id")
 	if musicBrainzTrackId == "" {

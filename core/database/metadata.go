@@ -38,9 +38,10 @@ func createMetadataTable(ctx context.Context) {
 		FOREIGN KEY (music_folder_id) REFERENCES music_folders(id) ON DELETE CASCADE
 	);`
 	createTable(ctx, schema)
-	createIndex(ctx, "idx_metadata_track_id", "metadata", "musicbrainz_track_id", false)
-	createIndex(ctx, "idx_metadata_album_id", "metadata", "musicbrainz_album_id", false)
-	createIndex(ctx, "idx_metadata_artist_id", "metadata", "musicbrainz_artist_id", false)
+	createIndex(ctx, "idx_metadata_track_id", "metadata", []string{"musicbrainz_track_id"}, false)
+	createIndex(ctx, "idx_metadata_album_id", "metadata", []string{"musicbrainz_album_id"}, false)
+	createIndex(ctx, "idx_metadata_artist_id", "metadata", []string{"musicbrainz_artist_id"}, false)
+	createIndex(ctx, "idx_metadata_file_path_album_track ", "metadata", []string{"file_path", "musicbrainz_album_id", "musicbrainz_track_id"}, false)
 }
 
 func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
