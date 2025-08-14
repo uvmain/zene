@@ -42,9 +42,11 @@ func HandleGetLyricsBySongId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lines := []types.StructuredLyricsLine{}
+	parts := strings.Split(lyricsData.PlainLyrics, "\n")
+	lines := make([]types.StructuredLyricsLine, 0, len(parts))
+
 	if lyricsData.SyncedLyrics == "" {
-		for _, line := range strings.Split(lyricsData.PlainLyrics, "\n") {
+		for _, line := range parts {
 			lines = append(lines, types.StructuredLyricsLine{
 				Value: line,
 			})

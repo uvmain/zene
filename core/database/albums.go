@@ -118,7 +118,7 @@ func SelectAllAlbumsForMusicDir(ctx context.Context, musicDir string, random str
 
 	query += ";"
 
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DB.QueryContext(ctx, query, musicDir)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.AlbumsResponse{}, err

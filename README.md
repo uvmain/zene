@@ -69,10 +69,11 @@ resolving Caddy cert issues on debian/ubuntu
 
 ## TODO
 - [ ] limit user requests to configured music folder IDs
-- [x] use User.MaxBitRate to limit bitrate
+- [x] use User.MaxBitRate to limit bitrate // done for /stream, will need to implement it when I do /hls
 - [ ] define an enum for allowed maxBitRate values to use in handlers
 - [ ] enable future database migrations
 - [ ] getScanStatus and startScan handlers exist but need implementing
 - [ ] HandleGetCoverArt and HandleGetArtistArt needs to handle size int param and resize if requested
 - [ ] Enable last.fm integration for notes/lastFmUrl in getAlbumInfo.view
-- [ ] Create trigger-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome)
+- [x] Create trigger-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome) // done, it's now 3ms
+- [ ] When a music dir is removed from .env, remove it from the DB
