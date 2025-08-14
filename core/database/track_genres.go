@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func createGenresTable(ctx context.Context) {
+func createTrackGenresTable(ctx context.Context) {
 	schema := `CREATE TABLE track_genres (
 		file_path TEXT NOT NULL,
 		genre TEXT NOT NULL,
@@ -22,7 +22,7 @@ func createGenresTable(ctx context.Context) {
 	createIndex(ctx, "idx_track_genres_genre_file_path", "track_genres", []string{"genre", "file_path"}, false)
 	createIndex(ctx, "idx_track_genres_genre_file_path", "track_genres", []string{"genre", "file_path"}, false)
 
-	createGenresTriggers(ctx)
+	createTrackGenresTriggers(ctx)
 
 	var count int
 	err = DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM track_genres").Scan(&count)
@@ -31,17 +31,24 @@ func createGenresTable(ctx context.Context) {
 	}
 
 	if count == 0 {
-		log.Println("Database: track_genres table is empty, populating from metadata")
-		err = populateGenresFromMetadata(ctx)
+		var count int
+		err = DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM metadata").Scan(&count)
 		if err != nil {
-			log.Fatalf("error populating track_genres table from metadata: %v", err)
-		} else {
-			log.Println("Database: track_genres table populated from metadata")
+			log.Fatalf("error checking count of metadata table: %v", err)
+		}
+		if count > 0 {
+			log.Println("Database: track_genres table is empty, populating from metadata")
+			err = populateTrackGenresFromMetadata(ctx)
+			if err != nil {
+				log.Fatalf("error populating track_genres table from metadata: %v", err)
+			} else {
+				log.Println("Database: track_genres table populated from metadata")
+			}
 		}
 	}
 }
 
-func createGenresTriggers(ctx context.Context) {
+func createTrackGenresTriggers(ctx context.Context) {
 	createTrigger(ctx, `CREATE TRIGGER tr_metadata_insert_genres AFTER INSERT ON metadata
 	BEGIN
 		INSERT INTO track_genres (file_path, genre)
@@ -95,7 +102,7 @@ func createGenresTriggers(ctx context.Context) {
     END;`)
 }
 
-func populateGenresFromMetadata(ctx context.Context) error {
+func populateTrackGenresFromMetadata(ctx context.Context) error {
 	var stmt = `INSERT INTO track_genres (file_path, genre)
 		WITH RECURSIVE split_genre(file_path, genre, rest) AS (
 		SELECT 
@@ -127,10 +134,8 @@ func populateGenresFromMetadata(ctx context.Context) error {
 }
 
 func SelectDistinctGenres(ctx context.Context) ([]types.Genre, error) {
-	query := `select g.genre, count(m.musicbrainz_track_id) as song_count, count(distinct m.musicbrainz_album_id) as album_count
-		from track_genres g
-		join metadata m on m.file_path = g.file_path
-		group by g.genre
+	query := `select genre, song_count, album_count
+		from genre_counts
 		order by song_count desc`
 
 	rows, err := DB.QueryContext(ctx, query)

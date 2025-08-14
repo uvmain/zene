@@ -32,6 +32,7 @@ var AdminPassword string
 var AdminEmail string
 var UserAvatarFolder string
 var DefaultBitRate int64
+var FfprobeConcurrentProcesses int64
 
 func LoadConfig() {
 
@@ -112,6 +113,14 @@ func LoadConfig() {
 		FfprobePath = filepath.Join(LibraryDirectory, FfprobeBinaryName)
 	} else {
 		FfprobePath, _ = filepath.Abs(ffprobePath)
+	}
+
+	ffprobeConcurrentProcesses := os.Getenv("FFPROBE_CONCURRENT_PROCESSES")
+	ffprobeConcurrentProcessesInt, err := strconv.ParseInt(ffprobeConcurrentProcesses, 10, 64)
+	if err != nil {
+		FfprobeConcurrentProcesses = 8 // default to 8 ffprobe concurrent processes
+	} else {
+		FfprobeConcurrentProcesses = ffprobeConcurrentProcessesInt
 	}
 
 	audioFileTypesEnv := cmp.Or(os.Getenv("AUDIO_FILE_TYPES"), ".aac,.alac,.flac,.m4a,.mp3,.ogg,.opus,.wav,.wma")

@@ -92,6 +92,86 @@ func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
 	return nil
 }
 
+func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) error {
+	if len(metadataSlice) == 0 {
+		return nil
+	}
+
+	const (
+		numberOfColumns = 22
+		batchSize       = 30
+	)
+
+	tx, err := DB.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	for start := 0; start < len(metadataSlice); start += batchSize {
+		end := start + batchSize
+		if end > len(metadataSlice) {
+			end = len(metadataSlice)
+		}
+
+		batch := metadataSlice[start:end]
+
+		placeholders := make([]string, len(batch))
+		args := make([]interface{}, 0, len(batch)*numberOfColumns)
+
+		for i, m := range batch {
+			placeholders[i] = "(" + strings.Repeat("?, ", numberOfColumns-1) + "?" + ")"
+			args = append(args,
+				m.FilePath, m.DateAdded, m.DateModified, m.FileName,
+				m.Format, m.Duration, m.Size, m.Bitrate,
+				m.Title, m.Artist, m.Album, m.AlbumArtist,
+				m.Genre, m.TrackNumber, m.TotalTracks, m.DiscNumber,
+				m.TotalDiscs, m.ReleaseDate, m.MusicBrainzArtistID,
+				m.MusicBrainzAlbumID, m.MusicBrainzTrackID, m.Label,
+			)
+		}
+
+		query := fmt.Sprintf(`
+			INSERT INTO metadata (
+				file_path, date_added, date_modified, file_name, format, duration, size, bitrate, title, artist, album,
+				album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
+				musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
+			) VALUES %s
+			ON CONFLICT(file_path) DO UPDATE SET
+				date_modified = excluded.date_modified,
+				file_name = excluded.file_name,
+				format = excluded.format,
+				duration = excluded.duration,
+				size = excluded.size,
+				bitrate = excluded.bitrate,
+				title = excluded.title,
+				artist = excluded.artist,
+				album = excluded.album,
+				album_artist = excluded.album_artist,
+				genre = excluded.genre,
+				track_number = excluded.track_number,
+				total_tracks = excluded.total_tracks,
+				disc_number = excluded.disc_number,
+				total_discs = excluded.total_discs,
+				release_date = excluded.release_date,
+				musicbrainz_artist_id = excluded.musicbrainz_artist_id,
+				musicbrainz_album_id = excluded.musicbrainz_album_id,
+				musicbrainz_track_id = excluded.musicbrainz_track_id,
+				label = excluded.label
+		`, strings.Join(placeholders, ", "))
+
+		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("insert batch %d-%d: %w", start, end, err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
 func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
 	metadata.DateModified = logic.GetCurrentTimeFormatted()
 
@@ -131,6 +211,50 @@ func DeleteMetadataRow(ctx context.Context, filepath string) error {
 		return fmt.Errorf("deleting metadata row %s: %v", filepath, err)
 	}
 	logger.Printf("Deleted metadata row %s", filepath)
+	return nil
+}
+
+func DeleteMetadataRows(ctx context.Context, filepaths []string) error {
+	if len(filepaths) == 0 {
+		return nil
+	}
+
+	tx, err := DB.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin transaction: %w", err)
+	}
+
+	const batchSize = 100
+	for start := 0; start < len(filepaths); start += batchSize {
+		end := start + batchSize
+		if end > len(filepaths) {
+			end = len(filepaths)
+		}
+
+		batch := filepaths[start:end]
+		placeholders := make([]string, len(batch))
+		args := make([]interface{}, len(batch))
+		for i, fp := range batch {
+			placeholders[i] = "?"
+			args[i] = fp
+		}
+
+		query := fmt.Sprintf(
+			`DELETE FROM metadata WHERE file_path IN (%s)`,
+			strings.Join(placeholders, ","),
+		)
+
+		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("deleting metadata rows (batch %d-%d): %w", start, end, err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	logger.Printf("Deleted %d metadata rows in batches of %d", len(filepaths), batchSize)
 	return nil
 }
 

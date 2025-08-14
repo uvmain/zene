@@ -49,6 +49,14 @@ func createFtsMetadataTriggers(ctx context.Context) {
 }
 
 func insertFtsMetadataData(ctx context.Context) {
+	var count int
+	err = DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM metadata").Scan(&count)
+	if err != nil {
+		log.Fatalf("error checking count of metadata table: %v", err)
+	}
+	if count == 0 {
+		return
+	}
 	const query = `
 		INSERT INTO metadata_fts (
 			file_path, file_name, title, artist, album, album_artist, genre, release_date, label
@@ -88,13 +96,21 @@ func createFtsArtistsTriggers(ctx context.Context) {
 }
 
 func insertFtsArtistsData(ctx context.Context) {
-	query := `INSERT INTO artists_fts (file_path, artist)
-		SELECT file_path, artist FROM metadata;`
-
-	_, err := DB.ExecContext(ctx, query)
+	query := "select count(*) from metadata"
+	var count int
+	err := DB.QueryRowContext(ctx, query).Scan(&count)
 	if err != nil {
-		log.Fatalf("Database: error inserting data into artists_fts table: %v", err)
-	} else {
-		logger.Println("Database: data inserted into artists_fts table")
+		log.Fatalf("Database: error counting rows in metadata table: %v", err)
+	}
+
+	if count > 0 {
+		query = "INSERT INTO artists_fts (file_path, artist) SELECT file_path, artist FROM metadata;"
+
+		_, err := DB.ExecContext(ctx, query)
+		if err != nil {
+			log.Fatalf("Database: error inserting data into artists_fts table: %v", err)
+		} else {
+			logger.Println("Database: data inserted into artists_fts table")
+		}
 	}
 }
