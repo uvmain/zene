@@ -19,23 +19,21 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	scanResult := scanner.RunScan(r.Context())
-	if scanResult.Success != true {
-		logger.Printf("Error starting scan: %v", scanResult.Status)
+	scanStatus, err := scanner.RunScan(r.Context())
+	if err != nil {
+		if scanStatus.Scanning == true {
+			logger.Printf("Error starting scan: %v", scanStatus)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "A scan is already in progress. Please wait for it to complete before starting a new one.", "")
+			return
+		}
+		logger.Printf("Error starting scan: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to start scan", "")
 		return
 	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
-	response.SubsonicResponse.ScanStatus = &types.ScanStatus{
-		Scanning:    scanResult.Success,
-		Count:       0,
-		FolderCount: 0,
-		LastScan:    "",
-		ScanType:    "",
-		ElapsedTime: 0,
-	}
+	response.SubsonicResponse.ScanStatus = &scanStatus
 
 	format := r.FormValue("f")
 	if format == "json" {

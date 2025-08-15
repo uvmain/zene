@@ -5,6 +5,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"zene/core/database"
+	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/subsonic"
 	"zene/core/types"
@@ -17,16 +19,25 @@ func HandleGetScanStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	scanStatus, err := database.GetLatestScan(r.Context())
+	if err != nil {
+		logger.Printf("Error getting scan status: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to get scan status", "")
+		return
+	}
+
+	scanStatusResponse := types.ScanStatus{
+		Scanning:      scanStatus.CompletedDate == "",
+		Count:         scanStatus.Count,
+		FolderCount:   scanStatus.FolderCount,
+		StartedDate:   scanStatus.StartedDate,
+		Type:          scanStatus.Type,
+		CompletedDate: scanStatus.CompletedDate,
+	}
+
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
-	response.SubsonicResponse.ScanStatus = &types.ScanStatus{
-		Scanning:    false,
-		Count:       0,
-		FolderCount: 0,
-		LastScan:    "",
-		ScanType:    "",
-		ElapsedTime: 0,
-	}
+	response.SubsonicResponse.ScanStatus = &scanStatusResponse
 
 	format := r.FormValue("f")
 	if format == "json" {
