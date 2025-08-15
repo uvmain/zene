@@ -4,7 +4,7 @@ import { useDebug } from '~/composables/useDebug'
 import { useSettings } from '~/composables/useSettings'
 
 const { streamQuality, StreamQualities } = useSettings()
-const { backendFetchRequest } = useBackendFetch()
+const { openSubsonicFetchRequest } = useBackendFetch()
 const { toggleDebug, debugLog, useDebugBool } = useDebug()
 
 const open = ref(false)
@@ -25,7 +25,7 @@ function handleClickOutside(event) {
 }
 
 async function runScan() {
-  const response = await backendFetchRequest('scan')
+  const response = await openSubsonicFetchRequest('startScan.view')
   const json = await response.json()
   debugLog(JSON.stringify(json))
 }

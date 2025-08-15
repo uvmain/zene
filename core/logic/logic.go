@@ -61,6 +61,15 @@ func GetCurrentTimeFormatted() string {
 	return time.Now().UTC().Format(time.RFC3339Nano)
 }
 
+func GetStringTimeFormatted(timeString string) time.Time {
+	timeTime, err := time.Parse(time.RFC3339Nano, timeString)
+	if err != nil {
+		logger.Printf("Error parsing time string '%s': %v", timeString, err)
+		return time.Time{}
+	}
+	return timeTime
+}
+
 func GenerateRandomPassword(length int) (string, error) {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
 	password := make([]byte, length)

@@ -304,3 +304,39 @@ func IsValidMetadataId(ctx context.Context, metadataId string) (bool, isValidMet
 
 	return response != (isValidMetadataResponse{}), response, nil
 }
+
+type GetFileAndFolderCountsResponse struct {
+	FileCount   int64 `json:"file_count"`
+	FolderCount int64 `json:"folder_count"`
+}
+
+func GetFileAndFolderCounts(ctx context.Context) (GetFileAndFolderCountsResponse, error) {
+	var fileCount, folderCount int64
+
+	query := `select count(distinct parent_directory) from (
+		SELECT
+			CASE
+				WHEN instr(file_path, '\') > 0 THEN
+					replace(file_path, replace(file_path, rtrim(file_path, replace(file_path, '\', char(1))), ''), '')
+				ELSE
+					replace(file_path, replace(file_path, rtrim(file_path, replace(file_path, '/', char(1))), ''), '')
+			END AS parent_directory
+		FROM metadata
+	);`
+
+	row := DB.QueryRowContext(ctx, query)
+	if err := row.Scan(&folderCount); err != nil {
+		return GetFileAndFolderCountsResponse{}, fmt.Errorf("getting folder count: %v", err)
+	}
+
+	query = "select count(*) from metadata"
+	row = DB.QueryRowContext(ctx, query)
+	if err := row.Scan(&fileCount); err != nil {
+		return GetFileAndFolderCountsResponse{}, fmt.Errorf("getting file count: %v", err)
+	}
+
+	return GetFileAndFolderCountsResponse{
+		FileCount:   fileCount,
+		FolderCount: folderCount,
+	}, nil
+}

@@ -47,7 +47,6 @@ func StartServer() *http.Server {
 	router.Handle("/api/genres/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracksByGenre)))                       // query params: genres=genre1,genre2 condition=and|or
 	router.Handle("/api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
 	router.Handle("/api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                             // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
-	router.Handle("/api/scan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePostScan)))                                        // triggers a scan of the music library if one is not already running
 
 	// OpenSubsonic routes
 	/// System

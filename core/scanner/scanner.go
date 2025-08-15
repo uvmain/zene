@@ -1,7 +1,9 @@
 package scanner
 
 import (
+	"cmp"
 	"context"
+	"database/sql"
 	"fmt"
 	"path/filepath"
 	"sync"
@@ -10,7 +12,6 @@ import (
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/ffprobe"
-	"zene/core/globals"
 	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/logic"
@@ -18,44 +19,117 @@ import (
 	"zene/core/types"
 )
 
-func RunScan(ctx context.Context) types.ScanResponse {
-	if globals.IsScanning == true {
-		return types.ScanResponse{
-			Success: false,
-			Status:  "Scan already in progress",
+func RunScan(ctx context.Context) (types.ScanStatus, error) {
+	latestScan, err := database.GetLatestScan(ctx)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Printf("Error getting latest scan: %v", err)
+		return types.ScanStatus{
+			Scanning:    false,
+			Count:       0,
+			FolderCount: 0,
+		}, err
+	}
+
+	if latestScan.CompletedDate == "" {
+		startedTime := logic.GetStringTimeFormatted(latestScan.StartedDate)
+		bootTime := logic.GetBootTime()
+		if startedTime.Before(bootTime) {
+			// orphaned scan, set it to completed and continue to run a new one
+			logger.Printf("Orphaned scan detected. Setting scan %d to completed.", latestScan.Id)
+			fileAndFolderCount, err := database.GetFileAndFolderCounts(ctx)
+			if err != nil {
+				logger.Printf("Error getting file and folder counts in RunScan: %v", err)
+			}
+			database.UpdateScanProgress(ctx, latestScan.Id, database.ScanRow{
+				Count:         cmp.Or(fileAndFolderCount.FileCount, latestScan.Count),
+				FolderCount:   cmp.Or(fileAndFolderCount.FolderCount, latestScan.FolderCount),
+				CompletedDate: logic.GetCurrentTimeFormatted(),
+			})
+		} else {
+			return types.ScanStatus{
+				Scanning:      true,
+				Count:         latestScan.Count,
+				FolderCount:   latestScan.FolderCount,
+				StartedDate:   latestScan.StartedDate,
+				Type:          latestScan.Type,
+				CompletedDate: latestScan.CompletedDate,
+			}, fmt.Errorf("A scan is already in progress. Please wait for it to complete before starting a new one.")
 		}
 	}
-
-	globals.IsScanning = true
-	changesMade := false
-	start := time.Now()
-	defer func() { logger.Printf("Scan completed in %s", time.Since(start)) }()
-	defer func() { globals.IsScanning = false }()
-
-	var scanResult types.ScanResponse
-	for _, musicDir := range config.MusicDirs {
-		changesMade, scanResult = scanMusicDir(ctx, musicDir)
-		if !scanResult.Success {
-			return scanResult
-		}
+	newScan := database.ScanRow{
+		Count:       0,
+		FolderCount: 0,
+		StartedDate: logic.GetCurrentTimeFormatted(),
+		Type:        "full",
 	}
 
-	musicbrainz.ClearMbCache()
-
-	if changesMade {
-		err := database.RepopulateGenreCountsTable(ctx)
-		if err != nil {
-			return scanError("Error repopulating genre counts table: %v", err)
-		}
+	scanId, err := database.InsertScan(ctx, newScan)
+	if err != nil {
+		return types.ScanStatus{}, err
 	}
 
-	return types.ScanResponse{
-		Success: true,
-		Status:  "Scan run triggered",
-	}
+	go scanMusicDirs(ctx, scanId)
+
+	return types.ScanStatus{
+		Scanning:    true,
+		Count:       newScan.Count,
+		FolderCount: newScan.FolderCount,
+		StartedDate: newScan.StartedDate,
+		Type:        newScan.Type,
+	}, nil
 }
 
-func scanMusicDir(ctx context.Context, musicDir string) (bool, types.ScanResponse) {
+func scanMusicDirs(ctx context.Context, scanId int64) error {
+	scanUpdate := database.ScanRow{
+		Count:         0,
+		FolderCount:   0,
+		CompletedDate: logic.GetCurrentTimeFormatted(),
+	}
+
+	if ctx.Err() != nil {
+		database.UpdateScanProgress(ctx, scanId, scanUpdate)
+		return fmt.Errorf("Scan was cancelled, context error: %v", ctx.Err())
+	}
+
+	start := time.Now()
+	changesMade := false
+	var err error
+
+	defer func() { logger.Printf("Scan completed in %s", time.Since(start)) }()
+
+	for _, musicDir := range config.MusicDirs {
+		changesMade, err = scanMusicDir(ctx, musicDir)
+		if err != nil {
+			return fmt.Errorf("Error scanning music directory %s: %v", musicDir, err)
+		}
+	}
+
+	if changesMade {
+		musicbrainz.ClearMbCache()
+
+		err := database.RepopulateGenreCountsTable(ctx)
+		if err != nil {
+			return fmt.Errorf("Error repopulating genre counts table: %v", err)
+		}
+	}
+
+	fileAndFolderCount, err := database.GetFileAndFolderCounts(ctx)
+	if err != nil {
+		return fmt.Errorf("Error getting file and folder counts: %v", err)
+	}
+
+	scanUpdate = database.ScanRow{
+		Count:         fileAndFolderCount.FileCount,
+		FolderCount:   fileAndFolderCount.FolderCount,
+		CompletedDate: logic.GetCurrentTimeFormatted(),
+	}
+
+	database.UpdateScanProgress(ctx, scanId, scanUpdate)
+
+	return nil
+}
+
+func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 	changesMade := false
 
 	logger.Printf("Starting scan of music dir %s", musicDir)
@@ -64,14 +138,14 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, types.ScanRespons
 	logger.Printf("Scan: Getting list of audio files in the filesystem")
 	audioFiles, err := getAudioFiles(ctx, musicDir)
 	if err != nil {
-		return false, scanError("Error scanning music directory for audio files: %v", err)
+		return false, fmt.Errorf("Error scanning music directory for audio files: %v", err)
 	}
 
 	// get a current list of files from the metadata table
 	logger.Printf("Scan: Getting list of metadata in the database")
 	metadataFiles, err := database.SelectTrackFilesForScanner(ctx, musicDir)
 	if err != nil {
-		return false, scanError("Error scanning database for metadata files: %v", err)
+		return false, fmt.Errorf("Error scanning database for metadata files: %v", err)
 	}
 
 	// for each file found, either insert or update a metadata row
@@ -80,11 +154,11 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, types.ScanRespons
 		changesMade = true
 	}
 	if err != nil {
-		return false, scanError("Error getting outdated or missing files: %v", err)
+		return false, fmt.Errorf("Error getting outdated or missing files: %v", err)
 	}
 	err = upsertMetadataForFiles(ctx, audioFilesToInsert)
 	if err != nil {
-		return false, scanError("Error upserting metadata rows: %v", err)
+		return false, fmt.Errorf("Error upserting metadata rows: %v", err)
 	}
 
 	// for each metadata row that does not exist in the files list, delete that row
@@ -102,27 +176,27 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, types.ScanRespons
 		logger.Printf("Scan: deleting orphaned metadata rows")
 		err = database.DeleteMetadataRows(ctx, filepaths)
 		if err != nil {
-			scanError("Error deleting orphan metadata rows: %v", err)
+			return false, fmt.Errorf("Error deleting orphan metadata rows: %v", err)
 		} else {
 			fileCount += len(filepaths)
 		}
-		logger.Printf("Scan: %d orphaned metadata rows removed", fileCount)
+		if fileCount > 0 {
+			changesMade = true
+			logger.Printf("Scan: %d orphaned metadata rows removed", fileCount)
+		}
 	}
 
 	err = getAlbumArtworkForMusicDir(ctx, musicDir)
 	if err != nil {
-		return changesMade, scanError(fmt.Sprintf("Error getting album artwork for music dir %s", musicDir), err)
+		return changesMade, fmt.Errorf("Error getting album artwork for music dir %s: %v", musicDir, err)
 	}
 
 	err = getArtistArtworkForMusicDir(ctx, musicDir)
 	if err != nil {
-		return changesMade, scanError(fmt.Sprintf("Error getting artist artwork for music dir %s", musicDir), err)
+		return changesMade, fmt.Errorf("Error getting artist artwork for music dir %s: %v", musicDir, err)
 	}
 
-	return changesMade, types.ScanResponse{
-		Success: true,
-		Status:  "Scan run triggered",
-	}
+	return changesMade, nil
 }
 
 func getAudioFiles(ctx context.Context, musicDir string) ([]types.File, error) {
@@ -225,7 +299,9 @@ func upsertMetadataForFiles(ctx context.Context, files []types.File) error {
 		return fmt.Errorf("Error upserting metadata rows: %v", err)
 	}
 
-	logger.Printf("Scan: metadata tags for %d files upserted", len(metadataSlice))
+	if len(metadataSlice) > 0 {
+		logger.Printf("Scan: metadata tags for %d files upserted", len(metadataSlice))
+	}
 	return nil
 }
 
