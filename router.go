@@ -56,6 +56,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))         // returns types.SubsonicTokenInfoResponse
 	/// Browsing
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders))) // returns types.SubsonicMusicFoldersResponse
+	router.Handle("/rest/getIndexes.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetIndexes)))           // returns types.SubsonicIndexesResponse
 	router.Handle("/rest/getVideos.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideos)))             // returns types.SubsonicResponse error
 	router.Handle("/rest/getVideoInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideoInfo)))       // returns types.SubsonicResponse error
 	router.Handle("/rest/getGenres.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))             // returns types.SubsonicGenresResponse

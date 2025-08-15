@@ -25,6 +25,7 @@ type SubsonicStandard struct {
 	CoverArt               *CoverArt                 `xml:"coverArt,omitempty" json:"coverArt,omitempty"`
 	ChatMessages           *ChatMessages             `xml:"chatMessages,omitempty" json:"chatMessages,omitempty"`
 	TokenInfo              *TokenInfo                `xml:"tokenInfo,omitempty" json:"tokenInfo,omitempty"`
+	Indexes                *SubsonicIndexes          `xml:"indexes,omitempty" json:"indexes,omitempty"`
 }
 
 type SubsonicResponse struct {
