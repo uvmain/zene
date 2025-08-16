@@ -48,6 +48,8 @@ func StartServer() *http.Server {
 	router.Handle("/api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))                                // query params: search=searchTerm
 	router.Handle("/api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))                             // return []types.Playcount; query params: user_id=1, musicbrainz_track_id=musicBrainzTrackId
 
+	router.Handle("GET /share/img/{imageId}", http.HandlerFunc(handlers.HandleGetShareImg)) // returns Image blob
+
 	// OpenSubsonic routes
 	/// System
 	router.Handle("/rest/ping.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePing)))                   // returns types.SubsonicResponse

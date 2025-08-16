@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"zene/core/logic"
 )
 
 func createUserStarsTable(ctx context.Context) {
@@ -10,6 +11,7 @@ func createUserStarsTable(ctx context.Context) {
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
 		metadata_id TEXT NOT NULL,
+		created_at TEXT NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 		UNIQUE (user_id, metadata_id)
 	);`
@@ -22,10 +24,12 @@ func UpsertUserStar(ctx context.Context, userId int64, metadataId string) error 
 		return fmt.Errorf("invalid metadata ID: %s", metadataId)
 	}
 
-	query := `INSERT OR IGNORE INTO user_stars (user_id, metadata_id)
-		VALUES (?, ?);`
+	query := `INSERT OR IGNORE INTO user_stars (user_id, metadata_id, created_at)
+		VALUES (?, ?, ?);`
 
-	_, err = DB.ExecContext(ctx, query, userId, metadataId)
+	createdAt := logic.GetCurrentTimeFormatted()
+
+	_, err = DB.ExecContext(ctx, query, userId, metadataId, createdAt)
 	if err != nil {
 		return fmt.Errorf("upserting user star row: %v", err)
 	}

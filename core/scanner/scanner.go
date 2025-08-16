@@ -30,10 +30,10 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 		}, err
 	}
 
-	if latestScan.CompletedDate == "" {
+	if latestScan.Id > 0 && latestScan.CompletedDate == "" {
 		startedTime := logic.GetStringTimeFormatted(latestScan.StartedDate)
 		bootTime := logic.GetBootTime()
-		if startedTime.Before(bootTime) {
+		if latestScan.Id > 0 && startedTime.Before(bootTime) {
 			// orphaned scan, set it to completed and continue to run a new one
 			logger.Printf("Orphaned scan detected. Setting scan %d to completed.", latestScan.Id)
 			fileAndFolderCount, err := database.GetFileAndFolderCounts(ctx)

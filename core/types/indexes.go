@@ -1,22 +1,22 @@
 package types
 
 type Shortcut struct {
-	ID   string `xml:"id,attr" json:"id"`
+	Id   string `xml:"id,attr" json:"id"`
 	Name string `xml:"name,attr" json:"name"`
 }
 
 type Artist struct {
-	ID             string  `xml:"id,attr" json:"id"`
+	Id             string  `xml:"id,attr" json:"id"`
 	Name           string  `xml:"name,attr" json:"name"`
-	ArtistImageUrl string  `xml:"artistImageUrl,attr,omitempty" json:"artistImageUrl,omitempty"`
 	CoverArt       string  `xml:"coverArt,attr" json:"coverArt"`
-	Starred        string  `xml:"starred,attr" json:"starred,omitempty"`
-	UserRating     int64   `xml:"userRating,attr" json:"userRating,omitempty"`
-	AverageRating  float64 `xml:"averageRating,attr" json:"averageRating,omitempty"`
+	ArtistImageUrl string  `xml:"artistImageUrl,attr" json:"artistImageUrl"`
+	Starred        string  `xml:"starred,attr" json:"starred"`
+	UserRating     int64   `xml:"userRating,attr" json:"userRating"`
+	AverageRating  float64 `xml:"averageRating,attr" json:"averageRating"`
 }
 
 type Child struct {
-	ID                    string `xml:"id,attr" json:"id"`
+	Id                    string `xml:"id,attr" json:"id"`
 	Parent                string `xml:"parent,attr" json:"parent"`
 	Title                 string `xml:"title,attr" json:"title"`
 	IsDir                 string `xml:"isDir,attr" json:"isDir"`
@@ -38,17 +38,17 @@ type Child struct {
 
 type Index struct {
 	Name   string   `xml:"name,attr" json:"name"`
-	Artist []Artist `xml:"artist,attr" json:"artist"`
+	Artist []Artist `xml:"artist" json:"artist"`
 }
 
-type Indexes struct {
-	Index    *[]Index    `xml:"index,omitempty" json:"index,omitempty"`
-	Child    *[]Child    `xml:"child,omitempty" json:"child,omitempty"`
-	Shortcut *[]Shortcut `xml:"shortcut,omitempty" json:"shortcut,omitempty"`
-}
+// type Indexes struct {
+// 	Index    *[]Index    `xml:"index,omitempty" json:"index,omitempty"`
+// 	Child    *[]Child    `xml:"child,omitempty" json:"child,omitempty"`
+// 	Shortcut *[]Shortcut `xml:"shortcut,omitempty" json:"shortcut,omitempty"`
+// }
 
 type SubsonicIndexes struct {
-	Indexes         *Indexes `xml:"index,omitempty" json:"index,omitempty"`
-	LastModified    int64    `xml:"lastModified" json:"lastModified"`
-	IgnoredArticles string   `xml:"ignoredArticles" json:"ignoredArticles"`
+	Indexes         *[]Index `xml:"index,omitempty" json:"index,omitempty"`
+	LastModified    int64    `xml:"lastModified,attr" json:"lastModified"`
+	IgnoredArticles string   `xml:"ignoredArticles,attr" json:"ignoredArticles"`
 }

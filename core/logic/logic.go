@@ -3,11 +3,13 @@ package logic
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
 )
@@ -142,4 +144,8 @@ func GetDefaultRoleValue(roleName string) bool {
 	default:
 		return true
 	}
+}
+
+func GetArtistImageUrl(artistID string) string {
+	return fmt.Sprintf("%s/share/img/%s", config.BaseUrl, artistID)
 }

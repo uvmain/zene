@@ -25,6 +25,17 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
+	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
+	if ifModifiedSinceHeader != "" {
+		latestScan, err := database.GetLatestCompletedScan(ctx)
+		if err == nil {
+			latestScanTime := logic.GetStringTimeFormatted(latestScan.CompletedDate)
+			if net.IfModifiedResponse(w, r, latestScanTime) {
+				return
+			}
+		}
+	}
+
 	ifModifiedSince := r.FormValue("ifModifiedSince")
 	musicFolderId := r.FormValue("musicFolderId")
 
@@ -73,7 +84,7 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 		queryMusicFolderInt64s = append(queryMusicFolderInt64s, logic.IntSliceToInt64Slice(requestUser.Folders)...)
 	}
 
-	indexes, err := database.GetIndexes(ctx, queryMusicFolderInt64s, ifModifiedSinceInt)
+	indexes, err := database.GetIndexes(ctx, requestUser.Id, queryMusicFolderInt64s, ifModifiedSinceInt)
 	if err != nil {
 		logger.Printf("Error querying database in GetIndexes: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to query database", "")
