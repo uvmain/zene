@@ -146,6 +146,6 @@ func GetDefaultRoleValue(roleName string) bool {
 	}
 }
 
-func GetArtistImageUrl(artistID string) string {
-	return fmt.Sprintf("%s/share/img/%s", config.BaseUrl, artistID)
+func GetUnauthenticatedImageUrl(musicbrainzId string) string {
+	return fmt.Sprintf("%s/share/img/%s", config.BaseUrl, musicbrainzId)
 }
