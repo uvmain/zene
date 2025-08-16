@@ -74,6 +74,8 @@ resolving Caddy cert issues on debian/ubuntu
 - [ ] enable future database migrations
 - [x] getScanStatus and startScan handlers exist but need implementing
 - [ ] HandleGetCoverArt and HandleGetArtistArt needs to handle size int param and resize if requested
+- [ ] also use size parameter in unauthenticated HandleGetShareImg handler
 - [ ] Enable last.fm integration for notes/lastFmUrl in getAlbumInfo.view
-- [x] Create trigger-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome) // done, it's now 3ms
+- [x] Create scan-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome) // done, it's now 3ms
 - [ ] When a music dir is removed from .env, remove it from the DB
+- [ ] fix mutex and cache check for GetMetadataForMusicBrainzAlbumId

@@ -3,11 +3,13 @@ package logic
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
 )
@@ -68,6 +70,14 @@ func GetStringTimeFormatted(timeString string) time.Time {
 		return time.Time{}
 	}
 	return timeTime
+}
+
+func IntSliceToInt64Slice(ints []int) []int64 {
+	int64s := make([]int64, len(ints))
+	for i, v := range ints {
+		int64s[i] = int64(v)
+	}
+	return int64s
 }
 
 func GenerateRandomPassword(length int) (string, error) {
@@ -134,4 +144,8 @@ func GetDefaultRoleValue(roleName string) bool {
 	default:
 		return true
 	}
+}
+
+func GetUnauthenticatedImageUrl(musicbrainzId string) string {
+	return fmt.Sprintf("%s/share/img/%s", config.BaseUrl, musicbrainzId)
 }

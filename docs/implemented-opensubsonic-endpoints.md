@@ -5,7 +5,7 @@
 - [x] tokenInfo
 ## Browsing
 - [x] getMusicFolders
-- [ ] getIndexes
+- [x] getIndexes
 - [ ] getMusicDirectory
 - [x] getGenres
 - [ ] getArtists

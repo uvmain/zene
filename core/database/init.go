@@ -32,7 +32,7 @@ func Initialise(ctx context.Context) {
 	createLyricsTable(ctx)
 	createAlbumArtTable(ctx)
 	createArtistArtTable(ctx)
-	createFtsTables(ctx)
+	// createFtsTables(ctx)
 	createTrackGenresTable(ctx)
 	createGenreCountsTable(ctx)
 	createAudioCacheTable(ctx)

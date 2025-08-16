@@ -64,6 +64,20 @@ func GetLatestScan(ctx context.Context) (ScanRow, error) {
 	return scan, nil
 }
 
+func GetLatestCompletedScan(ctx context.Context) (ScanRow, error) {
+	query := `SELECT id, count, folder_count, started_date, type, completed_date FROM scans WHERE completed_date IS NOT '' ORDER BY id DESC LIMIT 1`
+	row := DB.QueryRowContext(ctx, query)
+
+	var scan ScanRow
+	if err := row.Scan(&scan.Id, &scan.Count, &scan.FolderCount, &scan.StartedDate, &scan.Type, &scan.CompletedDate); err != nil {
+		if err == sql.ErrNoRows {
+			return ScanRow{}, err
+		}
+		return ScanRow{}, fmt.Errorf("querying latest scan: %v", err)
+	}
+	return scan, nil
+}
+
 func InsertScan(ctx context.Context, scan ScanRow) (int64, error) {
 	query := `INSERT INTO scans (count, folder_count, started_date, type, completed_date) VALUES (?, ?, ?, ?, ?)`
 	result, err := DB.ExecContext(ctx, query, scan.Count, scan.FolderCount, scan.StartedDate, scan.Type, scan.CompletedDate)

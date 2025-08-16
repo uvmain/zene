@@ -12,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var BaseUrl string
 var MusicDirs []string
 var DatabaseDirectory string
 var LibraryDirectory string
@@ -37,6 +38,8 @@ var FfprobeConcurrentProcesses int64
 func LoadConfig() {
 
 	godotenv.Load(".env")
+
+	BaseUrl = cmp.Or(os.Getenv("BASE_URL"), "http://localhost:8080")
 
 	musicDirs := cmp.Or(os.Getenv("MUSIC_DIRS"), "./music")
 
