@@ -66,12 +66,12 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicSong
 	}
 
 	result.Artists = []types.SongArtist{}
-	result.Artists = append(result.Artists, types.SongArtist{Name: result.Artist})
+	result.Artists = append(result.Artists, types.SongArtist{Id: result.ArtistId, Name: result.Artist})
 
 	result.DisplayArtist = result.Artist
 
 	result.AlbumArtists = []types.SongArtist{}
-	result.AlbumArtists = append(result.AlbumArtists, types.SongArtist{Name: albumArtist})
+	result.AlbumArtists = append(result.AlbumArtists, types.SongArtist{Id: result.ArtistId, Name: albumArtist})
 
 	result.DisplayAlbumArtist = albumArtist
 

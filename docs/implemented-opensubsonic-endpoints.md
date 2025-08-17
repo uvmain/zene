@@ -25,7 +25,7 @@
 - [ ] getAlbumList
 - [ ] getAlbumList2
 - [ ] getRandomSongs
-- [ ] getSongsByGenre
+- [x] getSongsByGenre
 - [ ] getNowPlaying
 - [ ] getStarred
 - [ ] getStarred2
