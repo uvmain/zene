@@ -38,7 +38,7 @@ func ValidateApiKey(ctx context.Context, apiKey string) (types.User, error) {
 	return row, nil
 }
 
-func InsertApiKey(ctx context.Context, userId int64, apiKey string) error {
+func InsertApiKey(ctx context.Context, userId int, apiKey string) error {
 	query := `
 		INSERT INTO api_keys (user_id, apiKey, dateCreated)
 		VALUES (?, ?, ?)`

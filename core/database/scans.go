@@ -7,9 +7,9 @@ import (
 )
 
 type ScanRow struct {
-	Id            int64  `xml:"id,attr" json:"id"`
-	Count         int64  `xml:"count,attr" json:"count"`
-	FolderCount   int64  `xml:"folderCount,attr" json:"folderCount"`
+	Id            int    `xml:"id,attr" json:"id"`
+	Count         int    `xml:"count,attr" json:"count"`
+	FolderCount   int    `xml:"folderCount,attr" json:"folderCount"`
 	StartedDate   string `xml:"startedDate,attr" json:"startedDate"`
 	Type          string `xml:"type,attr" json:"type"`
 	CompletedDate string `xml:"completedDate,attr" json:"completedDate"`
@@ -27,7 +27,7 @@ func createScansTable(ctx context.Context) {
 	createTable(ctx, schema)
 }
 
-func GetScans(ctx context.Context, userId int64, metadataId string) ([]ScanRow, error) {
+func GetScans(ctx context.Context, userId int, metadataId string) ([]ScanRow, error) {
 	query := `select count, folder_count, started_date, type, completed_date from scans`
 
 	rows, err := DB.QueryContext(ctx, query, userId)
@@ -87,7 +87,7 @@ func InsertScan(ctx context.Context, scan ScanRow) (int64, error) {
 	return result.LastInsertId()
 }
 
-func UpdateScanProgress(ctx context.Context, scanId int64, scanRow ScanRow) error {
+func UpdateScanProgress(ctx context.Context, scanId int, scanRow ScanRow) error {
 	query := `UPDATE scans SET count = ?, folder_count = ?, completed_date = ? WHERE id = ?`
 	_, err := DB.ExecContext(ctx, query, scanRow.Count, scanRow.FolderCount, scanRow.CompletedDate, scanId)
 	if err != nil {

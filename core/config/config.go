@@ -32,8 +32,8 @@ var AdminUsername string
 var AdminPassword string
 var AdminEmail string
 var UserAvatarFolder string
-var DefaultBitRate int64
-var FfprobeConcurrentProcesses int64
+var DefaultBitRate int
+var FfprobeConcurrentProcesses int
 
 func LoadConfig() {
 
@@ -88,7 +88,7 @@ func LoadConfig() {
 	if defaultBitRate == "" {
 		DefaultBitRate = 160
 	} else {
-		defaultBitRateInt, err := strconv.ParseInt(defaultBitRate, 10, 64)
+		defaultBitRateInt, err := strconv.Atoi(defaultBitRate)
 		if err != nil {
 			DefaultBitRate = 160
 		} else {
@@ -119,7 +119,7 @@ func LoadConfig() {
 	}
 
 	ffprobeConcurrentProcesses := os.Getenv("FFPROBE_CONCURRENT_PROCESSES")
-	ffprobeConcurrentProcessesInt, err := strconv.ParseInt(ffprobeConcurrentProcesses, 10, 64)
+	ffprobeConcurrentProcessesInt, err := strconv.Atoi(ffprobeConcurrentProcesses)
 	if err != nil {
 		FfprobeConcurrentProcesses = 8 // default to 8 ffprobe concurrent processes
 	} else {

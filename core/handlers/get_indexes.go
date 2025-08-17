@@ -39,12 +39,12 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 	ifModifiedSince := r.FormValue("ifModifiedSince")
 	musicFolderId := r.FormValue("musicFolderId")
 
-	var ifModifiedSinceInt int64
+	var ifModifiedSinceInt int
 	var musicFolderIdInt int
 	var err error
 
 	if ifModifiedSince != "" {
-		ifModifiedSinceInt, err = strconv.ParseInt(ifModifiedSince, 10, 64)
+		ifModifiedSinceInt, err = strconv.Atoi(ifModifiedSince)
 		if err != nil || ifModifiedSinceInt < 0 {
 			http.Error(w, "Invalid ifModifiedSince", http.StatusBadRequest)
 			return
@@ -76,15 +76,15 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	queryMusicFolderInt64s := []int64{}
+	queryMusicFolderInts := []int{}
 	// if the musicFolderId param is valid, use it - otherwise, use the user's folders
 	if musicFolderIdInt != 0 {
-		queryMusicFolderInt64s = append(queryMusicFolderInt64s, int64(musicFolderIdInt))
+		queryMusicFolderInts = append(queryMusicFolderInts, int(musicFolderIdInt))
 	} else {
-		queryMusicFolderInt64s = append(queryMusicFolderInt64s, logic.IntSliceToInt64Slice(requestUser.Folders)...)
+		queryMusicFolderInts = append(queryMusicFolderInts, requestUser.Folders...)
 	}
 
-	indexes, err := database.GetIndexes(ctx, requestUser.Id, queryMusicFolderInt64s, ifModifiedSinceInt)
+	indexes, err := database.GetIndexes(ctx, requestUser.Id, queryMusicFolderInts, ifModifiedSinceInt)
 	if err != nil {
 		logger.Printf("Error querying database in GetIndexes: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to query database", "")

@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+
 	"net/http"
-	"strconv"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/net"
 	"zene/core/subsonic"
 	"zene/core/types"
 )
 
-func HandleGetChatMessages(w http.ResponseWriter, r *http.Request) {
+func HandleGetSong(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
@@ -22,34 +23,33 @@ func HandleGetChatMessages(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	timeSinceParam := r.FormValue("since")
-	var timeSince int
-	if timeSinceParam != "" {
-		var err error
-		timeSince, err = strconv.Atoi(timeSinceParam)
-		if err != nil {
-			errorString := fmt.Sprintf("Invalid since parameter: %s", timeSinceParam)
-			net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
-			return
+	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
+	if ifModifiedSinceHeader != "" {
+		latestScan, err := database.GetLatestCompletedScan(ctx)
+		if err == nil {
+			latestScanTime := logic.GetStringTimeFormatted(latestScan.CompletedDate)
+			if net.IfModifiedResponse(w, r, latestScanTime) {
+				return
+			}
 		}
-	} else {
-		timeSince = 0
 	}
 
-	chats, err := database.GetChats(ctx, timeSince)
-	if err != nil {
-		logger.Printf("Error fetching chats from database: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to fetch chat messages", "")
+	musicbrainz_track_id := r.FormValue("id")
+
+	if musicbrainz_track_id == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
 	}
 
-	logger.Printf("Fetched %d chats since %d", len(chats), timeSince)
+	song, err := database.GetSong(ctx, musicbrainz_track_id)
+	if err != nil {
+		logger.Printf("Error getting song: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Song not found", "")
+		return
+	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
-
-	response.SubsonicResponse.ChatMessages = &types.ChatMessages{
-		ChatMessage: chats,
-	}
+	response.SubsonicResponse.Song = &song
 
 	format := r.FormValue("f")
 	if format == "json" {

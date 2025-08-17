@@ -41,14 +41,14 @@ func HandleSetRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ratingInt64, err := strconv.ParseInt(rating, 10, 64)
-	if err != nil || ratingInt64 < 0 || ratingInt64 > 5 {
+	ratingInt, err := strconv.Atoi(rating)
+	if err != nil || ratingInt < 0 || ratingInt > 5 {
 		logger.Printf("Error parsing rating for user %d: %v", user.Id, err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid rating, must be between 0 and 5", "")
 		return
 	}
 
-	err = database.UpsertUserRating(ctx, user.Id, metadataId, ratingInt64)
+	err = database.UpsertUserRating(ctx, user.Id, metadataId, ratingInt)
 	if err != nil {
 		logger.Printf("Error upserting rating for user %d: %v", user.Id, err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to upsert user rating", "")

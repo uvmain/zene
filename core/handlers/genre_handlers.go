@@ -50,7 +50,7 @@ func HandleGetTracksByGenre(w http.ResponseWriter, r *http.Request) {
 
 	var rows []types.MetadataWithPlaycounts
 
-	rows, err = database.SelectTracksByGenres(r.Context(), genresList, condition, int64(limitInt), random)
+	rows, err = database.SelectTracksByGenres(r.Context(), genresList, condition, int(limitInt), random)
 	if err != nil {
 		logger.Printf("Error querying database in SelectTracksByGenres: %v", err)
 		http.Error(w, "Failed to query database", http.StatusInternalServerError)

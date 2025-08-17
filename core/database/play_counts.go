@@ -23,7 +23,7 @@ func createPlayCountsTable(ctx context.Context) {
 	createIndex(ctx, "idx_play_counts_user", "play_counts", []string{"user_id"}, false)
 }
 
-func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId string) error {
+func UpsertPlayCount(ctx context.Context, userId int, musicbrainzTrackId string) error {
 	query := `INSERT INTO play_counts (user_id, musicbrainz_track_id, play_count, last_played)
 		VALUES (?, ?, 1, ?)
 		ON CONFLICT(user_id, musicbrainz_track_id)
@@ -36,7 +36,7 @@ func UpsertPlayCount(ctx context.Context, userId int64, musicbrainzTrackId strin
 	return nil
 }
 
-func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int64) ([]types.Playcount, error) {
+func GetPlayCounts(ctx context.Context, musicbrainzTrackId string, userId int) ([]types.Playcount, error) {
 	var query string
 	var args []interface{}
 

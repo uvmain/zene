@@ -68,7 +68,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 		return types.ScanStatus{}, err
 	}
 
-	go scanMusicDirs(ctx, scanId)
+	go scanMusicDirs(ctx, int(scanId))
 
 	return types.ScanStatus{
 		Scanning:    true,
@@ -79,7 +79,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 	}, nil
 }
 
-func scanMusicDirs(ctx context.Context, scanId int64) error {
+func scanMusicDirs(ctx context.Context, scanId int) error {
 	scanUpdate := database.ScanRow{
 		Count:         0,
 		FolderCount:   0,
@@ -254,9 +254,9 @@ func upsertMetadataForFiles(ctx context.Context, files []types.File) error {
 			defer wg.Done()
 			defer func() { <-bufferedChannel }()
 
-			tags, err := ffprobe.GetTags(ctx, file.FilePathAbs)
+			fileMetadata, err := ffprobe.GetMetadata(ctx, file.FilePathAbs)
 			if err != nil {
-				logger.Printf("Skipping %s: error retrieving tags: %v", file.FilePathAbs, err)
+				logger.Printf("Skipping %s: error retrieving metadata from file: %v", file.FilePathAbs, err)
 				return
 			}
 
@@ -265,24 +265,28 @@ func upsertMetadataForFiles(ctx context.Context, files []types.File) error {
 				FileName:            filepath.Base(file.FilePathAbs),
 				DateAdded:           logic.GetCurrentTimeFormatted(),
 				DateModified:        file.DateModified,
-				Format:              tags.Format,
-				Duration:            tags.Duration,
-				Size:                tags.Size,
-				Bitrate:             tags.Bitrate,
-				Title:               tags.Title,
-				Artist:              tags.Artist,
-				Album:               tags.Album,
-				AlbumArtist:         tags.AlbumArtist,
-				Genre:               tags.Genre,
-				TrackNumber:         tags.TrackNumber,
-				TotalTracks:         tags.TotalTracks,
-				DiscNumber:          tags.DiscNumber,
-				TotalDiscs:          tags.TotalDiscs,
-				ReleaseDate:         tags.ReleaseDate,
-				MusicBrainzArtistID: tags.MusicBrainzArtistID,
-				MusicBrainzAlbumID:  tags.MusicBrainzAlbumID,
-				MusicBrainzTrackID:  tags.MusicBrainzTrackID,
-				Label:               tags.Label,
+				Format:              fileMetadata.Format,
+				Duration:            fileMetadata.Duration,
+				Size:                fileMetadata.Size,
+				Bitrate:             fileMetadata.Bitrate,
+				Title:               fileMetadata.Title,
+				Artist:              fileMetadata.Artist,
+				Album:               fileMetadata.Album,
+				AlbumArtist:         fileMetadata.AlbumArtist,
+				Genre:               fileMetadata.Genre,
+				TrackNumber:         fileMetadata.TrackNumber,
+				TotalTracks:         fileMetadata.TotalTracks,
+				DiscNumber:          fileMetadata.DiscNumber,
+				TotalDiscs:          fileMetadata.TotalDiscs,
+				ReleaseDate:         fileMetadata.ReleaseDate,
+				MusicBrainzArtistID: fileMetadata.MusicBrainzArtistID,
+				MusicBrainzAlbumID:  fileMetadata.MusicBrainzAlbumID,
+				MusicBrainzTrackID:  fileMetadata.MusicBrainzTrackID,
+				Label:               fileMetadata.Label,
+				Codec:               fileMetadata.Codec,
+				BitDepth:            fileMetadata.BitDepth,
+				SampleRate:          fileMetadata.SampleRate,
+				Channels:            fileMetadata.Channels,
 			}
 
 			metadataMutex.Lock()
@@ -301,6 +305,8 @@ func upsertMetadataForFiles(ctx context.Context, files []types.File) error {
 
 	if len(metadataSlice) > 0 {
 		logger.Printf("Scan: metadata tags for %d files upserted", len(metadataSlice))
+	} else {
+		logger.Printf("Scan: no metadata tags found for files")
 	}
 	return nil
 }

@@ -9,14 +9,14 @@ import (
 	"zene/core/types"
 )
 
-func GetIndexes(ctx context.Context, userId int64, musicFolderIds []int64, ifModifiedSince int64) (types.SubsonicIndexes, error) {
+func GetIndexes(ctx context.Context, userId int, musicFolderIds []int, ifModifiedSince int) (types.SubsonicIndexes, error) {
 	latestScan, err := GetLatestCompletedScan(ctx)
 	if err != nil {
 		return types.SubsonicIndexes{}, err
 	}
 
 	latestScanTime := logic.GetStringTimeFormatted(latestScan.CompletedDate)
-	latestScanTimeUnix := latestScanTime.UnixMilli()
+	latestScanTimeUnix := int(latestScanTime.UnixMilli())
 
 	response := types.SubsonicIndexes{}
 	response.IgnoredArticles = ""
@@ -35,7 +35,7 @@ func GetIndexes(ctx context.Context, userId int64, musicFolderIds []int64, ifMod
 	return response, nil
 }
 
-func getArtistIndexes(ctx context.Context, userId int64, musicFolderIds []int64) ([]types.Index, error) {
+func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]types.Index, error) {
 
 	var rows *sql.Rows
 	var err error
@@ -83,7 +83,7 @@ func getArtistIndexes(ctx context.Context, userId int64, musicFolderIds []int64)
 			artist.Starred = starred.String
 		}
 		if userRating.Valid {
-			artist.UserRating = userRating.Int64
+			artist.UserRating = int(userRating.Int64)
 		}
 		if avgRating.Valid {
 			artist.AverageRating = avgRating.Float64

@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -43,6 +44,46 @@ func CheckContext(ctx context.Context) error {
 	}
 }
 
+func InferContentTypeFromFileExtension(fileName string) string {
+	ext := filepath.Ext(fileName)
+	switch ext {
+	case ".mp3":
+		return "audio/mpeg"
+	case ".mp4":
+		return "video/mp4"
+	case ".m4a":
+		return "audio/mp4"
+	case ".flac":
+		return "audio/flac"
+	case ".ogg":
+		return "audio/ogg"
+	case ".opus":
+		return "audio/opus"
+	case ".wav":
+		return "audio/wav"
+	case ".aac":
+		return "audio/aac"
+	case ".alac":
+		return "audio/alac"
+	case ".wma":
+		return "audio/x-ms-wma"
+	case ".webm":
+		return "video/webm"
+	case ".gif":
+		return "image/gif"
+	case ".webp":
+		return "image/webp"
+	case ".avif":
+		return "image/avif"
+	case ".jpg", ".jpeg":
+		return "image/jpeg"
+	case ".png":
+		return "image/png"
+	default:
+		return "application/octet-stream"
+	}
+}
+
 func FilesInSliceOnceNotInSliceTwo(slice1, slice2 []types.File) []types.File {
 	slice2Map := make(map[string]bool)
 	for _, f := range slice2 {
@@ -70,14 +111,6 @@ func GetStringTimeFormatted(timeString string) time.Time {
 		return time.Time{}
 	}
 	return timeTime
-}
-
-func IntSliceToInt64Slice(ints []int) []int64 {
-	int64s := make([]int64, len(ints))
-	for i, v := range ints {
-		int64s[i] = int64(v)
-	}
-	return int64s
 }
 
 func GenerateRandomPassword(length int) (string, error) {

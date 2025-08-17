@@ -10,9 +10,9 @@ type ContextKey string
 const UserIdKey ContextKey = "userId"
 const UsernameKey ContextKey = "username"
 
-func GetUserIdFromContext(ctx context.Context) (int64, error) {
+func GetUserIdFromContext(ctx context.Context) (int, error) {
 	val := ctx.Value(UserIdKey)
-	userId, ok := val.(int64)
+	userId, ok := val.(int)
 	if !ok {
 		return 0, fmt.Errorf("userId missing or invalid in context")
 	}

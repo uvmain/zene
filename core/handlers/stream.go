@@ -38,13 +38,13 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var maxBitRate int64
+	var maxBitRate int
 	maxBitRateString := r.FormValue("maxBitRate")
 	if maxBitRateString == "" {
 		maxBitRate = config.DefaultBitRate
 	} else {
 		var err error
-		maxBitRate, err = strconv.ParseInt(maxBitRateString, 10, 64)
+		maxBitRate, err = strconv.Atoi(maxBitRateString)
 		if err != nil {
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "maxBitRate parameter must be an integer", "")
 			return
@@ -93,7 +93,8 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 
 	track, err := database.SelectTrack(ctx, musicBrainzTrackId)
 	if err != nil {
-		http.Error(w, "File not found in database.", http.StatusNotFound)
+		logger.Printf("Error querying database for track %s: %v", musicBrainzTrackId, err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "File not found in database.", "")
 		return
 	}
 

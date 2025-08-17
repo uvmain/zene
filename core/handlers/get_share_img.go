@@ -12,10 +12,10 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 	imageId := r.PathValue("imageId")
 
 	sizeQueryParameter := r.FormValue("size")
-	var sizeInt int64
+	var sizeInt int
 	var err error
 	if sizeQueryParameter != "" {
-		sizeInt, err = strconv.ParseInt(sizeQueryParameter, 10, 64)
+		sizeInt, err = strconv.Atoi(sizeQueryParameter)
 		if err != nil {
 			logger.Printf("Error parsing size parameter in HandleGetShareImg: %v", err)
 			http.Error(w, "Failed to parse size parameter", http.StatusBadRequest)

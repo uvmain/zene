@@ -25,7 +25,7 @@ func validateToken(salt string, token string, decryptedPassword string) bool {
 // ValidateAuth authenticates a user by either plaintext password or token and salt.
 // It returns:
 // string: the authenticated username
-// int64: the authenticated userId
+// int: the authenticated userId
 // bool: true if successful; otherwise returns false and writes a 401 response.
 //
 // This supports the following request parameters in either form data or query parameters:
@@ -39,7 +39,7 @@ func validateToken(salt string, token string, decryptedPassword string) bool {
 //
 // If apiKey is specified, then none of p, t, s, nor u can be specified.
 // Else either p or both t and s must be specified.
-func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) {
+func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int, bool) {
 	ctx := r.Context()
 
 	u := r.FormValue("u") // username
@@ -104,7 +104,7 @@ func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int64, bool) 
 }
 
 // validateWithApiKey checks if the provided API key is valid and returns the username and userId if successful.
-func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWriter, r *http.Request) (string, int64, bool) {
+func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWriter, r *http.Request) (string, int, bool) {
 	user, err := database.ValidateApiKey(ctx, apiKey)
 	if err != nil {
 		logger.Printf("Error validating API key %s: %v", apiKey, err)

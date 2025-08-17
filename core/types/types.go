@@ -2,7 +2,7 @@ package types
 
 import "time"
 
-type Tags struct {
+type FileMetadata struct {
 	Format              string `json:"format"`
 	Duration            string `json:"duration"`
 	Size                string `json:"size"`
@@ -21,6 +21,10 @@ type Tags struct {
 	MusicBrainzAlbumID  string `json:"musicbrainz_album_id"`
 	MusicBrainzTrackID  string `json:"musicbrainz_track_id"`
 	Label               string `json:"label"`
+	Codec               string `json:"codec_name"`
+	BitDepth            int    `json:"bits_per_raw_sample"`
+	SampleRate          int    `json:"sample_rate"`
+	Channels            int    `json:"channels"`
 }
 
 type Metadata struct {
@@ -46,7 +50,11 @@ type Metadata struct {
 	MusicBrainzAlbumID  string `json:"musicbrainz_album_id"`
 	MusicBrainzTrackID  string `json:"musicbrainz_track_id"`
 	Label               string `json:"label"`
-	MusicFolderId       int64  `json:"music_folder_id"`
+	MusicFolderId       int    `json:"music_folder_id"`
+	Codec               string `json:"codec_name"`
+	BitDepth            int    `json:"bits_per_raw_sample"`
+	SampleRate          int    `json:"sample_rate"`
+	Channels            int    `json:"channels"`
 }
 
 type MetadataWithPlaycounts struct {
@@ -72,9 +80,13 @@ type MetadataWithPlaycounts struct {
 	MusicBrainzAlbumID  string `json:"musicbrainz_album_id"`
 	MusicBrainzTrackID  string `json:"musicbrainz_track_id"`
 	Label               string `json:"label"`
-	MusicFolderId       int64  `json:"music_folder_id"`
-	UserPlayCount       int64  `json:"user_play_count"`
-	GlobalPlayCount     int64  `json:"global_play_count"`
+	MusicFolderId       int    `json:"music_folder_id"`
+	Codec               string `json:"codec_name"`
+	BitDepth            int    `json:"bits_per_raw_sample"`
+	SampleRate          int    `json:"sample_rate"`
+	Channels            int    `json:"channels"`
+	UserPlayCount       int    `json:"user_play_count"`
+	GlobalPlayCount     int    `json:"global_play_count"`
 }
 
 type AlbumArtRow struct {
@@ -101,10 +113,10 @@ type File struct {
 }
 
 type Playcount struct {
-	Id                 int64  `json:"id"`
-	UserId             int64  `json:"user_id"`
+	Id                 int    `json:"id"`
+	UserId             int    `json:"user_id"`
 	MusicBrainzTrackID string `json:"musicbrainz_track_id"`
-	PlayCount          int64  `json:"play_count"`
+	PlayCount          int    `json:"play_count"`
 	LastPlayed         string `json:"last_played"`
 }
 
