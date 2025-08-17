@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"slices"
 	"strconv"
 
 	"net/http"
@@ -67,21 +68,28 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 		offsetInt = 0 // default to zero if param is not provided
 	}
 
-	// TODO limiting to musicfolderId not yet implemented
-	// var musicFolderIdInt int
-	// musicFolderId := r.FormValue("musicFolderId")
-	// if musicFolderId != "" {
-	// 	var err error
-	// 	musicFolderIdInt, err = strconv.Atoi(musicFolderId)
-	// 	if err != nil {
-	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "musicFolderId parameter must be an integer", "")
-	// 		return
-	// 	}
-	// } else {
-	// 	musicFolderIdInt = 0
-	// }
+	var musicFolderIdInt int
+	musicFolderId := r.FormValue("musicFolderId")
+	if musicFolderId != "" {
+		var err error
+		musicFolderIdInt, err = strconv.Atoi(musicFolderId)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "musicFolderId parameter must be an integer", "")
+			return
+		}
+		user, err := database.GetUserByContext(ctx)
+		if err == nil {
+			userHasAccessToMusicFolder := slices.Contains(user.Folders, musicFolderIdInt)
+			if !userHasAccessToMusicFolder {
+				net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, fmt.Sprintf("musicFolderId %d is not valid for user", musicFolderIdInt), "")
+				return
+			}
+		}
+	} else {
+		musicFolderIdInt = 0
+	}
 
-	songs, err := database.GetSongsByGenre(ctx, genre, countInt, offsetInt)
+	songs, err := database.GetSongsByGenre(ctx, genre, countInt, offsetInt, musicFolderIdInt)
 	if err != nil {
 		logger.Printf("Error getting songs by genre: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "No songs found for genre", "")

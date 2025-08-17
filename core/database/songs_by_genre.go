@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func GetSongsByGenre(ctx context.Context, genre string, count int, offset int) ([]types.SubsonicSong, error) {
+func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, musicFolderInt int) ([]types.SubsonicSong, error) {
 	requestUser, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.SubsonicSong{}, err
@@ -22,8 +22,13 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int) (
 		from metadata m
 		join user_music_folders f on f.folder_id = m.music_folder_id
 		join track_genres g on m.file_path = g.file_path
-		where f.user_id = ? and lower(g.genre) = lower(?)
-		limit ? offset ?`
+		where f.user_id = ? and lower(g.genre) = lower(?)`
+
+	if musicFolderInt != 0 {
+		query += fmt.Sprintf(` and m.music_folder_id = %d`, musicFolderInt)
+	}
+
+	query += ` limit ? offset ?`
 
 	rows, err := DB.QueryContext(ctx, query, requestUser.Id, genre, count, offset)
 	if err != nil {
