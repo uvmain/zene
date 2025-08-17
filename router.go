@@ -63,6 +63,8 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getVideos.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideos)))             // returns types.SubsonicResponse error
 	router.Handle("/rest/getVideoInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideoInfo)))       // returns types.SubsonicResponse error
 	router.Handle("/rest/getGenres.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))             // returns types.SubsonicGenresResponse
+	// Album/song lists
+	router.Handle("/rest/getSongsByGenre.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSongsByGenre)))
 	// Media retrieval
 	router.Handle("/rest/stream.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))                       // returns audio stream or types.SubsonicResponse error
 	router.Handle("/rest/download.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))                   // returns blob or types.SubsonicResponse error

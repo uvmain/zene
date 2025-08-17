@@ -55,3 +55,7 @@ type SongContributors struct {
 	Role   string      `xml:"role,attr" json:"role"`
 	Artist *SongArtist `xml:"artist" json:"artist"`
 }
+
+type SongsByGenre struct {
+	Songs []SubsonicSong `xml:"song" json:"song"`
+}

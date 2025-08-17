@@ -27,6 +27,7 @@ type SubsonicStandard struct {
 	TokenInfo              *TokenInfo                `xml:"tokenInfo,omitempty" json:"tokenInfo,omitempty"`
 	Indexes                *SubsonicIndexes          `xml:"indexes,omitempty" json:"indexes,omitempty"`
 	Song                   *SubsonicSong             `xml:"song,omitempty" json:"song,omitempty"`
+	SongsByGenre           *SongsByGenre             `xml:"songsByGenre,omitempty" json:"songsByGenre,omitempty"`
 }
 
 type SubsonicResponse struct {
