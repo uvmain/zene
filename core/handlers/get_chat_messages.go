@@ -23,10 +23,10 @@ func HandleGetChatMessages(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	timeSinceParam := r.FormValue("since")
-	var timeSince int64
+	var timeSince int
 	if timeSinceParam != "" {
 		var err error
-		timeSince, err = strconv.ParseInt(timeSinceParam, 10, 64)
+		timeSince, err = strconv.Atoi(timeSinceParam)
 		if err != nil {
 			errorString := fmt.Sprintf("Invalid since parameter: %s", timeSinceParam)
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")

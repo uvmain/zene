@@ -68,7 +68,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 		return types.ScanStatus{}, err
 	}
 
-	go scanMusicDirs(ctx, scanId)
+	go scanMusicDirs(ctx, int(scanId))
 
 	return types.ScanStatus{
 		Scanning:    true,
@@ -79,7 +79,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 	}, nil
 }
 
-func scanMusicDirs(ctx context.Context, scanId int64) error {
+func scanMusicDirs(ctx context.Context, scanId int) error {
 	scanUpdate := database.ScanRow{
 		Count:         0,
 		FolderCount:   0,

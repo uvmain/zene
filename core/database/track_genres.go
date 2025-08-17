@@ -164,7 +164,7 @@ func SelectDistinctGenres(ctx context.Context) ([]types.Genre, error) {
 	return results, nil
 }
 
-func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, limit int64, random string) ([]types.MetadataWithPlaycounts, error) {
+func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, limit int, random string) ([]types.MetadataWithPlaycounts, error) {
 	userId, _ := logic.GetUserIdFromContext(ctx)
 	query := getMetadataWithGenresSql(userId, genres, andOr, limit, random)
 

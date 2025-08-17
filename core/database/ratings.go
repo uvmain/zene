@@ -22,7 +22,7 @@ func createUserRatingsTable(ctx context.Context) {
 	createTable(ctx, schema)
 }
 
-func UpsertUserRating(ctx context.Context, userId int64, metadataId string, rating int64) error {
+func UpsertUserRating(ctx context.Context, userId int, metadataId string, rating int) error {
 	if rating < 0 || rating > 5 {
 		return fmt.Errorf("invalid rating: %d must be between 0 and 5", rating)
 	}
@@ -46,7 +46,7 @@ func UpsertUserRating(ctx context.Context, userId int64, metadataId string, rati
 	return nil
 }
 
-func GetUserRatingsForUser(ctx context.Context, userId int64) (UserRating, error) {
+func GetUserRatingsForUser(ctx context.Context, userId int) (UserRating, error) {
 	query := "SELECT metadata_id, rating FROM user_ratings WHERE user_id = ?"
 	rows, err := DB.QueryContext(ctx, query, userId)
 	if err != nil {
@@ -72,7 +72,7 @@ func GetUserRatingsForUser(ctx context.Context, userId int64) (UserRating, error
 	return userRatings[0], nil
 }
 
-func GetUserRatingsForMetadataId(ctx context.Context, userId int64, metadataId string) (UserRating, error) {
+func GetUserRatingsForMetadataId(ctx context.Context, userId int, metadataId string) (UserRating, error) {
 	isValidMetadataResponse, _, err := IsValidMetadataId(ctx, metadataId)
 	if !isValidMetadataResponse {
 		return UserRating{}, fmt.Errorf("invalid metadata ID: %s", metadataId)
@@ -103,7 +103,7 @@ func GetUserRatingsForMetadataId(ctx context.Context, userId int64, metadataId s
 	return userRatings[0], nil
 }
 
-func DeleteUserRating(ctx context.Context, userId int64, metadataId string) error {
+func DeleteUserRating(ctx context.Context, userId int, metadataId string) error {
 	query := `DELETE FROM user_ratings WHERE user_id = ? AND metadata_id = ?`
 	_, err := DB.ExecContext(ctx, query, userId, metadataId)
 	if err != nil {

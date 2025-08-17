@@ -11,7 +11,7 @@ type Artist struct {
 	CoverArt       string  `xml:"coverArt,attr" json:"coverArt"`
 	ArtistImageUrl string  `xml:"artistImageUrl,attr" json:"artistImageUrl"`
 	Starred        string  `xml:"starred,attr" json:"starred"`
-	UserRating     int64   `xml:"userRating,attr" json:"userRating"`
+	UserRating     int     `xml:"userRating,attr" json:"userRating"`
 	AverageRating  float64 `xml:"averageRating,attr" json:"averageRating"`
 }
 
@@ -49,6 +49,6 @@ type Index struct {
 
 type SubsonicIndexes struct {
 	Indexes         *[]Index `xml:"index,omitempty" json:"index,omitempty"`
-	LastModified    int64    `xml:"lastModified,attr" json:"lastModified"`
+	LastModified    int      `xml:"lastModified,attr" json:"lastModified"`
 	IgnoredArticles string   `xml:"ignoredArticles,attr" json:"ignoredArticles"`
 }

@@ -26,7 +26,7 @@ func HandleGetArtistArt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// sizeParam := r.FormValue("size")
-	// var sizeInt int64
+	// var sizeInt int
 	// var err error
 	// if sizeParam == "" {
 	// 	sizeInt, err = strconv.ParseInt(sizeParam, 10, 64)

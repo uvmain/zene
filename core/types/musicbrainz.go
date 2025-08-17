@@ -9,7 +9,7 @@ type MbImage struct {
 	Approved   bool              `json:"approved"`
 	Back       bool              `json:"back"`
 	Comment    string            `json:"comment"`
-	Edit       int64             `json:"edit"`
+	Edit       int               `json:"edit"`
 	Front      bool              `json:"front"`
 	ID         interface{}       `json:"id"`
 	Image      string            `json:"image"`

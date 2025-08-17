@@ -113,14 +113,6 @@ func GetStringTimeFormatted(timeString string) time.Time {
 	return timeTime
 }
 
-func IntSliceToInt64Slice(ints []int) []int64 {
-	int64s := make([]int64, len(ints))
-	for i, v := range ints {
-		int64s[i] = int64(v)
-	}
-	return int64s
-}
-
 func GenerateRandomPassword(length int) (string, error) {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
 	password := make([]byte, length)

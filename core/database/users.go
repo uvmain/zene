@@ -137,7 +137,7 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 
 func GetUserByContext(ctx context.Context) (types.User, error) {
 	val := ctx.Value("userId")
-	userId, ok := val.(int64)
+	userId, ok := val.(int)
 	if !ok {
 		return types.User{}, fmt.Errorf("userId missing or invalid in context")
 	}
@@ -186,7 +186,7 @@ func GetUserWithoutFoldersByUsername(ctx context.Context, username string) (type
 	return row, nil
 }
 
-func GetUserById(ctx context.Context, id int64) (types.User, error) {
+func GetUserById(ctx context.Context, id int) (types.User, error) {
 	query := `SELECT * FROM users_with_folders WHERE user_id = ?;`
 	var row types.User
 	var foldersString string
@@ -232,7 +232,7 @@ func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	return users, nil
 }
 
-func UpsertUser(ctx context.Context, user types.User) (int64, error) {
+func UpsertUser(ctx context.Context, user types.User) (int, error) {
 	query := `INSERT INTO users (username, password, email, scrobbling_enabled, ldap_authenticated, admin_role, settings_role,
     	stream_role, jukebox_role, download_role, upload_role, playlist_role, cover_art_role, comment_role,
     	podcast_role, share_role, video_conversion_role, max_bit_rate)
@@ -308,7 +308,7 @@ func DeleteUserByUsername(ctx context.Context, username string) error {
 	return nil
 }
 
-func DeleteUserById(ctx context.Context, id int64) error {
+func DeleteUserById(ctx context.Context, id int) error {
 	query := `DELETE FROM users WHERE id = ?`
 	_, err := DB.ExecContext(ctx, query, id)
 	if err != nil {
@@ -349,10 +349,10 @@ func anyAdminUsersExist(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func GetEncryptedPasswordFromDB(ctx context.Context, username string) (string, int64, error) {
+func GetEncryptedPasswordFromDB(ctx context.Context, username string) (string, int, error) {
 	query := `SELECT password, id FROM users WHERE username = ?`
 	var encryptedPassword string
-	var userId int64
+	var userId int
 
 	err := DB.QueryRowContext(ctx, query, username).Scan(&encryptedPassword, &userId)
 	if err == sql.ErrNoRows {

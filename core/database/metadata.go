@@ -265,12 +265,12 @@ func IsValidMetadataId(ctx context.Context, metadataId string) (bool, isValidMet
 }
 
 type GetFileAndFolderCountsResponse struct {
-	FileCount   int64 `json:"file_count"`
-	FolderCount int64 `json:"folder_count"`
+	FileCount   int `json:"file_count"`
+	FolderCount int `json:"folder_count"`
 }
 
 func GetFileAndFolderCounts(ctx context.Context) (GetFileAndFolderCountsResponse, error) {
-	var fileCount, folderCount int64
+	var fileCount, folderCount int
 
 	query := `select count(distinct parent_directory) from (
 		SELECT

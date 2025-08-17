@@ -19,7 +19,7 @@ func createChatsTable(ctx context.Context) {
 	createIndex(ctx, "idx_chats_user", "chats", []string{"user_id"}, false)
 }
 
-func InsertChat(ctx context.Context, userId int64, message string) error {
+func InsertChat(ctx context.Context, userId int, message string) error {
 	insertTimestampUnixSeconds := time.Now().Unix()
 	query := `INSERT INTO chats (user_id, message, timestamp)
 		VALUES (?, ?, ?)`
@@ -30,7 +30,7 @@ func InsertChat(ctx context.Context, userId int64, message string) error {
 	return nil
 }
 
-func GetChats(ctx context.Context, timeSince int64) ([]types.Chat, error) {
+func GetChats(ctx context.Context, timeSince int) ([]types.Chat, error) {
 	query := "SELECT u.username, c.message, c.timestamp FROM chats c join users u on c.user_id = u.id WHERE c.timestamp > ?"
 	rows, err := DB.QueryContext(ctx, query, timeSince)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"zene/core/logger"
 )
 
-func UpsertUserAvatarImage(userId int64, img image.Image) error {
+func UpsertUserAvatarImage(userId int, img image.Image) error {
 	fileName := fmt.Sprintf("%d.jpg", userId)
 	filePath := filepath.Join(config.UserAvatarFolder, fileName)
 
@@ -26,7 +26,7 @@ func UpsertUserAvatarImage(userId int64, img image.Image) error {
 	return nil
 }
 
-func GetUserAvatarImage(userId int64) ([]byte, error) {
+func GetUserAvatarImage(userId int) ([]byte, error) {
 	fileName := fmt.Sprintf("%d.jpg", userId)
 	filePath := filepath.Join(config.UserAvatarFolder, fileName)
 
@@ -42,7 +42,7 @@ func GetUserAvatarImage(userId int64) ([]byte, error) {
 	return blob, nil
 }
 
-func DeleteUserAvatarImage(userId int64) error {
+func DeleteUserAvatarImage(userId int) error {
 	fileName := fmt.Sprintf("%d.jpg", userId)
 	filePath := filepath.Join(config.UserAvatarFolder, fileName)
 

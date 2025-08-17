@@ -12,7 +12,7 @@ import (
 func HandleGetPlaycounts(w http.ResponseWriter, r *http.Request) {
 	userIdParam := r.FormValue("user_id")
 	musicbrainzTrackId := r.FormValue("musicbrainz_track_id")
-	userId, err := strconv.ParseInt(userIdParam, 10, 64)
+	userId, err := strconv.Atoi(userIdParam)
 	if err != nil {
 		userId = 0
 	}
@@ -39,11 +39,11 @@ func HandleUpsertPlaycount(w http.ResponseWriter, r *http.Request) {
 
 	response := &StandardResponse{}
 
-	var userId int64
+	var userId int
 	var err error
 
 	if userIdParam != "" {
-		userId, err = strconv.ParseInt(userIdParam, 10, 64)
+		userId, err = strconv.Atoi(userIdParam)
 		if err != nil {
 			handleErrorResponse(w, response, "Invalid user_id parameter", err, http.StatusBadRequest)
 			return

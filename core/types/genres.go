@@ -1,8 +1,8 @@
 package types
 
 type Genre struct {
-	SongCount  int64  `xml:"songCount,attr" json:"song_count"`
-	AlbumCount int64  `xml:"albumCount,attr" json:"album_count"`
+	SongCount  int    `xml:"songCount,attr" json:"song_count"`
+	AlbumCount int    `xml:"albumCount,attr" json:"album_count"`
 	Value      string `xml:"value,attr" json:"value"`
 }
 

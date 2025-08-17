@@ -71,7 +71,7 @@ func cleanupIncompleteCache(ctx context.Context, cachePath string, cacheKey stri
 	}
 }
 
-func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, maxBitRate int64, timeOffset int, format string) error {
+func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, maxBitRate int, timeOffset int, format string) error {
 	cacheKey := fmt.Sprintf("%s-%d.%s", trackId, maxBitRate, format)
 	cachePath := filepath.Join(config.AudioCacheFolder, cacheKey)
 

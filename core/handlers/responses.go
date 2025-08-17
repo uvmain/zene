@@ -23,7 +23,7 @@ func (r *StandardResponse) SetSuccess() {
 }
 
 type IdResponse struct {
-	Id int64 `json:"Id"`
+	Id int `json:"Id"`
 	StandardResponse
 }
 

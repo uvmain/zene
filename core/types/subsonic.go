@@ -35,7 +35,7 @@ type SubsonicResponse struct {
 
 // SubsonicError represents a Subsonic API error
 type SubsonicError struct {
-	Code    int64  `xml:"code,attr" json:"code"`
+	Code    int    `xml:"code,attr" json:"code"`
 	Message string `xml:"message,attr" json:"message"`
 	HelpUrl string `xml:"helpUrl,attr,omitempty" json:"helpUrl,omitempty"`
 }

@@ -55,7 +55,7 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicSong
 
 	result.ContentType = logic.InferContentTypeFromFileExtension(result.Path)
 	result.Suffix = strings.Replace(filepath.Ext(result.Path), ".", "", 1)
-	result.Duration = int64(durationFloat)
+	result.Duration = int(durationFloat)
 	result.Parent = result.AlbumId
 	result.SortName = strings.ToLower(result.Title)
 	result.MusicBrainzId = result.Id

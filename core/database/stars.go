@@ -18,7 +18,7 @@ func createUserStarsTable(ctx context.Context) {
 	createTable(ctx, schema)
 }
 
-func UpsertUserStar(ctx context.Context, userId int64, metadataId string) error {
+func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
 	isValidMetadataResponse, _, err := IsValidMetadataId(ctx, metadataId)
 	if !isValidMetadataResponse {
 		return fmt.Errorf("invalid metadata ID: %s", metadataId)
@@ -36,7 +36,7 @@ func UpsertUserStar(ctx context.Context, userId int64, metadataId string) error 
 	return nil
 }
 
-func GetUserStarsForUser(ctx context.Context, userId int64) ([]string, error) {
+func GetUserStarsForUser(ctx context.Context, userId int) ([]string, error) {
 	query := "SELECT metadata_id FROM user_stars WHERE user_id = ?"
 	rows, err := DB.QueryContext(ctx, query, userId)
 	if err != nil {
@@ -59,7 +59,7 @@ func GetUserStarsForUser(ctx context.Context, userId int64) ([]string, error) {
 	return metadataIds, nil
 }
 
-func DeleteUserStar(ctx context.Context, userId int64, metadataId string) error {
+func DeleteUserStar(ctx context.Context, userId int, metadataId string) error {
 	query := `DELETE FROM user_stars WHERE user_id = ? AND metadata_id = ?`
 	_, err := DB.ExecContext(ctx, query, userId, metadataId)
 	if err != nil {
