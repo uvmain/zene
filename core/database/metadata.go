@@ -35,6 +35,10 @@ func createMetadataTable(ctx context.Context) {
 		musicbrainz_track_id TEXT NOT NULL,
 		label TEXT,
 		music_folder_id INTEGER DEFAULT 1,
+		codec TEXT,
+		bit_depth INTEGER,
+		sample_rate INTEGER,
+		channels INTEGER,
 		FOREIGN KEY (music_folder_id) REFERENCES music_folders(id) ON DELETE CASCADE
 	);`
 	createTable(ctx, schema)
@@ -44,63 +48,13 @@ func createMetadataTable(ctx context.Context) {
 	createIndex(ctx, "idx_metadata_file_path_album_track ", "metadata", []string{"file_path", "musicbrainz_album_id", "musicbrainz_track_id"}, false)
 }
 
-func InsertMetadataRow(ctx context.Context, metadata types.Metadata) error {
-	query := `
-	INSERT INTO metadata (
-		file_path, date_added, date_modified, file_name, format, duration, size, bitrate, title, artist, album,
-		album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
-		musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
-	) VALUES (
-		?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-		?, ?, ?, ?, ?, ?, ?,
-		?, ?, ?, ?
-	)
-	ON CONFLICT(file_path) DO UPDATE SET
-		date_modified = excluded.date_modified,
-		file_name = excluded.file_name,
-		format = excluded.format,
-		duration = excluded.duration,
-		size = excluded.size,
-		bitrate = excluded.bitrate,
-		title = excluded.title,
-		artist = excluded.artist,
-		album = excluded.album,
-		album_artist = excluded.album_artist,
-		genre = excluded.genre,
-		track_number = excluded.track_number,
-		total_tracks = excluded.total_tracks,
-		disc_number = excluded.disc_number,
-		total_discs = excluded.total_discs,
-		release_date = excluded.release_date,
-		musicbrainz_artist_id = excluded.musicbrainz_artist_id,
-		musicbrainz_album_id = excluded.musicbrainz_album_id,
-		musicbrainz_track_id = excluded.musicbrainz_track_id,
-		label = excluded.label`
-
-	_, err := DB.ExecContext(ctx, query,
-		metadata.FilePath, metadata.DateAdded, metadata.DateModified, metadata.FileName,
-		metadata.Format, metadata.Duration, metadata.Size, metadata.Bitrate,
-		metadata.Title, metadata.Artist, metadata.Album, metadata.AlbumArtist,
-		metadata.Genre, metadata.TrackNumber, metadata.TotalTracks, metadata.DiscNumber,
-		metadata.TotalDiscs, metadata.ReleaseDate, metadata.MusicBrainzArtistID,
-		metadata.MusicBrainzAlbumID, metadata.MusicBrainzTrackID, metadata.Label)
-
-	if err != nil {
-		return fmt.Errorf("inserting metadata row: %v", err)
-	}
-
-	return nil
-}
-
 func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) error {
 	if len(metadataSlice) == 0 {
 		return nil
 	}
 
-	const (
-		numberOfColumns = 22
-		batchSize       = 30
-	)
+	const batchSize = 30
+	numberOfColumns := 26 // TODO: derive this from the metadata struct rather than hardcoding it
 
 	tx, err := DB.BeginTx(ctx, nil)
 	if err != nil {
@@ -127,6 +81,7 @@ func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) err
 				m.Genre, m.TrackNumber, m.TotalTracks, m.DiscNumber,
 				m.TotalDiscs, m.ReleaseDate, m.MusicBrainzArtistID,
 				m.MusicBrainzAlbumID, m.MusicBrainzTrackID, m.Label,
+				m.Codec, m.BitDepth, m.SampleRate, m.Channels,
 			)
 		}
 
@@ -134,7 +89,7 @@ func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) err
 			INSERT INTO metadata (
 				file_path, date_added, date_modified, file_name, format, duration, size, bitrate, title, artist, album,
 				album_artist, genre, track_number, total_tracks, disc_number, total_discs, release_date,
-				musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label
+				musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id, label, codec, bit_depth, sample_rate, channels
 			) VALUES %s
 			ON CONFLICT(file_path) DO UPDATE SET
 				date_modified = excluded.date_modified,
@@ -156,7 +111,11 @@ func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) err
 				musicbrainz_artist_id = excluded.musicbrainz_artist_id,
 				musicbrainz_album_id = excluded.musicbrainz_album_id,
 				musicbrainz_track_id = excluded.musicbrainz_track_id,
-				label = excluded.label
+				label = excluded.label,
+				codec = excluded.codec,
+				bit_depth = excluded.bit_depth,
+				sample_rate = excluded.sample_rate,
+				channels = excluded.channels
 		`, strings.Join(placeholders, ", "))
 
 		if _, err := tx.ExecContext(ctx, query, args...); err != nil {

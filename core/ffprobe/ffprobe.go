@@ -7,6 +7,7 @@ import (
 	"log"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"zene/core/config"
@@ -36,19 +37,19 @@ func InitializeFfprobe(ctx context.Context) {
 	}
 }
 
-func GetTags(ctx context.Context, audiofilePath string) (types.Tags, error) {
-	fileTags, err := GetTagsFromFile(ctx, audiofilePath)
+func GetMetadata(ctx context.Context, audiofilePath string) (types.FileMetadata, error) {
+	fileTags, err := GetMetadataFromFile(ctx, audiofilePath)
 	if err != nil {
-		return types.Tags{}, err
+		return types.FileMetadata{}, err
 	}
-	parsedTags, err := ParseTags(ctx, fileTags)
+	parsedTags, err := ParseMetadata(ctx, fileTags)
 	if err != nil {
-		return types.Tags{}, err
+		return types.FileMetadata{}, err
 	}
 	return parsedTags, nil
 }
 
-func GetTagsFromFile(ctx context.Context, audiofilePath string) (types.FfprobeStandard, error) {
+func GetMetadataFromFile(ctx context.Context, audiofilePath string) (types.FfprobeStandard, error) {
 	cmd := exec.CommandContext(ctx, config.FfprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", audiofilePath)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -57,38 +58,56 @@ func GetTagsFromFile(ctx context.Context, audiofilePath string) (types.FfprobeSt
 	}
 
 	if filepath.Ext(audiofilePath) == ".opus" {
-		var ffprobeOutput types.FfprobeOpusOutput
+		var ffprobeOpusOutput types.FfprobeOpusOutput
 
-		err = json.Unmarshal(output, &ffprobeOutput)
+		err = json.Unmarshal(output, &ffprobeOpusOutput)
 		if err != nil {
 			logger.Printf("Error parsing ffprobe output: %v", err)
 			return types.FfprobeStandard{}, err
 		}
 
+		sampleRateInt, err := strconv.Atoi(ffprobeOpusOutput.Streams[0].SampleRate)
+		if err != nil {
+			sampleRateInt = 0
+		}
+
 		return types.FfprobeStandard{
-			Filename:   ffprobeOutput.Format.Filename,
-			FormatName: ffprobeOutput.Format.FormatName,
-			Tags:       ffprobeOutput.Streams[0].Tags,
-			Duration:   ffprobeOutput.Format.Duration,
-			Size:       ffprobeOutput.Format.Size,
-			Bitrate:    ffprobeOutput.Format.Bitrate,
+			Filename:   ffprobeOpusOutput.Format.Filename,
+			FormatName: ffprobeOpusOutput.Format.FormatName,
+			Tags:       ffprobeOpusOutput.Streams[0].Tags,
+			Duration:   ffprobeOpusOutput.Format.Duration,
+			Size:       ffprobeOpusOutput.Format.Size,
+			Bitrate:    ffprobeOpusOutput.Format.Bitrate,
+			BitDepth:   ffprobeOpusOutput.Streams[0].BitDepth,
+			SampleRate: sampleRateInt,
+			Channels:   ffprobeOpusOutput.Streams[0].Channels,
+			Codec:      ffprobeOpusOutput.Streams[0].Codec,
 		}, nil
 	} else {
-		var ffprobeOutput types.FfprobeOutput
+		var ffprobeStandardOutput types.FfprobeStandardOutput
 
-		err = json.Unmarshal(output, &ffprobeOutput)
+		err = json.Unmarshal(output, &ffprobeStandardOutput)
 		if err != nil {
 			logger.Printf("Error parsing ffprobe output: %v", err)
 			return types.FfprobeStandard{}, err
 		}
 
+		sampleRateInt, err := strconv.Atoi(ffprobeStandardOutput.Streams[0].SampleRate)
+		if err != nil {
+			sampleRateInt = 0
+		}
+
 		return types.FfprobeStandard{
-			Filename:   ffprobeOutput.Format.Filename,
-			FormatName: ffprobeOutput.Format.FormatName,
-			Tags:       ffprobeOutput.Format.Tags,
-			Duration:   ffprobeOutput.Format.Duration,
-			Size:       ffprobeOutput.Format.Size,
-			Bitrate:    ffprobeOutput.Format.Bitrate,
+			Filename:   ffprobeStandardOutput.Format.Filename,
+			FormatName: ffprobeStandardOutput.Format.FormatName,
+			Tags:       ffprobeStandardOutput.Format.Tags,
+			Duration:   ffprobeStandardOutput.Format.Duration,
+			Size:       ffprobeStandardOutput.Format.Size,
+			Bitrate:    ffprobeStandardOutput.Format.Bitrate,
+			BitDepth:   ffprobeStandardOutput.Streams[0].BitDepth,
+			SampleRate: sampleRateInt,
+			Channels:   ffprobeStandardOutput.Streams[0].Channels,
+			Codec:      ffprobeStandardOutput.Streams[0].Codec,
 		}, nil
 	}
 }
@@ -111,7 +130,7 @@ func getTagStringValue(tags map[string]string, inputs []string) string {
 	return ""
 }
 
-func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.Tags, error) {
+func ParseMetadata(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.FileMetadata, error) {
 	parsedArtist := getTagStringValue(ffprobeOutput.Tags, []string{"artist", "album_artist"})
 	parsedAlbumArtist := getTagStringValue(ffprobeOutput.Tags, []string{"album_artist", "album-artist", "albumartist"})
 	parsedTitle := getTagStringValue(ffprobeOutput.Tags, []string{"title"})
@@ -128,7 +147,7 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 	label := getTagStringValue(ffprobeOutput.Tags, []string{"label", "publisher"})
 
 	if musicBrainzArtistId == "" || musicBrainzAlbumId == "" || musicBrainzTrackId == "" {
-		return types.Tags{}, fmt.Errorf("Unable to parse musicbrainz metadata from file")
+		return types.FileMetadata{}, fmt.Errorf("Unable to parse musicbrainz metadata from file")
 	}
 
 	if strings.Contains(trackNumber, "/") {
@@ -151,22 +170,19 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 		discNumber = "1"
 	}
 
-	if parsedReleaseDate == "" {
+	var musicBrainzData types.MbRelease
+
+	if parsedReleaseDate == "" || trackNumber == "" {
 		musicBrainzData, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
 		if err != nil {
 			logger.Printf("Error fetching parsedReleaseDate from musicbrainz: %v", err)
-			return types.Tags{}, err
+			return types.FileMetadata{}, err
 		}
 		parsedReleaseDate = musicBrainzData.Date
 	}
 
 	if trackNumber == "" {
-		musicBrainzData, err := musicbrainz.GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId)
-		if err != nil {
-			logger.Printf("Error fetching parsedReleaseDate from musicbrainz: %v", err)
-			return types.Tags{}, err
-		}
-		//if musicBrainzData.Media[0].tracks contains trackNumber, use that
+		// if musicBrainzData.Media[0].tracks contains trackNumber, use that
 		for _, media := range musicBrainzData.Media {
 			for _, track := range media.Tracks {
 				if track.Recording.ID == musicBrainzTrackId {
@@ -184,7 +200,7 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 		}
 	}
 
-	parsedTags := types.Tags{
+	parsedMetadata := types.FileMetadata{
 		Format:              ffprobeOutput.FormatName,
 		Duration:            ffprobeOutput.Duration,
 		Size:                ffprobeOutput.Size,
@@ -203,7 +219,11 @@ func ParseTags(ctx context.Context, ffprobeOutput types.FfprobeStandard) (types.
 		Label:               label,
 		TotalTracks:         totalTracks,
 		TotalDiscs:          totalDiscs,
+		Codec:               ffprobeOutput.Codec,
+		BitDepth:            ffprobeOutput.BitDepth,
+		SampleRate:          ffprobeOutput.SampleRate,
+		Channels:            ffprobeOutput.Channels,
 	}
 
-	return parsedTags, nil
+	return parsedMetadata, nil
 }

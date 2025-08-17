@@ -19,7 +19,7 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicSong
 	query := `select musicbrainz_track_id as id, musicbrainz_album_id as album_id, title, album, artist, track_number as track,
 		substr(release_date,1,4) as year, substr(genre,1,(instr(genre,';')-1)) as genre, musicbrainz_track_id as cover_art,
 		size, duration, bitrate, file_path as path, date_added as created, disc_number, musicbrainz_artist_id as artist_id,
-		genre, album_artist
+		genre, album_artist, bit_depth, sample_rate, channels
 		from metadata m
 		join user_music_folders f on f.folder_id = m.music_folder_id
 		where m.musicbrainz_track_id = ?
@@ -36,9 +36,6 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicSong
 	result.IsVideo = false
 	result.Bpm = 0
 	result.Comment = ""
-	result.ChannelCount = 0 // TODO: need to get this from tags
-	result.SamplingRate = 0 // TODO: need to get this from tags
-	result.BitDepth = 0     // TODO: need to get this from tags
 	result.Contributors = []types.SongContributors{}
 	result.Moods = []string{}
 
@@ -46,7 +43,7 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicSong
 		&result.Id, &result.AlbumId, &result.Title, &result.Album, &result.Artist,
 		&result.Track, &result.Year, &result.Genre, &result.CoverArt, &result.Size,
 		&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
-		&result.ArtistId, &genreString, &albumArtist,
+		&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
 	)
 	if err == sql.ErrNoRows {
 		logger.Printf("No song found for %s", musicbrainzTrackId)
