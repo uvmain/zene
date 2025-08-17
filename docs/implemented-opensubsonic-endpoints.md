@@ -11,7 +11,7 @@
 - [ ] getArtists
 - [ ] getArtist
 - [ ] getAlbum
-- [ ] getSong
+- [x] getSong
 - [x] getVideos[^1]
 - [x] getVideoInfo[^1]
 - [ ] getArtistInfo
