@@ -9,10 +9,10 @@ import (
 	"zene/core/types"
 )
 
-func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, musicFolderInt int) ([]types.SubsonicSong, error) {
+func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, musicFolderInt int) ([]types.SubsonicChild, error) {
 	requestUser, err := GetUserByContext(ctx)
 	if err != nil {
-		return []types.SubsonicSong{}, err
+		return []types.SubsonicChild{}, err
 	}
 
 	query := `select musicbrainz_track_id as id, musicbrainz_album_id as album_id, title, album, artist, track_number as track,
@@ -36,9 +36,9 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 	}
 	defer rows.Close()
 
-	var songs []types.SubsonicSong
+	var songs []types.SubsonicChild
 	for rows.Next() {
-		var song types.SubsonicSong
+		var song types.SubsonicChild
 
 		var genreString string
 		var durationFloat float64
@@ -50,7 +50,7 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		song.IsVideo = false
 		song.Bpm = 0
 		song.Comment = ""
-		song.Contributors = []types.SongContributors{}
+		song.Contributors = []types.ChildContributors{}
 		song.Moods = []string{}
 
 		if err := rows.Scan(&song.Id, &song.AlbumId, &song.Title, &song.Album, &song.Artist,
@@ -68,18 +68,18 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		song.SortName = strings.ToLower(song.Title)
 		song.MusicBrainzId = song.Id
 
-		song.Genres = []types.SongGenre{}
+		song.Genres = []types.ChildGenre{}
 		for _, genre := range strings.Split(genreString, ";") {
-			song.Genres = append(song.Genres, types.SongGenre{Name: genre})
+			song.Genres = append(song.Genres, types.ChildGenre{Name: genre})
 		}
 
-		song.Artists = []types.SongArtist{}
-		song.Artists = append(song.Artists, types.SongArtist{Id: song.ArtistId, Name: song.Artist})
+		song.Artists = []types.ChildArtist{}
+		song.Artists = append(song.Artists, types.ChildArtist{Id: song.ArtistId, Name: song.Artist})
 
 		song.DisplayArtist = song.Artist
 
-		song.AlbumArtists = []types.SongArtist{}
-		song.AlbumArtists = append(song.AlbumArtists, types.SongArtist{Id: song.ArtistId, Name: albumArtist})
+		song.AlbumArtists = []types.ChildArtist{}
+		song.AlbumArtists = append(song.AlbumArtists, types.ChildArtist{Id: song.ArtistId, Name: albumArtist})
 
 		song.DisplayAlbumArtist = albumArtist
 
