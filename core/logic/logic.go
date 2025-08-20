@@ -44,7 +44,7 @@ func CheckContext(ctx context.Context) error {
 	}
 }
 
-func InferContentTypeFromFileExtension(fileName string) string {
+func InferMimeTypeFromFileExtension(fileName string) string {
 	ext := filepath.Ext(fileName)
 	switch ext {
 	case ".mp3":

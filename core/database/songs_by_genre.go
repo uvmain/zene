@@ -2,9 +2,11 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"path/filepath"
 	"strings"
+	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
 )
@@ -15,20 +17,32 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		return []types.SubsonicChild{}, err
 	}
 
-	query := `select musicbrainz_track_id as id, musicbrainz_album_id as album_id, title, album, artist, track_number as track,
-		substr(release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, musicbrainz_track_id as cover_art,
-		size, duration, bitrate, m.file_path as path, date_added as created, disc_number, musicbrainz_artist_id as artist_id,
-		m.genre as genres, album_artist, bit_depth, sample_rate, channels
-		from metadata m
-		join user_music_folders f on f.folder_id = m.music_folder_id
-		join track_genres g on m.file_path = g.file_path
-		where f.user_id = ? and lower(g.genre) = lower(?)`
+	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as album_id, m.title, m.album, m.artist, m.track_number as track,
+		substr(m.release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
+		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
+		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
+		COALESCE(SUM(pc.play_count), 0) AS play_count,
+		max(pc.last_played) as played,
+		us.created_at AS starred
+	from metadata m
+	join user_music_folders f on f.folder_id = m.music_folder_id
+	join track_genres g on m.file_path = g.file_path
+	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
+	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
+	where f.user_id = ?
+	and lower(g.genre) = lower(?)
+	`
 
 	if musicFolderInt != 0 {
 		query += fmt.Sprintf(` and m.music_folder_id = %d`, musicFolderInt)
 	}
 
-	query += ` limit ? offset ?`
+	query += ` group by m.musicbrainz_track_id limit ? offset ?`
 
 	rows, err := DB.QueryContext(ctx, query, requestUser.Id, genre, count, offset)
 	if err != nil {
@@ -38,52 +52,58 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 
 	var songs []types.SubsonicChild
 	for rows.Next() {
-		var song types.SubsonicChild
+		var result types.SubsonicChild
 
 		var genreString string
 		var durationFloat float64
 		var albumArtist string
+		var starred sql.NullString
 
-		song.IsDir = false
-		song.MediaType = "song"
-		song.Type = "music"
-		song.IsVideo = false
-		song.Bpm = 0
-		song.Comment = ""
-		song.Contributors = []types.ChildContributors{}
-		song.Moods = []string{}
+		result.IsDir = false
+		result.MediaType = "song"
+		result.Type = "music"
+		result.IsVideo = false
+		result.Bpm = 0
+		result.Comment = ""
+		result.Contributors = []types.ChildContributors{}
+		result.Moods = []string{}
 
-		if err := rows.Scan(&song.Id, &song.AlbumId, &song.Title, &song.Album, &song.Artist,
-			&song.Track, &song.Year, &song.Genre, &song.CoverArt, &song.Size,
-			&durationFloat, &song.BitRate, &song.Path, &song.Created, &song.DiscNumber,
-			&song.ArtistId, &genreString, &albumArtist, &song.BitDepth, &song.SamplingRate, &song.ChannelCount,
-		); err != nil {
-			return nil, fmt.Errorf("scanning song row: %v", err)
+		if err := rows.Scan(&result.Id, &result.AlbumId, &result.Title, &result.Album, &result.Artist,
+			&result.Track, &result.Year, &result.Genre, &result.CoverArt, &result.Size,
+			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
+			&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate,
+			&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
+			&result.Played, &starred); err != nil {
+			logger.Printf("Failed to scan row in GetSongsByGenre: %v", err)
+			return []types.SubsonicChild{}, err
+		}
+		if starred.Valid {
+			result.Starred = starred.String
 		}
 
-		song.ContentType = logic.InferContentTypeFromFileExtension(song.Path)
-		song.Suffix = strings.Replace(filepath.Ext(song.Path), ".", "", 1)
-		song.Duration = int(durationFloat)
-		song.Parent = song.AlbumId
-		song.SortName = strings.ToLower(song.Title)
-		song.MusicBrainzId = song.Id
+		result.ContentType = logic.InferMimeTypeFromFileExtension(result.Path)
+		result.Suffix = strings.Replace(filepath.Ext(result.Path), ".", "", 1)
+		result.Duration = int(durationFloat)
+		result.Parent = result.AlbumId
+		result.SortName = strings.ToLower(result.Title)
+		result.MusicBrainzId = result.Id
 
-		song.Genres = []types.ChildGenre{}
+		result.Genres = []types.ChildGenre{}
 		for _, genre := range strings.Split(genreString, ";") {
-			song.Genres = append(song.Genres, types.ChildGenre{Name: genre})
+			result.Genres = append(result.Genres, types.ChildGenre{Name: genre})
 		}
 
-		song.Artists = []types.ChildArtist{}
-		song.Artists = append(song.Artists, types.ChildArtist{Id: song.ArtistId, Name: song.Artist})
+		result.Artists = []types.ChildArtist{}
+		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
 
-		song.DisplayArtist = song.Artist
+		result.DisplayArtist = result.Artist
 
-		song.AlbumArtists = []types.ChildArtist{}
-		song.AlbumArtists = append(song.AlbumArtists, types.ChildArtist{Id: song.ArtistId, Name: albumArtist})
+		result.AlbumArtists = []types.ChildArtist{}
+		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: result.ArtistId, Name: albumArtist})
 
-		song.DisplayAlbumArtist = albumArtist
+		result.DisplayAlbumArtist = albumArtist
 
-		songs = append(songs, song)
+		songs = append(songs, result)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating song rows: %v", err)

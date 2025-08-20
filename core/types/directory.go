@@ -1,8 +1,8 @@
 package types
 
-type Directory struct {
+type SubsonicDirectory struct {
 	Id            string          `xml:"id,attr" json:"id"`
-	Parent        string          `xml:"parent,attr" json:"parent"`
+	Parent        string          `xml:"parent,attr,omitempty" json:"parent,omitempty"`
 	Name          string          `xml:"name,attr" json:"name"`
 	Starred       string          `xml:"starred,attr" json:"starred"`
 	UserRating    int             `xml:"userRating,attr" json:"userRating"`
@@ -10,9 +10,6 @@ type Directory struct {
 	PlayCount     int             `xml:"playCount,attr" json:"playCount"`
 	CoverArt      string          `xml:"coverArt,attr" json:"coverArt"`
 	SongCount     int             `xml:"songCount,attr" json:"songCount"`
+	MediaType     string          `xml:"mediaType,attr" json:"mediaType"`
 	Child         []SubsonicChild `xml:"child" json:"child"`
-}
-
-type SubsonicDirectory struct {
-	Directory *Directory `xml:"directory,omitempty" json:"directory,omitempty"`
 }

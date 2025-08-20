@@ -42,26 +42,31 @@ func HandleGetMusicDirectory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isValidId, metadataResponse, err := database.IsValidMetadataId(ctx, musicbrainz_id)
-	if err != nil || isValidId == false {
+	if err != nil || !isValidId {
 		logger.Printf("Error getting metadata ID: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "provided ID is not a valid music directory ID", "")
 		return
 	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
-	response.SubsonicResponse.MusicDirectory = &types.SubsonicDirectory{}
 
-	if metadataResponse.MusicbrainzAlbumId != "" {
-		directory, err := database.GetAlbumDirectory(ctx, metadataResponse.MusicbrainzAlbumId)
+	if metadataResponse.MusicbrainzAlbumId {
+		directory, err := database.GetAlbumDirectory(ctx, musicbrainz_id)
 		if err != nil {
 			logger.Printf("Error getting album directory: %v", err)
 			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Album directory not found", "")
 			return
 		}
-		response.SubsonicResponse.MusicDirectory.Directory = &directory
-	} else if metadataResponse.MusicbrainzArtistId != "" {
-		logger.Printf("Getting music directory for artist ID: %s", metadataResponse.MusicbrainzArtistId)
-	} else if metadataResponse.MusicbrainzTrackId != "" {
+		response.SubsonicResponse.MusicDirectory = &directory
+	} else if metadataResponse.MusicbrainzArtistId {
+		directory, err := database.GetArtistDirectory(ctx, musicbrainz_id)
+		if err != nil {
+			logger.Printf("Error getting artist directory: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Artist directory not found", "")
+			return
+		}
+		response.SubsonicResponse.MusicDirectory = &directory
+	} else if metadataResponse.MusicbrainzTrackId {
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Directory not found", "")
 		return
 	}

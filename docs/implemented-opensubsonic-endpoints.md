@@ -6,7 +6,7 @@
 ## Browsing
 - [x] getMusicFolders
 - [x] getIndexes
-- [ ] getMusicDirectory
+- [x] getMusicDirectory
 - [x] getGenres
 - [ ] getArtists
 - [ ] getArtist

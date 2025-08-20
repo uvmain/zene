@@ -2,44 +2,50 @@ package types
 
 type SubsonicChild struct {
 	Id                 string              `xml:"id,attr" json:"id"`
-	Parent             string              `xml:"parent,attr" json:"parent"`
+	Parent             string              `xml:"parent,attr,omitempty" json:"parent,omitempty"`
 	IsDir              bool                `xml:"isDir,attr" json:"isDir"`
 	Title              string              `xml:"title,attr" json:"title"`
-	Album              string              `xml:"album,attr" json:"album"`
-	Artist             string              `xml:"artist,attr" json:"artist"`
-	Track              int                 `xml:"track,attr" json:"track"`
-	Year               int                 `xml:"year,attr" json:"year"`
-	Genre              string              `xml:"genre,attr" json:"genre"`
-	CoverArt           string              `xml:"coverArt,attr" json:"coverArt"`
-	Size               int                 `xml:"size,attr" json:"size"`
-	ContentType        string              `xml:"contentType,attr" json:"contentType"`
-	Suffix             string              `xml:"suffix,attr" json:"suffix"`
-	Duration           int                 `xml:"duration,attr" json:"duration"`
-	BitRate            int                 `xml:"bitRate,attr" json:"bitRate"`
-	Path               string              `xml:"path,attr" json:"path"`
-	DiscNumber         int                 `xml:"discNumber,attr" json:"discNumber"`
-	Created            string              `xml:"created,attr" json:"created"`
-	AlbumId            string              `xml:"albumId,attr" json:"albumId"`
-	ArtistId           string              `xml:"artistId,attr" json:"artistId"`
-	Type               string              `xml:"type,attr" json:"type"`
-	IsVideo            bool                `xml:"isVideo,attr" json:"isVideo"`
-	Bpm                int                 `xml:"bpm,attr" json:"bpm"`
-	Comment            string              `xml:"comment,attr" json:"comment"`
-	SortName           string              `xml:"sortName,attr" json:"sortName"`
-	MediaType          string              `xml:"mediaType,attr" json:"mediaType"`
-	MusicBrainzId      string              `xml:"musicBrainzId,attr" json:"musicBrainzId"`
-	Genres             []ChildGenre        `xml:"genres>genre" json:"genres"`
-	ChannelCount       int                 `xml:"channelCount,attr" json:"channelCount"`
-	SamplingRate       int                 `xml:"samplingRate,attr" json:"samplingRate"`
-	BitDepth           int                 `xml:"bitDepth,attr" json:"bitDepth"`
-	Moods              []string            `xml:"moods>mood" json:"moods"`
-	Artists            []ChildArtist       `xml:"artists>artist" json:"artists"`
-	DisplayArtist      string              `xml:"displayArtist,attr" json:"displayArtist"`
-	AlbumArtists       []ChildArtist       `xml:"albumArtists>artist" json:"albumArtists"`
-	DisplayAlbumArtist string              `xml:"displayAlbumArtist,attr" json:"displayAlbumArtist"`
-	Contributors       []ChildContributors `xml:"contributors>contributor" json:"contributors"`
-	DisplayComposer    string              `xml:"displayComposer,attr" json:"displayComposer"`
-	ExplicitStatus     string              `xml:"explicitStatus,attr" json:"explicitStatus"`
+	Album              string              `xml:"album,attr,omitempty" json:"album,omitempty"`
+	Artist             string              `xml:"artist,attr,omitempty" json:"artist,omitempty"`
+	Track              int                 `xml:"track,attr,omitempty" json:"track,omitempty"`
+	Year               int                 `xml:"year,attr,omitempty" json:"year,omitempty"`
+	Genre              string              `xml:"genre,attr,omitempty" json:"genre,omitempty"`
+	CoverArt           string              `xml:"coverArt,attr,omitempty" json:"coverArt,omitempty"`
+	Size               int                 `xml:"size,attr,omitempty" json:"size,omitempty"`
+	ContentType        string              `xml:"contentType,attr,omitempty" json:"contentType,omitempty"`
+	Suffix             string              `xml:"suffix,attr,omitempty" json:"suffix,omitempty"`
+	Duration           int                 `xml:"duration,attr,omitempty" json:"duration,omitempty"`
+	BitRate            int                 `xml:"bitRate,attr,omitempty" json:"bitRate,omitempty"`
+	BitDepth           int                 `xml:"bitDepth,attr,omitempty" json:"bitDepth,omitempty"`
+	SamplingRate       int                 `xml:"samplingRate,attr,omitempty" json:"samplingRate,omitempty"`
+	ChannelCount       int                 `xml:"channelCount,attr,omitempty" json:"channelCount,omitempty"`
+	Path               string              `xml:"path,attr,omitempty" json:"path,omitempty"`
+	IsVideo            bool                `xml:"isVideo,attr,omitempty" json:"isVideo,omitempty"`
+	UserRating         int                 `xml:"userRating,attr,omitempty" json:"userRating,omitempty"`
+	AverageRating      float64             `xml:"averageRating,attr,omitempty" json:"averageRating,omitempty"`
+	PlayCount          int                 `xml:"playCount,attr,omitempty" json:"playCount,omitempty"`
+	SongCount          int                 `xml:"songCount,attr,omitempty" json:"songCount,omitempty"`
+	DiscNumber         int                 `xml:"discNumber,attr,omitempty" json:"discNumber,omitempty"`
+	Created            string              `xml:"created,attr,omitempty" json:"created,omitempty"`
+	Starred            string              `xml:"starred,attr,omitempty" json:"starred,omitempty"`
+	AlbumId            string              `xml:"albumId,attr,omitempty" json:"albumId,omitempty"`
+	ArtistId           string              `xml:"artistId,attr,omitempty" json:"artistId,omitempty"`
+	Type               string              `xml:"type,attr,omitempty" json:"type,omitempty"`
+	MediaType          string              `xml:"mediaType,attr,omitempty" json:"mediaType,omitempty"`
+	Played             string              `xml:"played,attr,omitempty" json:"played,omitempty"`
+	Bpm                int                 `xml:"bpm,attr,omitempty" json:"bpm,omitempty"`
+	Comment            string              `xml:"comment,attr,omitempty" json:"comment,omitempty"`
+	SortName           string              `xml:"sortName,attr,omitempty" json:"sortName,omitempty"`
+	MusicBrainzId      string              `xml:"musicBrainzId,attr,omitempty" json:"musicBrainzId,omitempty"`
+	Genres             []ChildGenre        `xml:"genres>genre" json:"genres,omitempty"`
+	Artists            []ChildArtist       `xml:"artists>artist" json:"artists,omitempty"`
+	DisplayArtist      string              `xml:"displayArtist,attr,omitempty" json:"displayArtist,omitempty"`
+	AlbumArtists       []ChildArtist       `xml:"albumArtists>artist" json:"albumArtists,omitempty"`
+	DisplayAlbumArtist string              `xml:"displayAlbumArtist,attr,omitempty" json:"displayAlbumArtist,omitempty"`
+	Contributors       []ChildContributors `xml:"contributors>contributor" json:"contributors,omitempty"`
+	Moods              []string            `xml:"moods>mood" json:"moods,omitempty"`
+	DisplayComposer    string              `xml:"displayComposer,attr,omitempty" json:"displayComposer,omitempty"`
+	ExplicitStatus     string              `xml:"explicitStatus,attr,omitempty" json:"explicitStatus,omitempty"`
 }
 
 type ChildGenre struct {
