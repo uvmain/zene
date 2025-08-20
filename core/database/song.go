@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"path/filepath"
 	"strings"
 	"zene/core/logger"
-	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -37,27 +35,19 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicChil
 	group by m.musicbrainz_track_id;`
 
 	var result types.SubsonicChild
+
+	var albumArtist string
 	var genreString string
 	var durationFloat float64
-	var albumArtist string
+	var played sql.NullString
 	var starred sql.NullString
 
-	result.IsDir = false
-	result.MediaType = "song"
-	result.Type = "music"
-	result.IsVideo = false
-	result.Bpm = 0
-	result.Comment = ""
-	result.Contributors = []types.ChildContributors{}
-	result.Moods = []string{}
-
 	err = DB.QueryRowContext(ctx, query, musicbrainzTrackId, requestUser.Id).Scan(
-		&result.Id, &result.AlbumId, &result.Title, &result.Album, &result.Artist,
-		&result.Track, &result.Year, &result.Genre, &result.CoverArt, &result.Size,
-		&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
-		&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate,
-		&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
-		&result.Played, &starred,
+		&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
+		&result.Year, &result.Genre, &result.CoverArt,
+		&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
+		&genreString, &albumArtist, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
+		&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred,
 	)
 	if err == sql.ErrNoRows {
 		logger.Printf("No song found for %s", musicbrainzTrackId)
@@ -66,22 +56,21 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicChil
 		logger.Printf("Error querying song for %s: %v", musicbrainzTrackId, err)
 		return types.SubsonicChild{}, err
 	}
-
-	if starred.Valid {
-		result.Starred = starred.String
-	}
-
-	result.ContentType = logic.InferMimeTypeFromFileExtension(result.Path)
-	result.Suffix = strings.Replace(filepath.Ext(result.Path), ".", "", 1)
-	result.Duration = int(durationFloat)
-	result.Parent = result.AlbumId
-	result.SortName = strings.ToLower(result.Title)
-	result.MusicBrainzId = result.Id
-
 	result.Genres = []types.ChildGenre{}
 	for _, genre := range strings.Split(genreString, ";") {
 		result.Genres = append(result.Genres, types.ChildGenre{Name: genre})
 	}
+
+	if played.Valid {
+		result.Played = played.String
+	}
+	if starred.Valid {
+		result.Starred = starred.String
+	}
+
+	result.Duration = int(durationFloat)
+	result.Title = result.Album
+	result.IsDir = true
 
 	result.Artists = []types.ChildArtist{}
 	result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
@@ -102,7 +91,7 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 		return []types.SubsonicChild{}, err
 	}
 
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as album_id, m.title, m.album, m.artist, m.track_number as track,
+	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, m.track_number as track,
 		substr(m.release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
 		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
 		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
@@ -111,15 +100,14 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 		COALESCE(SUM(pc.play_count), 0) AS play_count,
 		max(pc.last_played) as played,
 		us.created_at AS starred
-	from metadata m
-	join user_music_folders f on f.folder_id = m.music_folder_id
-	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
+	from user_music_folders u
+	join metadata m on m.musicbrainz_track_id = np.track_id
+	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = np.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = np.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
+	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = np.user_id
 	where m.musicbrainz_album_id = ?
-	and f.user_id = ?
+	and u.user_id = ?
 	group by m.musicbrainz_track_id;`
 
 	var results []types.SubsonicChild
@@ -134,49 +122,34 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 	for rows.Next() {
 		var result types.SubsonicChild
 
+		var albumArtist string
 		var genreString string
 		var durationFloat float64
-		var albumArtist string
-		var starred sql.NullString
 		var played sql.NullString
+		var starred sql.NullString
 
-		result.IsDir = false
-		result.MediaType = "song"
-		result.Type = "music"
-		result.IsVideo = false
-		result.Bpm = 0
-		result.Comment = ""
-		result.Contributors = []types.ChildContributors{}
-		result.Moods = []string{}
-
-		if err := rows.Scan(&result.Id, &result.AlbumId, &result.Title, &result.Album, &result.Artist,
-			&result.Track, &result.Year, &result.Genre, &result.CoverArt, &result.Size,
-			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
-			&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate,
-			&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
-			&played, &starred); err != nil {
-			logger.Printf("Failed to scan row in GetSongsForAlbum: %v", err)
-			return []types.SubsonicChild{}, err
+		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
+			&result.Year, &result.Genre, &result.CoverArt,
+			&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
+			&genreString, &albumArtist, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
+			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred); err != nil {
+			return nil, err
 		}
-		if starred.Valid {
-			result.Starred = starred.String
+		result.Genres = []types.ChildGenre{}
+		for _, genre := range strings.Split(genreString, ";") {
+			result.Genres = append(result.Genres, types.ChildGenre{Name: genre})
 		}
 
 		if played.Valid {
 			result.Played = played.String
 		}
-
-		result.ContentType = logic.InferMimeTypeFromFileExtension(result.Path)
-		result.Suffix = strings.Replace(filepath.Ext(result.Path), ".", "", 1)
-		result.Duration = int(durationFloat)
-		result.Parent = result.AlbumId
-		result.SortName = strings.ToLower(result.Title)
-		result.MusicBrainzId = result.Id
-
-		result.Genres = []types.ChildGenre{}
-		for _, genre := range strings.Split(genreString, ";") {
-			result.Genres = append(result.Genres, types.ChildGenre{Name: genre})
+		if starred.Valid {
+			result.Starred = starred.String
 		}
+
+		result.Duration = int(durationFloat)
+		result.Title = result.Album
+		result.IsDir = true
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})

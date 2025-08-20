@@ -66,6 +66,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getGenres.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))
 	// Album/song lists
 	router.Handle("/rest/getSongsByGenre.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSongsByGenre)))
+	router.Handle("/rest/getNowPlaying.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetNowPlaying)))
 	// Media retrieval
 	router.Handle("/rest/stream.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))
 	router.Handle("/rest/download.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))
@@ -82,6 +83,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/star.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStar)))
 	router.Handle("/rest/unstar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUnStar)))
 	router.Handle("/rest/setRating.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSetRating)))
+	router.Handle("/rest/scrobble.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleScrobble)))
 	// Jukebox
 	router.Handle("/rest/jukeboxControl.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
 	// Chat

@@ -25,7 +25,7 @@ func HandleSetRating(w http.ResponseWriter, r *http.Request) {
 	user, err := database.GetUserByContext(ctx)
 	if err != nil {
 		logger.Printf("Error getting user by context: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to add chat messages", "")
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to set ratings", "")
 		return
 	}
 

@@ -39,6 +39,7 @@ func Initialise(ctx context.Context) {
 	createUserStarsTable(ctx)
 	createUserRatingsTable(ctx)
 	createScansTable(ctx)
+	createNowPlayingTable(ctx)
 }
 
 func openDatabase(ctx context.Context) {
