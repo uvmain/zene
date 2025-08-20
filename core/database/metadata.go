@@ -243,9 +243,9 @@ func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, erro
 }
 
 type isValidMetadataResponse struct {
-	MusicbrainzTrackId  string `json:"musicbrainz_track_id"`
-	MusicbrainzAlbumId  string `json:"musicbrainz_album_id"`
-	MusicbrainzArtistId string `json:"musicbrainz_artist_id"`
+	MusicbrainzTrackId  bool `json:"track_valid"`
+	MusicbrainzAlbumId  bool `json:"album_valid"`
+	MusicbrainzArtistId bool `json:"artist_valid"`
 }
 
 func IsValidMetadataId(ctx context.Context, metadataId string) (bool, isValidMetadataResponse, error) {
@@ -253,15 +253,25 @@ func IsValidMetadataId(ctx context.Context, metadataId string) (bool, isValidMet
 		FROM metadata
 		WHERE musicbrainz_track_id = ?
 		OR musicbrainz_album_id = ?
-		OR musicbrainz_artist_id = ?`
+		OR musicbrainz_artist_id = ?
+		limit 1`
 	row := DB.QueryRowContext(ctx, query, metadataId, metadataId, metadataId)
 
 	var response isValidMetadataResponse
-	if err := row.Scan(&response.MusicbrainzTrackId, &response.MusicbrainzAlbumId, &response.MusicbrainzArtistId); err != nil {
+
+	var musicbrainzTrackId string
+	var musicbrainzAlbumId string
+	var musicbrainzArtistId string
+	if err := row.Scan(&musicbrainzTrackId, &musicbrainzAlbumId, &musicbrainzArtistId); err != nil {
 		return false, isValidMetadataResponse{}, fmt.Errorf("checking metadata ID validity: %v", err)
 	}
+	response.MusicbrainzAlbumId = musicbrainzAlbumId == metadataId
+	response.MusicbrainzArtistId = musicbrainzArtistId == metadataId
+	response.MusicbrainzTrackId = musicbrainzTrackId == metadataId
 
-	return response != (isValidMetadataResponse{}), response, nil
+	isValid := response.MusicbrainzTrackId || response.MusicbrainzAlbumId || response.MusicbrainzArtistId
+
+	return isValid, response, nil
 }
 
 type GetFileAndFolderCountsResponse struct {

@@ -40,9 +40,8 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 	var rows *sql.Rows
 	var err error
 
-	query := `SELECT case when substr(m.artist,1,1) GLOB '*[0-9]*' then '#'
-		else upper(substr(m.artist,1,1)) end as artist_index,
-		m.musicbrainz_artist_id, m.artist, s.created_at, ur.rating AS user_rating, AVG(gr.rating) AS average_rating
+	query := `SELECT case when substr(m.artist,1,1) GLOB '*[0-9]*' then '#' else upper(substr(m.artist,1,1)) end as artist_index,
+		m.musicbrainz_artist_id, m.artist, s.created_at, COALESCE(ur.rating, 0) AS user_rating, COALESCE(AVG(gr.rating),0.0) AS average_rating
 		FROM metadata m
 		LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = ?
 		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = ?
@@ -74,19 +73,11 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 		var artist types.Artist
 		var artistIndex string
 		var starred sql.NullString
-		var userRating sql.NullInt64
-		var avgRating sql.NullFloat64
-		if err := rows.Scan(&artistIndex, &artist.Id, &artist.Name, &starred, &userRating, &avgRating); err != nil {
+		if err := rows.Scan(&artistIndex, &artist.Id, &artist.Name, &starred, &artist.UserRating, &artist.AverageRating); err != nil {
 			return nil, fmt.Errorf("scanning artist row: %v", err)
 		}
 		if starred.Valid {
 			artist.Starred = starred.String
-		}
-		if userRating.Valid {
-			artist.UserRating = int(userRating.Int64)
-		}
-		if avgRating.Valid {
-			artist.AverageRating = avgRating.Float64
 		}
 
 		artist.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(artist.Id)

@@ -26,8 +26,9 @@ type SubsonicStandard struct {
 	ChatMessages           *ChatMessages             `xml:"chatMessages,omitempty" json:"chatMessages,omitempty"`
 	TokenInfo              *TokenInfo                `xml:"tokenInfo,omitempty" json:"tokenInfo,omitempty"`
 	Indexes                *SubsonicIndexes          `xml:"indexes,omitempty" json:"indexes,omitempty"`
-	Song                   *SubsonicSong             `xml:"song,omitempty" json:"song,omitempty"`
+	Song                   *SubsonicChild            `xml:"song,omitempty" json:"song,omitempty"`
 	SongsByGenre           *SongsByGenre             `xml:"songsByGenre,omitempty" json:"songsByGenre,omitempty"`
+	MusicDirectory         *SubsonicDirectory        `xml:"directory,omitempty" json:"directory,omitempty"`
 }
 
 type SubsonicResponse struct {
