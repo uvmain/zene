@@ -3,11 +3,13 @@ package scheduler
 import (
 	"context"
 	"time"
+	"zene/core/database"
 	"zene/core/logger"
 )
 
 func Initialise(ctx context.Context) {
 	startAudioCacheCleanupRoutine(ctx)
+	startNowPlayingCleanupRoutine(ctx)
 }
 
 func startAudioCacheCleanupRoutine(ctx context.Context) {
@@ -23,6 +25,24 @@ func startAudioCacheCleanupRoutine(ctx context.Context) {
 				return
 			case <-ticker.C:
 				cleanupAudioCache(ctx)
+			}
+		}
+	}()
+}
+
+func startNowPlayingCleanupRoutine(ctx context.Context) {
+	logger.Println("Scheduler: starting now playing cleanup routine")
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Println("Scheduler: stopping now playing cleanup routine")
+				return
+			case <-ticker.C:
+				database.CleanupNowPlaying(ctx)
 			}
 		}
 	}()

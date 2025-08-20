@@ -26,7 +26,7 @@
 - [ ] getAlbumList2
 - [ ] getRandomSongs
 - [x] getSongsByGenre
-- [ ] getNowPlaying
+- [x] getNowPlaying
 - [ ] getStarred
 - [ ] getStarred2
 ## Searching
@@ -52,7 +52,7 @@
 - [x] star
 - [x] unstar
 - [x] setRating
-- [ ] scrobble
+- [x] scrobble
 ## Sharing
 - [ ] getShares
 - [ ] createShare

@@ -29,6 +29,7 @@ type SubsonicStandard struct {
 	Song                   *SubsonicChild            `xml:"song,omitempty" json:"song,omitempty"`
 	SongsByGenre           *SongsByGenre             `xml:"songsByGenre,omitempty" json:"songsByGenre,omitempty"`
 	MusicDirectory         *SubsonicDirectory        `xml:"directory,omitempty" json:"directory,omitempty"`
+	NowPlaying             *SubsonicNowPlaying       `xml:"nowPlaying,omitempty" json:"nowPlaying,omitempty"`
 }
 
 type SubsonicResponse struct {

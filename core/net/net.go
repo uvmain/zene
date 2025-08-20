@@ -121,11 +121,9 @@ func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, 
 	if intArray {
 		for _, idStr := range stringSlice {
 			id, err := strconv.Atoi(idStr)
-			if err != nil {
-				logger.Printf("Error parsing %s in parseDuplicateFormKeys: %v", key, err)
-				return intSlice, []string{}, fmt.Errorf("error parsing %s: %w", key, err)
+			if err == nil {
+				intSlice = append(intSlice, id)
 			}
-			intSlice = append(intSlice, id)
 		}
 	}
 	return intSlice, stringSlice, nil

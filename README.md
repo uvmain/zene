@@ -5,10 +5,10 @@
 ### Fast and feature packed with smart caching
 - All transcoded audio is cached locally and cleaned with smart rules
 - Fast full text search
-- lyrics cached in database on retrieval
-- Image endpoints and frontend make use of If-Modified-Since headers for 304 responses
-- All endpoints use Accept-Encoding headers and support gzip compression
+- wide support of If-Modified-Since headers for 304 responses
+- support for Accept-Encoding headers and gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
+- lyrics automatically fetched on demand from https://lrclib.net and saved locally
 - album art automatically fetched from album folder || embedded in track || deezer || coverartarchive.org
 - artist art automatically fetched from artist folder || deezer || wikidata
 
