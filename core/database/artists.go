@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"strings"
-	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
 )
@@ -42,9 +41,6 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, userId int, musicbra
 	result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id)
 	result.MusicBrainzId = result.Id
 	result.SortName = strings.ToLower(result.Name)
-
-	logger.Printf("user rating: %v", result.UserRating)
-	logger.Printf("average rating: %v", result.AverageRating)
 
 	if starred.Valid {
 		result.Starred = starred.String

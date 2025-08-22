@@ -17,3 +17,8 @@ type Artist struct {
 type SubsonicArtistWrapper struct {
 	Artist Artist `xml:"artist,omitempty" json:"artist,omitempty"`
 }
+
+type SubsonicArtistsWrapper struct {
+	Artists         *[]Index `xml:"index,omitempty" json:"index,omitempty"`
+	IgnoredArticles string   `xml:"ignoredArticles,attr" json:"ignoredArticles"`
+}

@@ -56,6 +56,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getIndexes.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetIndexes)))
 	router.Handle("/rest/getMusicDirectory.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicDirectory)))
 	router.Handle("/rest/getArtist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))
+	router.Handle("/rest/getArtists.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))
 	router.Handle("/rest/getSong.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSong)))
 	router.Handle("/rest/getVideos.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideos)))
 	router.Handle("/rest/getVideoInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideoInfo)))
