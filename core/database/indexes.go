@@ -85,9 +85,11 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 		artistEntry := types.Artist{
 			Id:             artist.Id,
 			Name:           artist.Name,
-			ArtistImageUrl: artist.ArtistImageUrl,
 			CoverArt:       artist.Id,
+			ArtistImageUrl: artist.ArtistImageUrl,
 			Starred:        artist.Starred,
+			MusicBrainzId:  artist.Id,
+			SortName:       strings.ToLower(artist.Name),
 			UserRating:     artist.UserRating,
 			AverageRating:  artist.AverageRating,
 		}

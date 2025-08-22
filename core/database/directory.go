@@ -129,7 +129,7 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 	query := `select m.musicbrainz_album_id as id, m.musicbrainz_artist_id as parent,
 		m.album, m.artist, substr(m.release_date,1,4) as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_album_id as cover_art,
-		sum(m.duration) as duration, min(date_added) as created,
+		sum(m.duration) as duration, min(date_added) as created, m.label as label,
 		m.album_artist, m.genre as genres,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
@@ -155,10 +155,11 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 		var child types.SubsonicChild
 		var albumArtist string
 		var genreString string
+		var labelString string
 		var durationFloat float64
 
 		if err := rows.Scan(&child.Id, &child.Parent, &child.Album, &child.Artist, &child.Year,
-			&child.Genre, &child.CoverArt, &durationFloat, &child.Created, &albumArtist, &genreString,
+			&child.Genre, &child.CoverArt, &durationFloat, &child.Created, &labelString, &albumArtist, &genreString,
 			&child.UserRating, &child.AverageRating, &child.PlayCount, &child.SongCount); err != nil {
 			return nil, err
 		}
@@ -170,6 +171,9 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 		child.Duration = int(durationFloat)
 		child.Title = child.Album
 		child.IsDir = true
+
+		child.RecordLabels = []types.ChildRecordLabel{}
+		child.RecordLabels = append(child.RecordLabels, types.ChildRecordLabel{Name: labelString})
 
 		child.Artists = []types.ChildArtist{}
 		child.Artists = append(child.Artists, types.ChildArtist{Id: child.ArtistId, Name: child.Artist})

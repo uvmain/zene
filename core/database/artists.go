@@ -3,281 +3,59 @@ package database
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"strconv"
+	"strings"
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
 )
 
-func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.ArtistResponse, error) {
-	query := `SELECT DISTINCT artist, musicbrainz_artist_id FROM metadata where musicbrainz_artist_id = ? limit 1;`
+func SelectArtistByMusicBrainzArtistId(ctx context.Context, userId int, musicbrainzArtistId string) (types.Artist, error) {
+	query := `SELECT m.musicbrainz_artist_id as id,
+		m.artist as name,
+		count(distinct m.musicbrainz_album_id) as album_count,
+		s.created_at as starred,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(AVG(gr.rating),0.0) AS average_rating
+	FROM user_music_folders u
+	join metadata m on m.music_folder_id = u.folder_id
+	LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = u.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = u.user_id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_artist_id = gr.metadata_id
+	where u.user_id = ?
+	and m.musicbrainz_artist_id = ?
+	group by m.artist`
 
-	var result types.ArtistResponse
+	var result types.Artist
 
-	err := DB.QueryRowContext(ctx, query, musicbrainzArtistId).Scan(&result.Artist, &result.MusicBrainzArtistID)
+	var starred sql.NullString
 
+	err := DB.QueryRowContext(ctx, query, userId, musicbrainzArtistId).Scan(
+		&result.Id, &result.Name, &result.AlbumCount, &starred, &result.UserRating, &result.AverageRating,
+	)
 	if err == sql.ErrNoRows {
-		return types.ArtistResponse{}, nil
+		return types.Artist{}, nil
 	} else if err != nil {
-		return types.ArtistResponse{}, err
+		return types.Artist{}, err
+	}
+
+	result.CoverArt = result.Id
+	result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id)
+	result.MusicBrainzId = result.Id
+	result.SortName = strings.ToLower(result.Name)
+
+	logger.Printf("user rating: %v", result.UserRating)
+	logger.Printf("average rating: %v", result.AverageRating)
+
+	if starred.Valid {
+		result.Starred = starred.String
+	}
+
+	albums, err := GetArtistChildren(ctx, musicbrainzArtistId)
+
+	result.Album = []types.SubsonicChild{}
+	for _, album := range albums {
+		result.Album = append(result.Album, album)
 	}
 
 	return result, nil
-}
-
-func SelectAlbumsByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, recent string, chronological string, limit string, offset string) ([]types.AlbumsResponse, error) {
-	query := "SELECT DISTINCT musicbrainz_album_id, album, musicbrainz_artist_id, artist, genre, release_date FROM metadata WHERE musicbrainz_artist_id = ? GROUP BY musicbrainz_album_id"
-
-	if recent == "true" {
-		query += " ORDER BY date_added desc"
-	} else if random != "" {
-		randomInt, err := strconv.Atoi(random)
-		if err == nil {
-			query += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", randomInt)
-		}
-	} else if chronological == "true" {
-		query += " ORDER BY release_date desc"
-	}
-
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err == nil {
-			query += fmt.Sprintf(" limit %d", limitInt)
-		}
-	}
-	if offset != "" {
-		offsetInt, err := strconv.Atoi(offset)
-		if err == nil {
-			query += fmt.Sprintf(" offset %d", offsetInt)
-		}
-	}
-
-	query += ";"
-
-	rows, err := DB.QueryContext(ctx, query, musicbrainz_artist_id)
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.AlbumsResponse{}, err
-	}
-	defer rows.Close()
-
-	var results []types.AlbumsResponse
-
-	for rows.Next() {
-		var result types.AlbumsResponse
-		if err := rows.Scan(&result.MusicBrainzAlbumID, &result.Album, &result.MusicBrainzArtistID, &result.Artist, &result.Genres, &result.ReleaseDate); err != nil {
-			logger.Printf("Failed to scan row in SelectAlbumsByArtistId: %v", err)
-			return nil, err
-		}
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
-}
-
-func SelectTracksByArtistId(ctx context.Context, musicbrainz_artist_id string, random string, limit string, offset string, recent string) ([]types.MetadataWithPlaycounts, error) {
-	userId, _ := logic.GetUserIdFromContext(ctx)
-	query := getUnendedMetadataWithPlaycountsSql(userId)
-
-	query += " where musicbrainz_artist_id = ?"
-
-	if recent == "true" {
-		query += " ORDER BY date_added desc"
-	} else if random != "" {
-		randomInteger, err := strconv.Atoi(random)
-		if err == nil {
-			query += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", randomInteger)
-		}
-	}
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err == nil {
-			query += fmt.Sprintf(" limit %d", limitInt)
-		}
-	}
-	if offset != "" {
-		offsetInt, err := strconv.Atoi(offset)
-		if err == nil {
-			query += fmt.Sprintf(" offset %d", offsetInt)
-		}
-	}
-
-	query += ";"
-
-	rows, err := DB.QueryContext(ctx, query, musicbrainz_artist_id)
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.MetadataWithPlaycounts{}, err
-	}
-	defer rows.Close()
-
-	var results []types.MetadataWithPlaycounts
-
-	for rows.Next() {
-		var result types.MetadataWithPlaycounts
-		if err := rows.Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
-			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
-			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
-			&result.MusicBrainzTrackID, &result.Label, &result.MusicFolderId, &result.Codec, &result.BitDepth, &result.SampleRate, &result.Channels,
-			&result.UserPlayCount, &result.GlobalPlayCount); err != nil {
-			logger.Printf("Failed to scan row in SelectTracksByArtistId: %v", err)
-			return []types.MetadataWithPlaycounts{}, err
-		}
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
-}
-
-func SelectAlbumArtists(ctx context.Context, searchParam string, random string, recent string, chronological string, limit string, offset string) ([]types.ArtistResponse, error) {
-	query := "select distinct m.album_artist, m.musicbrainz_artist_id FROM metadata m"
-	if searchParam != "" {
-		query += " JOIN artists_fts f ON m.file_path = f.file_path"
-	}
-	query += " where m.album_artist = m.artist"
-
-	if searchParam != "" {
-		query += " and artists_fts MATCH ?"
-	}
-
-	if recent == "true" {
-		query += " ORDER BY m.date_added desc"
-	} else if random != "" {
-		randomInt, err := strconv.Atoi(random)
-		if err == nil {
-			query += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInt)
-		}
-	} else if chronological == "true" {
-		query += " ORDER BY m.release_date desc"
-	}
-
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err == nil {
-			query += fmt.Sprintf(" limit %d", limitInt)
-		}
-	}
-	if offset != "" {
-		offsetInt, err := strconv.Atoi(offset)
-		if err == nil {
-			query += fmt.Sprintf(" offset %d", offsetInt)
-		}
-	}
-
-	query += ";"
-
-	var rows *sql.Rows
-
-	if searchParam != "" {
-		rows, err = DB.QueryContext(ctx, query, searchParam)
-	} else {
-		rows, err = DB.QueryContext(ctx, query)
-	}
-
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.ArtistResponse{}, err
-	}
-	defer rows.Close()
-
-	var results []types.ArtistResponse
-
-	for rows.Next() {
-		var result types.ArtistResponse
-		if err := rows.Scan(&result.Artist, &result.MusicBrainzArtistID); err != nil {
-			logger.Printf("Failed to scan row in SelectAlbumArtists: %v", err)
-			return []types.ArtistResponse{}, err
-		}
-		result.ImageURL = fmt.Sprintf("/api/artists/%s/art", result.MusicBrainzArtistID)
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
-}
-
-func SelectAlbumArtistsForMusicDir(ctx context.Context, musicDir string, searchParam string, random string, recent string, chronological string, limit string, offset string) ([]types.ArtistResponse, error) {
-	query := "select distinct m.album_artist, m.musicbrainz_artist_id FROM metadata m join music_folders mf on m.music_folder_id = mf.id and mf.name = ?"
-	if searchParam != "" {
-		query += " JOIN artists_fts f ON m.file_path = f.file_path"
-	}
-	query += " where m.album_artist = m.artist"
-
-	if searchParam != "" {
-		query += " and artists_fts MATCH ?"
-	}
-
-	if recent == "true" {
-		query += " ORDER BY m.date_added desc"
-	} else if random != "" {
-		randomInt, err := strconv.Atoi(random)
-		if err == nil {
-			query += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInt)
-		}
-	} else if chronological == "true" {
-		query += " ORDER BY m.release_date desc"
-	}
-
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err == nil {
-			query += fmt.Sprintf(" limit %d", limitInt)
-		}
-	}
-	if offset != "" {
-		offsetInt, err := strconv.Atoi(offset)
-		if err == nil {
-			query += fmt.Sprintf(" offset %d", offsetInt)
-		}
-	}
-
-	query += ";"
-
-	var rows *sql.Rows
-
-	if searchParam != "" {
-		rows, err = DB.QueryContext(ctx, query, musicDir, searchParam)
-	} else {
-		rows, err = DB.QueryContext(ctx, query, musicDir)
-	}
-
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.ArtistResponse{}, err
-	}
-	defer rows.Close()
-
-	var results []types.ArtistResponse
-
-	for rows.Next() {
-		var result types.ArtistResponse
-		if err := rows.Scan(&result.Artist, &result.MusicBrainzArtistID); err != nil {
-			logger.Printf("Failed to scan row in SelectAlbumArtistsForMusicDir: %v", err)
-			return []types.ArtistResponse{}, err
-		}
-		result.ImageURL = fmt.Sprintf("/api/artists/%s/art", result.MusicBrainzArtistID)
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
 }
