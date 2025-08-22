@@ -22,6 +22,7 @@ type SubsonicChild struct {
 	Path               string              `xml:"path,attr,omitempty" json:"path,omitempty"`
 	IsVideo            bool                `xml:"isVideo,attr,omitempty" json:"isVideo,omitempty"`
 	UserRating         int                 `xml:"userRating,attr,omitempty" json:"userRating,omitempty"`
+	RecordLabels       []ChildRecordLabel  `xml:"recordLabels" json:"recordLabels"`
 	AverageRating      float64             `xml:"averageRating,attr,omitempty" json:"averageRating,omitempty"`
 	PlayCount          int                 `xml:"playCount,attr,omitempty" json:"playCount,omitempty"`
 	SongCount          int                 `xml:"songCount,attr,omitempty" json:"songCount,omitempty"`
@@ -60,6 +61,10 @@ type ChildArtist struct {
 type ChildContributors struct {
 	Role   string       `xml:"role,attr" json:"role"`
 	Artist *ChildArtist `xml:"artist" json:"artist"`
+}
+
+type ChildRecordLabel struct {
+	Name string `xml:"name,attr" json:"name"`
 }
 
 type SongsByGenre struct {
