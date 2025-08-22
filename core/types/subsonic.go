@@ -32,6 +32,7 @@ type SubsonicStandard struct {
 	NowPlaying             *SubsonicNowPlaying       `xml:"nowPlaying,omitempty" json:"nowPlaying,omitempty"`
 	Artist                 *SubsonicArtistWrapper    `xml:"artist,omitempty" json:"artist,omitempty"`
 	Artists                *SubsonicArtistsWrapper   `xml:"artists,omitempty" json:"artists,omitempty"`
+	Album                  *AlbumId3                 `xml:"album,omitempty" json:"album,omitempty"`
 }
 
 type SubsonicResponse struct {
@@ -70,4 +71,10 @@ type LicenseInfo struct {
 
 type TokenInfo struct {
 	Username string `xml:"username" json:"username"`
+}
+
+type ItemDate struct {
+	Year  int `xml:"year,attr,omitempty" json:"year,omitempty"`
+	Month int `xml:"month,attr,omitempty" json:"month,omitempty"`
+	Day   int `xml:"day,attr,omitempty" json:"day,omitempty"`
 }

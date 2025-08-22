@@ -9,3 +9,7 @@ type Genre struct {
 type Genres struct {
 	Genre []Genre `xml:"genre" json:"genre"`
 }
+
+type ItemGenre struct {
+	Name string `xml:"name,attr" json:"name"`
+}

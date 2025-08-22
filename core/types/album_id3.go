@@ -1,0 +1,25 @@
+package types
+
+type AlbumId3 struct {
+	Id            string             `xml:"id,attr" json:"id"`
+	Name          string             `xml:"name,attr" json:"name"`                             // album name
+	Artist        string             `xml:"artist,attr,omitempty" json:"artist,omitempty"`     // artist name
+	ArtistId      string             `xml:"artistId,attr,omitempty" json:"artistId,omitempty"` // musicbrainz_artist_id
+	CoverArt      string             `xml:"coverArt,attr,omitempty" json:"coverArt,omitempty"`
+	SongCount     int                `xml:"songCount,attr" json:"songCount"`
+	Duration      int                `xml:"duration,attr" json:"duration"` // in seconds
+	PlayCount     int                `xml:"playCount,attr" json:"playCount"`
+	Created       string             `xml:"created,attr" json:"created"` // date_added, ISO 8601
+	Starred       string             `xml:"starred,attr" json:"starred"`
+	Year          int                `xml:"year,attr,omitempty" json:"year,omitempty"`
+	Genre         string             `xml:"genre,attr,omitempty" json:"genre,omitempty"`
+	Played        string             `xml:"played,attr,omitempty" json:"played,omitempty"` // last played, ISO 8601
+	UserRating    int                `xml:"userRating,attr" json:"userRating"`
+	RecordLabels  []ChildRecordLabel `xml:"recordLabels" json:"recordLabels"`
+	MusicBrainzId string             `xml:"musicBrainzId,attr,omitempty" json:"musicBrainzId,omitempty"` // musicbrainz_album_id
+	Genres        []ItemGenre        `xml:"genres" json:"genres"`
+	DisplayArtist string             `xml:"displayArtist,attr,omitempty" json:"displayArtist,omitempty"`
+	SortName      string             `xml:"sortName,attr,omitempty" json:"sortName,omitempty"`
+	ReleaseDate   ItemDate           `xml:"releaseDate,attr,omitempty" json:"releaseDate,omitempty"`
+	Songs         []SubsonicChild    `xml:"song" json:"song"`
+}

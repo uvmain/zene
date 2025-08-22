@@ -101,11 +101,11 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 		max(pc.last_played) as played,
 		us.created_at AS starred
 	from user_music_folders u
-	join metadata m on m.musicbrainz_track_id = np.track_id
-	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = np.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = np.user_id
+	join metadata m on m.music_folder_id = u.folder_id
+	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = u.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = np.user_id
+	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.user_id
 	where m.musicbrainz_album_id = ?
 	and u.user_id = ?
 	group by m.musicbrainz_track_id;`

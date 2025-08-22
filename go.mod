@@ -14,5 +14,6 @@ require (
 require (
 	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
+	github.com/timematic/anytime v0.0.0-20250424004116-93a49dc8f85f // indirect
 	golang.org/x/sys v0.34.0 // indirect
 )

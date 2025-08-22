@@ -35,7 +35,6 @@ func StartServer() *http.Server {
 
 	// authenticated routes
 	router.Handle("/api/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbums)))
-	router.Handle("/api/albums/{musicBrainzAlbumId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbum)))
 	router.Handle("/api/albums/{musicBrainzAlbumId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumTracks)))
 	router.Handle("/api/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracks)))
 	router.Handle("/api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrack)))
@@ -55,8 +54,9 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getMusicFolders.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders)))
 	router.Handle("/rest/getIndexes.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetIndexes)))
 	router.Handle("/rest/getMusicDirectory.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicDirectory)))
-	router.Handle("/rest/getArtist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))
 	router.Handle("/rest/getArtists.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))
+	router.Handle("/rest/getArtist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))
+	router.Handle("/rest/getAlbum.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbum)))
 	router.Handle("/rest/getSong.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSong)))
 	router.Handle("/rest/getVideos.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideos)))
 	router.Handle("/rest/getVideoInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideoInfo)))
