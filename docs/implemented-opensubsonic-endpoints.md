@@ -8,8 +8,8 @@
 - [x] getIndexes
 - [x] getMusicDirectory
 - [x] getGenres
-- [ ] getArtists
-- [ ] getArtist
+- [x] getArtists
+- [x] getArtist
 - [ ] getAlbum
 - [x] getSong
 - [x] getVideos[^1]
