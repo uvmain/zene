@@ -10,7 +10,7 @@
 - [x] getGenres
 - [x] getArtists
 - [x] getArtist
-- [ ] getAlbum
+- [x] getAlbum
 - [x] getSong
 - [x] getVideos[^1]
 - [x] getVideoInfo[^1]

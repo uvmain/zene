@@ -9,6 +9,7 @@ require (
 	github.com/ncruces/go-sqlite3 v0.27.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.11.1
+	github.com/timematic/anytime v0.0.0-20250424004116-93a49dc8f85f
 )
 
 require (
