@@ -80,3 +80,4 @@ resolving Caddy cert issues on debian/ubuntu
 - [x] Create scan-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome) // done, it's now 3ms
 - [ ] When a music dir is removed from .env, remove it from the DB
 - [ ] fix mutex and cache check for GetMetadataForMusicBrainzAlbumId
+- [ ] getArtistInfo with includeNotPresent=true should also fetch artist image links from Deezer
