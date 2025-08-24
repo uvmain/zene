@@ -9,8 +9,9 @@
 - support for Accept-Encoding headers and gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
 - lyrics automatically fetched on demand from https://lrclib.net and saved locally
-- album art automatically fetched from album folder || embedded in track || deezer || coverartarchive.org
-- artist art automatically fetched from artist folder || deezer || wikidata
+- album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
+- artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
+- similar artists/songs are fetched from https://api.deezer.com and saved locally
 
 ### Uses the OpenSubsonic API, with a few extras
 Supports the following OpenSubsonic API extensions:

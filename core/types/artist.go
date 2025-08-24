@@ -30,5 +30,5 @@ type ArtistInfo struct {
 	SmallImageUrl  string   `xml:"smallImageUrl,attr,omitempty" json:"smallImageUrl,omitempty"`
 	MediumImageUrl string   `xml:"mediumImageUrl,attr,omitempty" json:"mediumImageUrl,omitempty"`
 	LargeImageUrl  string   `xml:"largeImageUrl,attr,omitempty" json:"largeImageUrl,omitempty"`
-	SimilarArtists []Artist `xml:"similarArtists>artist,omitempty" json:"similarArtists,omitempty"`
+	SimilarArtists []Artist `xml:"similarArtists>artist" json:"similarArtists"`
 }

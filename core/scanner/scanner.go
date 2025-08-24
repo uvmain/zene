@@ -111,6 +111,11 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 		if err != nil {
 			return fmt.Errorf("Error repopulating genre counts table: %v", err)
 		}
+
+		err = PopulateSimilarArtistsTable(ctx)
+		if err != nil {
+			return fmt.Errorf("Error populating similar artists table: %v", err)
+		}
 	}
 
 	fileAndFolderCount, err := database.GetFileAndFolderCounts(ctx)
@@ -338,9 +343,4 @@ func getArtistArtworkForMusicDir(ctx context.Context, musicDir string) error {
 	}
 
 	return nil
-}
-
-func scanError(msg string, err error) types.ScanResponse {
-	logger.Printf("%s: %v", msg, err)
-	return types.ScanResponse{Success: false, Status: msg}
 }

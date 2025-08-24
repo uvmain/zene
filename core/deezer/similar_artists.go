@@ -7,12 +7,49 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sync"
+	"time"
+	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/net"
 )
 
+// in-memory cache for similar artist names
+type similarArtistCacheEntry struct {
+	names     []string
+	expiresAt time.Time
+}
+
+var (
+	similarArtistCache     = make(map[string]similarArtistCacheEntry)
+	similarArtistCacheLock sync.Mutex
+)
+
+var similarArtistCacheTTL = time.Hour * 24
+
+func CleanupSimilarArtistsCache(ctx context.Context) {
+	similarArtistCacheLock.Lock()
+	defer similarArtistCacheLock.Unlock()
+	now := time.Now()
+	for k, v := range similarArtistCache {
+		if now.After(v.expiresAt) {
+			delete(similarArtistCache, k)
+		}
+	}
+}
+
 func GetSimilarArtistNames(ctx context.Context, artistName string) ([]string, error) {
-	artistId, err := GetArtistId(ctx, artistName)
+	// Check cache first
+	similarArtistCacheLock.Lock()
+	entry, found := similarArtistCache[artistName]
+	if found && time.Now().Before(entry.expiresAt) {
+		similarArtistCacheLock.Unlock()
+		logger.Printf("Deezer similar artists cache hit for artist: %s", artistName)
+		return entry.names, nil
+	}
+	similarArtistCacheLock.Unlock()
+
+	artistId, err := GetDeezerArtistId(ctx, artistName)
 	if err != nil {
 		return []string{}, err
 	}
@@ -56,7 +93,8 @@ func GetSimilarArtistNames(ctx context.Context, artistName string) ([]string, er
 	}
 
 	if len(data.Data) < 1 {
-		return []string{}, fmt.Errorf("no Deezer results found for artist: %s", artistName)
+		logger.Printf("no Deezer results found for artist: %s", artistName)
+		return []string{}, nil
 	}
 
 	var artistNames []string
@@ -65,10 +103,17 @@ func GetSimilarArtistNames(ctx context.Context, artistName string) ([]string, er
 		artistNames = append(artistNames, artist.Name)
 	}
 
+	// Store in cache
+	similarArtistCacheLock.Lock()
+	similarArtistCache[artistName] = similarArtistCacheEntry{
+		names:     artistNames,
+		expiresAt: time.Now().Add(similarArtistCacheTTL),
+	}
+	similarArtistCacheLock.Unlock()
 	return artistNames, nil
 }
 
-func GetArtistId(ctx context.Context, artistName string) (int, error) {
+func GetDeezerArtistId(ctx context.Context, artistName string) (int, error) {
 	if artistName == "" {
 		return 0, fmt.Errorf("artist name must not be empty")
 	}

@@ -80,26 +80,39 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 		response.SubsonicResponse.ArtistInfo2 = &artistInfo
 	}
 
-	var similarArtists []types.Artist
+	similarArtists := []types.Artist{}
 
 	artistName := database.GetArtistNameByMusicBrainzArtistId(ctx, musicBrainzArtistId)
-	similarArtistNames, err := deezer.GetSimilarArtistNames(ctx, artistName)
 
-	if err != nil {
-		logger.Printf("failed to get similar artists: %v", err)
-	} else {
-		// if count is specified, limit the number of similar artists, otherwise default to a limit of 20
-		for i, artistName := range similarArtistNames {
-			if countLimit > 0 && i >= countLimit {
-				break
-			}
-			artist, err := database.GetArtistByName(ctx, artistName)
-			if err == nil && artist.Id != "" {
-				similarArtists = append(similarArtists, artist)
-			} else if includeNotPresentBool {
-				similarArtists = append(similarArtists, types.Artist{Name: artistName})
+	if includeNotPresentBool {
+		similarArtistNames, err := deezer.GetSimilarArtistNames(ctx, artistName)
+		if err != nil {
+			logger.Printf("failed to get similar artists: %v", err)
+		} else {
+			// if count is specified, limit the number of similar artists, otherwise default to a limit of 20
+			for i, artistName := range similarArtistNames {
+				if countLimit > 0 && i >= countLimit {
+					break
+				}
+				artistId, err := database.GetArtistIdByName(ctx, artistName)
+				if err == nil && artistId != "" {
+					artist, err := database.SelectArtistByMusicBrainzArtistId(ctx, artistId)
+					if err == nil {
+						similarArtists = append(similarArtists, artist)
+					} else {
+						similarArtists = append(similarArtists, types.Artist{Name: artistName})
+					}
+				} else {
+					similarArtists = append(similarArtists, types.Artist{Name: artistName})
+				}
 			}
 		}
+	} else {
+		similarArtistsRows, err := database.SelectSimilarArtists(ctx, musicBrainzArtistId)
+		if err != nil {
+			logger.Printf("failed to get similar artists: %v", err)
+		}
+		similarArtists = append(similarArtists, similarArtistsRows...)
 	}
 
 	switch version {
