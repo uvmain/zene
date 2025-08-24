@@ -21,13 +21,6 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	requestUser, err := database.GetUserByContext(ctx)
-	if err != nil {
-		logger.Printf("Error getting user by context: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get avatars", "")
-		return
-	}
-
 	musicBrainzArtistId := r.FormValue("id")
 	if musicBrainzArtistId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
@@ -36,7 +29,7 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	row, err := database.SelectArtistByMusicBrainzArtistId(r.Context(), requestUser.Id, musicBrainzArtistId)
+	row, err := database.SelectArtistByMusicBrainzArtistId(ctx, musicBrainzArtistId)
 	if err != nil {
 		logger.Printf("Error querying database in SelectArtistByMusicBrainzArtistId: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to query database", "")

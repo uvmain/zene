@@ -33,6 +33,8 @@ type SubsonicStandard struct {
 	Artist                 *SubsonicArtistWrapper    `xml:"artist,omitempty" json:"artist,omitempty"`
 	Artists                *SubsonicArtistsWrapper   `xml:"artists,omitempty" json:"artists,omitempty"`
 	Album                  *AlbumId3                 `xml:"album,omitempty" json:"album,omitempty"`
+	ArtistInfo             *ArtistInfo               `xml:"artistInfo,omitempty" json:"artistInfo,omitempty"`
+	ArtistInfo2            *ArtistInfo               `xml:"artistInfo2,omitempty" json:"artistInfo2,omitempty"`
 }
 
 type SubsonicResponse struct {

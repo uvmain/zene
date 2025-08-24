@@ -8,7 +8,11 @@ import (
 	"zene/core/types"
 )
 
-func SelectArtistByMusicBrainzArtistId(ctx context.Context, userId int, musicbrainzArtistId string) (types.Artist, error) {
+func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.Artist, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return types.Artist{}, err
+	}
 	query := `SELECT m.musicbrainz_artist_id as id,
 		m.artist as name,
 		count(distinct m.musicbrainz_album_id) as album_count,
@@ -28,7 +32,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, userId int, musicbra
 
 	var starred sql.NullString
 
-	err := DB.QueryRowContext(ctx, query, userId, musicbrainzArtistId).Scan(
+	err = DB.QueryRowContext(ctx, query, user.Id, musicbrainzArtistId).Scan(
 		&result.Id, &result.Name, &result.AlbumCount, &starred, &result.UserRating, &result.AverageRating,
 	)
 	if err == sql.ErrNoRows {
@@ -54,4 +58,27 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, userId int, musicbra
 	}
 
 	return result, nil
+}
+
+func GetArtistNameByMusicBrainzArtistId(ctx context.Context, musicBrainzArtistId string) string {
+	var artistName string
+	query := `SELECT artist FROM metadata WHERE musicbrainz_artist_id = ? limit 1`
+	err := DB.QueryRowContext(ctx, query, musicBrainzArtistId).Scan(&artistName)
+	if err != nil {
+		return ""
+	}
+	return artistName
+}
+
+func GetArtistIdByName(ctx context.Context, artistName string) (string, error) {
+	query := `SELECT musicbrainz_artist_id
+		from metadata
+		where lower(artist) = lower(?)
+		limit 1;`
+
+	var result string
+
+	err = DB.QueryRowContext(ctx, query, artistName).Scan(&result)
+
+	return result, err
 }

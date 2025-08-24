@@ -9,8 +9,9 @@
 - support for Accept-Encoding headers and gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
 - lyrics automatically fetched on demand from https://lrclib.net and saved locally
-- album art automatically fetched from album folder || embedded in track || deezer || coverartarchive.org
-- artist art automatically fetched from artist folder || deezer || wikidata
+- album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
+- artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
+- similar artists/songs are fetched from https://api.deezer.com and saved locally
 
 ### Uses the OpenSubsonic API, with a few extras
 Supports the following OpenSubsonic API extensions:
@@ -79,3 +80,4 @@ resolving Caddy cert issues on debian/ubuntu
 - [x] Create scan-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome) // done, it's now 3ms
 - [ ] When a music dir is removed from .env, remove it from the DB
 - [ ] fix mutex and cache check for GetMetadataForMusicBrainzAlbumId
+- [ ] getArtistInfo with includeNotPresent=true should also fetch artist image links from Deezer

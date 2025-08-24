@@ -14,8 +14,8 @@
 - [x] getSong
 - [x] getVideos[^1]
 - [x] getVideoInfo[^1]
-- [ ] getArtistInfo
-- [ ] getArtistInfo2
+- [x] getArtistInfo[^2]
+- [x] getArtistInfo2[^2]
 - [ ] getAlbumInfo
 - [ ] getAlbumInfo2
 - [ ] getSimilarSongs
@@ -52,7 +52,7 @@
 - [x] star
 - [x] unstar
 - [x] setRating
-- [x] scrobble
+- [x] scrobble[^3]
 ## Sharing
 - [ ] getShares
 - [ ] createShare
@@ -93,4 +93,6 @@
 - [x] getScanStatus
 - [x] startScan
 
-[^1]: Endpoint implented but returns an unsupported error
+[^1]: Endpoint exists but returns an unsupported error.
+[^2]: Similar artists are fetched from Deezer, not lastfm. Biography is not supported.
+[^3]: Scrobble updates local Now Playing and Play Count - it does not integrate with lastfm.
