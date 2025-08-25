@@ -81,3 +81,4 @@ resolving Caddy cert issues on debian/ubuntu
 - [ ] When a music dir is removed from .env, remove it from the DB
 - [ ] fix mutex and cache check for GetMetadataForMusicBrainzAlbumId
 - [ ] getArtistInfo with includeNotPresent=true should also fetch artist image links from Deezer
+- [ ] getArtistInfo should fetch biography if user sets lastfm creds
