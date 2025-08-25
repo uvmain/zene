@@ -82,3 +82,4 @@ resolving Caddy cert issues on debian/ubuntu
 - [ ] fix mutex and cache check for GetMetadataForMusicBrainzAlbumId
 - [ ] getArtistInfo with includeNotPresent=true should also fetch artist image links from Deezer
 - [ ] getArtistInfo should fetch biography if user sets lastfm creds
+- [ ] add Handler level caching for getTopSongs, GetArtistInfo

@@ -11,7 +11,7 @@ import (
 func Initialise(ctx context.Context) {
 	startAudioCacheCleanupRoutine(ctx)
 	startNowPlayingCleanupRoutine(ctx)
-	startSimilarArtistsCacheCleanupRoutine(ctx)
+	startDeezerCacheCleanupRoutine(ctx)
 }
 
 func startAudioCacheCleanupRoutine(ctx context.Context) {
@@ -50,8 +50,8 @@ func startNowPlayingCleanupRoutine(ctx context.Context) {
 	}()
 }
 
-func startSimilarArtistsCacheCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting similar artists cache cleanup routine")
+func startDeezerCacheCleanupRoutine(ctx context.Context) {
+	logger.Println("Scheduler: starting deezer cache cleanup routine")
 	go func() {
 		ticker := time.NewTicker(1 * time.Hour)
 		defer ticker.Stop()
@@ -59,10 +59,11 @@ func startSimilarArtistsCacheCleanupRoutine(ctx context.Context) {
 		for {
 			select {
 			case <-ctx.Done():
-				logger.Println("Scheduler: stopping similar artists cache cleanup routine")
+				logger.Println("Scheduler: stopping deezer cache cleanup routine")
 				return
 			case <-ticker.C:
 				deezer.CleanupSimilarArtistsCache(ctx)
+				deezer.CleanupTopSongsCache(ctx)
 			}
 		}
 	}()

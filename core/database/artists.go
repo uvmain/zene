@@ -82,3 +82,17 @@ func GetArtistIdByName(ctx context.Context, artistName string) (string, error) {
 
 	return result, err
 }
+
+func GetArtistNameById(ctx context.Context, musicBrainzArtistId string) (string, error) {
+	query := `SELECT artist FROM metadata WHERE musicbrainz_artist_id = ? limit 1;`
+
+	var result string
+
+	err := DB.QueryRowContext(ctx, query, musicBrainzArtistId).Scan(&result)
+	if err == sql.ErrNoRows {
+		return "", nil
+	} else if err != nil {
+		return "", err
+	}
+	return result, nil
+}

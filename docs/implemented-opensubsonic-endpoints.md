@@ -20,7 +20,7 @@
 - [x] getAlbumInfo2[^4]
 - [ ] getSimilarSongs
 - [ ] getSimilarSongs2
-- [ ] getTopSongs
+- [x] getTopSongs[^5]
 ## Album/song lists
 - [ ] getAlbumList
 - [ ] getAlbumList2
@@ -97,3 +97,4 @@
 [^2]: Similar artists are fetched from Deezer, not lastfm. Biography is not supported.
 [^3]: Scrobble updates local Now Playing and Play Count - it does not integrate with lastfm.
 [^4]: Notes property is not supported.
+[^5]: Top songs are fetched from Deezer, not lastfm.
