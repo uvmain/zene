@@ -3,7 +3,10 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 	"zene/core/art"
+	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/types"
@@ -25,26 +28,37 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// sizeParam := r.FormValue("size")
-	// var sizeInt int
-	// var err error
-	// if sizeParam == "" {
-	// 	sizeInt, err = strconv.ParseInt(sizeParam, 10, 64)
-	// 	if err != nil {
-	// 		errorString := "invalid size parameter"
-	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
-	// 		return
-	// 	}
-	// }
-
-	imageBlob, lastModified, err := art.GetArtForAlbum(ctx, idParameter, "xl")
-	if err != nil {
-		imageBlob, lastModified, err = art.GetArtForArtist(ctx, idParameter)
+	sizeParam := r.FormValue("size")
+	var sizeInt = 400
+	var err error
+	if sizeParam != "" {
+		sizeInt, err = strconv.Atoi(sizeParam)
 		if err != nil {
-			logger.Printf("Error getting cover art for %s: %v", idParameter, err)
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+			errorString := "invalid size parameter"
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
 			return
 		}
+	}
+
+	valid, metadataStruct, err := database.IsValidMetadataId(ctx, idParameter)
+	if err != nil || !valid {
+		errorString := "invalid id parameter"
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
+		return
+	}
+
+	var imageBlob []byte
+	var lastModified time.Time
+	if metadataStruct.MusicbrainzAlbumId {
+		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, idParameter, sizeInt)
+	} else if metadataStruct.MusicbrainzArtistId {
+		imageBlob, lastModified, err = art.GetArtForArtist(ctx, idParameter, sizeInt)
+	}
+
+	if err != nil {
+		logger.Printf("Error getting cover art for %s: %v", idParameter, err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+		return
 	}
 
 	if net.IfModifiedResponse(w, r, lastModified) {

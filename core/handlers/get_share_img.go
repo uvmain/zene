@@ -12,7 +12,7 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 	imageId := r.PathValue("imageId")
 
 	sizeQueryParameter := r.FormValue("size")
-	var sizeInt int
+	var sizeInt = 400
 	var err error
 	if sizeQueryParameter != "" {
 		sizeInt, err = strconv.Atoi(sizeQueryParameter)
@@ -26,9 +26,9 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	imageBlob, lastModified, err := art.GetArtForAlbum(ctx, imageId, "xl")
+	imageBlob, lastModified, err := art.GetArtForAlbum(ctx, imageId, sizeInt)
 	if err != nil {
-		imageBlob, lastModified, err = art.GetArtForArtist(ctx, imageId)
+		imageBlob, lastModified, err = art.GetArtForArtist(ctx, imageId, sizeInt)
 		if err != nil {
 			logger.Printf("Error getting image for %s: %v", imageId, err)
 			http.Error(w, "Failed to get image", http.StatusInternalServerError)

@@ -141,8 +141,8 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, a
 	}
 }
 
-func GetArtForArtist(ctx context.Context, musicBrainzArtistId string) ([]byte, time.Time, error) {
-	file_name := strings.Join([]string{musicBrainzArtistId, "jpg"}, ".")
+func GetArtForArtist(ctx context.Context, musicBrainzArtistId string, size int) ([]byte, time.Time, error) {
+	file_name := fmt.Sprintf("%s_%s.jpg", musicBrainzArtistId, "xl")
 	filePath, _ := filepath.Abs(filepath.Join(config.ArtistArtFolder, file_name))
 
 	info, err := os.Stat(filePath)
@@ -152,7 +152,7 @@ func GetArtForArtist(ctx context.Context, musicBrainzArtistId string) ([]byte, t
 
 	modTime := info.ModTime()
 
-	blob, err := os.ReadFile(filePath)
+	blob, err := logic.ResizeJpegImage(ctx, filePath, size, 90)
 	if err != nil {
 		return nil, time.Now(), fmt.Errorf("error reading image for filepath %s: %s", filePath, err)
 	}

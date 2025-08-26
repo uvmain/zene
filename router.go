@@ -74,7 +74,6 @@ func StartServer() *http.Server {
 	router.Handle("/rest/download.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))
 	router.Handle("/rest/getCaptions.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCaptions)))
 	router.Handle("/rest/getCoverArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))
-	router.Handle("/rest/getArtistArt.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArt)))
 	router.Handle("/rest/getLyrics.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyrics)))
 	router.Handle("/rest/getLyricsBySongId.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyricsBySongId)))
 	router.Handle("/rest/getAvatar.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAvatar)))
