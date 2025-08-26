@@ -145,3 +145,55 @@ func GetAlbumArtUrlWithArtistNameAndAlbumName(ctx context.Context, artistName st
 
 	return imageUrl, nil
 }
+
+func GetDeezerArtistId(ctx context.Context, artistName string) (int, error) {
+	if artistName == "" {
+		return 0, fmt.Errorf("artist name must not be empty")
+	}
+
+	url := fmt.Sprintf("https://api.deezer.com/search/artist?q=%s", url.QueryEscape(artistName))
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return 0, err
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return 0, fmt.Errorf("HTTP New Request failed: %v", err)
+	}
+
+	net.AddUserAgentHeaderToRequest(req)
+
+	if err := logic.CheckContext(ctx); err != nil {
+		return 0, err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return 0, fmt.Errorf("HTTP error: %w", err)
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("unexpected status: %s", res.Status)
+	}
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return 0, err
+	}
+
+	var data DeezerArtistResponse
+	if err := json.Unmarshal(body, &data); err != nil {
+		return 0, err
+	}
+
+	if len(data.Data) < 1 {
+		return 0, fmt.Errorf("no Deezer results found for artist: %s", artistName)
+	}
+
+	artistId := data.Data[0].ID
+
+	return artistId, nil
+}

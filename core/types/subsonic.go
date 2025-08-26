@@ -35,6 +35,9 @@ type SubsonicStandard struct {
 	Album                  *AlbumId3                 `xml:"album,omitempty" json:"album,omitempty"`
 	ArtistInfo             *ArtistInfo               `xml:"artistInfo,omitempty" json:"artistInfo,omitempty"`
 	ArtistInfo2            *ArtistInfo               `xml:"artistInfo2,omitempty" json:"artistInfo2,omitempty"`
+	AlbumInfo              *AlbumInfo                `xml:"albumInfo,omitempty" json:"albumInfo,omitempty"`
+	AlbumInfo2             *AlbumInfo                `xml:"albumInfo2,omitempty" json:"albumInfo2,omitempty"`
+	TopSongs               *TopSongs                 `xml:"topSongs,omitempty" json:"topSongs,omitempty"`
 }
 
 type SubsonicResponse struct {
@@ -79,4 +82,8 @@ type ItemDate struct {
 	Year  int `xml:"year,attr,omitempty" json:"year,omitempty"`
 	Month int `xml:"month,attr,omitempty" json:"month,omitempty"`
 	Day   int `xml:"day,attr,omitempty" json:"day,omitempty"`
+}
+
+type TopSongs struct {
+	Songs []SubsonicChild `xml:"topSongs>song" json:"topSongs"`
 }

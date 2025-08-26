@@ -12,7 +12,7 @@ import (
 
 func createNowPlayingTable(ctx context.Context) {
 	schema := `CREATE TABLE now_playing (
-		id INTEGER PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER,
 		track_id TEXT,
 		played_at INTEGER,

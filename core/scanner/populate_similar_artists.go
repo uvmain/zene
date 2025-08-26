@@ -8,14 +8,8 @@ import (
 	"zene/core/logger"
 )
 
-type ArtistsToCheck struct {
-	MusicBrainzId string
-	ArtistName    string
-}
-
 func PopulateSimilarArtistsTable(ctx context.Context) error {
 	logger.Printf("Populating similar_artists table")
-	// clear the existing similar_artists contents
 	_, err := database.DB.ExecContext(ctx, "delete from similar_artists where artist_id not in (select distinct musicbrainz_artist_id from metadata);")
 	if err != nil {
 		return fmt.Errorf("cleaning similar_artists table: %v", err)

@@ -135,3 +135,13 @@ func GetTrackIdByArtistAndTitle(artist string, title string) (string, error) {
 	}
 	return musicBrainzTrackId, nil
 }
+
+func GetMusicbrainzTrackIdByArtistAlbumAndTitle(ctx context.Context, artistName string, albumName string, trackName string) string {
+	var trackId string
+	query := `SELECT musicbrainz_track_id FROM metadata WHERE lower(artist) = lower(?) AND lower(album) = lower(?) AND lower(title) = lower(?) LIMIT 1`
+	err := DB.QueryRowContext(ctx, query, artistName, albumName, trackName).Scan(&trackId)
+	if err != nil {
+		return ""
+	}
+	return trackId
+}
