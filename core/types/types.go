@@ -124,3 +124,10 @@ type AudioCacheEntry struct {
 	CacheKey     string    `json:"cache_key"`
 	LastAccessed time.Time `json:"last_accessed"`
 }
+
+type TopSongRow struct {
+	ArtistName string
+	AlbumName  string
+	TrackName  string
+	SortOrder  int
+}

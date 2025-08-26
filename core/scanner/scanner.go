@@ -116,6 +116,11 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 		if err != nil {
 			return fmt.Errorf("Error populating similar artists table: %v", err)
 		}
+
+		err = PopulateTopSongsTable(ctx)
+		if err != nil {
+			return fmt.Errorf("Error populating top songs table: %v", err)
+		}
 	}
 
 	fileAndFolderCount, err := database.GetFileAndFolderCounts(ctx)
@@ -343,4 +348,9 @@ func getArtistArtworkForMusicDir(ctx context.Context, musicDir string) error {
 	}
 
 	return nil
+}
+
+type ArtistsToCheck struct {
+	MusicBrainzId string
+	ArtistName    string
 }

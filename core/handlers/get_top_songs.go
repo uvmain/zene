@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"zene/core/database"
-	"zene/core/deezer"
 	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/subsonic"
@@ -57,30 +56,14 @@ func HandleGetTopSongs(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	artistTopSongs, err := deezer.GetTopSongs(ctx, artistName, 100)
+	artistTopSongs, err := database.SelectTopSongsForArtistName(ctx, artistName, countLimit)
 	if err != nil {
-		logger.Printf("failed to get top songs from Deezer: %v", err)
+		logger.Printf("failed to get top songs from database: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "failed to get top songs", "")
 		return
 	}
 
-	validSongIds := []string{}
-
-	for _, topSong := range artistTopSongs {
-		trackId := database.GetMusicbrainzTrackIdByArtistAlbumAndTitle(ctx, topSong.Artist, topSong.Album, topSong.Title)
-		if trackId != "" {
-			validSongIds = append(validSongIds, trackId)
-		}
-	}
-
-	songs, err := database.GetSongsByIds(ctx, validSongIds, countLimit)
-	if err != nil {
-		logger.Printf("failed to get songs by IDs %v: %v", validSongIds, err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "failed to get top songs", "")
-		return
-	}
-
-	response.SubsonicResponse.TopSongs = &types.TopSongs{Songs: songs}
+	response.SubsonicResponse.TopSongs = &types.TopSongs{Songs: artistTopSongs}
 
 	format := r.FormValue("f")
 	if format == "json" {
