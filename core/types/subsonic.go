@@ -27,6 +27,7 @@ type SubsonicStandard struct {
 	TokenInfo              *TokenInfo                `xml:"tokenInfo,omitempty" json:"tokenInfo,omitempty"`
 	Indexes                *SubsonicIndexes          `xml:"indexes,omitempty" json:"indexes,omitempty"`
 	Song                   *SubsonicChild            `xml:"song,omitempty" json:"song,omitempty"`
+	RandomSongs            *RandomSongs              `xml:"randomSongs,omitempty" json:"randomSongs,omitempty"`
 	SongsByGenre           *SongsByGenre             `xml:"songsByGenre,omitempty" json:"songsByGenre,omitempty"`
 	MusicDirectory         *SubsonicDirectory        `xml:"directory,omitempty" json:"directory,omitempty"`
 	NowPlaying             *SubsonicNowPlaying       `xml:"nowPlaying,omitempty" json:"nowPlaying,omitempty"`

@@ -24,7 +24,7 @@
 ## Album/song lists
 - [x] getAlbumList
 - [x] getAlbumList2
-- [ ] getRandomSongs
+- [x] getRandomSongs
 - [x] getSongsByGenre
 - [x] getNowPlaying
 - [ ] getStarred

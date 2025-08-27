@@ -70,3 +70,7 @@ type ChildRecordLabel struct {
 type SongsByGenre struct {
 	Songs []SubsonicChild `xml:"song" json:"song"`
 }
+
+type RandomSongs struct {
+	Songs []SubsonicChild `xml:"song" json:"song"`
+}
