@@ -60,11 +60,13 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		args = append(args, toYear)
 	}
 
-	query += ` group by m.musicbrainz_track_id limit ?`
-	args = append(args, count)
+	query += ` group by m.musicbrainz_track_id`
 
-	randomInt := logic.GenerateRandomInt(1, 1000)
+	randomInt := logic.GenerateRandomInt(1, 10000000)
 	query += fmt.Sprintf(" order BY ((m.rowid * %d) %% 1000000)", randomInt)
+
+	query += ` limit ?`
+	args = append(args, count)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -80,6 +82,7 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		var durationFloat float64
 		var albumArtist string
 		var starred sql.NullString
+		var played sql.NullString
 
 		result.IsDir = false
 		result.MediaType = "song"
@@ -95,12 +98,16 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
 			&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate,
 			&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
-			&result.Played, &starred); err != nil {
+			&played, &starred); err != nil {
 			logger.Printf("Failed to scan row in GetSongsByGenre: %v", err)
 			return []types.SubsonicChild{}, err
 		}
 		if starred.Valid {
 			result.Starred = starred.String
+		}
+
+		if played.Valid {
+			result.Played = played.String
 		}
 
 		result.ContentType = logic.InferMimeTypeFromFileExtension(result.Path)

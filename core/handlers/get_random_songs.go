@@ -74,7 +74,7 @@ func HandleGetRandomSongs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if toYearInt < fromYearInt {
+	if toYearInt > 0 && toYearInt < fromYearInt {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "toYear parameter must be greater than or equal to fromYear", "")
 		return
 	}

@@ -73,7 +73,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 
 	switch sortType {
 	case "random":
-		randomInt := logic.GenerateRandomInt(1, 1000)
+		randomInt := logic.GenerateRandomInt(1, 10000000)
 		query += fmt.Sprintf(" order BY ((m.rowid * %d) %% 1000000)", randomInt)
 	case "newest": // recently added albums
 		query += " order BY m.date_added desc"
