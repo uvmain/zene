@@ -29,6 +29,10 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 		version = 2
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	musicbrainzAlbumId := form["id"]
+
 	ctx := r.Context()
 
 	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
@@ -41,8 +45,6 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
-	musicbrainzAlbumId := r.FormValue("id")
 
 	if musicbrainzAlbumId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
@@ -74,7 +76,6 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 		response.SubsonicResponse.AlbumInfo2 = &albumInfo
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

@@ -17,6 +17,9 @@ func HandleGetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	username := form["username"]
+
 	ctx := r.Context()
 
 	requestUser, err := database.GetUserByContext(ctx)
@@ -25,8 +28,6 @@ func HandleGetAvatar(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get avatars", "")
 		return
 	}
-
-	username := r.FormValue("username")
 
 	if requestUser.AdminRole == false && username == requestUser.Username {
 		logger.Printf("User %s attempted to fetch avatars for another user without admin role", requestUser.Username)

@@ -21,5 +21,5 @@ type AlbumId3 struct {
 	DisplayArtist string             `xml:"displayArtist,attr,omitempty" json:"displayArtist,omitempty"`
 	SortName      string             `xml:"sortName,attr,omitempty" json:"sortName,omitempty"`
 	ReleaseDate   ItemDate           `xml:"releaseDate,attr,omitempty" json:"releaseDate,omitempty"`
-	Songs         []SubsonicChild    `xml:"song" json:"song"`
+	Songs         []SubsonicChild    `xml:"song,omitempty" json:"song,omitempty"`
 }

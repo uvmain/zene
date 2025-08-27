@@ -20,9 +20,12 @@ func HandleGetChatMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	timeSinceParam := form["since"]
+
 	ctx := r.Context()
 
-	timeSinceParam := r.FormValue("since")
 	var timeSince int
 	if timeSinceParam != "" {
 		var err error
@@ -51,7 +54,6 @@ func HandleGetChatMessages(w http.ResponseWriter, r *http.Request) {
 		ChatMessage: chats,
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

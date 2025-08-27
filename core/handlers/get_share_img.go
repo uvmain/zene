@@ -11,7 +11,9 @@ import (
 func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 	imageId := r.PathValue("imageId")
 
-	sizeQueryParameter := r.FormValue("size")
+	form := net.NormalisedForm(r, w)
+	sizeQueryParameter := form["size"]
+
 	var sizeInt = 400
 	var err error
 	if sizeQueryParameter != "" {

@@ -16,9 +16,11 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	musicBrainzTrackId := form["id"]
+
 	ctx := r.Context()
 
-	musicBrainzTrackId := r.FormValue("id")
 	if musicBrainzTrackId == "" {
 		errorString := "invalid id parameter"
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")

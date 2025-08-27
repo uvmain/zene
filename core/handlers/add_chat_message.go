@@ -20,6 +20,10 @@ func HandleAddChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	message := form["message"]
+	format := form["f"]
+
 	ctx := r.Context()
 
 	user, err := database.GetUserByContext(ctx)
@@ -29,7 +33,6 @@ func HandleAddChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := r.FormValue("message")
 	if message == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Message is required", "")
 		return
@@ -47,7 +50,6 @@ func HandleAddChatMessage(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

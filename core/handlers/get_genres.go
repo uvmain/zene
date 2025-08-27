@@ -19,6 +19,9 @@ func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	ctx := r.Context()
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
@@ -34,7 +37,6 @@ func HandleGetGenres(w http.ResponseWriter, r *http.Request) {
 		Genre: genres,
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

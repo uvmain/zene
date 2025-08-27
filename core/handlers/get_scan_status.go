@@ -19,6 +19,9 @@ func HandleGetScanStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	scanStatus, err := database.GetLatestScan(r.Context())
 	if err != nil {
 		logger.Printf("Error getting scan status: %v", err)
@@ -39,7 +42,6 @@ func HandleGetScanStatus(w http.ResponseWriter, r *http.Request) {
 
 	response.SubsonicResponse.ScanStatus = &scanStatusResponse
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

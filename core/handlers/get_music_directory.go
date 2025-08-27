@@ -21,6 +21,10 @@ func HandleGetMusicDirectory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	musicbrainz_id := form["id"]
+
 	ctx := r.Context()
 
 	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
@@ -33,8 +37,6 @@ func HandleGetMusicDirectory(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
-	musicbrainz_id := r.FormValue("id")
 
 	if musicbrainz_id == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
@@ -71,7 +73,6 @@ func HandleGetMusicDirectory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

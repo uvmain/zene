@@ -23,6 +23,13 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	genre := form["genre"]
+	count := form["count"]
+	offset := form["offset"]
+	musicFolderId := form["musicfolderid"]
+
 	ctx := r.Context()
 
 	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
@@ -36,14 +43,12 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	genre := r.FormValue("genre")
 	if genre == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "genre parameter is required", "")
 		return
 	}
 
 	var countInt int
-	count := r.FormValue("count")
 	if count != "" {
 		var err error
 		countInt, err = strconv.Atoi(count)
@@ -56,7 +61,6 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var offsetInt int
-	offset := r.FormValue("offset")
 	if offset != "" {
 		var err error
 		offsetInt, err = strconv.Atoi(offset)
@@ -69,7 +73,6 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var musicFolderIdInt int
-	musicFolderId := r.FormValue("musicFolderId")
 	if musicFolderId != "" {
 		var err error
 		musicFolderIdInt, err = strconv.Atoi(musicFolderId)
@@ -101,7 +104,6 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 		Songs: songs,
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

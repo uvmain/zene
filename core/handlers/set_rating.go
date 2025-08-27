@@ -20,6 +20,11 @@ func HandleSetRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	metadataId := form["id"]
+	rating := form["rating"]
+
 	ctx := r.Context()
 
 	user, err := database.GetUserByContext(ctx)
@@ -29,13 +34,11 @@ func HandleSetRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadataId := r.FormValue("id")
 	if metadataId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id is required", "")
 		return
 	}
 
-	rating := r.FormValue("rating")
 	if rating == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "rating is required", "")
 		return
@@ -57,7 +60,6 @@ func HandleSetRating(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

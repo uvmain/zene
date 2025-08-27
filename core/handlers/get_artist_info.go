@@ -30,9 +30,14 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	musicBrainzArtistId := form["id"]
+	count := form["count"]
+	includeNotPresent := form["includenotpresent"]
+
 	ctx := r.Context()
 
-	musicBrainzArtistId := r.FormValue("id")
 	if musicBrainzArtistId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
@@ -40,7 +45,6 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 
 	var countLimit = 20
 	var err error
-	count := r.FormValue("count")
 	if count != "" {
 		countLimit, err = strconv.Atoi(count)
 		if err != nil {
@@ -49,7 +53,6 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	includeNotPresent := r.FormValue("includeNotPresent")
 	includeNotPresentBool := false
 	if includeNotPresent != "" {
 		includeNotPresentBool = net.ParseBooleanFromString(w, r, includeNotPresent)
@@ -122,7 +125,6 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 		response.SubsonicResponse.ArtistInfo2.SimilarArtists = similarArtists
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

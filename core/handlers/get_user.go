@@ -19,11 +19,14 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	username := form["username"]
+
 	ctx := r.Context()
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	username := r.FormValue("username")
 	var user types.User
 	var err error
 
@@ -64,7 +67,6 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.User.MaxBitRate = user.MaxBitRate
 	response.SubsonicResponse.User.Folders = user.Folders
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

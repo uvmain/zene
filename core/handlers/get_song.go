@@ -21,6 +21,10 @@ func HandleGetSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	musicbrainzTrackId := form["id"]
+
 	ctx := r.Context()
 
 	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
@@ -34,14 +38,12 @@ func HandleGetSong(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	musicbrainz_track_id := r.FormValue("id")
-
-	if musicbrainz_track_id == "" {
+	if musicbrainzTrackId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
 	}
 
-	song, err := database.GetSong(ctx, musicbrainz_track_id)
+	song, err := database.GetSong(ctx, musicbrainzTrackId)
 	if err != nil {
 		logger.Printf("Error getting song: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Song not found", "")
@@ -51,7 +53,6 @@ func HandleGetSong(w http.ResponseWriter, r *http.Request) {
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 	response.SubsonicResponse.Song = &song
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
