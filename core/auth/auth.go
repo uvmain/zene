@@ -41,14 +41,15 @@ func validateToken(salt string, token string, decryptedPassword string) bool {
 // Else either p or both t and s must be specified.
 func ValidateAuth(r *http.Request, w http.ResponseWriter) (string, int, bool) {
 	ctx := r.Context()
+	form := net.NormalisedForm(r, w)
 
-	u := r.FormValue("u") // username
-	p := r.FormValue("p") // plaintext password, or hex encrypted password prefixed with "enc:"
-	t := r.FormValue("t") // token = sha256(password + salt)
-	s := r.FormValue("s") // salt, used with token for authentication
-	apiKey := r.FormValue("apiKey")
-	v := r.FormValue("v") // protocol version, required for all requests
-	c := r.FormValue("c") // client name, required for all requests
+	u := form["u"] // username
+	p := form["p"] // plaintext password, or hex encrypted password prefixed with "enc:"
+	t := form["t"] // token = sha256(password + salt)
+	s := form["s"] // salt, used with token for authentication
+	apiKey := form["apikey"]
+	v := form["v"] // protocol version, required for all requests
+	c := form["c"] // client name, required for all requests
 
 	if c == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Required parameter 'c' is missing", "")

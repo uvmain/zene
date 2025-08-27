@@ -1,0 +1,180 @@
+package handlers
+
+import (
+	"encoding/json"
+	"encoding/xml"
+	"fmt"
+	"net/http"
+	"slices"
+	"strconv"
+	"zene/core/database"
+	"zene/core/logger"
+	"zene/core/net"
+	"zene/core/subsonic"
+	"zene/core/types"
+)
+
+func HandleSearch(w http.ResponseWriter, r *http.Request) {
+	var version int
+	switch r.URL.Path {
+	case "/rest/search.view":
+		version = 1
+	case "/rest/search2.view":
+		version = 2
+	case "/rest/search3.view":
+		version = 3
+	}
+
+	if version == 1 {
+		net.WriteSubsonicError(w, r, types.ErrorIncompatibleClient, "Endpoint deprecated - use search2 instead", "/rest/search2.view")
+		return
+	}
+
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
+		return
+	}
+
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	searchQueryParam := form["query"]
+	artistCountParam := form["artistcount"]
+	artistOffsetParam := form["artistoffset"]
+	// albumCountParam := form["albumcount"]
+	// albumOffsetParam := form["albumoffset"]
+	// songCountParam := form["songcount"]
+	// songOffsetParam := form["songoffset"]
+	musicFolderIdParam := form["musicfolderid"]
+
+	ctx := r.Context()
+	var err error
+
+	if searchQueryParam == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "query parameter is required", "")
+		return
+	}
+
+	var artistCount int
+	if artistCountParam != "" {
+		artistCount, err = strconv.Atoi(artistCountParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artistCount parameter must be an integer", "")
+			return
+		}
+	} else {
+		artistCount = 20
+	}
+
+	var artistOffset int
+	if artistOffsetParam != "" {
+		artistOffset, err = strconv.Atoi(artistOffsetParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artistOffset parameter must be an integer", "")
+			return
+		}
+	} else {
+		artistOffset = 0
+	}
+
+	logger.Printf("searchQueryParam: %s, artistOffsetParam: %s, artistCountParam: %s", searchQueryParam, artistOffsetParam, artistCountParam)
+
+	// var albumCount int
+	// if albumCountParam != "" {
+	// 	albumCount, err = strconv.Atoi(albumCountParam)
+	// 	if err != nil {
+	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "albumCount parameter must be an integer", "")
+	// 		return
+	// 	}
+	// } else {
+	// 	albumCount = 20
+	// }
+
+	// var albumOffset int
+	// if albumOffsetParam != "" {
+	// 	albumOffset, err = strconv.Atoi(albumOffsetParam)
+	// 	if err != nil {
+	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "albumOffset parameter must be an integer", "")
+	// 		return
+	// 	}
+	// } else {
+	// 	albumOffset = 0
+	// }
+
+	// var songCount int
+	// if songCountParam != "" {
+	// 	songCount, err = strconv.Atoi(songCountParam)
+	// 	if err != nil {
+	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songCount parameter must be an integer", "")
+	// 		return
+	// 	}
+	// } else {
+	// 	songCount = 20
+	// }
+
+	// var songOffset int
+	// if songOffsetParam != "" {
+	// 	songOffset, err = strconv.Atoi(songOffsetParam)
+	// 	if err != nil {
+	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songOffset parameter must be an integer", "")
+	// 		return
+	// 	}
+	// } else {
+	// 	songOffset = 0
+	// }
+
+	var musicFolderIdInt int
+	if musicFolderIdParam != "" {
+		musicFolderIdInt, err = strconv.Atoi(musicFolderIdParam)
+		if err != nil || musicFolderIdInt < 0 {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "musicFolderId parameter must be a positive integer", "")
+			return
+		}
+	} else {
+		musicFolderIdInt = 0
+	}
+
+	requestUser, err := database.GetUserByContext(ctx)
+	if err != nil {
+		logger.Printf("Error getting user by context: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get users", "")
+		return
+	}
+
+	// if musicFolderId not in requestUser.MusicFolderIds
+	if musicFolderIdInt != 0 && !slices.Contains(requestUser.Folders, musicFolderIdInt) {
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to access this music folder", "")
+		return
+	}
+
+	artists, err := database.SearchArtists(ctx, searchQueryParam, artistCount, artistOffset, musicFolderIdInt)
+	if err != nil {
+		logger.Printf("Error searching artists: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search artists", "")
+		return
+	}
+
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+
+	switch version {
+	case 2:
+		searchResult2 := types.SearchResult2{}
+		response.SubsonicResponse.SearchResult2 = &searchResult2
+		response.SubsonicResponse.SearchResult2.Artists = artists
+	case 3:
+		searchResult3 := types.SearchResult3{}
+		response.SubsonicResponse.SearchResult3 = &searchResult3
+		response.SubsonicResponse.SearchResult3.Artists = artists
+	}
+
+	if format == "json" {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(response)
+	} else {
+		w.Header().Set("Content-Type", "application/xml")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
+		xml.NewEncoder(w).Encode(response.SubsonicResponse)
+	}
+}

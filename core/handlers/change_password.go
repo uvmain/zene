@@ -20,6 +20,11 @@ func HandleChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	username := form["username"]
+	password := form["password"]
+
 	ctx := r.Context()
 
 	requestUser, err := database.GetUserByContext(ctx)
@@ -35,13 +40,11 @@ func HandleChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.FormValue("username")
 	if username == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Username is required", "")
 		return
 	}
 
-	password := r.FormValue("password")
 	if password == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Password is required", "")
 		return
@@ -83,7 +86,6 @@ func HandleChangePassword(w http.ResponseWriter, r *http.Request) {
 	logger.Printf("Password for user %s updated successfully by %s", username, requestUser.Username)
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

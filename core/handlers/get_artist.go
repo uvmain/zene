@@ -19,9 +19,12 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	musicBrainzArtistId := form["id"]
+
 	ctx := r.Context()
 
-	musicBrainzArtistId := r.FormValue("id")
 	if musicBrainzArtistId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
@@ -39,7 +42,6 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.Artist = &types.SubsonicArtistWrapper{}
 	response.SubsonicResponse.Artist.Artist = row
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

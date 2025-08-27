@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 	"zene/core/config"
 	zene_io "zene/core/io"
@@ -78,6 +79,8 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 // It always returns HTTP status 200 OK, as per Subsonic API specification.
 // The response includes the error code and message if there is an error.
 func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, message string, helpUrl string) {
+	form := NormalisedForm(r, w)
+	format := form["f"]
 
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), true)
 	response.SubsonicResponse.Error.Code = code
@@ -86,7 +89,6 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		response.SubsonicResponse.Error.HelpUrl = helpUrl
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -109,26 +111,6 @@ func ParseBooleanFromString(w http.ResponseWriter, r *http.Request, key string) 
 	return parsedBool
 }
 
-func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true
-	if err := r.ParseForm(); err != nil {
-		logger.Printf("Error parsing form: %v", err)
-		return nil, nil, fmt.Errorf("error parsing form: %w", err)
-	}
-
-	intSlice := []int{}
-	stringSlice := r.Form[key]
-
-	if intArray {
-		for _, idStr := range stringSlice {
-			id, err := strconv.Atoi(idStr)
-			if err == nil {
-				intSlice = append(intSlice, id)
-			}
-		}
-	}
-	return intSlice, stringSlice, nil
-}
-
 func GetImageFromRequest(r *http.Request, key string) (image.Image, error) {
 	if err := r.ParseMultipartForm(10); err != nil {
 		return nil, fmt.Errorf("error parsing multipart form: %w", err)
@@ -145,4 +127,46 @@ func GetImageFromRequest(r *http.Request, key string) (image.Image, error) {
 		return nil, fmt.Errorf("error decoding image: %w", err)
 	}
 	return img, nil
+}
+
+/*
+NormalisedForm normalizes the form values and query parameters in a request by converting keys to lowercase.
+*/
+func NormalisedForm(r *http.Request, w http.ResponseWriter) map[string]string {
+	err := r.ParseForm()
+	if err != nil {
+		WriteSubsonicError(w, r, types.ErrorMissingParameter, "parameters are malformed", "")
+		return nil
+	}
+	out := make(map[string]string)
+	for key, value := range r.Form {
+		if len(value) > 0 {
+			out[strings.ToLower(key)] = value[0]
+		}
+	}
+	return out
+}
+
+func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true
+	form := NormalisedForm(r, nil)
+
+	intSlice := []int{}
+	stringSlice := []string{}
+
+	for _, value := range form {
+		if value == strings.ToLower(key) {
+			stringSlice = append(stringSlice, value)
+		}
+	}
+
+	if intArray {
+		for _, stringValue := range stringSlice {
+			intValue, err := strconv.Atoi(stringValue)
+			if err == nil {
+				intSlice = append(intSlice, intValue)
+			}
+		}
+	}
+
+	return intSlice, stringSlice, nil
 }

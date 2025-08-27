@@ -19,6 +19,9 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	ctx := r.Context()
 
 	requestUser, err := database.GetUserByContext(ctx)
@@ -68,7 +71,6 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

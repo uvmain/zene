@@ -21,6 +21,13 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	metadataId := form["id"]
+	timeInMilliseconds := form["time"]
+	submission := form["submission"]
+	playerName := form["c"]
+
 	ctx := r.Context()
 
 	user, err := database.GetUserByContext(ctx)
@@ -31,7 +38,6 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var metadataIds []string
-	metadataId := r.FormValue("id")
 	if metadataId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id is required", "")
 		return
@@ -45,7 +51,6 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var timeInt int
-	timeInMilliseconds := r.FormValue("time")
 	if timeInMilliseconds == "" {
 		timeInt = int(time.Now().UnixMilli())
 	} else {
@@ -58,12 +63,9 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var submissionBool = true
-	submission := r.FormValue("submission")
 	if submission != "" {
 		submissionBool = net.ParseBooleanFromString(w, r, submission)
 	}
-
-	playerName := r.FormValue("c")
 
 	for _, trackId := range metadataIds {
 		if submissionBool {
@@ -79,7 +81,6 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

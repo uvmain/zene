@@ -38,6 +38,8 @@ type SubsonicStandard struct {
 	AlbumInfo              *AlbumInfo                `xml:"albumInfo,omitempty" json:"albumInfo,omitempty"`
 	AlbumInfo2             *AlbumInfo                `xml:"albumInfo2,omitempty" json:"albumInfo2,omitempty"`
 	TopSongs               *TopSongs                 `xml:"topSongs,omitempty" json:"topSongs,omitempty"`
+	SearchResult2          *SearchResult2            `xml:"searchResult2,omitempty" json:"searchResult2,omitempty"`
+	SearchResult3          *SearchResult3            `xml:"searchResult3,omitempty" json:"searchResult3,omitempty"`
 }
 
 type SubsonicResponse struct {

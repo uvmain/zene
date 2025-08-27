@@ -46,21 +46,3 @@ func HandleGetTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-func HandleSearchMetadata(w http.ResponseWriter, r *http.Request) {
-	searchQuery := r.FormValue("search")
-
-	rows, err := database.SearchMetadata(r.Context(), searchQuery)
-	if err != nil {
-		logger.Printf("Error querying database in SearchMetadata: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(rows); err != nil {
-		logger.Println("Error encoding database response:", err)
-		http.Error(w, "Error encoding database response", http.StatusInternalServerError)
-		return
-	}
-}

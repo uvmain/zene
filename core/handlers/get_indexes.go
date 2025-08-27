@@ -23,6 +23,11 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	ifModifiedSince := form["ifmodifiedsince"]
+	musicFolderId := form["musicfolderid"]
+
 	ctx := r.Context()
 
 	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
@@ -35,9 +40,6 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
-	ifModifiedSince := r.FormValue("ifModifiedSince")
-	musicFolderId := r.FormValue("musicFolderId")
 
 	var ifModifiedSinceInt int
 	var musicFolderIdInt int
@@ -94,7 +96,6 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 	response.SubsonicResponse.Indexes = &indexes
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

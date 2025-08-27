@@ -17,6 +17,9 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
 	extension1 := types.OpenSubsonicExtensions{
@@ -43,7 +46,6 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 		&extension4,
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

@@ -24,8 +24,15 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	musicBrainzTrackId := form["id"]
+	maxBitRateString := form["maxbitrate"]
+	streamFormat := form["format"]
+	timeOffsetString := form["timeoffset"]
+	size := form["size"]
+
 	ctx := r.Context()
-	musicBrainzTrackId := r.FormValue("id")
+
 	if musicBrainzTrackId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
@@ -39,7 +46,6 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var maxBitRate int
-	maxBitRateString := r.FormValue("maxBitRate")
 	if maxBitRateString == "" {
 		maxBitRate = config.DefaultBitRate
 	} else {
@@ -55,12 +61,10 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		maxBitRate = requestUser.MaxBitRate
 	}
 
-	format := r.FormValue("format")
-	if format == "" {
-		format = "aac" // default format
+	if streamFormat == "" {
+		streamFormat = "aac" // default format
 	}
 
-	timeOffsetString := r.FormValue("timeOffset")
 	timeOffset := 0
 	if timeOffsetString != "" {
 		if timeOffsetInt, err := strconv.Atoi(timeOffsetString); err == nil && timeOffsetInt >= 0 {
@@ -68,7 +72,6 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	size := r.FormValue("size")
 	if size != "" {
 		// check size is in "WxH" syntax, eg "640x480"
 		re := regexp.MustCompile(`^\d+x\d+$`)
@@ -98,7 +101,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if format == "raw" {
+	if streamFormat == "raw" {
 		fileInfo, modTime, file, err := OpenFile(track.FilePath)
 		if err != nil {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error opening file.", "")
@@ -114,7 +117,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ffmpeg.TranscodeAndStream(ctx, w, r, track.FilePath, musicBrainzTrackId, maxBitRate, timeOffset, format)
+	err = ffmpeg.TranscodeAndStream(ctx, w, r, track.FilePath, musicBrainzTrackId, maxBitRate, timeOffset, streamFormat)
 	if err != nil {
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error streaming audio", "")
 		return

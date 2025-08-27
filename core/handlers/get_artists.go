@@ -23,6 +23,11 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	ifModifiedSince := form["ifmodifiedsince"]
+	musicFolderId := form["musicfolderid"]
+
 	ctx := r.Context()
 
 	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
@@ -36,9 +41,6 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ifModifiedSince := r.FormValue("ifModifiedSince")
-	musicFolderId := r.FormValue("musicFolderId")
-
 	var ifModifiedSinceInt int
 	var musicFolderIdInt int
 	var err error
@@ -46,7 +48,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	if ifModifiedSince != "" {
 		ifModifiedSinceInt, err = strconv.Atoi(ifModifiedSince)
 		if err != nil || ifModifiedSinceInt < 0 {
-			http.Error(w, "Invalid ifModifiedSince", http.StatusBadRequest)
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "ifModifiedSince parameter must be a positive integer", "")
 			return
 		}
 	} else {
@@ -56,7 +58,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 	if musicFolderId != "" {
 		musicFolderIdInt, err := strconv.Atoi(musicFolderId)
 		if err != nil || musicFolderIdInt < 0 {
-			http.Error(w, "Invalid musicFolderId", http.StatusBadRequest)
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "musicFolderId parameter must be a positive integer", "")
 			return
 		}
 	} else {
@@ -97,7 +99,6 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		IgnoredArticles: "",
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

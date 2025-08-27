@@ -22,6 +22,28 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	username := form["username"]
+	password := form["password"]
+	email := form["email"]
+	ldapAuthenticated := form["ldapauthenticated"]
+	adminRole := form["adminrole"]
+	settingsRole := form["settingsrole"]
+	streamRole := form["streamrole"]
+	jukeboxRole := form["jukeboxrole"]
+	downloadRole := form["downloadrole"]
+	uploadRole := form["uploadrole"]
+	playlistRole := form["playlistrole"]
+	coverArtRole := form["coverartrole"]
+	commentRole := form["commentrole"]
+	podcastRole := form["podcastrole"]
+	shareRole := form["sharerole"]
+	scrobblingEnabled := form["scrobblingenabled"]
+	videoConversionRole := form["videoconversionrole"]
+	maxBitRate := form["maxbitrate"]
+	musicFolderId := form["musicfolderid"]
+
 	ctx := r.Context()
 
 	requestUser, err := database.GetUserByContext(ctx)
@@ -39,7 +61,6 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	userToCreate := types.User{}
 
-	username := r.FormValue("username")
 	if username == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Username is required", "")
 		return
@@ -53,7 +74,6 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	userToCreate.Username = username
 
-	password := r.FormValue("password")
 	if password == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Password is required", "")
 		return
@@ -77,105 +97,90 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	userToCreate.Password = encryptedPassword
 
-	email := r.FormValue("email")
 	if email == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Email is required", "")
 		return
 	}
 	userToCreate.Email = email
 
-	ldapAuthenticated := r.FormValue("ldapAuthenticated")
 	if ldapAuthenticated != "" {
 		userToCreate.LdapAuthenticated = net.ParseBooleanFromString(w, r, ldapAuthenticated)
 	} else {
 		userToCreate.LdapAuthenticated = logic.GetDefaultRoleValue("ldapAuthenticated")
 	}
 
-	adminRole := r.FormValue("adminRole")
 	if adminRole != "" {
 		userToCreate.AdminRole = net.ParseBooleanFromString(w, r, adminRole)
 	} else {
 		userToCreate.AdminRole = logic.GetDefaultRoleValue("adminRole")
 	}
 
-	settingsRole := r.FormValue("settingsRole")
 	if settingsRole != "" {
 		userToCreate.SettingsRole = net.ParseBooleanFromString(w, r, settingsRole)
 	} else {
 		userToCreate.SettingsRole = logic.GetDefaultRoleValue("settingsRole")
 	}
 
-	streamRole := r.FormValue("streamRole")
 	if streamRole != "" {
 		userToCreate.StreamRole = net.ParseBooleanFromString(w, r, streamRole)
 	} else {
 		userToCreate.StreamRole = logic.GetDefaultRoleValue("streamRole")
 	}
 
-	jukeboxRole := r.FormValue("jukeboxRole")
 	if jukeboxRole != "" {
 		userToCreate.JukeboxRole = net.ParseBooleanFromString(w, r, jukeboxRole)
 	} else {
 		userToCreate.JukeboxRole = logic.GetDefaultRoleValue("jukeboxRole")
 	}
 
-	downloadRole := r.FormValue("downloadRole")
 	if downloadRole != "" {
 		userToCreate.DownloadRole = net.ParseBooleanFromString(w, r, downloadRole)
 	} else {
 		userToCreate.DownloadRole = logic.GetDefaultRoleValue("downloadRole")
 	}
 
-	uploadRole := r.FormValue("uploadRole")
 	if uploadRole != "" {
 		userToCreate.UploadRole = net.ParseBooleanFromString(w, r, uploadRole)
 	} else {
 		userToCreate.UploadRole = logic.GetDefaultRoleValue("uploadRole")
 	}
 
-	playlistRole := r.FormValue("playlistRole")
 	if playlistRole != "" {
 		userToCreate.PlaylistRole = net.ParseBooleanFromString(w, r, playlistRole)
 	} else {
 		userToCreate.PlaylistRole = logic.GetDefaultRoleValue("playlistRole")
 	}
 
-	coverArtRole := r.FormValue("coverArtRole")
 	if coverArtRole != "" {
 		userToCreate.CoverArtRole = net.ParseBooleanFromString(w, r, coverArtRole)
 	} else {
 		userToCreate.CoverArtRole = logic.GetDefaultRoleValue("coverArtRole")
 	}
 
-	commentRole := r.FormValue("commentRole")
 	if commentRole != "" {
 		userToCreate.CommentRole = net.ParseBooleanFromString(w, r, commentRole)
 	} else {
 		userToCreate.CommentRole = logic.GetDefaultRoleValue("commentRole")
 	}
 
-	podcastRole := r.FormValue("podcastRole")
 	if podcastRole != "" {
 		userToCreate.PodcastRole = net.ParseBooleanFromString(w, r, podcastRole)
 	} else {
 		userToCreate.PodcastRole = logic.GetDefaultRoleValue("podcastRole")
 	}
 
-	shareRole := r.FormValue("shareRole")
 	if shareRole != "" {
 		userToCreate.ShareRole = net.ParseBooleanFromString(w, r, shareRole)
 	} else {
 		userToCreate.ShareRole = logic.GetDefaultRoleValue("shareRole")
 	}
 
-	scrobblingEnabled := r.FormValue("scrobblingEnabled")
 	if scrobblingEnabled != "" {
 		userToCreate.ScrobblingEnabled = net.ParseBooleanFromString(w, r, scrobblingEnabled)
 	} else {
 		userToCreate.ScrobblingEnabled = logic.GetDefaultRoleValue("scrobblingEnabled")
 	}
 
-	videoConversionRole := r.FormValue("videoConversionRole")
 	if videoConversionRole != "" {
 		logger.Printf("Setting videoConversionRole for user %s to %s", username, videoConversionRole)
 		userToCreate.VideoConversionRole = net.ParseBooleanFromString(w, r, videoConversionRole)
@@ -183,7 +188,6 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		userToCreate.VideoConversionRole = logic.GetDefaultRoleValue("videoConversionRole")
 	}
 
-	maxBitRate := r.FormValue("maxBitRate")
 	if maxBitRate != "" {
 		maxBitRateInt, err := strconv.Atoi(maxBitRate)
 		if err != nil {
@@ -196,9 +200,8 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		userToCreate.MaxBitRate = 0
 	}
 
-	musicFolderId := r.FormValue("musicFolderId")
 	if musicFolderId != "" {
-		folderIdInts, _, err := net.ParseDuplicateFormKeys(r, "musicFolderId", true)
+		folderIdInts, _, err := net.ParseDuplicateFormKeys(r, "musicfolderid", true)
 		if err != nil {
 			logger.Printf("Error parsing musicFolderId: %v", err)
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid musicFolderId", "")
@@ -242,7 +245,6 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

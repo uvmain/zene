@@ -20,11 +20,14 @@ func HandleGetLyricsBySongId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	musicBrainzTrackId := form["id"]
+
 	ctx := r.Context()
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	musicBrainzTrackId := r.FormValue("id")
 	if musicBrainzTrackId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
@@ -84,7 +87,6 @@ func HandleGetLyricsBySongId(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

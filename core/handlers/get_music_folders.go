@@ -18,6 +18,9 @@ func HandleGetMusicFolders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
 	var musicFolders []types.MusicFolder
@@ -34,7 +37,6 @@ func HandleGetMusicFolders(w http.ResponseWriter, r *http.Request) {
 		MusicFolder: musicFolders,
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

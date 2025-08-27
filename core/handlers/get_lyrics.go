@@ -19,17 +19,20 @@ func HandleGetLyrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	artist := form["artist"]
+	title := form["title"]
+
 	ctx := r.Context()
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	artist := r.FormValue("artist")
 	if artist == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist parameter is required", "")
 		return
 	}
 
-	title := r.FormValue("title")
 	if title == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "title parameter is required", "")
 		return
@@ -53,7 +56,6 @@ func HandleGetLyrics(w http.ResponseWriter, r *http.Request) {
 		Value:  lyricsData.PlainLyrics,
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

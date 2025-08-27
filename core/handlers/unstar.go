@@ -20,6 +20,10 @@ func HandleUnStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	metadataId := cmp.Or(form["id"], form["albumid"], form["artistid"])
+
 	ctx := r.Context()
 
 	user, err := database.GetUserByContext(ctx)
@@ -29,13 +33,12 @@ func HandleUnStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata_id := cmp.Or(r.FormValue("id"), r.FormValue("albumId"), r.FormValue("artistId"))
-	if metadata_id == "" {
+	if metadataId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "one of id, albumId, or artistId is required", "")
 		return
 	}
 
-	err = database.DeleteUserStar(ctx, user.Id, metadata_id)
+	err = database.DeleteUserStar(ctx, user.Id, metadataId)
 	if err != nil {
 		logger.Printf("Error deleting user star for user %d: %v", user.Id, err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to delete user star", "")
@@ -44,7 +47,6 @@ func HandleUnStar(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

@@ -18,6 +18,9 @@ func HandleTokenInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
 	user, err := database.GetUserByContext(r.Context())
@@ -30,7 +33,6 @@ func HandleTokenInfo(w http.ResponseWriter, r *http.Request) {
 		Username: user.Username,
 	}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

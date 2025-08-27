@@ -20,6 +20,10 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	username := form["username"]
+
 	ctx := r.Context()
 
 	requestUser, err := database.GetUserByContext(ctx)
@@ -28,8 +32,6 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get avatars", "")
 		return
 	}
-
-	username := r.FormValue("username")
 
 	if requestUser.AdminRole == false && username == requestUser.Username {
 		logger.Printf("User %s attempted to fetch avatars for another user without admin role", requestUser.Username)
@@ -60,7 +62,6 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

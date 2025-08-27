@@ -19,6 +19,9 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	scanStatus, err := scanner.RunScan(r.Context())
 	if err != nil {
 		if scanStatus.Scanning == true {
@@ -35,7 +38,6 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 
 	response.SubsonicResponse.ScanStatus = &scanStatus
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

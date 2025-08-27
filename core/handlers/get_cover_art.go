@@ -19,16 +19,18 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	idParameter := form["id"]
+	sizeParam := form["size"]
+
 	ctx := r.Context()
 
-	idParameter := r.FormValue("id")
 	if idParameter == "" {
 		errorString := "invalid id parameter"
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
 		return
 	}
 
-	sizeParam := r.FormValue("size")
 	var sizeInt = 400
 	var err error
 	if sizeParam != "" {

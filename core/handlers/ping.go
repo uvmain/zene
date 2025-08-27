@@ -16,9 +16,12 @@ func HandlePing(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
 		return
 	}
+
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

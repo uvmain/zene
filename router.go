@@ -39,7 +39,6 @@ func StartServer() *http.Server {
 	router.Handle("/api/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracks)))
 	router.Handle("/api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrack)))
 	router.Handle("/api/genres/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracksByGenre)))
-	router.Handle("/api/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearchMetadata)))
 	router.Handle("/api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))
 
 	router.Handle("GET /share/img/{imageId}", http.HandlerFunc(handlers.HandleGetShareImg))
@@ -69,6 +68,10 @@ func StartServer() *http.Server {
 	// Album/song lists
 	router.Handle("/rest/getSongsByGenre.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSongsByGenre)))
 	router.Handle("/rest/getNowPlaying.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetNowPlaying)))
+	// Searching
+	router.Handle("/rest/search.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
+	router.Handle("/rest/search2.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
+	router.Handle("/rest/search3.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
 	// Media retrieval
 	router.Handle("/rest/stream.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))
 	router.Handle("/rest/download.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))

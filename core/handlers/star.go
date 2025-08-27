@@ -20,6 +20,10 @@ func HandleStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	metadata_id := cmp.Or(form["id"], form["albumid"], form["artistid"])
+
 	ctx := r.Context()
 
 	user, err := database.GetUserByContext(ctx)
@@ -29,7 +33,6 @@ func HandleStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata_id := cmp.Or(r.FormValue("id"), r.FormValue("albumId"), r.FormValue("artistId"))
 	if metadata_id == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "one of id, albumId, or artistId is required", "")
 		return
@@ -44,7 +47,6 @@ func HandleStar(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

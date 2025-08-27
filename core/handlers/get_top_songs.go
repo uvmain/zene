@@ -20,10 +20,14 @@ func HandleGetTopSongs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	artistName := form["artist"]
+	artistId := form["id"]
+	count := form["count"]
+
 	ctx := r.Context()
 
-	artistName := r.FormValue("artist")
-	artistId := r.FormValue("id")
 	if artistName == "" && artistId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist or id parameter is required", "")
 		return
@@ -45,7 +49,6 @@ func HandleGetTopSongs(w http.ResponseWriter, r *http.Request) {
 
 	var countLimit = 50
 	var err error
-	count := r.FormValue("count")
 	if count != "" {
 		countLimit, err = strconv.Atoi(count)
 		if err != nil {
@@ -65,7 +68,6 @@ func HandleGetTopSongs(w http.ResponseWriter, r *http.Request) {
 
 	response.SubsonicResponse.TopSongs = &types.TopSongs{Songs: artistTopSongs}
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

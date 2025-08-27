@@ -2,49 +2,70 @@ package database
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
+	"strings"
+	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/types"
 )
 
-func SearchMetadata(ctx context.Context, searchQuery string) ([]types.Metadata, error) {
-	if searchQuery == "" {
-		return []types.Metadata{}, fmt.Errorf("search query cannot be empty")
+func SearchArtists(ctx context.Context, searchQuery string, limit int, offset int, musicFolderId int) ([]types.Artist, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return []types.Artist{}, err
 	}
 
-	query := `SELECT DISTINCT m.*
-		FROM metadata m JOIN metadata_fts f ON f.file_path = m.file_path
-		WHERE metadata_fts MATCH ?
-		ORDER BY m.file_path DESC`
+	query := `SELECT m.musicbrainz_artist_id as id,
+		m.artist as name,
+		count(distinct m.musicbrainz_album_id) as album_count,
+		s.created_at as starred,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(AVG(gr.rating),0.0) AS average_rating
+	FROM user_music_folders u
+	join metadata m on m.music_folder_id = u.folder_id
+	LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = u.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = u.user_id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_artist_id = gr.metadata_id
+	where u.user_id = ?
+	and lower(artist) like lower(?)
+	group by m.musicbrainz_artist_id
+	order by m.musicbrainz_artist_id asc
+	limit ?
+	offset ?`
 
-	rows, err := DB.QueryContext(ctx, query, searchQuery)
+	var rows *sql.Rows
+
+	rows, err = DB.QueryContext(ctx, query, user.Id, "%"+searchQuery+"%", limit, offset)
 	if err != nil {
-		return []types.Metadata{}, fmt.Errorf("searching metadata: %v", err)
+		logger.Printf("Query failed: %v", err)
+		return []types.Artist{}, err
 	}
 	defer rows.Close()
 
-	var result []types.Metadata
+	var results []types.Artist
+
 	for rows.Next() {
-		var row types.Metadata
-		err := rows.Scan(
-			&row.FilePath, &row.FileName, &row.DateAdded, &row.DateModified,
-			&row.Format, &row.Duration, &row.Size, &row.Bitrate,
-			&row.Title, &row.Artist, &row.Album, &row.AlbumArtist,
-			&row.Genre, &row.TrackNumber, &row.TotalTracks, &row.DiscNumber,
-			&row.TotalDiscs, &row.ReleaseDate, &row.MusicBrainzArtistID,
-			&row.MusicBrainzAlbumID, &row.MusicBrainzTrackID, &row.Label, &row.MusicFolderId,
-		)
-		if err != nil {
-			return []types.Metadata{}, fmt.Errorf("scanning metadata row: %v", err)
+		var result types.Artist
+		var starred sql.NullString
+		if err := rows.Scan(&result.Id, &result.Name, &result.AlbumCount, &starred, &result.UserRating, &result.AverageRating); err != nil {
+			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			return nil, err
 		}
-		result = append(result, row)
+
+		result.CoverArt = result.Id
+		result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id)
+		if starred.Valid {
+			result.Starred = starred.String
+		}
+		result.SortName = strings.ToLower(result.Name)
+
+		results = append(results, result)
 	}
 
 	if err := rows.Err(); err != nil {
-		return []types.Metadata{}, fmt.Errorf("rows error: %v", err)
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
 	}
 
-	if result == nil {
-		result = []types.Metadata{}
-	}
-	return result, nil
+	return results, nil
 }

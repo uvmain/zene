@@ -21,6 +21,28 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	form := net.NormalisedForm(r, w)
+	format := form["f"]
+	username := form["username"]
+	password := form["password"]
+	email := form["email"]
+	ldapAuthenticated := form["ldapauthenticated"]
+	adminRole := form["adminrole"]
+	settingsRole := form["settingsrole"]
+	streamRole := form["streamrole"]
+	jukeboxRole := form["jukeboxrole"]
+	downloadRole := form["downloadrole"]
+	uploadRole := form["uploadrole"]
+	playlistRole := form["playlistrole"]
+	coverArtRole := form["coverartrole"]
+	commentRole := form["commentrole"]
+	podcastRole := form["podcastrole"]
+	shareRole := form["sharerole"]
+	scrobblingEnabled := form["scrobblingenabled"]
+	videoConversionRole := form["videoconversionrole"]
+	maxBitRate := form["maxbitrate"]
+	musicFolderId := form["musicfolderid"]
+
 	ctx := r.Context()
 
 	requestUser, err := database.GetUserByContext(ctx)
@@ -36,7 +58,6 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.FormValue("username")
 	if username == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Username is required", "")
 		return
@@ -49,7 +70,6 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	password := r.FormValue("password")
 	if password != "" {
 		if len(password) > 4 && password[:4] == "enc:" {
 			decryptedPassword, err := encryption.HexDecrypt(password[4:])
@@ -69,82 +89,66 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		userToUpdate.Password = encryptedPassword
 	}
 
-	email := r.FormValue("email")
 	if email != "" {
 		userToUpdate.Email = email
 	}
 
-	ldapAuthenticated := r.FormValue("ldapAuthenticated")
 	if ldapAuthenticated != "" {
 		userToUpdate.LdapAuthenticated = net.ParseBooleanFromString(w, r, ldapAuthenticated)
 	}
 
-	adminRole := r.FormValue("adminRole")
 	if adminRole != "" {
 		userToUpdate.AdminRole = net.ParseBooleanFromString(w, r, adminRole)
 	}
 
-	settingsRole := r.FormValue("settingsRole")
 	if settingsRole != "" {
 		userToUpdate.SettingsRole = net.ParseBooleanFromString(w, r, settingsRole)
 	}
 
-	streamRole := r.FormValue("streamRole")
 	if streamRole != "" {
 		userToUpdate.StreamRole = net.ParseBooleanFromString(w, r, streamRole)
 	}
 
-	jukeboxRole := r.FormValue("jukeboxRole")
 	if jukeboxRole != "" {
 		userToUpdate.JukeboxRole = net.ParseBooleanFromString(w, r, jukeboxRole)
 	}
 
-	downloadRole := r.FormValue("downloadRole")
 	if downloadRole != "" {
 		userToUpdate.DownloadRole = net.ParseBooleanFromString(w, r, downloadRole)
 	}
 
-	uploadRole := r.FormValue("uploadRole")
 	if uploadRole != "" {
 		userToUpdate.UploadRole = net.ParseBooleanFromString(w, r, uploadRole)
 	}
 
-	playlistRole := r.FormValue("playlistRole")
 	if playlistRole != "" {
 		userToUpdate.PlaylistRole = net.ParseBooleanFromString(w, r, playlistRole)
 	}
 
-	coverArtRole := r.FormValue("coverArtRole")
 	if coverArtRole != "" {
 		userToUpdate.CoverArtRole = net.ParseBooleanFromString(w, r, coverArtRole)
 	}
 
-	commentRole := r.FormValue("commentRole")
 	if commentRole != "" {
 		userToUpdate.CommentRole = net.ParseBooleanFromString(w, r, commentRole)
 	}
 
-	podcastRole := r.FormValue("podcastRole")
 	if podcastRole != "" {
 		userToUpdate.PodcastRole = net.ParseBooleanFromString(w, r, podcastRole)
 	}
 
-	shareRole := r.FormValue("shareRole")
 	if shareRole != "" {
 		userToUpdate.ShareRole = net.ParseBooleanFromString(w, r, shareRole)
 	}
 
-	scrobblingEnabled := r.FormValue("scrobblingEnabled")
 	if scrobblingEnabled != "" {
 		userToUpdate.ScrobblingEnabled = net.ParseBooleanFromString(w, r, scrobblingEnabled)
 	}
 
-	videoConversionRole := r.FormValue("videoConversionRole")
 	if videoConversionRole != "" {
 		userToUpdate.VideoConversionRole = net.ParseBooleanFromString(w, r, videoConversionRole)
 	}
 
-	maxBitRate := r.FormValue("maxBitRate")
 	if maxBitRate != "" {
 		maxBitRateInt, err := strconv.Atoi(maxBitRate)
 		if err != nil {
@@ -157,7 +161,6 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		userToUpdate.MaxBitRate = 0
 	}
 
-	musicFolderId := r.FormValue("musicFolderId")
 	if musicFolderId != "" {
 		folderIdInts, _, err := net.ParseDuplicateFormKeys(r, "musicFolderId", true)
 		if err != nil {
@@ -192,7 +195,6 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	logger.Printf("User %s updated successfully with ID %d", username, userId)
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
-	format := r.FormValue("f")
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
