@@ -22,8 +22,8 @@
 - [ ] getSimilarSongs2
 - [x] getTopSongs[^5]
 ## Album/song lists
-- [ ] getAlbumList
-- [ ] getAlbumList2
+- [x] getAlbumList
+- [x] getAlbumList2
 - [ ] getRandomSongs
 - [x] getSongsByGenre
 - [x] getNowPlaying
