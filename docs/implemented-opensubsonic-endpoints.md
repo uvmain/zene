@@ -18,8 +18,8 @@
 - [x] getArtistInfo2[^2]
 - [x] getAlbumInfo[^4]
 - [x] getAlbumInfo2[^4]
-- [ ] getSimilarSongs
-- [ ] getSimilarSongs2
+- [x] getSimilarSongs
+- [x] getSimilarSongs2
 - [x] getTopSongs[^5]
 ## Album/song lists
 - [x] getAlbumList

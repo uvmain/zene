@@ -45,6 +45,8 @@ type SubsonicStandard struct {
 	SearchResult3          *SearchResult3            `xml:"searchResult3,omitempty" json:"searchResult3,omitempty"`
 	AlbumList              *AlbumList                `xml:"albumList,omitempty" json:"albumList,omitempty"`
 	AlbumList2             *AlbumList2               `xml:"albumList2,omitempty" json:"albumList2,omitempty"`
+	SimilarSongs           *SimilarSongs             `xml:"similarSongs,omitempty" json:"similarSongs,omitempty"`
+	SimilarSongs2          *SimilarSongs2            `xml:"similarSongs2,omitempty" json:"similarSongs2,omitempty"`
 }
 
 type SubsonicResponse struct {
@@ -105,4 +107,12 @@ type Starred2 struct {
 	Artists []Artist        `xml:"artist" json:"artist"`
 	Albums  []AlbumId3      `xml:"album" json:"album"`
 	Songs   []SubsonicChild `xml:"song" json:"song"`
+}
+
+type SimilarSongs struct {
+	Songs []SubsonicChild `xml:"song" json:"song"`
+}
+
+type SimilarSongs2 struct {
+	Songs []SubsonicChild `xml:"song" json:"song"`
 }
