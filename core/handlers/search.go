@@ -43,8 +43,8 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 	artistOffsetParam := form["artistoffset"]
 	albumCountParam := form["albumcount"]
 	albumOffsetParam := form["albumoffset"]
-	// songCountParam := form["songcount"]
-	// songOffsetParam := form["songoffset"]
+	songCountParam := form["songcount"]
+	songOffsetParam := form["songoffset"]
 	musicFolderIdParam := form["musicfolderid"]
 
 	ctx := r.Context()
@@ -99,27 +99,27 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		albumOffset = 0
 	}
 
-	// var songCount int
-	// if songCountParam != "" {
-	// 	songCount, err = strconv.Atoi(songCountParam)
-	// 	if err != nil {
-	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songCount parameter must be an integer", "")
-	// 		return
-	// 	}
-	// } else {
-	// 	songCount = 20
-	// }
+	var songCount int
+	if songCountParam != "" {
+		songCount, err = strconv.Atoi(songCountParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songCount parameter must be an integer", "")
+			return
+		}
+	} else {
+		songCount = 20
+	}
 
-	// var songOffset int
-	// if songOffsetParam != "" {
-	// 	songOffset, err = strconv.Atoi(songOffsetParam)
-	// 	if err != nil {
-	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songOffset parameter must be an integer", "")
-	// 		return
-	// 	}
-	// } else {
-	// 	songOffset = 0
-	// }
+	var songOffset int
+	if songOffsetParam != "" {
+		songOffset, err = strconv.Atoi(songOffsetParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songOffset parameter must be an integer", "")
+			return
+		}
+	} else {
+		songOffset = 0
+	}
 
 	var musicFolderIdInt int
 	if musicFolderIdParam != "" {
@@ -145,18 +145,34 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	artists, err := database.SearchArtists(ctx, searchQueryParam, artistCount, artistOffset, musicFolderIdInt)
-	if err != nil {
-		logger.Printf("Error searching artists: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search artists", "")
-		return
+	artists := []types.Artist{}
+	if artistCount > 0 {
+		artists, err = database.SearchArtists(ctx, searchQueryParam, artistCount, artistOffset, musicFolderIdInt)
+		if err != nil {
+			logger.Printf("Error searching artists: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search artists", "")
+			return
+		}
 	}
 
-	albums, err := database.SearchAlbums(ctx, searchQueryParam, albumCount, albumOffset, musicFolderIdInt)
-	if err != nil {
-		logger.Printf("Error searching albums: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search albums", "")
-		return
+	albums := []types.AlbumId3{}
+	if albumCount > 0 {
+		albums, err = database.SearchAlbums(ctx, searchQueryParam, albumCount, albumOffset, musicFolderIdInt)
+		if err != nil {
+			logger.Printf("Error searching albums: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search albums", "")
+			return
+		}
+	}
+
+	songs := []types.SubsonicChild{}
+	if songCount > 0 {
+		songs, err = database.SearchSongs(ctx, searchQueryParam, songCount, songOffset, musicFolderIdInt)
+		if err != nil {
+			logger.Printf("Error searching songs: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search songs", "")
+			return
+		}
 	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
@@ -167,11 +183,13 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		response.SubsonicResponse.SearchResult2 = &searchResult2
 		response.SubsonicResponse.SearchResult2.Artists = artists
 		response.SubsonicResponse.SearchResult2.Albums = albums
+		response.SubsonicResponse.SearchResult2.Songs = songs
 	case 3:
 		searchResult3 := types.SearchResult3{}
 		response.SubsonicResponse.SearchResult3 = &searchResult3
 		response.SubsonicResponse.SearchResult3.Artists = artists
 		response.SubsonicResponse.SearchResult3.Albums = albums
+		response.SubsonicResponse.SearchResult3.Songs = songs
 	}
 
 	if format == "json" {

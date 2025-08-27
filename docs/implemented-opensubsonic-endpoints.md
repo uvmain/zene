@@ -30,9 +30,9 @@
 - [ ] getStarred
 - [ ] getStarred2
 ## Searching
-- [ ] search
-- [ ] search2
-- [ ] search3
+- [x] search
+- [x] search2
+- [x] search3
 ## Playlists
 - [ ] getPlaylists
 - [ ] getPlaylist
