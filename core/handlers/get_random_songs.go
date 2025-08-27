@@ -16,7 +16,7 @@ import (
 	"zene/core/types"
 )
 
-func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
+func HandleGetRandomSongs(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
@@ -25,9 +25,10 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
+	count := form["size"]
 	genre := form["genre"]
-	count := form["count"]
-	offset := form["offset"]
+	fromYear := form["fromyear"]
+	toYear := form["toyear"]
 	musicFolderId := form["musicfolderid"]
 
 	ctx := r.Context()
@@ -43,11 +44,6 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if genre == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "genre parameter is required", "")
-		return
-	}
-
 	var countInt int
 	if count != "" {
 		var err error
@@ -60,16 +56,27 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 		countInt = 10 // default to ten if param is not provided
 	}
 
-	var offsetInt int
-	if offset != "" {
-		var err error
-		offsetInt, err = strconv.Atoi(offset)
+	var fromYearInt int
+	var toYearInt int
+	var err error
+
+	if fromYear != "" {
+		fromYearInt, err = strconv.Atoi(fromYear)
 		if err != nil {
-			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "offset parameter must be an integer", "")
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "fromYear parameter must be an integer", "")
 			return
 		}
-	} else {
-		offsetInt = 0 // default to zero if param is not provided
+	}
+	if toYear != "" {
+		toYearInt, err = strconv.Atoi(toYear)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "toYear parameter must be an integer", "")
+			return
+		}
+	}
+	if toYearInt < fromYearInt {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "toYear parameter must be greater than or equal to fromYear", "")
+		return
 	}
 
 	var musicFolderIdInt int
@@ -92,10 +99,10 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 		musicFolderIdInt = 0
 	}
 
-	songs, err := database.GetSongsByGenre(ctx, genre, countInt, offsetInt, musicFolderIdInt)
+	songs, err := database.GetRandomSongs(ctx, countInt, genre, fromYear, toYear, musicFolderIdInt)
 	if err != nil {
-		logger.Printf("Error getting songs by genre: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "No songs found for genre", "")
+		logger.Printf("Error getting random songs: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error getting random songs", "")
 		return
 	}
 	if songs == nil {
@@ -103,7 +110,7 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
-	response.SubsonicResponse.SongsByGenre = &types.SongsByGenre{
+	response.SubsonicResponse.RandomSongs = &types.RandomSongs{
 		Songs: songs,
 	}
 
