@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"zene/core/database"
 	"zene/core/deezer"
 	"zene/core/logger"
@@ -17,10 +18,10 @@ import (
 
 func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 	var version int
-	switch r.URL.Path {
-	case "/rest/getArtistInfo.view":
+	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getartistinfo.view":
 		version = 1
-	case "/rest/getArtistInfo2.view":
+	case "/rest/getartistinfo2.view":
 		version = 2
 	}
 
