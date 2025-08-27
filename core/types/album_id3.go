@@ -23,3 +23,11 @@ type AlbumId3 struct {
 	ReleaseDate   ItemDate           `xml:"releaseDate,attr,omitempty" json:"releaseDate,omitempty"`
 	Songs         []SubsonicChild    `xml:"song,omitempty" json:"song,omitempty"`
 }
+
+type AlbumList struct {
+	Albums []AlbumId3 `xml:"album" json:"album"`
+}
+
+type AlbumList2 struct {
+	Albums []AlbumId3 `xml:"album" json:"album"`
+}
