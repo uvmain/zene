@@ -28,6 +28,8 @@ type SubsonicStandard struct {
 	Indexes                *SubsonicIndexes          `xml:"indexes,omitempty" json:"indexes,omitempty"`
 	Song                   *SubsonicChild            `xml:"song,omitempty" json:"song,omitempty"`
 	RandomSongs            *RandomSongs              `xml:"randomSongs,omitempty" json:"randomSongs,omitempty"`
+	Starred                *Starred                  `xml:"starred,omitempty" json:"starred,omitempty"`
+	Starred2               *Starred2                 `xml:"starred2,omitempty" json:"starred2,omitempty"`
 	SongsByGenre           *SongsByGenre             `xml:"songsByGenre,omitempty" json:"songsByGenre,omitempty"`
 	MusicDirectory         *SubsonicDirectory        `xml:"directory,omitempty" json:"directory,omitempty"`
 	NowPlaying             *SubsonicNowPlaying       `xml:"nowPlaying,omitempty" json:"nowPlaying,omitempty"`
@@ -91,4 +93,16 @@ type ItemDate struct {
 
 type TopSongs struct {
 	Songs []SubsonicChild `xml:"topSongs>song" json:"topSongs"`
+}
+
+type Starred struct {
+	Artists []Artist        `xml:"artist" json:"artist"`
+	Albums  []AlbumId3      `xml:"album" json:"album"`
+	Songs   []SubsonicChild `xml:"song" json:"song"`
+}
+
+type Starred2 struct {
+	Artists []Artist        `xml:"artist" json:"artist"`
+	Albums  []AlbumId3      `xml:"album" json:"album"`
+	Songs   []SubsonicChild `xml:"song" json:"song"`
 }

@@ -22,7 +22,7 @@ func HandleStar(w http.ResponseWriter, r *http.Request) {
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	metadata_id := cmp.Or(form["id"], form["albumid"], form["artistid"])
+	metadataId := cmp.Or(form["id"], form["albumid"], form["artistid"])
 
 	ctx := r.Context()
 
@@ -33,12 +33,12 @@ func HandleStar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if metadata_id == "" {
+	if metadataId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "one of id, albumId, or artistId is required", "")
 		return
 	}
 
-	err = database.UpsertUserStar(ctx, user.Id, metadata_id)
+	err = database.UpsertUserStar(ctx, user.Id, metadataId)
 	if err != nil {
 		logger.Printf("Error inserting user star for user %d: %v", user.Id, err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to add user star", "")

@@ -1,0 +1,291 @@
+package database
+
+import (
+	"context"
+	"database/sql"
+	"strings"
+	"zene/core/logger"
+	"zene/core/logic"
+	"zene/core/types"
+
+	"github.com/timematic/anytime"
+)
+
+func GetStarredArtists(ctx context.Context, musicFolderId int) ([]types.Artist, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return []types.Artist{}, err
+	}
+
+	query := `SELECT m.musicbrainz_artist_id as id,
+		m.artist as name,
+		count(distinct m.musicbrainz_album_id) as album_count,
+		s.created_at as starred,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(AVG(gr.rating),0.0) AS average_rating
+	FROM user_music_folders u
+	join metadata m on m.music_folder_id = u.folder_id
+	LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = u.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = u.user_id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_artist_id = gr.metadata_id
+	where u.user_id = ?
+	and s.created_at is not null`
+
+	if musicFolderId != 0 {
+		query += ` and m.music_folder_id = ?`
+	}
+
+	query += ` group by m.musicbrainz_artist_id
+	order by m.musicbrainz_artist_id asc`
+
+	var rows *sql.Rows
+
+	if musicFolderId != 0 {
+		rows, err = DB.QueryContext(ctx, query, user.Id, musicFolderId)
+	} else {
+		rows, err = DB.QueryContext(ctx, query, user.Id)
+	}
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return []types.Artist{}, err
+	}
+
+	defer rows.Close()
+
+	var results []types.Artist
+
+	for rows.Next() {
+		var result types.Artist
+		var starred sql.NullString
+		if err := rows.Scan(&result.Id, &result.Name, &result.AlbumCount, &starred, &result.UserRating, &result.AverageRating); err != nil {
+			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			return nil, err
+		}
+
+		result.CoverArt = result.Id
+		result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id)
+		if starred.Valid {
+			result.Starred = starred.String
+		}
+		result.SortName = strings.ToLower(result.Name)
+
+		results = append(results, result)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
+	}
+
+	return results, nil
+}
+
+func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return []types.AlbumId3{}, err
+	}
+
+	var albums []types.AlbumId3
+
+	query := `select m.musicbrainz_album_id as id,
+		m.album as name,
+		m.artist as artist,
+		m.musicbrainz_album_id as cover_art,
+		count(m.musicbrainz_track_id) as song_count,
+		cast(sum(m.duration) as integer) as duration,
+		COALESCE(SUM(pc.play_count), 0) as play_count,
+		min(m.date_added) as created,
+		m.musicbrainz_artist_id as artist_id,
+		s.created_at as starred,
+		substr(m.release_date,1,4) as year,
+		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
+		max(pc.last_played) as played,
+		COALESCE(ur.rating, 0) AS user_rating,
+		m.label as label_string,
+		m.musicbrainz_album_id as musicbrainz_id,
+		m.genre as genre_string,
+		m.artist as display_artist,
+		lower(m.album) as sort_name,
+		m.release_date as release_date_string
+	from user_music_folders f
+	join metadata m on m.music_folder_id = f.folder_id
+	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
+	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+	where f.user_id = ?
+	and s.created_at is not null`
+
+	if musicFolderId != 0 {
+		query += ` and m.music_folder_id = ?`
+	}
+
+	query += ` group by m.musicbrainz_album_id
+	order by m.musicbrainz_album_id asc`
+
+	var rows *sql.Rows
+
+	if musicFolderId != 0 {
+		rows, err = DB.QueryContext(ctx, query, user.Id, musicFolderId)
+	} else {
+		rows, err = DB.QueryContext(ctx, query, user.Id)
+	}
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return []types.AlbumId3{}, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var album types.AlbumId3
+
+		var starred sql.NullString
+		var labelString sql.NullString
+		var genresString sql.NullString
+		var releaseDateString sql.NullString
+		var played sql.NullString
+
+		if err := rows.Scan(&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
+			&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
+			&album.Year, &album.Genre, &played, &album.UserRating,
+			&labelString, &album.MusicBrainzId, &genresString,
+			&album.DisplayArtist, &album.SortName, &releaseDateString); err != nil {
+			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			return nil, err
+		}
+
+		if starred.Valid {
+			album.Starred = starred.String
+		}
+
+		if played.Valid {
+			album.Played = played.String
+		}
+
+		album.RecordLabels = []types.ChildRecordLabel{}
+		album.RecordLabels = append(album.RecordLabels, types.ChildRecordLabel{Name: labelString.String})
+
+		album.Genres = []types.ItemGenre{}
+		for _, genre := range strings.Split(genresString.String, ";") {
+			album.Genres = append(album.Genres, types.ItemGenre{Name: genre})
+		}
+
+		releaseDateTime, err := anytime.Parse(releaseDateString.String)
+		if err == nil {
+			album.ReleaseDate = types.ItemDate{
+				Year:  releaseDateTime.Year(),
+				Month: int(releaseDateTime.Month()),
+				Day:   releaseDateTime.Day(),
+			}
+		}
+
+		albums = append(albums, album)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return albums, err
+	}
+
+	return albums, nil
+}
+
+func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicChild, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return []types.SubsonicChild{}, err
+	}
+
+	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, m.track_number as track,
+		substr(m.release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
+		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
+		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
+		COALESCE(SUM(pc.play_count), 0) AS play_count,
+		max(pc.last_played) as played,
+		us.created_at AS starred
+	from user_music_folders u
+	join metadata m on m.music_folder_id = u.folder_id
+	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = u.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = u.user_id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_track_id = gr.metadata_id
+	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.user_id
+	where u.user_id = ?
+	and us.created_at is not null`
+
+	if musicFolderId != 0 {
+		query += ` and m.music_folder_id = ?`
+	}
+
+	query += ` group by m.musicbrainz_track_id
+	order by m.musicbrainz_track_id asc`
+
+	var rows *sql.Rows
+	var results []types.SubsonicChild
+
+	if musicFolderId != 0 {
+		rows, err = DB.QueryContext(ctx, query, user.Id, musicFolderId)
+	} else {
+		rows, err = DB.QueryContext(ctx, query, user.Id)
+	}
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return []types.SubsonicChild{}, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var result types.SubsonicChild
+
+		var albumArtist string
+		var genreString string
+		var durationFloat float64
+		var played sql.NullString
+		var starred sql.NullString
+
+		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
+			&result.Year, &result.Genre, &result.CoverArt,
+			&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
+			&genreString, &albumArtist, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
+			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred); err != nil {
+			return nil, err
+		}
+		result.Genres = []types.ChildGenre{}
+		for _, genre := range strings.Split(genreString, ";") {
+			result.Genres = append(result.Genres, types.ChildGenre{Name: genre})
+		}
+
+		if played.Valid {
+			result.Played = played.String
+		}
+		if starred.Valid {
+			result.Starred = starred.String
+		}
+
+		result.Duration = int(durationFloat)
+		result.Title = result.Album
+		result.IsDir = true
+
+		result.Artists = []types.ChildArtist{}
+		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
+
+		result.DisplayArtist = result.Artist
+
+		result.AlbumArtists = []types.ChildArtist{}
+		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: result.ArtistId, Name: albumArtist})
+
+		result.DisplayAlbumArtist = albumArtist
+
+		results = append(results, result)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
+	}
+
+	return results, nil
+}
