@@ -27,8 +27,8 @@
 - [x] getRandomSongs
 - [x] getSongsByGenre
 - [x] getNowPlaying
-- [ ] getStarred
-- [ ] getStarred2
+- [x] getStarred
+- [x] getStarred2
 ## Searching
 - [x] search
 - [x] search2
