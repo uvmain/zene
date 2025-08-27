@@ -236,7 +236,6 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	}
 
 	releaseDateTime, err := anytime.Parse(releaseDateString.String)
-	logger.Printf("Parsed release date: %v", releaseDateTime)
 	if err == nil {
 		album.ReleaseDate = types.ItemDate{
 			Year:  releaseDateTime.Year(),

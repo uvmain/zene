@@ -41,8 +41,8 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 	searchQueryParam := form["query"]
 	artistCountParam := form["artistcount"]
 	artistOffsetParam := form["artistoffset"]
-	// albumCountParam := form["albumcount"]
-	// albumOffsetParam := form["albumoffset"]
+	albumCountParam := form["albumcount"]
+	albumOffsetParam := form["albumoffset"]
 	// songCountParam := form["songcount"]
 	// songOffsetParam := form["songoffset"]
 	musicFolderIdParam := form["musicfolderid"]
@@ -77,29 +77,27 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		artistOffset = 0
 	}
 
-	logger.Printf("searchQueryParam: %s, artistOffsetParam: %s, artistCountParam: %s", searchQueryParam, artistOffsetParam, artistCountParam)
+	var albumCount int
+	if albumCountParam != "" {
+		albumCount, err = strconv.Atoi(albumCountParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "albumCount parameter must be an integer", "")
+			return
+		}
+	} else {
+		albumCount = 20
+	}
 
-	// var albumCount int
-	// if albumCountParam != "" {
-	// 	albumCount, err = strconv.Atoi(albumCountParam)
-	// 	if err != nil {
-	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "albumCount parameter must be an integer", "")
-	// 		return
-	// 	}
-	// } else {
-	// 	albumCount = 20
-	// }
-
-	// var albumOffset int
-	// if albumOffsetParam != "" {
-	// 	albumOffset, err = strconv.Atoi(albumOffsetParam)
-	// 	if err != nil {
-	// 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "albumOffset parameter must be an integer", "")
-	// 		return
-	// 	}
-	// } else {
-	// 	albumOffset = 0
-	// }
+	var albumOffset int
+	if albumOffsetParam != "" {
+		albumOffset, err = strconv.Atoi(albumOffsetParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "albumOffset parameter must be an integer", "")
+			return
+		}
+	} else {
+		albumOffset = 0
+	}
 
 	// var songCount int
 	// if songCountParam != "" {
@@ -154,6 +152,13 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	albums, err := database.SearchAlbums(ctx, searchQueryParam, albumCount, albumOffset, musicFolderIdInt)
+	if err != nil {
+		logger.Printf("Error searching albums: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search albums", "")
+		return
+	}
+
 	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 
 	switch version {
@@ -161,10 +166,12 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		searchResult2 := types.SearchResult2{}
 		response.SubsonicResponse.SearchResult2 = &searchResult2
 		response.SubsonicResponse.SearchResult2.Artists = artists
+		response.SubsonicResponse.SearchResult2.Albums = albums
 	case 3:
 		searchResult3 := types.SearchResult3{}
 		response.SubsonicResponse.SearchResult3 = &searchResult3
 		response.SubsonicResponse.SearchResult3.Artists = artists
+		response.SubsonicResponse.SearchResult3.Albums = albums
 	}
 
 	if format == "json" {
