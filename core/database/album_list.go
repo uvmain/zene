@@ -12,7 +12,7 @@ import (
 	"github.com/timematic/anytime"
 )
 
-func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, fromYear int, toYear int, genre string, musicFolderId int) ([]types.AlbumId3, error) {
+func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, fromYear string, toYear string, genre string, musicFolderId int) ([]types.AlbumId3, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.AlbumId3{}, err
@@ -74,7 +74,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	switch sortType {
 	case "random":
 		randomInt := logic.GenerateRandomInt(1, 1000)
-		query += fmt.Sprintf(" order BY ((rowid * %d) %% 1000000)", randomInt)
+		query += fmt.Sprintf(" order BY ((m.rowid * %d) %% 1000000)", randomInt)
 	case "newest": // recently added albums
 		query += " order BY m.date_added desc"
 	case "highest": // highest rated albums
@@ -93,6 +93,9 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 
 	query += ` limit ? offset ?`
 	args = append(args, limit, offset)
+
+	logger.Printf("GetAlbumList query: %s", query)
+	logger.Printf("GetAlbumList args: %v", args)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
