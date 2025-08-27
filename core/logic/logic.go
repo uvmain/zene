@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	mRand "math/rand"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -126,6 +127,10 @@ func GenerateRandomPassword(length int) (string, error) {
 	}
 
 	return string(password), nil
+}
+
+func GenerateRandomInt(min, max int) int {
+	return mRand.Intn(max-min+1) + min
 }
 
 func StringToIntSlice(folderString string) []int {

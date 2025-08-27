@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
+	"strings"
 	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/net"
@@ -16,7 +17,7 @@ import (
 
 func HandleSearch(w http.ResponseWriter, r *http.Request) {
 	var version int
-	switch r.URL.Path {
+	switch strings.ToLower(r.URL.Path) {
 	case "/rest/search.view":
 		version = 1
 	case "/rest/search2.view":

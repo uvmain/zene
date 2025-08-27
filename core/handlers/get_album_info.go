@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"strings"
 
 	"net/http"
 	"zene/core/database"
@@ -22,10 +23,10 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var version int
-	switch r.URL.Path {
-	case "/rest/getAlbumInfo.view":
+	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getalbuminfo.view":
 		version = 1
-	case "/rest/getAlbumInfo2.view":
+	case "/rest/getalbuminfo2.view":
 		version = 2
 	}
 
