@@ -82,3 +82,5 @@ resolving Caddy cert issues on debian/ubuntu
 - [ ] getArtistInfo with includeNotPresent=true should also fetch artist image links from Deezer
 - [ ] getArtistInfo should fetch biography if user sets lastfm creds
 - [ ] add Handler level caching for getTopSongs, GetArtistInfo
+- [ ] fix getArtistInfo not working with feishin
+- [ ] fetch artist art for album artists
