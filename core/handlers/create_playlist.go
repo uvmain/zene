@@ -67,8 +67,7 @@ func HandleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.SubsonicResponse.Playlist = &types.Playlist{}
-	response.SubsonicResponse.Playlist.Playlist = result
+	response.SubsonicResponse.Playlist = &result
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }

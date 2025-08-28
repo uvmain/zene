@@ -15,10 +15,6 @@ type PlaylistRow struct {
 	Entries      []SubsonicChild `json:"entry,omitempty" xml:"entry,omitempty"`
 }
 
-type Playlist struct {
-	Playlist PlaylistRow `json:"playlist" xml:"playlist"`
-}
-
 type Playlists struct {
 	Playlist []PlaylistRow `json:"playlist" xml:"playlist"`
 }

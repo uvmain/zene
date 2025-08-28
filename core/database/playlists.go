@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"strings"
 	"zene/core/logger"
@@ -65,7 +66,7 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 	}
 
 	// if the playlist already exists, update it
-	exists, err := playlistExists(ctx, playlistId, playlistName)
+	exists, err := PlaylistExists(ctx, playlistId, playlistName)
 	if err != nil {
 		return types.PlaylistRow{}, err
 	}
@@ -113,10 +114,22 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 		return types.PlaylistRow{}, fmt.Errorf("either existing playlistId or new name parameter must be provided")
 	}
 
-	return types.PlaylistRow{}, nil
+	newPlaylist, err := GetPlaylist(ctx, newPlaylistId)
+	if err != nil {
+		return types.PlaylistRow{}, fmt.Errorf("getting playlist after creation: %v", err)
+	}
+
+	entries, err := GetPlaylistEntries(ctx, newPlaylistId)
+	if err != nil {
+		return types.PlaylistRow{}, fmt.Errorf("getting playlist entries after creation: %v", err)
+	}
+
+	newPlaylist.Entries = entries
+
+	return newPlaylist, nil
 }
 
-func playlistExists(ctx context.Context, playlistId int, playlistName string) (bool, error) {
+func PlaylistExists(ctx context.Context, playlistId int, playlistName string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM playlists WHERE id = ? OR name = ?);`
 	err := DB.QueryRowContext(ctx, query, playlistId, playlistName).Scan(&exists)
@@ -255,4 +268,141 @@ func GetPlaylists(ctx context.Context, username string) ([]types.PlaylistRow, er
 	}
 
 	return playlists, nil
+}
+
+func GetPlaylist(ctx context.Context, playlistId int) (types.PlaylistRow, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return types.PlaylistRow{}, err
+	}
+
+	query := `select p.id as id,
+		p.name as name,
+		u.username as owner,
+		p.public,
+		p.created,
+		p.changed,
+		count(pe.musicbrainz_track_id) as song_count,
+		cast(sum(m.duration) as integer) as duration,
+		coalesce(p.comment, '') as comment,
+		coalesce(p.cover_art, min(pe.musicbrainz_track_id)) as cover_art,
+		au.allowed_users
+	from playlists p
+	join users u on u.id = p.user_id
+	join playlist_entries pe on pe.playlist_id = p.id
+	join (
+		select playlist_id, group_concat(u.username, ',') as allowed_users
+		from playlist_allowed_users pau
+		join users u on u.id = pau.user_id
+		group by playlist_id
+		order by playlist_id
+	) au on au.playlist_id = p.id
+	join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
+	where p.id = ?
+	group by p.id, au.playlist_id;`
+
+	var result types.PlaylistRow
+	var allowedUsersString string
+
+	err = DB.QueryRowContext(ctx, query, playlistId).Scan(&result.Id, &result.Name, &result.Owner, &result.Public, &result.Created, &result.Changed,
+		&result.SongCount, &result.Duration, &result.Comment, &result.CoverArt, &allowedUsersString)
+	if err == sql.ErrNoRows {
+		return types.PlaylistRow{}, nil
+	} else if err != nil {
+		return types.PlaylistRow{}, err
+	}
+
+	if allowedUsersString != "" {
+		result.AllowedUsers = strings.Split(allowedUsersString, ",")
+	}
+
+	if result.Owner != user.Username && !user.AdminRole {
+		return types.PlaylistRow{}, fmt.Errorf("user %s not authorized to access playlist %d owned by %s", user.Username, playlistId, result.Owner)
+	}
+
+	return result, nil
+}
+
+func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicChild, error) {
+	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, m.track_number as track,
+		substr(m.release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
+		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
+		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
+		COALESCE(SUM(pc.play_count), 0) AS play_count,
+		max(pc.last_played) as played,
+		us.created_at AS starred
+	from playlists p
+	join playlist_entries pe on pe.playlist_id = p.id
+	join users u on u.id = p.user_id
+	join user_music_folders uf on uf.user_id = u.id
+	join metadata m on m.music_folder_id = uf.folder_id and m.musicbrainz_track_id = pe.musicbrainz_track_id
+	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = uf.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
+	where p.id = ?
+	group by m.musicbrainz_track_id`
+
+	var results []types.SubsonicChild
+
+	rows, err := DB.QueryContext(ctx, query, playlistId)
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return []types.SubsonicChild{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var result types.SubsonicChild
+
+		var albumArtist string
+		var genreString string
+		var durationFloat float64
+		var played sql.NullString
+		var starred sql.NullString
+
+		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
+			&result.Year, &result.Genre, &result.CoverArt,
+			&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
+			&genreString, &albumArtist, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
+			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred); err != nil {
+			return nil, err
+		}
+		result.Genres = []types.ChildGenre{}
+		for _, genre := range strings.Split(genreString, ";") {
+			result.Genres = append(result.Genres, types.ChildGenre{Name: genre})
+		}
+
+		if played.Valid {
+			result.Played = played.String
+		}
+		if starred.Valid {
+			result.Starred = starred.String
+		}
+
+		result.Duration = int(durationFloat)
+		result.Title = result.Album
+		result.IsDir = true
+
+		result.Artists = []types.ChildArtist{}
+		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
+
+		result.DisplayArtist = result.Artist
+
+		result.AlbumArtists = []types.ChildArtist{}
+		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: result.ArtistId, Name: albumArtist})
+
+		result.DisplayAlbumArtist = albumArtist
+
+		results = append(results, result)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Printf("Rows iteration error: %v", err)
+		return results, err
+	}
+
+	return results, nil
 }
