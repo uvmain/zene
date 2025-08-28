@@ -86,8 +86,3 @@ export interface Queue {
   tracks: TrackMetadataWithImageUrl[]
   position: number
 }
-
-export interface StandardResponse {
-  status: string
-  error?: string
-}
