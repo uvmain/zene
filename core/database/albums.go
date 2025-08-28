@@ -49,6 +49,17 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 	return results, nil
 }
 
+func SelectAlbumIdByTrackId(ctx context.Context, musicbrainz_track_id string) (string, error) {
+	var albumId string
+	query := "SELECT musicbrainz_album_id FROM metadata WHERE musicbrainz_track_id = ? limit 1"
+	err := DB.QueryRowContext(ctx, query, musicbrainz_track_id).Scan(&albumId)
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return "", err
+	}
+	return albumId, nil
+}
+
 func SelectAllAlbums(ctx context.Context, random string, limit string, recent string) ([]types.AlbumsResponse, error) {
 	query := "SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album"
 
