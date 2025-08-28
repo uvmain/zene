@@ -37,7 +37,7 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id is required", "")
 		return
 	} else {
-		_, metadataIds, err = net.ParseDuplicateFormKeys(r, "id", true)
+		_, metadataIds, err = net.ParseDuplicateFormKeys(r, "id", false)
 		if err != nil {
 			logger.Printf("Error parsing id: %v", err)
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid id", "")

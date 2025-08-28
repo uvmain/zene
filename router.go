@@ -38,7 +38,7 @@ func StartServer() *http.Server {
 
 	// OpenSubsonic routes
 	/// System
-	router.Handle("/rest/ping.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandlePing)))
+	router.Handle("/rest/ping.view", http.HandlerFunc(handlers.HandlePing))
 	router.Handle("/rest/getLicense.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense)))
 	router.Handle("/rest/getOpenSubsonicExtensions.view", http.HandlerFunc(handlers.HandleOpenSubsonicExtensions))
 	router.Handle("/rest/tokenInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))

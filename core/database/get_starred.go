@@ -58,7 +58,7 @@ func GetStarredArtists(ctx context.Context, musicFolderId int) ([]types.Artist, 
 		var result types.Artist
 		var starred sql.NullString
 		if err := rows.Scan(&result.Id, &result.Name, &result.AlbumCount, &starred, &result.UserRating, &result.AverageRating); err != nil {
-			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			logger.Printf("Failed to scan row in GetStarredArtists: %v", err)
 			return nil, err
 		}
 
@@ -98,7 +98,7 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 		min(m.date_added) as created,
 		m.musicbrainz_artist_id as artist_id,
 		s.created_at as starred,
-		substr(m.release_date,1,4) as year,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
 		max(pc.last_played) as played,
 		COALESCE(ur.rating, 0) AS user_rating,
@@ -151,7 +151,7 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 			&album.Year, &album.Genre, &played, &album.UserRating,
 			&labelString, &album.MusicBrainzId, &genresString,
 			&album.DisplayArtist, &album.SortName, &releaseDateString); err != nil {
-			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			logger.Printf("Failed to scan row in GetStarredAlbums: %v", err)
 			return nil, err
 		}
 
@@ -197,8 +197,8 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 		return []types.SubsonicChild{}, err
 	}
 
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, m.track_number as track,
-		substr(m.release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
+	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, COALESCE(m.track_number, 0) as track,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
 		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
 		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
 		COALESCE(ur.rating, 0) AS user_rating,

@@ -50,14 +50,18 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 	var lastModified time.Time
 	if metadataStruct.MusicbrainzAlbumId {
 		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, idParameter, sizeInt)
+		if err != nil {
+			logger.Printf("Error getting album cover art for %s: %v", idParameter, err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+			return
+		}
 	} else if metadataStruct.MusicbrainzArtistId {
 		imageBlob, lastModified, err = art.GetArtForArtist(ctx, idParameter, sizeInt)
-	}
-
-	if err != nil {
-		logger.Printf("Error getting cover art for %s: %v", idParameter, err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
-		return
+		if err != nil {
+			logger.Printf("Error getting artist cover art for %s: %v", idParameter, err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+			return
+		}
 	}
 
 	if net.IfModifiedResponse(w, r, lastModified) {

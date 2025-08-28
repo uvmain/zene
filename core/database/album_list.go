@@ -31,7 +31,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		min(m.date_added) as created,
 		m.musicbrainz_artist_id as artist_id,
 		s.created_at as starred,
-		substr(m.release_date,1,4) as year,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
 		max(pc.last_played) as played,
 		COALESCE(ur.rating, 0) AS user_rating,
@@ -94,9 +94,6 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	query += ` limit ? offset ?`
 	args = append(args, limit, offset)
 
-	logger.Printf("GetAlbumList query: %s", query)
-	logger.Printf("GetAlbumList args: %v", args)
-
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
@@ -119,7 +116,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 			&album.Year, &album.Genre, &played, &album.UserRating,
 			&labelString, &album.MusicBrainzId, &genresString,
 			&album.DisplayArtist, &album.SortName, &releaseDateString); err != nil {
-			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			logger.Printf("Failed to scan row in GetAlbumList: %v", err)
 			return nil, err
 		}
 

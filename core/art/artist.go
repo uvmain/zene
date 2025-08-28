@@ -142,7 +142,7 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, a
 }
 
 func GetArtForArtist(ctx context.Context, musicBrainzArtistId string, size int) ([]byte, time.Time, error) {
-	file_name := fmt.Sprintf("%s_%s.jpg", musicBrainzArtistId, "xl")
+	file_name := fmt.Sprintf("%s.jpg", musicBrainzArtistId)
 	filePath, _ := filepath.Abs(filepath.Join(config.ArtistArtFolder, file_name))
 
 	info, err := os.Stat(filePath)
