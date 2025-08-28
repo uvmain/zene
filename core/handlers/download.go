@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"zene/core/database"
 	"zene/core/io"
@@ -10,9 +9,7 @@ import (
 )
 
 func HandleDownload(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet && r.Method != http.MethodPost {
-		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
+	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
 

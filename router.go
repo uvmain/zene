@@ -33,14 +33,7 @@ func StartServer() *http.Server {
 		log.Fatal("Failed to create sub filesystem:", err)
 	}
 
-	// authenticated routes
-	router.Handle("/api/albums", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbums)))
-	router.Handle("/api/albums/{musicBrainzAlbumId}/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumTracks)))
-	router.Handle("/api/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracks)))
-	router.Handle("/api/tracks/{musicBrainzTrackId}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTrack)))
-	router.Handle("/api/genres/tracks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTracksByGenre)))
-	router.Handle("/api/playcounts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaycounts)))
-
+	// unauthenticated routes
 	router.Handle("GET /share/img/{imageId}", http.HandlerFunc(handlers.HandleGetShareImg))
 
 	// OpenSubsonic routes
@@ -79,6 +72,12 @@ func StartServer() *http.Server {
 	router.Handle("/rest/search.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
 	router.Handle("/rest/search2.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
 	router.Handle("/rest/search3.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
+	// Playlists
+	router.Handle("/rest/getPlaylists.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylists)))
+	router.Handle("/rest/getPlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylist)))
+	router.Handle("/rest/createPlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePlaylist)))
+	router.Handle("/rest/updatePlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdatePlaylist)))
+	router.Handle("/rest/deletePlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePlaylist)))
 	// Media retrieval
 	router.Handle("/rest/stream.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))
 	router.Handle("/rest/download.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))

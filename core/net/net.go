@@ -89,6 +89,10 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		response.SubsonicResponse.Error.HelpUrl = helpUrl
 	}
 
+	WriteSubsonicResponse(w, r, response, format)
+}
+
+func WriteSubsonicResponse(w http.ResponseWriter, r *http.Request, response types.SubsonicResponse, format string) {
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -99,6 +103,15 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
 		xml.NewEncoder(w).Encode(response)
 	}
+}
+
+func MethodIsNotGetOrPost(w http.ResponseWriter, r *http.Request) bool {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
+		WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
+		return true
+	}
+	return false
 }
 
 func ParseBooleanFromString(w http.ResponseWriter, r *http.Request, key string) bool {
@@ -148,25 +161,23 @@ func NormalisedForm(r *http.Request, w http.ResponseWriter) map[string]string {
 }
 
 func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true
-	form := NormalisedForm(r, nil)
+	if err := r.ParseForm(); err != nil {
+		logger.Printf("Error parsing form: %v", err)
+		return nil, nil, fmt.Errorf("error parsing form: %w", err)
+	}
 
 	intSlice := []int{}
-	stringSlice := []string{}
-
-	for _, value := range form {
-		if value == strings.ToLower(key) {
-			stringSlice = append(stringSlice, value)
-		}
-	}
+	stringSlice := r.Form[key]
 
 	if intArray {
-		for _, stringValue := range stringSlice {
-			intValue, err := strconv.Atoi(stringValue)
-			if err == nil {
-				intSlice = append(intSlice, intValue)
+		for _, idStr := range stringSlice {
+			id, err := strconv.Atoi(idStr)
+			if err != nil {
+				logger.Printf("Error parsing %s in parseDuplicateFormKeys: %v", key, err)
+				return intSlice, []string{}, fmt.Errorf("error parsing %s: %w", key, err)
 			}
+			intSlice = append(intSlice, id)
 		}
 	}
-
 	return intSlice, stringSlice, nil
 }

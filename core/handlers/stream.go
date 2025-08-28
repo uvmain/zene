@@ -18,9 +18,7 @@ import (
 )
 
 func HandleStream(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet && r.Method != http.MethodPost {
-		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
+	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
 

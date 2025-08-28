@@ -34,11 +34,11 @@
 - [x] search2
 - [x] search3
 ## Playlists
-- [ ] getPlaylists
-- [ ] getPlaylist
-- [ ] createPlaylist
-- [ ] updatePlaylist
-- [ ] deletePlaylist
+- [x] getPlaylists
+- [x] getPlaylist
+- [x] createPlaylist
+- [x] updatePlaylist[^6]
+- [x] deletePlaylist
 ## Media retrieval
 - [x] stream
 - [x] download
@@ -98,3 +98,4 @@
 [^3]: Scrobble updates local Now Playing and Play Count - it does not integrate with lastfm.
 [^4]: Notes property is not supported.
 [^5]: Top songs are fetched from Deezer, not lastfm.
+[^6]: Additionally allows `coverArt` and multiple `allowedUserId` params to be sent

@@ -11,8 +11,8 @@ import (
 	"zene/core/types"
 )
 
-var serverVersion string = "0.19.0"
-var databaseVersion string = "1.8.0"
+var serverVersion string = "0.20.1"
+var databaseVersion string = "1.9.0"
 var subsonicApiVersion string = "1.16.1"
 var openSubsonicApiVersion string = "1"
 

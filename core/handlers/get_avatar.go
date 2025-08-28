@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 	"zene/core/art"
 	"zene/core/database"
@@ -11,9 +10,7 @@ import (
 )
 
 func HandleGetAvatar(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet && r.Method != http.MethodPost {
-		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
+	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
 
@@ -48,7 +45,8 @@ func HandleGetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "image/jpeg")
+	mimeType := http.DetectContentType(avatarBlob)
+	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
 	w.Write(avatarBlob)
 }
