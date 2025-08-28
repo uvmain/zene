@@ -406,3 +406,9 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 
 	return results, nil
 }
+
+func DeletePlaylist(ctx context.Context, playlistId int) error {
+	query := `DELETE FROM playlists WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, playlistId)
+	return err
+}

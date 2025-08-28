@@ -21,8 +21,6 @@ func HandleGetPlaylist(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
-
 	playlistIdInt, err := strconv.Atoi(playlistId)
 	if err != nil {
 		logger.Printf("Error converting playlistId to int in GetPlaylist: %v", err)
@@ -30,23 +28,18 @@ func HandleGetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	playlistExists, err := database.PlaylistExists(ctx, playlistIdInt, "")
+	playlist, err := database.GetPlaylist(ctx, playlistIdInt)
 	if err != nil {
 		logger.Printf("Error checking if playlist exists in GetPlaylist: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to check if playlist exists", "")
 		return
 	}
-	if !playlistExists {
+	if playlist.Id < 1 {
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Playlist not found", "")
 		return
 	}
 
-	playlist, err := database.GetPlaylist(ctx, playlistIdInt)
-	if err != nil {
-		logger.Printf("Error querying database in GetPlaylist: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to query database", "")
-		return
-	}
+	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
 	response.SubsonicResponse.Playlist = &playlist
 
 	playlistEntries, err := database.GetPlaylistEntries(ctx, playlistIdInt)
