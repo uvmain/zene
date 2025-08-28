@@ -57,6 +57,10 @@ func HandleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 		logger.Printf("Error creating playlist: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error creating playlist, existing playlist provided with no new songIds", "")
 		return
+	} else if err != nil && err.Error() == "existing playlists should be referenced by playlistId, not name" {
+		logger.Printf("Error creating playlist: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error creating playlist, existing playlists should be referenced by playlistId, not name", "")
+		return
 	} else if err != nil {
 		logger.Printf("Error creating playlist: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error creating playlist", "")

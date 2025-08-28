@@ -68,7 +68,7 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 	if err != nil {
 		return types.PlaylistRow{}, err
 	}
-	if exists && len(songIds) > 0 {
+	if exists && playlistId > 0 && len(songIds) > 0 {
 		err := addPlaylistEntries(ctx, playlistId, songIds)
 		if err != nil {
 			return types.PlaylistRow{}, fmt.Errorf("updating playlist via CreatePlaylist: %v", err)
@@ -76,6 +76,8 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 		return types.PlaylistRow{}, nil
 	} else if exists && len(songIds) == 0 {
 		return types.PlaylistRow{}, fmt.Errorf("existing playlist provided with no new songIds")
+	} else if exists && playlistId == 0 {
+		return types.PlaylistRow{}, fmt.Errorf("existing playlists should be referenced by playlistId, not name")
 	}
 
 	var newPlaylistId int
@@ -118,7 +120,6 @@ func playlistExists(ctx context.Context, playlistId int, playlistName string) (b
 	if err != nil {
 		return false, fmt.Errorf("checking if playlist exists: %v", err)
 	}
-	logger.Printf("Playlist exists: %v", exists)
 	return exists, nil
 }
 
@@ -145,7 +146,7 @@ func addPlaylistEntries(ctx context.Context, playlistId int, songIds []string) e
 	for _, songId := range songIds {
 		err := addPlaylistEntry(ctx, playlistId, songId)
 		if err != nil {
-			return fmt.Errorf("adding playlist entry: %v", err)
+			return fmt.Errorf("adding playlist entries: %v", err)
 		}
 	}
 
