@@ -58,8 +58,8 @@ func HandleGetStarred(w http.ResponseWriter, r *http.Request) {
 
 	artists, err := database.GetStarredArtists(ctx, musicFolderIdInt)
 	if err != nil {
-		logger.Printf("Error searching artists: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search artists", "")
+		logger.Printf("Error getting starred artists: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to get starred artists", "")
 		return
 	}
 	if artists == nil {
@@ -68,8 +68,8 @@ func HandleGetStarred(w http.ResponseWriter, r *http.Request) {
 
 	albums, err := database.GetStarredAlbums(ctx, musicFolderIdInt)
 	if err != nil {
-		logger.Printf("Error searching albums: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search albums", "")
+		logger.Printf("Error getting starred albums: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to get starred albums", "")
 		return
 	}
 	if albums == nil {
@@ -78,8 +78,8 @@ func HandleGetStarred(w http.ResponseWriter, r *http.Request) {
 
 	songs, err := database.GetStarredSongs(ctx, musicFolderIdInt)
 	if err != nil {
-		logger.Printf("Error searching songs: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search songs", "")
+		logger.Printf("Error getting starred songs: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to get starred songs", "")
 		return
 	}
 	if songs == nil {

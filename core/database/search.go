@@ -17,6 +17,7 @@ func SearchArtists(ctx context.Context, searchQuery string, limit int, offset in
 		return []types.Artist{}, err
 	}
 
+	var args []interface{}
 	query := `SELECT m.musicbrainz_artist_id as id,
 		m.artist as name,
 		count(distinct m.musicbrainz_album_id) as album_count,
@@ -28,25 +29,29 @@ func SearchArtists(ctx context.Context, searchQuery string, limit int, offset in
 	LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = u.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = u.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_artist_id = gr.metadata_id
-	where u.user_id = ?
-	and lower(artist) like lower(?)`
+	where u.user_id = ?`
+
+	args = append(args, user.Id)
+
+	if searchQuery != "" {
+		query += ` and lower(m.artist) like lower(?)`
+		args = append(args, "%"+searchQuery+"%")
+	}
 
 	if musicFolderId != 0 {
 		query += ` and m.music_folder_id = ?`
+		args = append(args, musicFolderId)
 	}
 
 	query += ` group by m.musicbrainz_artist_id
 	order by m.musicbrainz_artist_id asc
 	limit ?
 	offset ?`
+	args = append(args, limit, offset)
 
 	var rows *sql.Rows
 
-	if musicFolderId != 0 {
-		rows, err = DB.QueryContext(ctx, query, user.Id, "%"+searchQuery+"%", musicFolderId, limit, offset)
-	} else {
-		rows, err = DB.QueryContext(ctx, query, user.Id, "%"+searchQuery+"%", limit, offset)
-	}
+	rows, err = DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.Artist{}, err
@@ -60,7 +65,7 @@ func SearchArtists(ctx context.Context, searchQuery string, limit int, offset in
 		var result types.Artist
 		var starred sql.NullString
 		if err := rows.Scan(&result.Id, &result.Name, &result.AlbumCount, &starred, &result.UserRating, &result.AverageRating); err != nil {
-			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			logger.Printf("Failed to scan row in SearchArtists: %v", err)
 			return nil, err
 		}
 
@@ -89,7 +94,7 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 	}
 
 	var albums []types.AlbumId3
-
+	var args []interface{}
 	query := `select m.musicbrainz_album_id as id,
 		m.album as name,
 		m.artist as artist,
@@ -100,7 +105,7 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 		min(m.date_added) as created,
 		m.musicbrainz_artist_id as artist_id,
 		s.created_at as starred,
-		substr(m.release_date,1,4) as year,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
 		max(pc.last_played) as played,
 		COALESCE(ur.rating, 0) AS user_rating,
@@ -115,25 +120,28 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
-	where f.user_id = ?
-	and lower(m.album) like lower(?)`
+	where f.user_id = ?`
+
+	args = append(args, user.Id)
+
+	if searchQuery != "" {
+		query += ` and lower(m.album) like lower(?)`
+		args = append(args, "%"+searchQuery+"%")
+	}
 
 	if musicFolderId != 0 {
 		query += ` and m.music_folder_id = ?`
+		args = append(args, musicFolderId)
 	}
 
 	query += ` group by m.musicbrainz_album_id
 	order by m.musicbrainz_album_id asc
-	limit ?
-	offset ?`
+	limit ? offset ?`
+	args = append(args, limit, offset)
 
 	var rows *sql.Rows
 
-	if musicFolderId != 0 {
-		rows, err = DB.QueryContext(ctx, query, user.Id, "%"+searchQuery+"%", musicFolderId, limit, offset)
-	} else {
-		rows, err = DB.QueryContext(ctx, query, user.Id, "%"+searchQuery+"%", limit, offset)
-	}
+	rows, err = DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.AlbumId3{}, err
@@ -155,7 +163,7 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 			&album.Year, &album.Genre, &played, &album.UserRating,
 			&labelString, &album.MusicBrainzId, &genresString,
 			&album.DisplayArtist, &album.SortName, &releaseDateString); err != nil {
-			logger.Printf("Failed to scan row in SelectSimilarArtists: %v", err)
+			logger.Printf("Failed to scan row in SearchAlbums: %v", err)
 			return nil, err
 		}
 
@@ -201,9 +209,23 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 		return []types.SubsonicChild{}, err
 	}
 
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, m.track_number as track,
-		substr(m.release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
-		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
+	var args []interface{}
+	query := `select m.musicbrainz_track_id as id,
+		m.musicbrainz_album_id as parent,
+		m.title,
+		m.album,
+		m.artist,
+		COALESCE(m.track_number, 0) as track,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
+		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
+		m.musicbrainz_track_id as cover_art,
+		m.size,
+		m.duration,
+		m.bitrate,
+		m.file_path as path,
+		m.date_added as created,
+		m.disc_number,
+		m.musicbrainz_artist_id as artist_id,
 		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
@@ -216,26 +238,28 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.user_id
-	where u.user_id = ?
-	and lower(m.title) like lower(?)`
+	where u.user_id = ?`
+	args = append(args, user.Id)
+
+	if searchQuery != "" {
+		query += ` and lower(m.title) like lower(?)`
+		args = append(args, "%"+searchQuery+"%")
+	}
 
 	if musicFolderId != 0 {
 		query += ` and m.music_folder_id = ?`
+		args = append(args, musicFolderId)
 	}
 
 	query += ` group by m.musicbrainz_track_id
 	order by m.musicbrainz_track_id asc
-	limit ?
-	offset ?`
+	limit ? offset ?`
+	args = append(args, limit, offset)
 
 	var rows *sql.Rows
 	var results []types.SubsonicChild
 
-	if musicFolderId != 0 {
-		rows, err = DB.QueryContext(ctx, query, user.Id, "%"+searchQuery+"%", musicFolderId, limit, offset)
-	} else {
-		rows, err = DB.QueryContext(ctx, query, user.Id, "%"+searchQuery+"%", limit, offset)
-	}
+	rows, err = DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.SubsonicChild{}, err

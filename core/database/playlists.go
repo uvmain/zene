@@ -359,8 +359,8 @@ func GetPlaylist(ctx context.Context, playlistId int) (types.PlaylistRow, error)
 }
 
 func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicChild, error) {
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, m.track_number as track,
-		substr(m.release_date,1,4) as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
+	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, COALESCE(m.track_number, 0) as track,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
 		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
 		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
 		COALESCE(ur.rating, 0) AS user_rating,

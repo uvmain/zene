@@ -46,11 +46,6 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var err error
 
-	if searchQueryParam == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "query parameter is required", "")
-		return
-	}
-
 	var artistCount int
 	if artistCountParam != "" {
 		artistCount, err = strconv.Atoi(artistCountParam)

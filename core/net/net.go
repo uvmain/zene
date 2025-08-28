@@ -89,6 +89,9 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		response.SubsonicResponse.Error.HelpUrl = helpUrl
 	}
 
+	// log the request url and params
+	logger.Printf("Error for request URL: %s, Request Params: %v", r.URL.String(), form)
+
 	WriteSubsonicResponse(w, r, response, format)
 }
 

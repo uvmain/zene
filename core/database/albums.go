@@ -181,7 +181,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 		min(m.date_added) as created,
 		m.musicbrainz_artist_id as artist_id,
 		s.created_at as starred,
-		substr(m.release_date,1,4) as year,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
 		max(pc.last_played) as played,
 		COALESCE(ur.rating, 0) AS user_rating,

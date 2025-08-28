@@ -200,6 +200,30 @@ func ParseMetadata(ctx context.Context, ffprobeOutput types.FfprobeStandard) (ty
 		}
 	}
 
+	trackNumberInt, err := strconv.Atoi(trackNumber)
+	if err != nil {
+		logger.Printf("Error converting track number to int: %v", err)
+		trackNumberInt = 0
+	}
+
+	discNumberInt, err := strconv.Atoi(discNumber)
+	if err != nil {
+		logger.Printf("Error converting disc number to int: %v", err)
+		discNumberInt = 0
+	}
+
+	totalTracksInt, err := strconv.Atoi(totalTracks)
+	if err != nil {
+		logger.Printf("Error converting total tracks to int: %v", err)
+		totalTracksInt = 0
+	}
+
+	totalDiscsInt, err := strconv.Atoi(totalDiscs)
+	if err != nil {
+		logger.Printf("Error converting total discs to int: %v", err)
+		totalDiscsInt = 0
+	}
+
 	parsedMetadata := types.FileMetadata{
 		Format:              ffprobeOutput.FormatName,
 		Duration:            ffprobeOutput.Duration,
@@ -210,15 +234,15 @@ func ParseMetadata(ctx context.Context, ffprobeOutput types.FfprobeStandard) (ty
 		Album:               parsedAlbum,
 		AlbumArtist:         parsedAlbumArtist,
 		Genre:               parsedGenre,
-		TrackNumber:         trackNumber,
-		DiscNumber:          discNumber,
+		TrackNumber:         trackNumberInt,
+		DiscNumber:          discNumberInt,
 		ReleaseDate:         parsedReleaseDate,
 		MusicBrainzArtistID: musicBrainzArtistId,
 		MusicBrainzAlbumID:  musicBrainzAlbumId,
 		MusicBrainzTrackID:  musicBrainzTrackId,
 		Label:               label,
-		TotalTracks:         totalTracks,
-		TotalDiscs:          totalDiscs,
+		TotalTracks:         totalTracksInt,
+		TotalDiscs:          totalDiscsInt,
 		Codec:               ffprobeOutput.Codec,
 		BitDepth:            ffprobeOutput.BitDepth,
 		SampleRate:          ffprobeOutput.SampleRate,
