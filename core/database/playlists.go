@@ -139,6 +139,16 @@ func PlaylistExists(ctx context.Context, playlistId int, playlistName string) (b
 	return exists, nil
 }
 
+func GetPlaylistIdByName(ctx context.Context, playlistName string) (int, error) {
+	var playlistId int
+	query := `SELECT id FROM playlists WHERE name = ?;`
+	err := DB.QueryRowContext(ctx, query, playlistName).Scan(&playlistId)
+	if err != nil {
+		return 0, fmt.Errorf("getting playlist id by name: %v", err)
+	}
+	return playlistId, nil
+}
+
 func addPlaylistEntry(ctx context.Context, playlistId int, musicbrainzTrackId string) error {
 	query := `INSERT INTO playlist_entries (playlist_id, musicbrainz_track_id, position) VALUES (?, ?, (select COALESCE(max(position)+1, 1) from playlist_entries where playlist_id = ?));`
 	_, err := DB.ExecContext(ctx, query,
@@ -172,26 +182,51 @@ func addPlaylistEntries(ctx context.Context, playlistId int, songIds []string) e
 	return nil
 }
 
+func removePlaylistEntriesByPositions(ctx context.Context, playlistId int, songIdPositions []int) error {
+	// batch delete using a transaction
+	tx, err := DB.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("starting transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	for _, songIdPosition := range songIdPositions {
+		_, err := tx.ExecContext(ctx, `DELETE FROM playlist_entries WHERE playlist_id = ? AND position = ?`, playlistId, songIdPosition)
+		if err != nil {
+			return fmt.Errorf("removing playlist entry: %v", err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("committing transaction: %v", err)
+	}
+	return nil
+}
+
 func updateAllowedUsersForPlaylist(ctx context.Context, playlistId int, allowedUserIds []int) error {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return fmt.Errorf("getting user by context: %v", err)
+	}
+
 	// remove unused user access
 	if len(allowedUserIds) == 0 {
-		// if no allowed users, remove all
-		_, err := DB.ExecContext(ctx, `DELETE FROM playlist_allowed_users WHERE playlist_id = ?`, playlistId)
+		// if no allowed users, remove all except the owner
+		_, err := DB.ExecContext(ctx, `DELETE FROM playlist_allowed_users WHERE playlist_id = ? AND user_id != ?`, playlistId, user.Id)
 		if err != nil {
 			return fmt.Errorf("removing all allowed users: %v", err)
 		}
 	} else {
-		placeholders := ""
-		args := make([]interface{}, 0, len(allowedUserIds)+1)
+		// Build placeholders for NOT IN clause
+		placeholders := make([]string, len(allowedUserIds))
+		args := make([]interface{}, 0, len(allowedUserIds)+2)
 		args = append(args, playlistId)
-		for i := range allowedUserIds {
-			if i > 0 {
-				placeholders += ","
-			}
-			placeholders += "?"
-			args = append(args, allowedUserIds[i])
+		for i, uid := range allowedUserIds {
+			placeholders[i] = "?"
+			args = append(args, uid)
 		}
-		query := "DELETE FROM playlist_allowed_users WHERE playlist_id = ? AND user_id NOT IN (" + placeholders + ")"
+		args = append(args, user.Id)
+		query := "DELETE FROM playlist_allowed_users WHERE playlist_id = ? AND user_id NOT IN (" + strings.Join(placeholders, ",") + ") AND user_id != ?"
 		_, err := DB.ExecContext(ctx, query, args...)
 		if err != nil {
 			return fmt.Errorf("removing old allowed users: %v", err)
@@ -411,4 +446,88 @@ func DeletePlaylist(ctx context.Context, playlistId int) error {
 	query := `DELETE FROM playlists WHERE id = ?`
 	_, err := DB.ExecContext(ctx, query, playlistId)
 	return err
+}
+
+func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment string, public string, coverArt string, allowedUsers []int, songIdsToAdd []string, songIndexesToRemove []int) error {
+	if playlistId == 0 && playlistName == "" {
+		return fmt.Errorf("either existing playlistId or new name parameter must be provided")
+	}
+
+	if playlistId == 0 {
+		var err error
+		playlistId, err = GetPlaylistIdByName(ctx, playlistName)
+		if err != nil {
+			return fmt.Errorf("getting playlist id by name: %v", err)
+		}
+	}
+
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return fmt.Errorf("getting user by context: %v", err)
+	}
+
+	currentPlaylist, err := GetPlaylist(ctx, playlistId)
+	if err != nil {
+		return fmt.Errorf("getting current playlist: %v", err)
+	}
+
+	if currentPlaylist.Owner != user.Username && !user.AdminRole {
+		return fmt.Errorf("user is not the owner of the playlist")
+	}
+
+	if playlistName != "" || comment != "" || public != "" || coverArt != "" {
+		var args []interface{}
+
+		query := `UPDATE playlists SET`
+
+		if playlistName != "" {
+			query += ` name = ?,`
+			args = append(args, playlistName)
+		}
+		if comment != "" {
+			query += ` comment = ?,`
+			args = append(args, comment)
+		}
+		if public != "" {
+			query += ` public = ?,`
+			args = append(args, public)
+		}
+		if coverArt != "" {
+			query += ` cover_art = ?,`
+			args = append(args, coverArt)
+		}
+
+		// trim trailing comma from query if there is one
+		query = strings.TrimSuffix(query, ",")
+		query += ` WHERE id = ?`
+		args = append(args, playlistId)
+
+		_, err = DB.ExecContext(ctx, query, args...)
+		if err != nil {
+			return fmt.Errorf("updating playlist: %v", err)
+		}
+	}
+
+	if len(allowedUsers) > 0 {
+		err := updateAllowedUsersForPlaylist(ctx, playlistId, allowedUsers)
+		if err != nil {
+			return fmt.Errorf("updating allowed users for playlist: %v", err)
+		}
+	}
+
+	if len(songIdsToAdd) > 0 {
+		err := addPlaylistEntries(ctx, playlistId, songIdsToAdd)
+		if err != nil {
+			return fmt.Errorf("adding entries to playlist: %v", err)
+		}
+	}
+
+	if len(songIndexesToRemove) > 0 {
+		err := removePlaylistEntriesByPositions(ctx, playlistId, songIndexesToRemove)
+		if err != nil {
+			return fmt.Errorf("removing entries from playlist: %v", err)
+		}
+	}
+
+	return nil
 }

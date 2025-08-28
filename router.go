@@ -76,6 +76,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getPlaylists.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylists)))
 	router.Handle("/rest/getPlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylist)))
 	router.Handle("/rest/createPlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePlaylist)))
+	router.Handle("/rest/updatePlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdatePlaylist)))
 	router.Handle("/rest/deletePlaylist.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePlaylist)))
 	// Media retrieval
 	router.Handle("/rest/stream.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))
