@@ -14,8 +14,3 @@ type AlbumsResponse struct {
 	Genres              string `json:"genres"`
 	ReleaseDate         string `json:"release_date"`
 }
-
-type ScanResponse struct {
-	Success bool   `json:"success"`
-	Status  string `json:"status"`
-}

@@ -89,6 +89,11 @@ type TokenInfo struct {
 	Username string `xml:"username" json:"username"`
 }
 
+type CoverArt struct {
+	Id   string `xml:"id,attr" json:"id"`
+	Size int    `xml:"size,attr" json:"size"`
+}
+
 type ItemDate struct {
 	Year  int `xml:"year,attr,omitempty" json:"year,omitempty"`
 	Month int `xml:"month,attr,omitempty" json:"month,omitempty"`
