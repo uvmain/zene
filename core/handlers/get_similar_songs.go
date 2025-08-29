@@ -19,8 +19,12 @@ func HandleGetSimilarSongs(w http.ResponseWriter, r *http.Request) {
 
 	var version int
 	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getsimilarsongs":
+		version = 1
 	case "/rest/getsimilarsongs.view":
 		version = 1
+	case "/rest/getsimilarsongs2":
+		version = 2
 	case "/rest/getsimilarsongs2.view":
 		version = 2
 	}

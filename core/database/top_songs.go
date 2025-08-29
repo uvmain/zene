@@ -89,6 +89,7 @@ func SelectTopSongsForArtistId(ctx context.Context, artistId string) ([]types.Su
 
 		result.Duration = int(durationFloat)
 		result.IsDir = false
+		result.MusicBrainzId = result.Id
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
@@ -242,6 +243,7 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 
 		result.Duration = int(durationFloat)
 		result.IsDir = false
+		result.MusicBrainzId = result.Id
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})

@@ -297,6 +297,7 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 
 		result.Duration = int(durationFloat)
 		result.IsDir = false
+		result.MusicBrainzId = result.Id
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})

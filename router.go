@@ -57,6 +57,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getArtistInfo2.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistInfo)))
 	router.Handle("/rest/getAlbumInfo.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumInfo)))
 	router.Handle("/rest/getAlbumInfo2.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumInfo)))
+	router.Handle("/rest/getSimilarSongs", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSimilarSongs))) // Feishin does not use the .view suffix
 	router.Handle("/rest/getSimilarSongs.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSimilarSongs)))
 	router.Handle("/rest/getSimilarSongs2.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSimilarSongs)))
 	router.Handle("/rest/getTopSongs.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTopSongs)))
