@@ -15,7 +15,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	}
 	query := `SELECT m.musicbrainz_artist_id as id,
 		m.artist as name,
-		count(distinct m.musicbrainz_album_id) as album_count,
+		coalesce(count(distinct m.musicbrainz_album_id), 0) as album_count,
 		s.created_at as starred,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating),0.0) AS average_rating
