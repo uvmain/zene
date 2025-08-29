@@ -130,7 +130,7 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 		m.album, m.artist, REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_album_id as cover_art,
 		sum(m.duration) as duration, min(date_added) as created, m.label as label,
-		m.album_artist, m.genre as genres,
+		m.album_artist, m.genre as genres, m.musicbrainz_artist_id as musicbrainz_artist,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
 		COALESCE(SUM(pc.play_count), 0) AS play_count,
@@ -160,7 +160,7 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 
 		if err := rows.Scan(&child.Id, &child.Parent, &child.Album, &child.Artist, &child.Year,
 			&child.Genre, &child.CoverArt, &durationFloat, &child.Created, &labelString, &albumArtist, &genreString,
-			&child.UserRating, &child.AverageRating, &child.PlayCount, &child.SongCount); err != nil {
+			&child.ArtistId, &child.UserRating, &child.AverageRating, &child.PlayCount, &child.SongCount); err != nil {
 			return nil, err
 		}
 		child.Genres = []types.ChildGenre{}
