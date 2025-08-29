@@ -27,28 +27,7 @@ func createScansTable(ctx context.Context) {
 	createTable(ctx, schema)
 }
 
-func GetScans(ctx context.Context, userId int, metadataId string) ([]ScanRow, error) {
-	query := `select count, folder_count, started_date, type, completed_date from scans`
 
-	rows, err := DB.QueryContext(ctx, query, userId)
-	if err != nil {
-		return nil, fmt.Errorf("getting scans: %v", err)
-	}
-	defer rows.Close()
-
-	var scans []ScanRow
-	for rows.Next() {
-		var scan ScanRow
-		if err := rows.Scan(&scan.Count, &scan.FolderCount, &scan.StartedDate, &scan.Type, &scan.CompletedDate); err != nil {
-			return nil, fmt.Errorf("scanning scan row: %v", err)
-		}
-		scans = append(scans, scan)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating scan rows: %v", err)
-	}
-	return scans, nil
-}
 
 func GetLatestScan(ctx context.Context) (ScanRow, error) {
 	query := `SELECT id, count, folder_count, started_date, type, completed_date FROM scans ORDER BY id DESC LIMIT 1`

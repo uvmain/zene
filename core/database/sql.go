@@ -11,33 +11,4 @@ func getUnendedMetadataWithPlaycountsSql(userId int) string {
 		"SELECT musicbrainz_track_id, SUM(play_count) AS global_play_count FROM play_counts GROUP BY musicbrainz_track_id ) AS gp ON m.musicbrainz_track_id = gp.musicbrainz_track_id", userId)
 }
 
-func getMetadataWithGenresSql(userId int, genres []string, condition string, limit int, random string) string {
-	stmt := getUnendedMetadataWithPlaycountsSql(userId)
-	stmt += " JOIN track_genres tg ON m.file_path = tg.file_path"
-	for index, genre := range genres {
-		if genre == "" {
-			continue
-		}
-		if index != 0 {
-			if condition == "or" {
-				stmt += " OR "
-			} else {
-				stmt += " AND "
-			}
-		} else {
-			stmt += " WHERE "
-		}
-		stmt += fmt.Sprintf("(tg.genre = '%s')", genre)
-	}
-	if random != "" {
-		randomInteger, err := strconv.Atoi(random)
-		if err == nil {
-			stmt += fmt.Sprintf(" ORDER BY ((m.rowid * %d) %% 1000000)", randomInteger)
-		}
-	}
-	if limit > 0 {
-		return fmt.Sprintf("%s limit %d;", stmt, limit)
-	} else {
-		return fmt.Sprintf("%s;", stmt)
-	}
-}
+
