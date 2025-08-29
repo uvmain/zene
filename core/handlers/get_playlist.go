@@ -21,10 +21,15 @@ func HandleGetPlaylist(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
+	if playlistId == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter for playlist is required", "")
+		return
+	}
+
 	playlistIdInt, err := strconv.Atoi(playlistId)
 	if err != nil {
-		logger.Printf("Error converting playlistId to int in GetPlaylist: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid playlist ID", "")
+		logger.Printf("Error converting playlist id to int in GetPlaylist: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid id parameter for playlist", "")
 		return
 	}
 

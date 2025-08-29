@@ -114,6 +114,8 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 		return types.PlaylistRow{}, fmt.Errorf("either existing playlistId or new name parameter must be provided")
 	}
 
+	logger.Printf("Created new playlist with id %d", newPlaylistId)
+
 	newPlaylist, err := GetPlaylist(ctx, newPlaylistId)
 	if err != nil {
 		return types.PlaylistRow{}, fmt.Errorf("getting playlist after creation: %v", err)
@@ -255,30 +257,30 @@ func RemoveOrphanedPlaylistEntries(ctx context.Context) error {
 }
 
 func GetPlaylists(ctx context.Context, username string) ([]types.PlaylistRow, error) {
-	query := `select p.id as id,
-		p.name as name,
-		u.username as owner,
-		p.public,
-		p.created,
-		p.changed,
-		count(pe.musicbrainz_track_id) as song_count,
-		cast(sum(m.duration) as integer) as duration,
-		coalesce(p.comment, '') as comment,
-		coalesce(p.cover_art, min(pe.musicbrainz_track_id)) as cover_art,
-		au.allowed_users
+	query := `select 
+    p.id as id,
+    p.name as name,
+    u.username as owner,
+    p.public,
+    p.created,
+    p.changed,
+    count(pe.musicbrainz_track_id) as song_count,
+    coalesce(cast(sum(m.duration) as integer), 0) as duration,
+    coalesce(p.comment, '') as comment,
+    coalesce(coalesce(p.cover_art, min(pe.musicbrainz_track_id)), '') as cover_art,
+    au.allowed_users
 	from playlists p
 	join users u on u.id = p.user_id
-	join playlist_entries pe on pe.playlist_id = p.id
-	join (
+	left join playlist_entries pe on pe.playlist_id = p.id
+	left join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
+	left join (
 		select playlist_id, group_concat(u.username, ',') as allowed_users
 		from playlist_allowed_users pau
 		join users u on u.id = pau.user_id
 		group by playlist_id
-		order by playlist_id
 	) au on au.playlist_id = p.id
-	join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
 	where u.username = ?
-	group by p.id, au.playlist_id;`
+	group by p.id, au.allowed_users;`
 
 	rows, err := DB.QueryContext(ctx, query, username)
 	if err != nil {
@@ -311,30 +313,30 @@ func GetPlaylist(ctx context.Context, playlistId int) (types.PlaylistRow, error)
 		return types.PlaylistRow{}, err
 	}
 
-	query := `select p.id as id,
-		p.name as name,
-		u.username as owner,
-		p.public,
-		p.created,
-		p.changed,
-		count(pe.musicbrainz_track_id) as song_count,
-		cast(sum(m.duration) as integer) as duration,
-		coalesce(p.comment, '') as comment,
-		coalesce(p.cover_art, min(pe.musicbrainz_track_id)) as cover_art,
-		au.allowed_users
+	query := `select 
+    p.id as id,
+    p.name as name,
+    u.username as owner,
+    p.public,
+    p.created,
+    p.changed,
+    count(pe.musicbrainz_track_id) as song_count,
+    coalesce(cast(sum(m.duration) as integer), 0) as duration,
+    coalesce(p.comment, '') as comment,
+    coalesce(coalesce(p.cover_art, min(pe.musicbrainz_track_id)), '') as cover_art,
+    au.allowed_users
 	from playlists p
 	join users u on u.id = p.user_id
-	join playlist_entries pe on pe.playlist_id = p.id
-	join (
+	left join playlist_entries pe on pe.playlist_id = p.id
+	left join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
+	left join (
 		select playlist_id, group_concat(u.username, ',') as allowed_users
 		from playlist_allowed_users pau
 		join users u on u.id = pau.user_id
 		group by playlist_id
-		order by playlist_id
 	) au on au.playlist_id = p.id
-	join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
 	where p.id = ?
-	group by p.id, au.playlist_id;`
+	group by p.id, au.allowed_users;`
 
 	var result types.PlaylistRow
 	var allowedUsersString string
