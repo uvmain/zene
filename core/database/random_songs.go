@@ -93,7 +93,7 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		result.Contributors = []types.ChildContributors{}
 		result.Moods = []string{}
 
-		if err := rows.Scan(&result.Id, &result.AlbumId, &result.Title, &result.Album, &result.Artist,
+		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist,
 			&result.Track, &result.Year, &result.Genre, &result.CoverArt, &result.Size,
 			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
 			&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate,
@@ -113,9 +113,9 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		result.ContentType = logic.InferMimeTypeFromFileExtension(result.Path)
 		result.Suffix = strings.Replace(filepath.Ext(result.Path), ".", "", 1)
 		result.Duration = int(durationFloat)
-		result.Parent = result.AlbumId
 		result.SortName = strings.ToLower(result.Title)
 		result.MusicBrainzId = result.Id
+		result.AlbumId = result.Parent
 
 		result.Genres = []types.ChildGenre{}
 		for _, genre := range strings.Split(genreString, ";") {
