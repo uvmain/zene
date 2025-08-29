@@ -19,16 +19,25 @@ func HandleGetSimilarSongs(w http.ResponseWriter, r *http.Request) {
 
 	var version int
 	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getsimilarsongs":
+		version = 1
 	case "/rest/getsimilarsongs.view":
 		version = 1
+	case "/rest/getsimilarsongs2":
+		version = 2
 	case "/rest/getsimilarsongs2.view":
 		version = 2
 	}
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	artistId := form["id"]
+	musicbrainzId := form["id"]
 	count := form["count"]
+
+	if musicbrainzId == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
+		return
+	}
 
 	ctx := r.Context()
 
@@ -44,7 +53,7 @@ func HandleGetSimilarSongs(w http.ResponseWriter, r *http.Request) {
 		countInt = 50 // default to 50 if param is not provided
 	}
 
-	songs, err := database.GetSimilarSongs(ctx, countInt, artistId)
+	songs, err := database.GetSimilarSongs(ctx, countInt, musicbrainzId)
 	if err != nil {
 		logger.Printf("Error getting similar songs: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error getting similar songs", "")

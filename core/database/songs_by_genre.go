@@ -17,6 +17,7 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		return []types.SubsonicChild{}, err
 	}
 
+	var args []interface{}
 	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as album_id, m.title, m.album, m.artist, COALESCE(m.track_number, 0) as track,
 		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
 		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
@@ -35,16 +36,19 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
 	where f.user_id = ?
-	and lower(g.genre) = lower(?)
-	`
+	and lower(g.genre) = lower(?)`
+
+	args = append(args, requestUser.Id, genre)
 
 	if musicFolderInt != 0 {
-		query += fmt.Sprintf(` and m.music_folder_id = %d`, musicFolderInt)
+		query += ` and m.music_folder_id = ?`
+		args = append(args, musicFolderInt)
 	}
 
 	query += ` group by m.musicbrainz_track_id limit ? offset ?`
+	args = append(args, count, offset)
 
-	rows, err := DB.QueryContext(ctx, query, requestUser.Id, genre, count, offset)
+	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("getting scans: %v", err)
 	}
@@ -58,6 +62,7 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		var durationFloat float64
 		var albumArtist string
 		var starred sql.NullString
+		var played sql.NullString
 
 		result.IsDir = false
 		result.MediaType = "song"
@@ -73,12 +78,15 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
 			&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate,
 			&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
-			&result.Played, &starred); err != nil {
+			&played, &starred); err != nil {
 			logger.Printf("Failed to scan row in GetSongsByGenre: %v", err)
 			return []types.SubsonicChild{}, err
 		}
 		if starred.Valid {
 			result.Starred = starred.String
+		}
+		if played.Valid {
+			result.Played = played.String
 		}
 
 		result.ContentType = logic.InferMimeTypeFromFileExtension(result.Path)

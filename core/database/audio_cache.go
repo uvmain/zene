@@ -85,9 +85,9 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 	return nil
 }
 
-func DeleteAudioCacheEntry(ctx context.Context, cache_key string) error {
+func DeleteAudioCacheEntry(cache_key string) error {
 	stmt := "DELETE FROM audio_cache WHERE cache_key = ?"
-	_, err := DB.ExecContext(ctx, stmt, cache_key)
+	_, err := DB.Exec(stmt, cache_key)
 
 	if err != nil {
 		return fmt.Errorf("deleting audio cache row: %v", err)

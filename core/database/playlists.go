@@ -51,9 +51,9 @@ func createPlaylistEntriesTable(ctx context.Context) {
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
     playlist_id          INTEGER NOT NULL,
     musicbrainz_track_id TEXT NOT NULL,
-    position             INTEGER NOT NULL,
+    sort_order           INTEGER NOT NULL,
     FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
-    UNIQUE (playlist_id, position)
+    UNIQUE (playlist_id, sort_order)
 	);`
 	createTable(ctx, schema)
 	createIndex(ctx, "idx_playlist_entries_playlist", "playlist_entries", []string{"playlist_id"}, false)
@@ -114,6 +114,8 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 		return types.PlaylistRow{}, fmt.Errorf("either existing playlistId or new name parameter must be provided")
 	}
 
+	logger.Printf("Created new playlist with id %d", newPlaylistId)
+
 	newPlaylist, err := GetPlaylist(ctx, newPlaylistId)
 	if err != nil {
 		return types.PlaylistRow{}, fmt.Errorf("getting playlist after creation: %v", err)
@@ -150,7 +152,7 @@ func GetPlaylistIdByName(ctx context.Context, playlistName string) (int, error) 
 }
 
 func addPlaylistEntry(ctx context.Context, playlistId int, musicbrainzTrackId string) error {
-	query := `INSERT INTO playlist_entries (playlist_id, musicbrainz_track_id, position) VALUES (?, ?, (select COALESCE(max(position)+1, 1) from playlist_entries where playlist_id = ?));`
+	query := `INSERT INTO playlist_entries (playlist_id, musicbrainz_track_id, sort_order) VALUES (?, ?, (select COALESCE(max(sort_order)+1, 1) from playlist_entries where playlist_id = ?));`
 	_, err := DB.ExecContext(ctx, query,
 		playlistId,
 		musicbrainzTrackId,
@@ -182,24 +184,27 @@ func addPlaylistEntries(ctx context.Context, playlistId int, songIds []string) e
 	return nil
 }
 
-func removePlaylistEntriesByPositions(ctx context.Context, playlistId int, songIdPositions []int) error {
-	// batch delete using a transaction
-	tx, err := DB.BeginTx(ctx, nil)
+func removePlaylistEntriesByIndexes(ctx context.Context, playlistId int, songIdIndexes []int) error {
+	existingEntries, err := GetPlaylistEntries(ctx, playlistId)
 	if err != nil {
-		return fmt.Errorf("starting transaction: %v", err)
+		return fmt.Errorf("getting existing playlist entries: %v", err)
 	}
-	defer tx.Rollback()
 
-	for _, songIdPosition := range songIdPositions {
-		_, err := tx.ExecContext(ctx, `DELETE FROM playlist_entries WHERE playlist_id = ? AND position = ?`, playlistId, songIdPosition)
+	entryCount := len(existingEntries)
+	for _, songIdIndex := range songIdIndexes {
+		if songIdIndex < 0 || songIdIndex >= entryCount {
+			return fmt.Errorf("songIdIndex %d out of range (playlist has %d entries)", songIdIndex, entryCount)
+		}
+		trackId := existingEntries[songIdIndex].Id
+		_, err := DB.ExecContext(ctx, `DELETE FROM playlist_entries WHERE playlist_id = ? AND musicbrainz_track_id = ?`, playlistId, trackId)
 		if err != nil {
+			logger.Printf("Error removing track %s from playlist %d: %v", existingEntries[songIdIndex].Title, playlistId, err)
 			return fmt.Errorf("removing playlist entry: %v", err)
+		} else {
+			logger.Printf("Successfully removed track %s from playlist %d", existingEntries[songIdIndex].Title, playlistId)
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("committing transaction: %v", err)
-	}
 	return nil
 }
 
@@ -255,30 +260,30 @@ func RemoveOrphanedPlaylistEntries(ctx context.Context) error {
 }
 
 func GetPlaylists(ctx context.Context, username string) ([]types.PlaylistRow, error) {
-	query := `select p.id as id,
-		p.name as name,
-		u.username as owner,
-		p.public,
-		p.created,
-		p.changed,
-		count(pe.musicbrainz_track_id) as song_count,
-		cast(sum(m.duration) as integer) as duration,
-		coalesce(p.comment, '') as comment,
-		coalesce(p.cover_art, min(pe.musicbrainz_track_id)) as cover_art,
-		au.allowed_users
+	query := `select 
+    p.id as id,
+    p.name as name,
+    u.username as owner,
+    p.public,
+    p.created,
+    p.changed,
+    count(pe.musicbrainz_track_id) as song_count,
+    coalesce(cast(sum(m.duration) as integer), 0) as duration,
+    coalesce(p.comment, '') as comment,
+    coalesce(coalesce(p.cover_art, min(pe.musicbrainz_track_id)), '') as cover_art,
+    au.allowed_users
 	from playlists p
 	join users u on u.id = p.user_id
-	join playlist_entries pe on pe.playlist_id = p.id
-	join (
+	left join playlist_entries pe on pe.playlist_id = p.id
+	left join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
+	left join (
 		select playlist_id, group_concat(u.username, ',') as allowed_users
 		from playlist_allowed_users pau
 		join users u on u.id = pau.user_id
 		group by playlist_id
-		order by playlist_id
 	) au on au.playlist_id = p.id
-	join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
 	where u.username = ?
-	group by p.id, au.playlist_id;`
+	group by p.id, au.allowed_users;`
 
 	rows, err := DB.QueryContext(ctx, query, username)
 	if err != nil {
@@ -311,30 +316,30 @@ func GetPlaylist(ctx context.Context, playlistId int) (types.PlaylistRow, error)
 		return types.PlaylistRow{}, err
 	}
 
-	query := `select p.id as id,
-		p.name as name,
-		u.username as owner,
-		p.public,
-		p.created,
-		p.changed,
-		count(pe.musicbrainz_track_id) as song_count,
-		cast(sum(m.duration) as integer) as duration,
-		coalesce(p.comment, '') as comment,
-		coalesce(p.cover_art, min(pe.musicbrainz_track_id)) as cover_art,
-		au.allowed_users
+	query := `select 
+    p.id as id,
+    p.name as name,
+    u.username as owner,
+    p.public,
+    p.created,
+    p.changed,
+    count(pe.musicbrainz_track_id) as song_count,
+    coalesce(cast(sum(m.duration) as integer), 0) as duration,
+    coalesce(p.comment, '') as comment,
+    coalesce(coalesce(p.cover_art, min(pe.musicbrainz_track_id)), '') as cover_art,
+    au.allowed_users
 	from playlists p
 	join users u on u.id = p.user_id
-	join playlist_entries pe on pe.playlist_id = p.id
-	join (
+	left join playlist_entries pe on pe.playlist_id = p.id
+	left join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
+	left join (
 		select playlist_id, group_concat(u.username, ',') as allowed_users
 		from playlist_allowed_users pau
 		join users u on u.id = pau.user_id
 		group by playlist_id
-		order by playlist_id
 	) au on au.playlist_id = p.id
-	join metadata m on m.musicbrainz_track_id = pe.musicbrainz_track_id
 	where p.id = ?
-	group by p.id, au.playlist_id;`
+	group by p.id, au.allowed_users;`
 
 	var result types.PlaylistRow
 	var allowedUsersString string
@@ -378,7 +383,8 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
 	where p.id = ?
-	group by m.musicbrainz_track_id`
+	group by m.musicbrainz_track_id
+	order by pe.sort_order asc`
 
 	var results []types.SubsonicChild
 
@@ -418,8 +424,8 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 		}
 
 		result.Duration = int(durationFloat)
-		result.Title = result.Album
-		result.IsDir = true
+		result.IsDir = false
+		result.MusicBrainzId = result.Id
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
@@ -523,7 +529,7 @@ func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment s
 	}
 
 	if len(songIndexesToRemove) > 0 {
-		err := removePlaylistEntriesByPositions(ctx, playlistId, songIndexesToRemove)
+		err := removePlaylistEntriesByIndexes(ctx, playlistId, songIndexesToRemove)
 		if err != nil {
 			return fmt.Errorf("removing entries from playlist: %v", err)
 		}

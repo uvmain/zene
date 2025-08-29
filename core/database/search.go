@@ -175,6 +175,9 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 			album.Played = played.String
 		}
 
+		album.Title = album.Name
+		album.Album = album.Name
+
 		album.RecordLabels = []types.ChildRecordLabel{}
 		album.RecordLabels = append(album.RecordLabels, types.ChildRecordLabel{Name: labelString.String})
 
@@ -296,8 +299,8 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 		}
 
 		result.Duration = int(durationFloat)
-		result.Title = result.Album
 		result.IsDir = false
+		result.MusicBrainzId = result.Id
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})

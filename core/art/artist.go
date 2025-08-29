@@ -15,20 +15,7 @@ import (
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/musicbrainz"
-	"zene/core/types"
 )
-
-func ImportArtForArtists(ctx context.Context, artists []types.ArtistResponse) {
-	for _, artist := range artists {
-		if artist.MusicBrainzArtistID == "" {
-			logger.Printf("Skipping artist with empty musicbrainz ID: %s", artist.Artist)
-			continue
-		}
-		logger.Printf("Importing art for artist: %s (%s)", artist.Artist, artist.MusicBrainzArtistID)
-		getArtistArtFromInternet(ctx, artist.MusicBrainzArtistID, artist.Artist)
-	}
-	logger.Println("Finished importing art for artists")
-}
 
 func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, artistName string) {
 	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)

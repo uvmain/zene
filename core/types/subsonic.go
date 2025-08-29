@@ -33,7 +33,7 @@ type SubsonicStandard struct {
 	SongsByGenre           *SongsByGenre             `xml:"songsByGenre,omitempty" json:"songsByGenre,omitempty"`
 	MusicDirectory         *SubsonicDirectory        `xml:"directory,omitempty" json:"directory,omitempty"`
 	NowPlaying             *SubsonicNowPlaying       `xml:"nowPlaying,omitempty" json:"nowPlaying,omitempty"`
-	Artist                 *SubsonicArtistWrapper    `xml:"artist,omitempty" json:"artist,omitempty"`
+	Artist                 *Artist                   `xml:"artist,omitempty" json:"artist,omitempty"`
 	Artists                *SubsonicArtistsWrapper   `xml:"artists,omitempty" json:"artists,omitempty"`
 	Album                  *AlbumId3                 `xml:"album,omitempty" json:"album,omitempty"`
 	ArtistInfo             *ArtistInfo               `xml:"artistInfo,omitempty" json:"artistInfo,omitempty"`
@@ -89,6 +89,11 @@ type TokenInfo struct {
 	Username string `xml:"username" json:"username"`
 }
 
+type CoverArt struct {
+	Id   string `xml:"id,attr" json:"id"`
+	Size int    `xml:"size,attr" json:"size"`
+}
+
 type ItemDate struct {
 	Year  int `xml:"year,attr,omitempty" json:"year,omitempty"`
 	Month int `xml:"month,attr,omitempty" json:"month,omitempty"`
@@ -96,7 +101,7 @@ type ItemDate struct {
 }
 
 type TopSongs struct {
-	Songs []SubsonicChild `xml:"topSongs>song" json:"topSongs"`
+	Songs []SubsonicChild `xml:"song" json:"song"`
 }
 
 type Starred struct {

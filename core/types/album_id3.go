@@ -2,9 +2,11 @@ package types
 
 type AlbumId3 struct {
 	Id            string             `xml:"id,attr" json:"id"`
-	Name          string             `xml:"name,attr" json:"name"`                             // album name
-	Artist        string             `xml:"artist,attr,omitempty" json:"artist,omitempty"`     // artist name
-	ArtistId      string             `xml:"artistId,attr,omitempty" json:"artistId,omitempty"` // musicbrainz_artist_id
+	Album         string             `xml:"album" json:"album"`
+	Title         string             `xml:"title,attr" json:"title"`
+	Name          string             `xml:"name,attr" json:"name"`
+	Artist        string             `xml:"artist,attr,omitempty" json:"artist,omitempty"`
+	ArtistId      string             `xml:"artistId,attr,omitempty" json:"artistId,omitempty"`
 	CoverArt      string             `xml:"coverArt,attr,omitempty" json:"coverArt,omitempty"`
 	SongCount     int                `xml:"songCount,attr" json:"songCount"`
 	Duration      int                `xml:"duration,attr" json:"duration"` // in seconds
