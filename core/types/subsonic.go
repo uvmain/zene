@@ -86,7 +86,7 @@ type LicenseInfo struct {
 }
 
 type TokenInfo struct {
-	Username string `xml:"username" json:"username"`
+	Username string `xml:"username,attr" json:"username"`
 }
 
 type CoverArt struct {
