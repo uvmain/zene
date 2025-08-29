@@ -11,7 +11,32 @@ import (
 	"zene/core/types"
 )
 
-func GetSimilarSongs(ctx context.Context, count int, artistId string) ([]types.SubsonicChild, error) {
+func GetSimilarSongs(ctx context.Context, count int, musicbrainzId string) ([]types.SubsonicChild, error) {
+	valid, metadataRow, err := IsValidMetadataId(ctx, musicbrainzId)
+	if err != nil || !valid {
+		return []types.SubsonicChild{}, fmt.Errorf("invalid musicbrainz id '%s': %v", musicbrainzId, err)
+	}
+
+	var query string
+	var artistId string
+
+	if metadataRow.MusicbrainzTrackId {
+		query = `select musicbrainz_artist_id from metadata where musicbrainz_track_id = ? limit 1`
+	} else if metadataRow.MusicbrainzAlbumId {
+		query = `select musicbrainz_artist_id from metadata where musicbrainz_album_id = ? limit 1`
+	}
+
+	if !metadataRow.MusicbrainzArtistId {
+		err := DB.QueryRow(query, musicbrainzId).Scan(&artistId)
+		if err == sql.ErrNoRows {
+			return []types.SubsonicChild{}, fmt.Errorf("no artist found for musicbrainz ID: %s", musicbrainzId)
+		} else if err != nil {
+			return []types.SubsonicChild{}, fmt.Errorf("error querying artist ID: %v", err)
+		}
+	} else {
+		artistId = musicbrainzId
+	}
+
 	requestUser, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.SubsonicChild{}, err
@@ -19,7 +44,7 @@ func GetSimilarSongs(ctx context.Context, count int, artistId string) ([]types.S
 
 	var args []interface{}
 
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist,
+	query = `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist,
 		COALESCE(m.track_number, 0) as track,
 		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
 		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,

@@ -128,6 +128,9 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 			album.Played = played.String
 		}
 
+		album.Title = album.Name
+		album.Album = album.Name
+
 		album.RecordLabels = []types.ChildRecordLabel{}
 		album.RecordLabels = append(album.RecordLabels, types.ChildRecordLabel{Name: labelString.String})
 
