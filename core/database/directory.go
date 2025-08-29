@@ -82,7 +82,8 @@ func GetArtistDirectory(ctx context.Context, musicbrainzArtistId string) (types.
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
 		COALESCE(SUM(pc.play_count), 0) AS play_count,
-		COUNT(m.musicbrainz_track_id) AS song_count
+		COUNT(m.musicbrainz_track_id) AS song_count,
+		COUNT(distinct m.musicbrainz_album_id) AS album_count
 	FROM metadata m
 	JOIN user_music_folders f ON f.folder_id = m.music_folder_id AND f.user_id = 1
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
@@ -95,7 +96,8 @@ func GetArtistDirectory(ctx context.Context, musicbrainzArtistId string) (types.
 	var starred sql.NullString
 
 	err = DB.QueryRowContext(ctx, query, user.Id, musicbrainzArtistId).Scan(
-		&directory.Name, &starred, &directory.UserRating, &directory.AverageRating, &directory.PlayCount, &directory.SongCount,
+		&directory.Name, &starred, &directory.UserRating, &directory.AverageRating,
+		&directory.PlayCount, &directory.SongCount, &directory.AlbumCount,
 	)
 
 	if err == sql.ErrNoRows {

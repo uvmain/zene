@@ -38,13 +38,13 @@ type SubsonicChild struct {
 	Comment            string              `xml:"comment,attr,omitempty" json:"comment,omitempty"`
 	SortName           string              `xml:"sortName,attr,omitempty" json:"sortName,omitempty"`
 	MusicBrainzId      string              `xml:"musicBrainzId,attr,omitempty" json:"musicBrainzId,omitempty"`
-	Genres             []ChildGenre        `xml:"genres>genre" json:"genres,omitempty"`
-	Artists            []ChildArtist       `xml:"artists>artist" json:"artists,omitempty"`
+	Genres             []ChildGenre        `xml:"genres" json:"genres,omitempty"`
+	Artists            []ChildArtist       `xml:"artists" json:"artists,omitempty"`
 	DisplayArtist      string              `xml:"displayArtist,attr,omitempty" json:"displayArtist,omitempty"`
-	AlbumArtists       []ChildArtist       `xml:"albumArtists>artist" json:"albumArtists,omitempty"`
+	AlbumArtists       []ChildArtist       `xml:"albumArtists" json:"albumArtists,omitempty"`
 	DisplayAlbumArtist string              `xml:"displayAlbumArtist,attr,omitempty" json:"displayAlbumArtist,omitempty"`
-	Contributors       []ChildContributors `xml:"contributors>contributor" json:"contributors,omitempty"`
-	Moods              []string            `xml:"moods>mood" json:"moods,omitempty"`
+	Contributors       []ChildContributors `xml:"contributors" json:"contributors,omitempty"`
+	Moods              []string            `xml:"moods" json:"moods,omitempty"`
 	DisplayComposer    string              `xml:"displayComposer,attr,omitempty" json:"displayComposer,omitempty"`
 	ExplicitStatus     string              `xml:"explicitStatus,attr,omitempty" json:"explicitStatus,omitempty"`
 }
