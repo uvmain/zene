@@ -36,29 +36,6 @@ func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
 	return nil
 }
 
-func GetUserStarsForUser(ctx context.Context, userId int) ([]string, error) {
-	query := "SELECT metadata_id FROM user_stars WHERE user_id = ?"
-	rows, err := DB.QueryContext(ctx, query, userId)
-	if err != nil {
-		return nil, fmt.Errorf("querying user stars: %v", err)
-	}
-	defer rows.Close()
-
-	var metadataIds []string
-	for rows.Next() {
-		var metadataId string
-		if err := rows.Scan(&metadataId); err != nil {
-			return nil, fmt.Errorf("scanning user star row: %v", err)
-		}
-		metadataIds = append(metadataIds, metadataId)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating user star rows: %v", err)
-	}
-
-	return metadataIds, nil
-}
-
 func DeleteUserStar(ctx context.Context, userId int, metadataId string) error {
 	query := `DELETE FROM user_stars WHERE user_id = ? AND metadata_id = ?`
 	_, err := DB.ExecContext(ctx, query, userId, metadataId)

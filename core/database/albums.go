@@ -110,20 +110,6 @@ func SelectAllAlbumsForMusicDir(ctx context.Context, musicDir string, random str
 	return results, nil
 }
 
-func SelectAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumsResponse, error) {
-	query := `SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM metadata where musicbrainz_album_id = ? limit 1;`
-
-	var result types.AlbumsResponse
-
-	err := DB.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&result.Album, &result.Artist, &result.MusicBrainzAlbumID, &result.MusicBrainzArtistID, &result.Genres, &result.ReleaseDate)
-	if err == sql.ErrNoRows {
-		return types.AlbumsResponse{}, nil
-	} else if err != nil {
-		return types.AlbumsResponse{}, err
-	}
-	return result, nil
-}
-
 func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {

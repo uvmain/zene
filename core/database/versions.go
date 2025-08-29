@@ -69,26 +69,6 @@ func InsertVersion(ctx context.Context, version types.Version) error {
 	return nil
 }
 
-func GetVersions(ctx context.Context) ([]types.Version, error) {
-	query := "SELECT server_version, database_version, subsonic_api_version, open_subsonic_api_version, timestamp FROM versions order by id desc;"
-	rows, err := DB.QueryContext(ctx, query)
-	if err != nil {
-		return []types.Version{}, fmt.Errorf("querying versions in GetVersions: %v", err)
-	}
-	defer rows.Close()
-
-	var result []types.Version
-	for rows.Next() {
-		var row types.Version
-		err := rows.Scan(&row.ServerVersion, &row.DatabaseVersion, &row.SubsonicApiVersion, &row.OpenSubsonicApiVersion, &row.Timestamp)
-		if err != nil {
-			return []types.Version{}, fmt.Errorf("scanning version row: %v", err)
-		}
-		result = append(result, row)
-	}
-	return result, nil
-}
-
 func GetLatestVersion(ctx context.Context) (types.Version, error) {
 	query := "SELECT server_version, database_version, subsonic_api_version, open_subsonic_api_version, timestamp FROM versions ORDER BY id desc limit 1;"
 

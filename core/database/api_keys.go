@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
 )
@@ -38,34 +37,35 @@ func ValidateApiKey(ctx context.Context, apiKey string) (types.User, error) {
 	return row, nil
 }
 
-func InsertApiKey(ctx context.Context, userId int, apiKey string) error {
-	query := `
-		INSERT INTO api_keys (user_id, apiKey, dateCreated)
-		VALUES (?, ?, ?)`
-	dateCreated := logic.GetCurrentTimeFormatted()
-	result, err := DB.ExecContext(ctx, query, userId, apiKey, dateCreated)
-	if err != nil || result == nil {
-		return fmt.Errorf("inserting API key: %v", err)
-	}
+// the following functions are unused until custom endpoints are implemented for the frontend to use
 
-	return nil
-}
+// func InsertApiKey(ctx context.Context, userId int, apiKey string) error {
+// 	query := `
+// 		INSERT INTO api_keys (user_id, apiKey, dateCreated)
+// 		VALUES (?, ?, ?)`
+// 	dateCreated := logic.GetCurrentTimeFormatted()
+// 	result, err := DB.ExecContext(ctx, query, userId, apiKey, dateCreated)
+// 	if err != nil || result == nil {
+// 		return fmt.Errorf("inserting API key: %v", err)
+// 	}
+// 	return nil
+// }
 
-func UpdateApiKeyLastUsed(ctx context.Context, apiKey string) error {
-	query := `UPDATE api_keys SET last_used = ? WHERE api_key = ?`
-	_, err := DB.ExecContext(ctx, query, logic.GetCurrentTimeFormatted(), apiKey)
-	if err != nil {
-		return fmt.Errorf("updating API key last used: %v", err)
-	}
-	return nil
-}
+// func UpdateApiKeyLastUsed(ctx context.Context, apiKey string) error {
+// 	query := `UPDATE api_keys SET last_used = ? WHERE api_key = ?`
+// 	_, err := DB.ExecContext(ctx, query, logic.GetCurrentTimeFormatted(), apiKey)
+// 	if err != nil {
+// 		return fmt.Errorf("updating API key last used: %v", err)
+// 	}
+// 	return nil
+// }
 
-func DeleteApiKey(ctx context.Context, apiKey string) error {
-	query := `DELETE FROM api_keys WHERE api_key = ?`
-	_, err := DB.ExecContext(ctx, query, apiKey)
-	if err != nil {
-		logger.Printf("Error deleting API key: %v", err)
-		return fmt.Errorf("deleting API key: %v", err)
-	}
-	return nil
-}
+// func DeleteApiKey(ctx context.Context, apiKey string) error {
+// 	query := `DELETE FROM api_keys WHERE api_key = ?`
+// 	_, err := DB.ExecContext(ctx, query, apiKey)
+// 	if err != nil {
+// 		logger.Printf("Error deleting API key: %v", err)
+// 		return fmt.Errorf("deleting API key: %v", err)
+// 	}
+// 	return nil
+// }

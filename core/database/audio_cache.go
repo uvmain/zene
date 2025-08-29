@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 	"zene/core/logger"
@@ -16,27 +15,6 @@ func createAudioCacheTable(ctx context.Context) {
 		last_accessed TEXT NOT NULL
 	);`
 	createTable(ctx, schema)
-}
-
-func SelectAudioCacheEntry(ctx context.Context, cache_key string) (time.Time, error) {
-	query := "SELECT last_accessed FROM audio_cache WHERE cache_key = ?"
-
-	var lastAccessedString string
-
-	err := DB.QueryRowContext(ctx, query, cache_key).Scan(&lastAccessedString)
-
-	if err == sql.ErrNoRows {
-		return time.Time{}, fmt.Errorf("cache_key %s not found", cache_key)
-	} else if err != nil {
-		return time.Time{}, fmt.Errorf("querying audio_cache: %v", err)
-	}
-
-	lastAccessed, err := time.Parse(time.RFC3339Nano, lastAccessedString)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("parsing last_accessed time: %v", err)
-	}
-
-	return lastAccessed, nil
 }
 
 func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]string, error) {

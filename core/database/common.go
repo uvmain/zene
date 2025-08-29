@@ -44,16 +44,6 @@ func getTableNameFromSchema(schema string) (string, error) {
 	return matches[1], nil
 }
 
-func getVirtualTableNameFromSchema(schema string) (string, error) {
-	re := regexp.MustCompile(`(?i)CREATE\s+VIRTUAL\s+TABLE\s+(\w+)`)
-	matches := re.FindStringSubmatch(schema)
-	if len(matches) < 2 {
-		logger.Printf("virtual table name not found in schema: %v", schema)
-		return "", fmt.Errorf("virtual table name not found in schema")
-	}
-	return matches[1], nil
-}
-
 func getViewNameFromSchema(schema string) (string, error) {
 	re := regexp.MustCompile(`(?i)CREATE\s+VIEW\s+(\w+)`)
 	matches := re.FindStringSubmatch(schema)
@@ -92,27 +82,6 @@ func createTable(ctx context.Context, schema string) {
 		logger.Printf("Database: %s table created", tableName)
 	} else {
 		logger.Printf("Database: %s table already exists", tableName)
-	}
-}
-
-func createVirtualTable(ctx context.Context, schema string) {
-	tableName, err := getVirtualTableNameFromSchema(schema)
-	if err != nil {
-		log.Fatalf("Error extracting table name from schema: %v", err)
-	}
-	tableExists, err := doesTableExist(ctx, tableName)
-	if err != nil {
-		log.Fatalf("Error checking if virtual table %s exists: %v", tableName, err)
-	}
-
-	if !tableExists {
-		_, err := DB.ExecContext(ctx, schema)
-		if err != nil {
-			log.Fatalf("Database: error creating %s virtual table: %v", tableName, err)
-		}
-		logger.Printf("Database: %s virtual table created", tableName)
-	} else {
-		logger.Printf("Database: %s virtual table already exists", tableName)
 	}
 }
 
