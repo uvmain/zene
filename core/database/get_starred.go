@@ -266,8 +266,7 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 		}
 
 		result.Duration = int(durationFloat)
-		result.Title = result.Album
-		result.IsDir = true
+		result.IsDir = false
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})

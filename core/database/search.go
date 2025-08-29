@@ -296,7 +296,6 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 		}
 
 		result.Duration = int(durationFloat)
-		result.Title = result.Album
 		result.IsDir = false
 
 		result.Artists = []types.ChildArtist{}

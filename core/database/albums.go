@@ -60,56 +60,6 @@ func SelectAlbumIdByTrackId(ctx context.Context, musicbrainz_track_id string) (s
 	return albumId, nil
 }
 
-func SelectAllAlbums(ctx context.Context, random string, limit string, recent string) ([]types.AlbumsResponse, error) {
-	query := "SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata group by album"
-
-	if recent == "true" {
-		query += " ORDER BY date_added desc"
-	} else if random != "" {
-		randomInt, err := strconv.Atoi(random)
-		if err == nil {
-			query += fmt.Sprintf(" ORDER BY ((rowid * %d) %% 1000000)", randomInt)
-		}
-	} else {
-		query += " ORDER BY album"
-	}
-
-	if limit != "" {
-		limitInt, err := strconv.Atoi(limit)
-		if err == nil {
-			query += fmt.Sprintf(" limit %d", limitInt)
-		}
-	}
-
-	query += ";"
-
-	rows, err := DB.QueryContext(ctx, query)
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.AlbumsResponse{}, err
-	}
-	defer rows.Close()
-
-	var results []types.AlbumsResponse
-
-	for rows.Next() {
-		var result types.AlbumsResponse
-		var dateAdded string
-		if err := rows.Scan(&result.Album, &result.MusicBrainzAlbumID, &result.Artist, &result.MusicBrainzArtistID, &result.Genres, &result.ReleaseDate, &dateAdded); err != nil {
-			logger.Printf("Failed to scan row in SelectAllAlbums: %v", err)
-			return nil, err
-		}
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
-}
-
 func SelectAllAlbumsForMusicDir(ctx context.Context, musicDir string, random string, limit string, recent string) ([]types.AlbumsResponse, error) {
 	query := "SELECT DISTINCT album, musicbrainz_album_id, album_artist, musicbrainz_artist_id, genre, release_date, date_added FROM metadata m JOIN music_folders f ON m.music_folder_id = f.id WHERE f.name = ? group by album"
 

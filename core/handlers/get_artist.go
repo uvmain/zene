@@ -34,8 +34,7 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.SubsonicResponse.Artist = &types.SubsonicArtistWrapper{}
-	response.SubsonicResponse.Artist.Artist = row
+	response.SubsonicResponse.Artist = &row
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }

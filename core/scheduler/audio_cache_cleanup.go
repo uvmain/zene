@@ -42,7 +42,7 @@ func cleanupAudioCache(ctx context.Context) {
 		}
 		logger.Printf("Deleted stale cache file: %s", key)
 
-		err = database.DeleteAudioCacheEntry(ctx, key)
+		err = database.DeleteAudioCacheEntry(key)
 		if err != nil {
 			logger.Printf("Failed to delete DB entry for %s: %v", key, err)
 		}
@@ -103,7 +103,7 @@ func cleanupAudioCache(ctx context.Context) {
 		logger.Printf("Deleted %s (%d bytes)", filepath.Base(fi.path), fi.size)
 
 		cacheKey := filepath.Base(fi.path)
-		err = database.DeleteAudioCacheEntry(ctx, cacheKey)
+		err = database.DeleteAudioCacheEntry(cacheKey)
 		if err != nil {
 			logger.Printf("Failed to delete cache row from audio_cache %s: %v", fi.path, err)
 			continue
@@ -149,7 +149,7 @@ func removeOrphanCache(ctx context.Context) error {
 	orphanFiles = logic.FilesInSliceOnceNotInSliceTwo(databaseFiles, cacheFiles)
 
 	for _, file := range orphanFiles {
-		err = database.DeleteAudioCacheEntry(ctx, file.FileName)
+		err = database.DeleteAudioCacheEntry(file.FileName)
 		if err != nil {
 			logger.Printf("Error deleting orphan cache file %s: %v", file.FileName, err)
 			continue

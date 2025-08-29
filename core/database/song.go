@@ -69,8 +69,7 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicChil
 	}
 
 	result.Duration = int(durationFloat)
-	result.Title = result.Album
-	result.IsDir = true
+	result.IsDir = false
 
 	result.Artists = []types.ChildArtist{}
 	result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
@@ -148,8 +147,7 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 		}
 
 		result.Duration = int(durationFloat)
-		result.Title = result.Album
-		result.IsDir = true
+		result.IsDir = false
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
@@ -243,8 +241,7 @@ func GetSongsByIds(ctx context.Context, musicbrainzTrackIds []string, limit int)
 		}
 
 		result.Duration = int(durationFloat)
-		result.Title = result.Album
-		result.IsDir = true
+		result.IsDir = false
 
 		result.Artists = []types.ChildArtist{}
 		result.Artists = append(result.Artists, types.ChildArtist{Id: result.ArtistId, Name: result.Artist})
