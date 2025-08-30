@@ -24,6 +24,8 @@ type AlbumId3 struct {
 	SortName      string             `xml:"sortName,attr,omitempty" json:"sortName,omitempty"`
 	ReleaseDate   ItemDate           `xml:"releaseDate,omitempty" json:"releaseDate,omitempty"`
 	Songs         []SubsonicChild    `xml:"song,omitempty" json:"song,omitempty"`
+	Artists       []Artist           `xml:"artists,omitempty" json:"artists,omitempty"`
+	AlbumArtists  []Artist           `xml:"albumArtist,omitempty" json:"albumArtists,omitempty"`
 }
 
 type AlbumList struct {
