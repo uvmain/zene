@@ -81,7 +81,7 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 			artist.Starred = starred.String
 		}
 
-		artist.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(artist.Id)
+		artist.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(artist.Id, 600)
 
 		artistEntry := types.Artist{
 			Id:             artist.Id,

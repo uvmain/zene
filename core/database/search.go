@@ -70,7 +70,7 @@ func SearchArtists(ctx context.Context, searchQuery string, limit int, offset in
 		}
 
 		result.CoverArt = result.Id
-		result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id)
+		result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id, 600)
 		if starred.Valid {
 			result.Starred = starred.String
 		}
@@ -299,7 +299,7 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
 			&result.Year, &result.Genre, &result.CoverArt,
 			&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
-			&genreString, &albumArtistName, &albumArtistId, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
+			&genreString, &albumArtistName, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
 			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred, &albumArtistId); err != nil {
 			return nil, err
 		}

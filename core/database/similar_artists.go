@@ -63,7 +63,7 @@ func SelectSimilarArtists(ctx context.Context, musicbrainzArtistId string) ([]ty
 		}
 
 		result.CoverArt = result.Id
-		result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id)
+		result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id, 600)
 		if starred.Valid {
 			result.Starred = starred.String
 		}

@@ -63,7 +63,7 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shareUrl := logic.GetUnauthenticatedImageUrl(musicBrainzArtistId)
+	shareUrl := logic.GetUnauthenticatedImageUrl(musicBrainzArtistId, 600)
 
 	artistInfo := types.ArtistInfo{
 		MusicBrainzId:  musicBrainzArtistId,
