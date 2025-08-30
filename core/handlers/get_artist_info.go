@@ -99,10 +99,10 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 					if err == nil {
 						similarArtists = append(similarArtists, artist)
 					} else {
-						similarArtists = append(similarArtists, types.Artist{Name: artistName})
+						similarArtists = append(similarArtists, types.Artist{Name: artistName, Id: "-1"})
 					}
 				} else {
-					similarArtists = append(similarArtists, types.Artist{Name: artistName})
+					similarArtists = append(similarArtists, types.Artist{Name: artistName, Id: "-1"})
 				}
 			}
 		}
