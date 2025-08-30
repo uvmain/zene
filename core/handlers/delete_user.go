@@ -54,7 +54,7 @@ func HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	logger.Printf("User %s deleted with ID %d by %s", username, userToDelete.Id, requestUser.Username)
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }

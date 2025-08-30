@@ -82,9 +82,12 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 	form := NormalisedForm(r, w)
 	format := form["f"]
 
-	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), true)
-	response.SubsonicResponse.Error.Code = code
-	response.SubsonicResponse.Error.Message = message
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context())
+	response.SubsonicResponse.Status = "error"
+	response.SubsonicResponse.Error = &types.SubsonicError{
+		Code:    code,
+		Message: message,
+	}
 	if helpUrl != "" {
 		response.SubsonicResponse.Error.HelpUrl = helpUrl
 	}

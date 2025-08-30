@@ -9,16 +9,22 @@ import (
 	"zene/core/types"
 )
 
-func HandleCreateInternetRadioStation(w http.ResponseWriter, r *http.Request) {
+func HandleUpdateInternetRadioStation(w http.ResponseWriter, r *http.Request) {
 	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
+	radioStationId := form["id"]
 	streamUrl := form["streamurl"]
 	stationName := form["name"]
 	homepageUrl := form["homepageurl"]
+
+	if radioStationId == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is mandatory", "")
+		return
+	}
 
 	if streamUrl == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "streamUrl parameter is mandatory", "")
@@ -34,10 +40,10 @@ func HandleCreateInternetRadioStation(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	err := database.InsertInternetRadio(ctx, stationName, streamUrl, homepageUrl)
+	err := database.UpdateInternetRadioStation(ctx, radioStationId, stationName, streamUrl, homepageUrl)
 	if err != nil {
-		logger.Printf("Error creating internet radio station: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error creating internet radio station", "")
+		logger.Printf("Error updating internet radio station: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error updating internet radio station", "")
 		return
 	}
 

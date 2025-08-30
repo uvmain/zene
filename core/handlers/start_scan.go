@@ -29,7 +29,7 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context())
 
 	response.SubsonicResponse.ScanStatus = &scanStatus
 

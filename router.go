@@ -152,6 +152,10 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getInternetRadioStations.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetInternetRadioStations)))
 	router.Handle("/rest/createInternetRadioStation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateInternetRadioStation)))
 	router.Handle("/rest/createInternetRadioStation.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateInternetRadioStation)))
+	router.Handle("/rest/updateInternetRadioStation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateInternetRadioStation)))
+	router.Handle("/rest/updateInternetRadioStation.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateInternetRadioStation)))
+	router.Handle("/rest/deleteInternetRadioStation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteInternetRadioStation)))
+	router.Handle("/rest/deleteInternetRadioStation.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteInternetRadioStation)))
 	// Chat
 	router.Handle("/rest/getChatMessages", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages)))
 	router.Handle("/rest/getChatMessages.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages)))

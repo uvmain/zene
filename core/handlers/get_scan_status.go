@@ -33,7 +33,7 @@ func HandleGetScanStatus(w http.ResponseWriter, r *http.Request) {
 		CompletedDate: scanStatus.CompletedDate,
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context())
 
 	response.SubsonicResponse.ScanStatus = &scanStatusResponse
 

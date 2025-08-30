@@ -90,7 +90,7 @@ func HandleGetStarred(w http.ResponseWriter, r *http.Request) {
 		songs = []types.SubsonicChild{}
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	switch version {
 	case 1:

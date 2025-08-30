@@ -31,7 +31,7 @@ func HandleGetPlaylists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	playlistUsername := username
 	if playlistUsername == "" {

@@ -58,7 +58,7 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 		includeNotPresentBool = net.ParseBooleanFromString(w, r, includeNotPresent)
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	valid, row, err := database.IsValidMetadataId(ctx, musicBrainzArtistId)
 	if err != nil || !valid || !row.MusicbrainzArtistId {

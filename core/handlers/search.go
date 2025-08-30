@@ -180,7 +180,7 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 		logger.Printf("Found %d songs", len(songs))
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	switch version {
 	case 2:

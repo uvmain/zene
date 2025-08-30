@@ -16,7 +16,7 @@ func HandleGetMusicFolders(w http.ResponseWriter, r *http.Request) {
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
 
-	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context())
 
 	var musicFolders []types.MusicFolder
 

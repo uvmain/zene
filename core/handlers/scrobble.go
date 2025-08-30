@@ -74,7 +74,7 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }

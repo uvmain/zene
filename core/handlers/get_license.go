@@ -16,7 +16,7 @@ func HandleLicense(w http.ResponseWriter, r *http.Request) {
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
 
-	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context())
 
 	user, _ := database.GetUserByContext(r.Context())
 

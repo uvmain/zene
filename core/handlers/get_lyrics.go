@@ -22,7 +22,7 @@ func HandleGetLyrics(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	if artist == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist parameter is required", "")

@@ -32,7 +32,7 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	response.SubsonicResponse.Users = &types.SubsonicUsers{}
 	response.SubsonicResponse.Users.User = make([]types.SubsonicUser, 0)

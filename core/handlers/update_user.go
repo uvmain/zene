@@ -189,7 +189,7 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Printf("User %s updated successfully with ID %d", username, userId)
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }

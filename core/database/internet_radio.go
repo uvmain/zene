@@ -63,8 +63,19 @@ func UpdateInternetRadioStation(ctx context.Context, id string, name string, str
 	if err != nil {
 		return fmt.Errorf("getting user from context: %v", err)
 	}
-	query := `UPDATE internet_radio SET name = ?, stream_url = ?, homepage_url = ? WHERE id = ? AND user_id = ?`
-	_, err = DB.ExecContext(ctx, query, name, streamUrl, homepageUrl, id, user.Id)
+	var args []interface{}
+	query := `UPDATE internet_radio SET name = ?, stream_url = ?`
+	args = append(args, name, streamUrl)
+
+	if homepageUrl != "" {
+		query += `, homepage_url = ?`
+		args = append(args, homepageUrl)
+	}
+
+	query += ` WHERE id = ? AND user_id = ?`
+	args = append(args, id, user.Id)
+
+	_, err = DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("updating internet radio station: %v", err)
 	}

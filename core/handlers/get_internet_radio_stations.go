@@ -19,7 +19,7 @@ func HandleGetInternetRadioStations(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	radioStations, err := database.GetInternetRadioStations(ctx)
 	if err != nil {

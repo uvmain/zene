@@ -50,7 +50,7 @@ func HandleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	result, err := database.CreatePlaylist(ctx, playlistName, playlistIdInt, songIds)
 	if err != nil && err.Error() == "existing playlist provided with no new songIds" {
