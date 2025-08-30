@@ -154,7 +154,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		}
 
 		album.Artists = []types.Artist{
-			{Name: albumArtistName, Id: albumArtistId},
+			{Name: album.Artist, Id: album.ArtistId},
 		}
 
 		album.AlbumArtists = []types.Artist{
