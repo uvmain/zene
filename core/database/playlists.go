@@ -75,7 +75,26 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 		if err != nil {
 			return types.PlaylistRow{}, fmt.Errorf("updating playlist via CreatePlaylist: %v", err)
 		}
-		return types.PlaylistRow{}, nil
+
+		err = updatePlaylistChangedDate(ctx, playlistId)
+		if err != nil {
+			return types.PlaylistRow{}, fmt.Errorf("updating playlist changed date: %v", err)
+		}
+
+		changePlaylist, err := GetPlaylist(ctx, playlistId)
+		if err != nil {
+			return types.PlaylistRow{}, fmt.Errorf("getting playlist after updating: %v", err)
+		}
+
+		entries, err := GetPlaylistEntries(ctx, playlistId)
+		if err != nil {
+			return types.PlaylistRow{}, fmt.Errorf("getting playlist entries after updating: %v", err)
+		}
+
+		changePlaylist.Entries = entries
+
+		return changePlaylist, nil
+
 	} else if exists && len(songIds) == 0 {
 		return types.PlaylistRow{}, fmt.Errorf("existing playlist provided with no new songIds")
 	} else if exists && playlistId == 0 {
@@ -488,7 +507,8 @@ func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment s
 	if playlistName != "" || comment != "" || public != "" || coverArt != "" {
 		var args []interface{}
 
-		query := `UPDATE playlists SET`
+		query := `UPDATE playlists SET changed = ?`
+		args = append(args, logic.GetCurrentTimeFormatted())
 
 		if playlistName != "" {
 			query += ` name = ?,`
@@ -540,4 +560,11 @@ func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment s
 	}
 
 	return nil
+}
+
+func updatePlaylistChangedDate(ctx context.Context, playlistId int) error {
+	currentTime := logic.GetCurrentTimeFormatted()
+	query := `UPDATE playlists SET changed = ? WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, currentTime, playlistId)
+	return err
 }

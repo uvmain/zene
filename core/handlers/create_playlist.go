@@ -36,7 +36,7 @@ func HandleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if playlistId != "" && len(songIds) == 0 {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songIds should not be empty if playlistId is provided", "")
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "songId param should not be empty if playlistId is provided", "")
 		return
 	}
 
