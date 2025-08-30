@@ -22,7 +22,7 @@ type SubsonicChild struct {
 	Path               string              `xml:"path,attr,omitempty" json:"path,omitempty"`
 	IsVideo            bool                `xml:"isVideo,attr,omitempty" json:"isVideo,omitempty"`
 	UserRating         int                 `xml:"userRating,attr,omitempty" json:"userRating,omitempty"`
-	RecordLabels       []ChildRecordLabel  `xml:"recordLabels" json:"recordLabels"`
+	RecordLabels       []ChildRecordLabel  `xml:"recordLabels,omitempty" json:"recordLabels,omitempty"`
 	AverageRating      float64             `xml:"averageRating,attr,omitempty" json:"averageRating,omitempty"`
 	PlayCount          int                 `xml:"playCount,attr,omitempty" json:"playCount,omitempty"`
 	SongCount          int                 `xml:"songCount,attr,omitempty" json:"songCount,omitempty"`

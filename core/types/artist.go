@@ -24,11 +24,11 @@ type SubsonicArtistsWrapper struct {
 }
 
 type ArtistInfo struct {
-	Biography      string   `xml:"biography,attr,omitempty" json:"biography,omitempty"`
-	MusicBrainzId  string   `xml:"musicBrainzId,attr,omitempty" json:"musicBrainzId,omitempty"`
-	LastFmUrl      string   `xml:"lastFmUrl,attr,omitempty" json:"lastFmUrl,omitempty"`
-	SmallImageUrl  string   `xml:"smallImageUrl,attr,omitempty" json:"smallImageUrl,omitempty"`
-	MediumImageUrl string   `xml:"mediumImageUrl,attr,omitempty" json:"mediumImageUrl,omitempty"`
-	LargeImageUrl  string   `xml:"largeImageUrl,attr,omitempty" json:"largeImageUrl,omitempty"`
-	SimilarArtists []Artist `xml:"similarArtists>artist" json:"similarArtists"`
+	Biography      string   `xml:"biography,omitempty" json:"biography,omitempty"`
+	MusicBrainzId  string   `xml:"musicBrainzId,omitempty" json:"musicBrainzId,omitempty"`
+	LastFmUrl      string   `xml:"lastFmUrl,omitempty" json:"lastFmUrl,omitempty"`
+	SmallImageUrl  string   `xml:"smallImageUrl,omitempty" json:"smallImageUrl,omitempty"`
+	MediumImageUrl string   `xml:"mediumImageUrl,omitempty" json:"mediumImageUrl,omitempty"`
+	LargeImageUrl  string   `xml:"largeImageUrl,omitempty" json:"largeImageUrl,omitempty"`
+	SimilarArtists []Artist `xml:"similarArtist" json:"similarArtists"`
 }
