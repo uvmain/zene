@@ -12,7 +12,7 @@ import (
 	"github.com/timematic/anytime"
 )
 
-func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, fromYear string, toYear string, genre string, musicFolderId int) ([]types.AlbumId3, error) {
+func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, fromYear int, toYear int, genre string, musicFolderId int) ([]types.AlbumId3, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.AlbumId3{}, err
@@ -21,18 +21,16 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	var args []interface{}
 	var albums []types.AlbumId3
 
-	query := `WITH album_stats AS (
-  SELECT
-    m.musicbrainz_album_id,
-    COUNT(m.musicbrainz_track_id) AS song_count,
-    CAST(SUM(m.duration) AS INTEGER) AS duration,
-    COALESCE(SUM(pc.play_count), 0) AS play_count,
-    MIN(m.date_added) AS created,
-    MAX(pc.last_played) AS played
-  FROM metadata m
-  JOIN user_music_folders f ON m.music_folder_id = f.folder_id
-  LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-  WHERE f.user_id = ?`
+	query := `WITH ranked AS (
+		SELECT
+			m.*,
+			ROW_NUMBER() OVER (
+				PARTITION BY m.musicbrainz_album_id
+				ORDER BY m.date_added DESC
+			) AS rn
+		FROM metadata m
+		JOIN user_music_folders f ON m.music_folder_id = f.folder_id
+		WHERE f.user_id = ?`
 	args = append(args, user.Id)
 
 	if musicFolderId != 0 {
@@ -40,36 +38,36 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		args = append(args, musicFolderId)
 	}
 
-	query += `GROUP BY m.musicbrainz_album_id
+	query += `
 	)
 	SELECT
-		m.musicbrainz_album_id AS id,
-		m.album AS name,
-		m.artist,
-		m.musicbrainz_album_id AS cover_art,
-		a.song_count,
-		a.duration,
-		a.play_count,
-		a.created,
-		m.musicbrainz_artist_id AS artist_id,
+		r.musicbrainz_album_id AS id,
+		r.album AS name,
+		r.artist,
+		r.musicbrainz_album_id AS cover_art,
+		(SELECT COUNT(*) FROM metadata WHERE musicbrainz_album_id = r.musicbrainz_album_id) AS song_count,
+		(SELECT CAST(SUM(duration) AS INTEGER) FROM metadata WHERE musicbrainz_album_id = r.musicbrainz_album_id) AS duration,
+		COALESCE(SUM(pc.play_count), 0) as play_count,
+		r.date_added as created,
+		r.musicbrainz_artist_id AS artist_id,
 		s.created_at AS starred,
-		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') AS year,
-		substr(m.genre,1,(instr(m.genre,';')-1)) AS genre,
-		a.played,
+		CAST(REPLACE(PRINTF('%4s', substr(r.release_date,1,4)), ' ', '0') AS INTEGER) AS year,
+		substr(r.genre,1,(instr(r.genre,';')-1)) AS genre,
+		max(pc.last_played) as played,
 		COALESCE(ur.rating, 0) AS user_rating,
-		m.label AS label_string,
-		m.musicbrainz_album_id AS musicbrainz_id,
-		m.genre AS genre_string,
-		m.artist AS display_artist,
-		lower(m.album) AS sort_name,
-		m.release_date AS release_date_string,
-		m.album_artist,
-		maa.musicbrainz_artist_id
-	FROM album_stats a
-	JOIN metadata m ON m.musicbrainz_album_id = a.musicbrainz_album_id
-	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = ?
-	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = ?
-	LEFT JOIN metadata maa ON maa.artist = m.album_artist`
+		r.label AS label_string,
+		r.musicbrainz_album_id AS musicbrainz_id,
+		r.genre AS genre_string,
+		r.artist AS display_artist,
+		lower(r.album) AS sort_name,
+		r.release_date AS release_date_string,
+		r.album_artist,
+		maa.musicbrainz_artist_id as album_artist_id
+	FROM ranked r
+	LEFT JOIN play_counts pc ON r.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = ?
+	LEFT JOIN user_ratings ur ON r.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = ?
+	LEFT JOIN metadata maa ON maa.artist = r.album_artist`
+
 	args = append(args, user.Id, user.Id)
 
 	if sortType == "bygenre" {
@@ -78,34 +76,49 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	}
 
 	if sortType == "starred" {
-		query += ` and s.created_at is not null`
+		query += ` JOIN user_stars s ON r.musicbrainz_album_id = s.metadata_id AND s.user_id = ? and s.created_at is not null`
+	} else {
+		query += ` LEFT JOIN user_stars s ON r.musicbrainz_album_id = s.metadata_id AND s.user_id = ?`
 	}
+	args = append(args, user.Id)
 
+	var yearSortOrder = 1
 	if sortType == "byyear" {
+		if fromYear > toYear {
+			fromYear, toYear = toYear, fromYear
+			yearSortOrder = -1
+		}
 		query += ` and year >= ? and year <= ?`
 		args = append(args, fromYear, toYear)
 	}
 
-	// query += ` group by m.musicbrainz_album_id`
+	query += ` where r.rn = 1
+	group by r.musicbrainz_album_id`
 
 	switch sortType {
 	case "random":
 		randomInt := logic.GenerateRandomInt(1, 10000000)
-		query += fmt.Sprintf(" order BY ((m.rowid * %d) %% 1000000)", randomInt)
+		query += fmt.Sprintf(" order BY ((r.rowid * %d) %% 1000000)", randomInt)
 	case "newest": // recently added albums
-		query += " order BY m.date_added desc"
+		query += " order BY r.date_added desc"
+	case "byyear":
+		if yearSortOrder == -1 {
+			query += " order by year desc"
+		} else {
+			query += " order by year asc"
+		}
 	case "highest": // highest rated albums
-		query += " order by ur.rating desc, m.musicbrainz_album_id desc"
+		query += " order by ur.rating desc, r.musicbrainz_album_id desc"
 	case "frequent": // most frequently played albums
-		query += " order by pc.play_count desc, m.musicbrainz_album_id desc"
+		query += " order by pc.play_count desc, r.musicbrainz_album_id desc"
 	case "recent": // recently played albums
-		query += " order by pc.last_played desc, m.musicbrainz_album_id desc"
+		query += " order by pc.last_played desc, r.musicbrainz_album_id desc"
 	case "alphabeticalbyname":
-		query += " order by m.album asc"
+		query += " order by r.album asc"
 	case "alphabeticalbyartist":
-		query += " order by m.artist asc"
+		query += " order by r.artist asc"
 	default:
-		query += " order BY m.musicbrainz_album_id asc"
+		query += " order BY r.musicbrainz_album_id asc"
 	}
 
 	query += ` limit ? offset ?`
@@ -128,7 +141,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		var releaseDateString sql.NullString
 		var played sql.NullString
 		var albumArtistName string
-		var albumArtistId string
+		var albumArtistId sql.NullString
 
 		if err := rows.Scan(&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
 			&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
@@ -145,6 +158,13 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 
 		if played.Valid {
 			album.Played = played.String
+		}
+
+		var albumArtistIdString string
+		if albumArtistId.Valid {
+			albumArtistIdString = albumArtistId.String
+		} else {
+			albumArtistIdString = album.ArtistId
 		}
 
 		album.Title = album.Name
@@ -172,7 +192,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		}
 
 		album.AlbumArtists = []types.Artist{
-			{Name: albumArtistName, Id: albumArtistId},
+			{Name: albumArtistName, Id: albumArtistIdString},
 		}
 
 		albums = append(albums, album)

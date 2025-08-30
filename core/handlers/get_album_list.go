@@ -73,10 +73,9 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 		offsetInt = 0
 	}
 
+	var fromYearInt int
+	var toYearInt int
 	if typeParam == "byyear" {
-		var fromYearInt int
-		var toYearInt int
-
 		if fromYearParam != "" {
 			fromYearInt, err = strconv.Atoi(fromYearParam)
 			if err != nil {
@@ -95,10 +94,6 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "toYear parameter is required if type=byyear", "")
-			return
-		}
-		if toYearInt < fromYearInt {
-			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "toYear parameter must be greater than or equal to fromYear", "")
 			return
 		}
 	}
@@ -134,7 +129,7 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	albums, err := database.GetAlbumList(ctx, typeParam, sizeInt, offsetInt, fromYearParam, toYearParam, genreParam, musicFolderIdInt)
+	albums, err := database.GetAlbumList(ctx, typeParam, sizeInt, offsetInt, fromYearInt, toYearInt, genreParam, musicFolderIdInt)
 	if err != nil {
 		logger.Printf("Error querying database in GetAlbumList: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to query database", "")
