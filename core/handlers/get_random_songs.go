@@ -105,7 +105,7 @@ func HandleGetRandomSongs(w http.ResponseWriter, r *http.Request) {
 		songs = []types.SubsonicChild{}
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 	response.SubsonicResponse.RandomSongs = &types.RandomSongs{
 		Songs: songs,
 	}

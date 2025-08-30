@@ -37,7 +37,7 @@ func HandleGetAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	album, err := database.GetAlbum(ctx, musicbrainzAlbumId)
 	if err != nil {

@@ -69,10 +69,10 @@
 ## Jukebox
 - [x] jukeboxControl[^1]
 ## Internet radio
-- [ ] getInternetRadioStations
-- [ ] createInternetRadioStation
-- [ ] updateInternetRadioStation
-- [ ] deleteInternetRadioStation
+- [x] getInternetRadioStations
+- [x] createInternetRadioStation
+- [x] updateInternetRadioStation
+- [x] deleteInternetRadioStation
 ## Chat
 - [x] getChatMessages
 - [x] addChatMessage

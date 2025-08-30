@@ -52,7 +52,7 @@ func HandleGetTopSongs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	artistTopSongs, err := database.SelectTopSongsForArtistName(ctx, artistName, countLimit)
 	if err != nil {

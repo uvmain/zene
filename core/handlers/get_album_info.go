@@ -51,7 +51,7 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	valid, row, err := database.IsValidMetadataId(ctx, musicbrainzAlbumId)
 	if err != nil || !valid || !row.MusicbrainzAlbumId {

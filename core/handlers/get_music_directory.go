@@ -44,7 +44,7 @@ func HandleGetMusicDirectory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	if metadataResponse.MusicbrainzAlbumId {
 		directory, err := database.GetAlbumDirectory(ctx, musicbrainz_id)

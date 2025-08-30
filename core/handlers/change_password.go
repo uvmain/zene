@@ -79,7 +79,7 @@ func HandleChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Printf("Password for user %s updated successfully by %s", username, requestUser.Username)
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }

@@ -42,6 +42,7 @@ func Initialise(ctx context.Context) {
 	createSimilarArtistsTable(ctx)
 	createTopSongsTable(ctx)
 	createPlaylistTables(ctx)
+	createInternetRadioTable(ctx)
 }
 
 func openDatabase(ctx context.Context) {

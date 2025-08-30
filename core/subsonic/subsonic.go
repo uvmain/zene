@@ -37,7 +37,7 @@ func getCachedLatestVersion(ctx context.Context) (types.Version, error) {
 	return latestVersion, nil
 }
 
-func GetPopulatedSubsonicResponse(ctx context.Context, withError bool) types.SubsonicResponse {
+func GetPopulatedSubsonicResponse(ctx context.Context) types.SubsonicResponse {
 	latestVersion, err := getCachedLatestVersion(ctx)
 	if err != nil {
 		logger.Printf("Failed to get latest version: %v", err)
@@ -63,12 +63,5 @@ func GetPopulatedSubsonicResponse(ctx context.Context, withError bool) types.Sub
 		},
 	}
 
-	if withError {
-		response.SubsonicResponse.Status = "error"
-		response.SubsonicResponse.Error = &types.SubsonicError{
-			Code:    types.ErrorGeneric,
-			Message: "An error occurred",
-		}
-	}
 	return response
 }

@@ -15,7 +15,7 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
 
-	response := subsonic.GetPopulatedSubsonicResponse(r.Context(), false)
+	response := subsonic.GetPopulatedSubsonicResponse(r.Context())
 
 	extension1 := types.OpenSubsonicExtensions{
 		Name:     "formPost",

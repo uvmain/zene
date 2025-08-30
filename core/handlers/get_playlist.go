@@ -44,7 +44,7 @@ func HandleGetPlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 	response.SubsonicResponse.Playlist = &playlist
 
 	playlistEntries, err := database.GetPlaylistEntries(ctx, playlistIdInt)

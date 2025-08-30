@@ -88,7 +88,7 @@ func HandleGetIndexes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 	response.SubsonicResponse.Indexes = &indexes
 
 	net.WriteSubsonicResponse(w, r, response, format)

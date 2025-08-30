@@ -88,7 +88,7 @@ func HandleGetArtists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 	response.SubsonicResponse.Artists = &types.SubsonicArtistsWrapper{
 		Artists:         indexes.Indexes,
 		IgnoredArticles: "",

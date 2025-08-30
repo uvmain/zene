@@ -132,7 +132,7 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	albums, err := database.GetAlbumList(ctx, typeParam, sizeInt, offsetInt, fromYearParam, toYearParam, genreParam, musicFolderIdInt)
 	if err != nil {

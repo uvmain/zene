@@ -44,7 +44,7 @@ func HandleGetSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 	response.SubsonicResponse.Song = &song
 
 	net.WriteSubsonicResponse(w, r, response, format)

@@ -59,7 +59,7 @@ func HandleDeletePlaylist(w http.ResponseWriter, r *http.Request) {
 
 	logger.Printf("Playlist %d (%s) deleted by user %s", playlistIdInt, playlist.Name, user.Username)
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }

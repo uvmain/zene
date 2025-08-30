@@ -25,7 +25,7 @@ func HandleGetArtist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := subsonic.GetPopulatedSubsonicResponse(ctx, false)
+	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	row, err := database.SelectArtistByMusicBrainzArtistId(ctx, musicBrainzArtistId)
 	if err != nil {
