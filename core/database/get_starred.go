@@ -107,12 +107,15 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 		m.genre as genre_string,
 		m.artist as display_artist,
 		lower(m.album) as sort_name,
-		m.release_date as release_date_string
+		m.release_date as release_date_string,
+		maa.musicbrainz_artist_id as album_artist_id,
+		maa.artist as album_artist_name
 	from user_music_folders f
 	join metadata m on m.music_folder_id = f.folder_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+	left join metadata maa on maa.artist = m.album_artist
 	where f.user_id = ?
 	and s.created_at is not null`
 
@@ -145,12 +148,15 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 		var genresString sql.NullString
 		var releaseDateString sql.NullString
 		var played sql.NullString
+		var albumArtistId string
+		var albumArtistName string
 
 		if err := rows.Scan(&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
 			&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
 			&album.Year, &album.Genre, &played, &album.UserRating,
 			&labelString, &album.MusicBrainzId, &genresString,
-			&album.DisplayArtist, &album.SortName, &releaseDateString); err != nil {
+			&album.DisplayArtist, &album.SortName, &releaseDateString,
+			&albumArtistId, &albumArtistName); err != nil {
 			logger.Printf("Failed to scan row in GetStarredAlbums: %v", err)
 			return nil, err
 		}
@@ -165,6 +171,14 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 
 		album.Title = album.Name
 		album.Album = album.Name
+
+		album.Artists = []types.Artist{
+			{Id: album.ArtistId, Name: album.Artist},
+		}
+
+		album.AlbumArtists = []types.Artist{
+			{Id: albumArtistId, Name: albumArtistName},
+		}
 
 		album.RecordLabels = []types.ChildRecordLabel{}
 		album.RecordLabels = append(album.RecordLabels, types.ChildRecordLabel{Name: labelString.String})
@@ -208,13 +222,15 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
 		COALESCE(SUM(pc.play_count), 0) AS play_count,
 		max(pc.last_played) as played,
-		us.created_at AS starred
+		us.created_at AS starred,
+		maa.musicbrainz_artist_id as album_artist_id
 	from user_music_folders u
 	join metadata m on m.music_folder_id = u.folder_id
 	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = u.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = u.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_track_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.user_id
+	LEFT left join metadata maa on maa.artist = m.album_artist
 	where u.user_id = ?
 	and us.created_at is not null`
 
@@ -243,7 +259,8 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 	for rows.Next() {
 		var result types.SubsonicChild
 
-		var albumArtist string
+		var albumArtistName string
+		var albumArtistId string
 		var genreString string
 		var durationFloat float64
 		var played sql.NullString
@@ -252,8 +269,8 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
 			&result.Year, &result.Genre, &result.CoverArt,
 			&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
-			&genreString, &albumArtist, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
-			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred); err != nil {
+			&genreString, &albumArtistName, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
+			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred, &albumArtistId); err != nil {
 			return nil, err
 		}
 		result.Genres = []types.ChildGenre{}
@@ -279,9 +296,9 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 		result.DisplayArtist = result.Artist
 
 		result.AlbumArtists = []types.ChildArtist{}
-		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: result.ArtistId, Name: albumArtist})
+		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
 
-		result.DisplayAlbumArtist = albumArtist
+		result.DisplayAlbumArtist = albumArtistName
 
 		results = append(results, result)
 	}

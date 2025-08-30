@@ -48,7 +48,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
-	join metadata maa on maa.artist = m.album_artist`
+	left join metadata maa on maa.artist = m.album_artist`
 
 	if sortType == "bygenre" {
 		query += ` join track_genres tg on tg.file_path = m.file_path and lower(tg.genre) = lower(?)`

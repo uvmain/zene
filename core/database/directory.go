@@ -136,13 +136,15 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
 		COALESCE(SUM(pc.play_count), 0) AS play_count,
-		COUNT(m.musicbrainz_track_id) AS song_count
+		COUNT(m.musicbrainz_track_id) AS song_count,
+		maa.musicbrainz_artist_id
 	from metadata m
 	join user_music_folders f on f.folder_id = m.music_folder_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
+	left join metadata maa on maa.artist = m.album_artist
 	where m.musicbrainz_artist_id = ?
 	and f.user_id = ?
 	group by musicbrainz_album_id;`
@@ -155,14 +157,15 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 
 	for rows.Next() {
 		var child types.SubsonicChild
-		var albumArtist string
+		var albumArtistName string
+		var albumArtistId string
 		var genreString string
 		var labelString string
 		var durationFloat float64
 
 		if err := rows.Scan(&child.Id, &child.Parent, &child.Album, &child.Artist, &child.Year,
-			&child.Genre, &child.CoverArt, &durationFloat, &child.Created, &labelString, &albumArtist, &genreString,
-			&child.ArtistId, &child.UserRating, &child.AverageRating, &child.PlayCount, &child.SongCount); err != nil {
+			&child.Genre, &child.CoverArt, &durationFloat, &child.Created, &labelString, &albumArtistName, &genreString,
+			&child.ArtistId, &child.UserRating, &child.AverageRating, &child.PlayCount, &child.SongCount, &albumArtistId); err != nil {
 			return nil, err
 		}
 		child.Genres = []types.ChildGenre{}
@@ -183,9 +186,9 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 		child.DisplayArtist = child.Artist
 
 		child.AlbumArtists = []types.ChildArtist{}
-		child.AlbumArtists = append(child.AlbumArtists, types.ChildArtist{Id: child.ArtistId, Name: albumArtist})
+		child.AlbumArtists = append(child.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
 
-		child.DisplayAlbumArtist = albumArtist
+		child.DisplayAlbumArtist = albumArtistName
 		children = append(children, child)
 	}
 

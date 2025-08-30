@@ -20,6 +20,7 @@ func createUserRatingsTable(ctx context.Context) {
 		UNIQUE (user_id, metadata_id)
 	);`
 	createTable(ctx, schema)
+	createIndex(ctx, "idx_user_ratings_metadata_user", "user_ratings", []string{"metadata_id", "user_id"}, false)
 }
 
 func UpsertUserRating(ctx context.Context, userId int, metadataId string, rating int) error {
