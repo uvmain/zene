@@ -175,7 +175,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	}
 
 	album.Title = album.Name
-	album.Album = album.Name
+	// album.Album = album.Name
 
 	album.RecordLabels = []types.ChildRecordLabel{}
 	album.RecordLabels = append(album.RecordLabels, types.ChildRecordLabel{Name: labelString.String})
