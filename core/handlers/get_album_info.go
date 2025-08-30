@@ -19,8 +19,12 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 
 	var version int
 	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getalbuminfo":
+		version = 1
 	case "/rest/getalbuminfo.view":
 		version = 1
+	case "/rest/getalbuminfo2":
+		version = 2
 	case "/rest/getalbuminfo2.view":
 		version = 2
 	}

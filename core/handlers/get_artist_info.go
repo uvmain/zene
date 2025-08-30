@@ -16,8 +16,12 @@ import (
 func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 	var version int
 	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getartistinfo":
+		version = 1
 	case "/rest/getartistinfo.view":
 		version = 1
+	case "/rest/getartistinfo2":
+		version = 2
 	case "/rest/getartistinfo2.view":
 		version = 2
 	}
