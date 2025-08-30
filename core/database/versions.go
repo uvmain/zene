@@ -9,12 +9,8 @@ import (
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
+	"zene/core/version"
 )
-
-var serverVersion string = "0.22.0"
-var databaseVersion string = "1.10.0"
-var subsonicApiVersion string = "1.16.1"
-var openSubsonicApiVersion string = "1"
 
 func createVersionsTable(ctx context.Context) {
 	schema := `CREATE TABLE versions (
@@ -28,10 +24,10 @@ func createVersionsTable(ctx context.Context) {
 	createTable(ctx, schema)
 
 	newVersion := types.Version{
-		ServerVersion:          serverVersion,
-		DatabaseVersion:        databaseVersion,
-		SubsonicApiVersion:     subsonicApiVersion,
-		OpenSubsonicApiVersion: openSubsonicApiVersion,
+		ServerVersion:          version.Version.ServerVersion,
+		DatabaseVersion:        version.Version.DatabaseVersion,
+		SubsonicApiVersion:     version.Version.SubsonicApiVersion,
+		OpenSubsonicApiVersion: version.Version.OpenSubsonicApiVersion,
 		Timestamp:              logic.GetCurrentTimeFormatted(),
 	}
 

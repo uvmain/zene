@@ -49,6 +49,7 @@ type SubsonicStandard struct {
 	SimilarSongs2          *SimilarSongs2            `xml:"similarSongs2,omitempty" json:"similarSongs2,omitempty"`
 	Playlist               *PlaylistRow              `xml:"playlist,omitempty" json:"playlist,omitempty"`
 	Playlists              *Playlists                `xml:"playlists,omitempty" json:"playlists,omitempty"`
+	InternetRadioStations  *InternetRadioStations    `xml:"internetRadioStations,omitempty" json:"internetRadioStations,omitempty"`
 }
 
 type SubsonicResponse struct {

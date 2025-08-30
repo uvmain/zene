@@ -147,6 +147,11 @@ func StartServer() *http.Server {
 	// Jukebox
 	router.Handle("/rest/jukeboxControl", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
 	router.Handle("/rest/jukeboxControl.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
+	// Internet radio
+	router.Handle("/rest/getInternetRadioStations", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetInternetRadioStations)))
+	router.Handle("/rest/getInternetRadioStations.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetInternetRadioStations)))
+	router.Handle("/rest/createInternetRadioStation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateInternetRadioStation)))
+	router.Handle("/rest/createInternetRadioStation.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateInternetRadioStation)))
 	// Chat
 	router.Handle("/rest/getChatMessages", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages)))
 	router.Handle("/rest/getChatMessages.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages)))
