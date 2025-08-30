@@ -16,8 +16,12 @@ import (
 func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 	var version int
 	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getartistinfo":
+		version = 1
 	case "/rest/getartistinfo.view":
 		version = 1
+	case "/rest/getartistinfo2":
+		version = 2
 	case "/rest/getartistinfo2.view":
 		version = 2
 	}
@@ -63,7 +67,7 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shareUrl := logic.GetUnauthenticatedImageUrl(musicBrainzArtistId)
+	shareUrl := logic.GetUnauthenticatedImageUrl(musicBrainzArtistId, 600)
 
 	artistInfo := types.ArtistInfo{
 		MusicBrainzId:  musicBrainzArtistId,
@@ -99,10 +103,10 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 					if err == nil {
 						similarArtists = append(similarArtists, artist)
 					} else {
-						similarArtists = append(similarArtists, types.Artist{Name: artistName})
+						similarArtists = append(similarArtists, types.Artist{Name: artistName, Id: "-1"})
 					}
 				} else {
-					similarArtists = append(similarArtists, types.Artist{Name: artistName})
+					similarArtists = append(similarArtists, types.Artist{Name: artistName, Id: "-1"})
 				}
 			}
 		}

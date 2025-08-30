@@ -40,12 +40,15 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		m.genre as genre_string,
 		m.artist as display_artist,
 		lower(m.album) as sort_name,
-		m.release_date as release_date_string
+		m.release_date as release_date_string,
+		m.album_artist,
+		maa.musicbrainz_artist_id
 	from user_music_folders f
 	join metadata m on m.music_folder_id = f.folder_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id`
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+	left join metadata maa on maa.artist = m.album_artist`
 
 	if sortType == "bygenre" {
 		query += ` join track_genres tg on tg.file_path = m.file_path and lower(tg.genre) = lower(?)`
@@ -110,12 +113,14 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		var genresString sql.NullString
 		var releaseDateString sql.NullString
 		var played sql.NullString
+		var albumArtistName string
+		var albumArtistId string
 
 		if err := rows.Scan(&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
 			&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
-			&album.Year, &album.Genre, &played, &album.UserRating,
-			&labelString, &album.MusicBrainzId, &genresString,
-			&album.DisplayArtist, &album.SortName, &releaseDateString); err != nil {
+			&album.Year, &album.Genre, &played, &album.UserRating, &labelString, &album.MusicBrainzId,
+			&genresString, &album.DisplayArtist, &album.SortName, &releaseDateString,
+			&albumArtistName, &albumArtistId); err != nil {
 			logger.Printf("Failed to scan row in GetAlbumList: %v", err)
 			return nil, err
 		}
@@ -146,6 +151,14 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 				Month: int(releaseDateTime.Month()),
 				Day:   releaseDateTime.Day(),
 			}
+		}
+
+		album.Artists = []types.Artist{
+			{Name: album.Artist, Id: album.ArtistId},
+		}
+
+		album.AlbumArtists = []types.Artist{
+			{Name: albumArtistName, Id: albumArtistId},
 		}
 
 		albums = append(albums, album)

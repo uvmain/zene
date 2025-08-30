@@ -110,20 +110,6 @@ func SelectAllAlbumsForMusicDir(ctx context.Context, musicDir string, random str
 	return results, nil
 }
 
-func SelectAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumsResponse, error) {
-	query := `SELECT album, album_artist, musicbrainz_album_id, musicbrainz_artist_id, genre, release_date FROM metadata where musicbrainz_album_id = ? limit 1;`
-
-	var result types.AlbumsResponse
-
-	err := DB.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&result.Album, &result.Artist, &result.MusicBrainzAlbumID, &result.MusicBrainzArtistID, &result.Genres, &result.ReleaseDate)
-	if err == sql.ErrNoRows {
-		return types.AlbumsResponse{}, nil
-	} else if err != nil {
-		return types.AlbumsResponse{}, err
-	}
-	return result, nil
-}
-
 func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
@@ -151,12 +137,15 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 		m.genre as genre_string,
 		m.artist as display_artist,
 		lower(m.album) as sort_name,
-		m.release_date as release_date_string
+		m.release_date as release_date_string,
+		maa.musicbrainz_artist_id as album_artist_id,
+		maa.artist as album_artist_name
 	from user_music_folders f
 	join metadata m on m.music_folder_id = f.folder_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+	left join metadata maa on maa.artist = m.album_artist
 	where m.musicbrainz_album_id = ?
 	and f.user_id = ?`
 
@@ -165,6 +154,8 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	var genresString sql.NullString
 	var releaseDateString sql.NullString
 	var played sql.NullString
+	var albumArtistId string
+	var albumArtistName string
 
 	err = DB.QueryRowContext(ctx, query, musicbrainzAlbumId, user.Id).Scan(
 		&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
@@ -172,6 +163,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 		&album.Year, &album.Genre, &played, &album.UserRating,
 		&labelString, &album.MusicBrainzId, &genresString,
 		&album.DisplayArtist, &album.SortName, &releaseDateString,
+		&albumArtistId, &albumArtistName,
 	)
 
 	if err == sql.ErrNoRows {
@@ -189,7 +181,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	}
 
 	album.Title = album.Name
-	album.Album = album.Name
+	// album.Album = album.Name
 
 	album.RecordLabels = []types.ChildRecordLabel{}
 	album.RecordLabels = append(album.RecordLabels, types.ChildRecordLabel{Name: labelString.String})
@@ -197,6 +189,14 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	album.Genres = []types.ItemGenre{}
 	for _, genre := range strings.Split(genresString.String, ";") {
 		album.Genres = append(album.Genres, types.ItemGenre{Name: genre})
+	}
+
+	album.Artists = []types.Artist{
+		{Id: album.ArtistId, Name: album.Artist},
+	}
+
+	album.AlbumArtists = []types.Artist{
+		{Id: albumArtistId, Name: albumArtistName},
 	}
 
 	releaseDateTime, err := anytime.Parse(releaseDateString.String)

@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"zene/core/logger"
-	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -134,48 +132,6 @@ func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) err
 	return nil
 }
 
-func UpdateMetadataRow(ctx context.Context, metadata types.Metadata) error {
-	metadata.DateModified = logic.GetCurrentTimeFormatted()
-
-	v := reflect.ValueOf(metadata)
-	t := reflect.TypeOf(metadata)
-
-	var queryParts []string
-	var params []interface{}
-
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		jsonTag := field.Tag.Get("json")
-		if jsonTag == "file_path" || jsonTag == "" {
-			continue
-		}
-		fieldValue := v.Field(i).Interface()
-		queryParts = append(queryParts, fmt.Sprintf("%s = ?", jsonTag))
-		params = append(params, fieldValue)
-	}
-
-	query := fmt.Sprintf("UPDATE metadata SET %s WHERE file_path = ?", strings.Join(queryParts, ", "))
-	params = append(params, metadata.FilePath) // primary key goes in the where clause
-
-	_, err := DB.ExecContext(ctx, query, params...)
-	if err != nil {
-		return fmt.Errorf("updating metadata for %s: %v", metadata.FilePath, err)
-	}
-
-	logger.Printf("Updated metadata for %s", metadata.FilePath)
-	return nil
-}
-
-func DeleteMetadataRow(ctx context.Context, filepath string) error {
-	query := `DELETE FROM metadata WHERE file_path = ?`
-	_, err := DB.ExecContext(ctx, query, filepath)
-	if err != nil {
-		return fmt.Errorf("deleting metadata row %s: %v", filepath, err)
-	}
-	logger.Printf("Deleted metadata row %s", filepath)
-	return nil
-}
-
 func DeleteMetadataRows(ctx context.Context, filepaths []string) error {
 	if len(filepaths) == 0 {
 		return nil
@@ -218,31 +174,6 @@ func DeleteMetadataRows(ctx context.Context, filepaths []string) error {
 
 	logger.Printf("Deleted %d metadata rows in batches of %d", len(filepaths), batchSize)
 	return nil
-}
-
-func SelectAllFilePathsAndModTimes(ctx context.Context) (map[string]string, error) {
-	query := `SELECT file_path, date_modified FROM metadata`
-	rows, err := DB.QueryContext(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("querying file paths and mod times: %v", err)
-	}
-	defer rows.Close()
-
-	fileModTimes := make(map[string]string)
-
-	for rows.Next() {
-		var filePath, dateModified string
-		if err := rows.Scan(&filePath, &dateModified); err != nil {
-			return nil, fmt.Errorf("scanning row: %v", err)
-		}
-		fileModTimes[filePath] = dateModified
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows error: %v", err)
-	}
-
-	return fileModTimes, nil
 }
 
 type isValidMetadataResponse struct {

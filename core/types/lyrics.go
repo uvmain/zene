@@ -3,12 +3,12 @@ package types
 type SubsonicLyrics struct {
 	Artist string `json:"artist" xml:"artist,attr"`
 	Title  string `json:"title" xml:"title,attr"`
-	Value  string `json:"value" xml:"value,attr"`
+	Value  string `json:"value" xml:",chardata"`
 }
 
 type StructuredLyricsLine struct {
 	Start int    `xml:"start,attr" json:"start,omitempty"`
-	Value string `xml:"value,attr" json:"value"`
+	Value string `xml:",chardata" json:"value"`
 }
 
 type StructuredLyrics struct {

@@ -15,8 +15,12 @@ import (
 func HandleGetStarred(w http.ResponseWriter, r *http.Request) {
 	var version int
 	switch strings.ToLower(r.URL.Path) {
+	case "/rest/getstarred":
+		version = 1
 	case "/rest/getstarred.view":
 		version = 1
+	case "/rest/getstarred2":
+		version = 2
 	case "/rest/getstarred2.view":
 		version = 2
 	}

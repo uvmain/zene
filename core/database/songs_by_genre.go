@@ -26,7 +26,8 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
 		COALESCE(SUM(pc.play_count), 0) AS play_count,
 		max(pc.last_played) as played,
-		us.created_at AS starred
+		us.created_at AS starred,
+		maa.musicbrainz_artist_id
 	from metadata m
 	join user_music_folders f on f.folder_id = m.music_folder_id
 	join track_genres g on m.file_path = g.file_path
@@ -35,6 +36,7 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
+	left join metadata maa on maa.artist = m.album_artist
 	where f.user_id = ?
 	and lower(g.genre) = lower(?)`
 
@@ -45,7 +47,7 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		args = append(args, musicFolderInt)
 	}
 
-	query += ` group by m.musicbrainz_track_id limit ? offset ?`
+	query += ` group by m.musicbrainz_track_id order by m.musicbrainz_track_id limit ? offset ?`
 	args = append(args, count, offset)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
@@ -60,7 +62,8 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 
 		var genreString string
 		var durationFloat float64
-		var albumArtist string
+		var albumArtistName string
+		var albumArtistId string
 		var starred sql.NullString
 		var played sql.NullString
 
@@ -76,9 +79,9 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		if err := rows.Scan(&result.Id, &result.AlbumId, &result.Title, &result.Album, &result.Artist,
 			&result.Track, &result.Year, &result.Genre, &result.CoverArt, &result.Size,
 			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
-			&result.ArtistId, &genreString, &albumArtist, &result.BitDepth, &result.SamplingRate,
+			&result.ArtistId, &genreString, &albumArtistName, &result.BitDepth, &result.SamplingRate,
 			&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
-			&played, &starred); err != nil {
+			&played, &starred, &albumArtistId); err != nil {
 			logger.Printf("Failed to scan row in GetSongsByGenre: %v", err)
 			return []types.SubsonicChild{}, err
 		}
@@ -107,9 +110,9 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		result.DisplayArtist = result.Artist
 
 		result.AlbumArtists = []types.ChildArtist{}
-		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: result.ArtistId, Name: albumArtist})
+		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
 
-		result.DisplayAlbumArtist = albumArtist
+		result.DisplayAlbumArtist = albumArtistName
 
 		songs = append(songs, result)
 	}

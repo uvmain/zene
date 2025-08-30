@@ -16,6 +16,7 @@ func createUserStarsTable(ctx context.Context) {
 		UNIQUE (user_id, metadata_id)
 	);`
 	createTable(ctx, schema)
+	createIndex(ctx, "idx_user_stars_metadata_user", "user_stars", []string{"metadata_id", "user_id"}, false)
 }
 
 func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
@@ -34,29 +35,6 @@ func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
 		return fmt.Errorf("upserting user star row: %v", err)
 	}
 	return nil
-}
-
-func GetUserStarsForUser(ctx context.Context, userId int) ([]string, error) {
-	query := "SELECT metadata_id FROM user_stars WHERE user_id = ?"
-	rows, err := DB.QueryContext(ctx, query, userId)
-	if err != nil {
-		return nil, fmt.Errorf("querying user stars: %v", err)
-	}
-	defer rows.Close()
-
-	var metadataIds []string
-	for rows.Next() {
-		var metadataId string
-		if err := rows.Scan(&metadataId); err != nil {
-			return nil, fmt.Errorf("scanning user star row: %v", err)
-		}
-		metadataIds = append(metadataIds, metadataId)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating user star rows: %v", err)
-	}
-
-	return metadataIds, nil
 }
 
 func DeleteUserStar(ctx context.Context, userId int, metadataId string) error {

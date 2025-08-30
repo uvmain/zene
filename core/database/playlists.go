@@ -75,7 +75,26 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 		if err != nil {
 			return types.PlaylistRow{}, fmt.Errorf("updating playlist via CreatePlaylist: %v", err)
 		}
-		return types.PlaylistRow{}, nil
+
+		err = updatePlaylistChangedDate(ctx, playlistId)
+		if err != nil {
+			return types.PlaylistRow{}, fmt.Errorf("updating playlist changed date: %v", err)
+		}
+
+		changePlaylist, err := GetPlaylist(ctx, playlistId)
+		if err != nil {
+			return types.PlaylistRow{}, fmt.Errorf("getting playlist after updating: %v", err)
+		}
+
+		entries, err := GetPlaylistEntries(ctx, playlistId)
+		if err != nil {
+			return types.PlaylistRow{}, fmt.Errorf("getting playlist entries after updating: %v", err)
+		}
+
+		changePlaylist.Entries = entries
+
+		return changePlaylist, nil
+
 	} else if exists && len(songIds) == 0 {
 		return types.PlaylistRow{}, fmt.Errorf("existing playlist provided with no new songIds")
 	} else if exists && playlistId == 0 {
@@ -372,7 +391,8 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
 		COALESCE(SUM(pc.play_count), 0) AS play_count,
 		max(pc.last_played) as played,
-		us.created_at AS starred
+		us.created_at AS starred,
+		maa.musicbrainz_artist_id as album_artist_id
 	from playlists p
 	join playlist_entries pe on pe.playlist_id = p.id
 	join users u on u.id = p.user_id
@@ -382,6 +402,7 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
+	left join metadata maa on maa.artist = m.album_artist
 	where p.id = ?
 	group by m.musicbrainz_track_id
 	order by pe.sort_order asc`
@@ -398,7 +419,8 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 	for rows.Next() {
 		var result types.SubsonicChild
 
-		var albumArtist string
+		var albumArtistName string
+		var albumArtistId string
 		var genreString string
 		var durationFloat float64
 		var played sql.NullString
@@ -407,8 +429,8 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
 			&result.Year, &result.Genre, &result.CoverArt,
 			&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
-			&genreString, &albumArtist, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
-			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred); err != nil {
+			&genreString, &albumArtistName, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
+			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred, &albumArtistId); err != nil {
 			return nil, err
 		}
 		result.Genres = []types.ChildGenre{}
@@ -434,9 +456,9 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 		result.DisplayArtist = result.Artist
 
 		result.AlbumArtists = []types.ChildArtist{}
-		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: result.ArtistId, Name: albumArtist})
+		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
 
-		result.DisplayAlbumArtist = albumArtist
+		result.DisplayAlbumArtist = albumArtistName
 
 		results = append(results, result)
 	}
@@ -485,7 +507,8 @@ func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment s
 	if playlistName != "" || comment != "" || public != "" || coverArt != "" {
 		var args []interface{}
 
-		query := `UPDATE playlists SET`
+		query := `UPDATE playlists SET changed = ?`
+		args = append(args, logic.GetCurrentTimeFormatted())
 
 		if playlistName != "" {
 			query += ` name = ?,`
@@ -537,4 +560,11 @@ func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment s
 	}
 
 	return nil
+}
+
+func updatePlaylistChangedDate(ctx context.Context, playlistId int) error {
+	currentTime := logic.GetCurrentTimeFormatted()
+	query := `UPDATE playlists SET changed = ? WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, currentTime, playlistId)
+	return err
 }

@@ -2,10 +2,8 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"zene/core/logger"
-	"zene/core/types"
 )
 
 func createGenreCountsTable(ctx context.Context) {
@@ -58,50 +56,4 @@ func RepopulateGenreCountsTable(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func SelectGenreCounts(ctx context.Context) ([]types.Genre, error) {
-	query := `select genre, song_count, album_count
-		from genre_counts
-		order by song_count desc`
-
-	rows, err := DB.QueryContext(ctx, query)
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.Genre{}, err
-	}
-	defer rows.Close()
-
-	var results []types.Genre
-
-	for rows.Next() {
-		var result types.Genre
-		if err := rows.Scan(&result.Value, &result.SongCount, &result.AlbumCount); err != nil {
-			logger.Printf("Failed to scan row in SelectGenreCounts: %v", err)
-			return nil, err
-		}
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
-}
-
-func SelectGenreCount(ctx context.Context, genre string) (types.Genre, error) {
-	query := "SELECT genre, song_count, album_count FROM genre_counts WHERE genre = ?"
-	var result types.Genre
-	err := DB.QueryRowContext(ctx, query, genre).Scan(&result.Value, &result.SongCount, &result.AlbumCount)
-	if err == sql.ErrNoRows {
-		logger.Printf("No genre found for %s", genre)
-		return types.Genre{}, nil
-	} else if err != nil {
-		logger.Printf("Error querying genre for %s: %v", genre, err)
-		return types.Genre{}, err
-	}
-
-	return result, nil
 }

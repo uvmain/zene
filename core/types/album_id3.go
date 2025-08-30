@@ -2,7 +2,7 @@ package types
 
 type AlbumId3 struct {
 	Id            string             `xml:"id,attr" json:"id"`
-	Album         string             `xml:"album" json:"album"`
+	Album         string             `xml:"album,attr,omitempty" json:"album,omitempty"`
 	Title         string             `xml:"title,attr" json:"title"`
 	Name          string             `xml:"name,attr" json:"name"`
 	Artist        string             `xml:"artist,attr,omitempty" json:"artist,omitempty"`
@@ -22,8 +22,10 @@ type AlbumId3 struct {
 	Genres        []ItemGenre        `xml:"genres" json:"genres"`
 	DisplayArtist string             `xml:"displayArtist,attr,omitempty" json:"displayArtist,omitempty"`
 	SortName      string             `xml:"sortName,attr,omitempty" json:"sortName,omitempty"`
-	ReleaseDate   ItemDate           `xml:"releaseDate,attr,omitempty" json:"releaseDate,omitempty"`
+	ReleaseDate   ItemDate           `xml:"releaseDate,omitempty" json:"releaseDate,omitempty"`
 	Songs         []SubsonicChild    `xml:"song,omitempty" json:"song,omitempty"`
+	Artists       []Artist           `xml:"artists,omitempty" json:"artists,omitempty"`
+	AlbumArtists  []Artist           `xml:"albumArtist,omitempty" json:"albumArtists,omitempty"`
 }
 
 type AlbumList struct {

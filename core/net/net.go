@@ -101,7 +101,11 @@ func WriteSubsonicResponse(w http.ResponseWriter, r *http.Request, response type
 		w.Header().Set("Content-Type", "application/xml")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
-		xml.NewEncoder(w).Encode(response)
+		encoder := xml.NewEncoder(w)
+		err := encoder.Encode(response.SubsonicResponse)
+		if err != nil {
+			logger.Printf("Failed to encode XML response: %v", err)
+		}
 	}
 }
 

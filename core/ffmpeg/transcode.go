@@ -13,50 +13,6 @@ import (
 	"zene/core/logger"
 )
 
-func TranscodeFile(ctx context.Context, filePath string, trackId string, quality int) (string, error) {
-	filePathAbs, _ := filepath.Abs(filePath)
-
-	if _, err := os.Stat(filePathAbs); os.IsNotExist(err) {
-		return "", fmt.Errorf("file does not exist: %s:  %s", filePathAbs, err)
-	}
-
-	cacheKey := fmt.Sprintf("%s-%d.aac", trackId, quality)
-	cachePath := filepath.Join(config.AudioCacheFolder, cacheKey)
-
-	if _, err := os.Stat(cachePath); err == nil {
-		return cachePath, nil
-	}
-
-	logger.Printf("Transcoding %s at %dk at %s", filePath, quality, cachePath)
-
-	cmd := exec.CommandContext(ctx, config.FfmpegPath,
-		"-loglevel", "error",
-		"-i", filePathAbs,
-		"-vn",
-		"-c:a", "aac",
-		"-b:a", fmt.Sprintf("%dk", quality),
-		"-f", "adts",
-		cachePath,
-	)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		cleanupIncompleteCache(cachePath, cacheKey)
-		return "", fmt.Errorf("running ffprobe: %s", output)
-	} else {
-		logger.Printf("Transcoding %s complete", filePath)
-	}
-
-	err = database.UpsertAudioCacheEntry(ctx, cacheKey)
-	if err != nil {
-		cleanupIncompleteCache(cachePath, cacheKey)
-		logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
-		return "", err
-	}
-
-	return cachePath, nil
-}
-
 func cleanupIncompleteCache(cachePath string, cacheKey string) {
 	if err := os.Remove(cachePath); err != nil {
 		logger.Printf("Failed to remove incomplete cache file %s: %v", cachePath, err)

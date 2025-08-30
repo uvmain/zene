@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"zene/core/logger"
-	"zene/core/logic"
 	"zene/core/types"
 )
 
@@ -152,40 +151,6 @@ func SelectDistinctGenres(ctx context.Context) ([]types.Genre, error) {
 		if err := rows.Scan(&result.Value, &result.SongCount, &result.AlbumCount); err != nil {
 			logger.Printf("Failed to scan row in SelectDistinctGenres: %v", err)
 			return nil, err
-		}
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
-}
-
-func SelectTracksByGenres(ctx context.Context, genres []string, andOr string, limit int, random string) ([]types.MetadataWithPlaycounts, error) {
-	userId, _ := logic.GetUserIdFromContext(ctx)
-	query := getMetadataWithGenresSql(userId, genres, andOr, limit, random)
-
-	rows, err := DB.QueryContext(ctx, query)
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.MetadataWithPlaycounts{}, err
-	}
-	defer rows.Close()
-
-	var results []types.MetadataWithPlaycounts
-
-	for rows.Next() {
-		var result types.MetadataWithPlaycounts
-		if err := rows.Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
-			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
-			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
-			&result.MusicBrainzTrackID, &result.Label, &result.MusicFolderId, &result.Codec, &result.BitDepth, &result.SampleRate, &result.Channels,
-			&result.UserPlayCount, &result.GlobalPlayCount); err != nil {
-			logger.Printf("Failed to scan row in SelectTracksByGenres: %v", err)
-			return []types.MetadataWithPlaycounts{}, err
 		}
 		results = append(results, result)
 	}

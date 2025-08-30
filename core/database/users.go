@@ -291,23 +291,6 @@ func UpsertUser(ctx context.Context, user types.User) (int, error) {
 	return upsertedUser.Id, nil
 }
 
-func DeleteUserByUsername(ctx context.Context, username string) error {
-	query := `DELETE FROM users WHERE username = ?`
-	_, err := DB.ExecContext(ctx, query, username)
-	if err != nil {
-		return fmt.Errorf("deleting user: %v", err)
-	}
-
-	adminUser, err := logic.GetUsernameFromContext(ctx)
-	if err != nil {
-		logger.Printf("user %s deleted, failed to get admin user: %v", username, err)
-	} else {
-		logger.Printf("user %s deleted by admin user %s", username, adminUser)
-	}
-
-	return nil
-}
-
 func DeleteUserById(ctx context.Context, id int) error {
 	query := `DELETE FROM users WHERE id = ?`
 	_, err := DB.ExecContext(ctx, query, id)
@@ -323,18 +306,6 @@ func DeleteUserById(ctx context.Context, id int) error {
 	}
 
 	return nil
-}
-
-func AnyUsersExist(ctx context.Context) (bool, error) {
-	query := `SELECT 1 FROM users LIMIT 1`
-	var exists int
-	err := DB.QueryRowContext(ctx, query).Scan(&exists)
-	if err == sql.ErrNoRows {
-		return false, nil
-	} else if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func anyAdminUsersExist(ctx context.Context) (bool, error) {

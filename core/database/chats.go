@@ -20,7 +20,7 @@ func createChatsTable(ctx context.Context) {
 }
 
 func InsertChat(ctx context.Context, userId int, message string) error {
-	insertTimestampUnixSeconds := time.Now().Unix()
+	insertTimestampUnixSeconds := time.Now().UnixMilli()
 	query := `INSERT INTO chats (user_id, message, timestamp)
 		VALUES (?, ?, ?)`
 	_, err := DB.ExecContext(ctx, query, userId, message, insertTimestampUnixSeconds)

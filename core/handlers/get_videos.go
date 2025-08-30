@@ -10,5 +10,5 @@ func HandleGetVideos(w http.ResponseWriter, r *http.Request) {
 	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
-	net.WriteSubsonicError(w, r, types.ErrorIncompatibleVersion, "getVideos endpoint is unsupported", "")
+	net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "getVideos endpoint is unsupported", "")
 }
