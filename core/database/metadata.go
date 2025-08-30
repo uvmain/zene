@@ -44,9 +44,12 @@ func createMetadataTable(ctx context.Context) {
 	createIndex(ctx, "idx_metadata_album_id", "metadata", []string{"musicbrainz_album_id"}, false)
 	createIndex(ctx, "idx_metadata_artist_id", "metadata", []string{"musicbrainz_artist_id"}, false)
 	createIndex(ctx, "idx_metadata_file_path_album_track ", "metadata", []string{"file_path", "musicbrainz_album_id", "musicbrainz_track_id"}, false)
+	createIndex(ctx, "idx_metadata_artist", "metadata", []string{"artist"}, false)
+	createIndex(ctx, "idx_metadata_album_artist", "metadata", []string{"album_artist"}, false)
 	createIndex(ctx, "idx_metadata_artist_lower", "metadata", []string{"lower(artist)"}, false)
 	createIndex(ctx, "idx_metadata_album_lower", "metadata", []string{"lower(album)"}, false)
 	createIndex(ctx, "idx_metadata_title_lower", "metadata", []string{"lower(title)"}, false)
+	createIndex(ctx, "idx_metadata_date_added_album_id", "metadata", []string{"date_added", "musicbrainz_album_id"}, false)
 }
 
 func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) error {

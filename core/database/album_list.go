@@ -21,46 +21,60 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	var args []interface{}
 	var albums []types.AlbumId3
 
-	query := `select m.musicbrainz_album_id as id,
-		m.album as name,
-		m.artist as artist,
-		m.musicbrainz_album_id as cover_art,
-		count(m.musicbrainz_track_id) as song_count,
-		cast(sum(m.duration) as integer) as duration,
-		COALESCE(SUM(pc.play_count), 0) as play_count,
-		min(m.date_added) as created,
-		m.musicbrainz_artist_id as artist_id,
-		s.created_at as starred,
-		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
-		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
-		max(pc.last_played) as played,
-		COALESCE(ur.rating, 0) AS user_rating,
-		m.label as label_string,
-		m.musicbrainz_album_id as musicbrainz_id,
-		m.genre as genre_string,
-		m.artist as display_artist,
-		lower(m.album) as sort_name,
-		m.release_date as release_date_string,
-		m.album_artist,
-		maa.musicbrainz_artist_id
-	from user_music_folders f
-	join metadata m on m.music_folder_id = f.folder_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
-	left join metadata maa on maa.artist = m.album_artist`
-
-	if sortType == "bygenre" {
-		query += ` join track_genres tg on tg.file_path = m.file_path and lower(tg.genre) = lower(?)`
-		args = append(args, genre)
-	}
-
-	query += ` where f.user_id = ?`
+	query := `WITH album_stats AS (
+  SELECT
+    m.musicbrainz_album_id,
+    COUNT(m.musicbrainz_track_id) AS song_count,
+    CAST(SUM(m.duration) AS INTEGER) AS duration,
+    COALESCE(SUM(pc.play_count), 0) AS play_count,
+    MIN(m.date_added) AS created,
+    MAX(pc.last_played) AS played
+  FROM metadata m
+  JOIN user_music_folders f ON m.music_folder_id = f.folder_id
+  LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
+  WHERE f.user_id = ?`
 	args = append(args, user.Id)
 
 	if musicFolderId != 0 {
 		query += ` and m.music_folder_id = ?`
 		args = append(args, musicFolderId)
+	}
+
+	query += `GROUP BY m.musicbrainz_album_id
+	)
+	SELECT
+		m.musicbrainz_album_id AS id,
+		m.album AS name,
+		m.artist,
+		m.musicbrainz_album_id AS cover_art,
+		a.song_count,
+		a.duration,
+		a.play_count,
+		a.created,
+		m.musicbrainz_artist_id AS artist_id,
+		s.created_at AS starred,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') AS year,
+		substr(m.genre,1,(instr(m.genre,';')-1)) AS genre,
+		a.played,
+		COALESCE(ur.rating, 0) AS user_rating,
+		m.label AS label_string,
+		m.musicbrainz_album_id AS musicbrainz_id,
+		m.genre AS genre_string,
+		m.artist AS display_artist,
+		lower(m.album) AS sort_name,
+		m.release_date AS release_date_string,
+		m.album_artist,
+		maa.musicbrainz_artist_id
+	FROM album_stats a
+	JOIN metadata m ON m.musicbrainz_album_id = a.musicbrainz_album_id
+	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = ?
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = ?
+	LEFT JOIN metadata maa ON maa.artist = m.album_artist`
+	args = append(args, user.Id, user.Id)
+
+	if sortType == "bygenre" {
+		query += ` join track_genres tg on tg.file_path = m.file_path and lower(tg.genre) = lower(?)`
+		args = append(args, genre)
 	}
 
 	if sortType == "starred" {
@@ -72,7 +86,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		args = append(args, fromYear, toYear)
 	}
 
-	query += ` group by m.musicbrainz_album_id`
+	// query += ` group by m.musicbrainz_album_id`
 
 	switch sortType {
 	case "random":
