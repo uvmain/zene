@@ -153,7 +153,13 @@ func GetImageFromRequest(r *http.Request, key string) (image.Image, error) {
 NormalisedForm normalizes the form values and query parameters in a request by converting keys to lowercase.
 */
 func NormalisedForm(r *http.Request, w http.ResponseWriter) map[string]string {
-	err := r.ParseForm()
+	var err error
+	contentType := r.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		err = r.ParseMultipartForm(10 << 20) // 10 MB
+	} else {
+		err = r.ParseForm()
+	}
 	if err != nil {
 		WriteSubsonicError(w, r, types.ErrorMissingParameter, "parameters are malformed", "")
 		return nil
@@ -168,7 +174,14 @@ func NormalisedForm(r *http.Request, w http.ResponseWriter) map[string]string {
 }
 
 func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true
-	if err := r.ParseForm(); err != nil {
+	var err error
+	contentType := r.Header.Get("Content-Type")
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		err = r.ParseMultipartForm(10 << 20) // 10 MB
+	} else {
+		err = r.ParseForm()
+	}
+	if err != nil {
 		logger.Printf("Error parsing form: %v", err)
 		return nil, nil, fmt.Errorf("error parsing form: %w", err)
 	}
