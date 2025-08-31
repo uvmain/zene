@@ -117,6 +117,7 @@ func validateWithApiKey(ctx context.Context, apiKey string, w http.ResponseWrite
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "API Key not found", "")
 		return "", 0, false
 	}
+
 	return user.Username, user.Id, true
 }
 
@@ -161,6 +162,16 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), "username", userName)
 		ctx = context.WithValue(ctx, "userId", userId)
 		r = r.WithContext(ctx)
+
+		form := net.NormalisedForm(r, w)
+		if form["apikey"] != "" {
+			err := database.UpdateApiKeyLastUsed(ctx, form["apikey"])
+			if err != nil {
+				logger.Printf("Error updating last used time for API key %s: %v", form["apikey"], err)
+				net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Server Error", "")
+				return
+			}
+		}
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

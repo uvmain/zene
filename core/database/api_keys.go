@@ -48,6 +48,8 @@ func GetApiKeys(ctx context.Context, userId int) ([]types.ApiKey, error) {
 		return nil, fmt.Errorf("user not authorized to access these API keys")
 	}
 
+	var lastUsed sql.NullString
+
 	query := `SELECT id, user_id, api_key, date_created, last_used FROM api_keys`
 
 	var args []interface{}
@@ -60,6 +62,8 @@ func GetApiKeys(ctx context.Context, userId int) ([]types.ApiKey, error) {
 		args = append(args, user.Id)
 	}
 
+	query += ` ORDER BY last_used desc, date_created DESC`
+
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("querying API keys: %v", err)
@@ -69,8 +73,11 @@ func GetApiKeys(ctx context.Context, userId int) ([]types.ApiKey, error) {
 	var apiKeys []types.ApiKey
 	for rows.Next() {
 		var apiKey types.ApiKey
-		if err := rows.Scan(&apiKey.Id, &apiKey.UserId, &apiKey.ApiKey, &apiKey.DateCreated, &apiKey.LastUsed); err != nil {
+		if err := rows.Scan(&apiKey.Id, &apiKey.UserId, &apiKey.ApiKey, &apiKey.DateCreated, &lastUsed); err != nil {
 			return nil, fmt.Errorf("scanning API key row: %v", err)
+		}
+		if lastUsed.Valid {
+			apiKey.LastUsed = lastUsed.String
 		}
 		apiKeys = append(apiKeys, apiKey)
 	}

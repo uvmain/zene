@@ -3,7 +3,6 @@ package logic
 import (
 	"context"
 	"crypto/rand"
-	"encoding/base64"
 	"fmt"
 	"math/big"
 	mRand "math/rand"
@@ -15,6 +14,8 @@ import (
 	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -151,9 +152,12 @@ func StringToIntSlice(folderString string) []int {
 }
 
 func GenerateNewApiKey() (string, error) {
-	timeNano := fmt.Sprintf("%d", time.Now().UnixNano())
-	apiKey := base64.StdEncoding.EncodeToString([]byte(timeNano))
-	return apiKey, nil
+	apiKey, err := uuid.NewRandom()
+	if err != nil {
+		return "", fmt.Errorf("generating new API key: %v", err)
+	}
+	apiKeyStr := strings.ReplaceAll(apiKey.String(), "-", "")
+	return apiKeyStr, nil
 }
 
 func GetDefaultRoleValue(roleName string) bool {
