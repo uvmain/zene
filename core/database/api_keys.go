@@ -144,17 +144,24 @@ func UpdateApiKeyLastUsed(ctx context.Context, apiKey string) error {
 	return nil
 }
 
-func DeleteApiKey(ctx context.Context, apiKey string) error {
+func DeleteApiKey(ctx context.Context, apiKeyId int, userId int) error {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return fmt.Errorf("getting user from context: %v", err)
 	}
 
-	var args []interface{}
-	query := `DELETE FROM api_keys WHERE api_key = ?`
-	args = append(args, apiKey)
+	if user.Id != userId && !user.AdminRole {
+		return fmt.Errorf("user not authorized to delete this API key")
+	}
 
-	if !user.AdminRole {
+	var args []interface{}
+	query := `DELETE FROM api_keys WHERE id = ?`
+	args = append(args, apiKeyId)
+
+	if user.Id != 0 && user.AdminRole {
+		query += ` AND user_id = ?`
+		args = append(args, userId)
+	} else {
 		query += ` AND user_id = ?`
 		args = append(args, user.Id)
 	}
