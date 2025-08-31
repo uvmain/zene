@@ -39,34 +39,80 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	}
 
 	query += `
+	),
+	album_stats AS (
+    SELECT
+        musicbrainz_album_id,
+        COUNT(*) AS song_count,
+        CAST(SUM(duration) AS INTEGER) AS duration
+    FROM metadata`
+
+	if musicFolderId != 0 {
+		query += ` where m.music_folder_id = ?`
+		args = append(args, musicFolderId)
+	}
+
+	query += ` GROUP BY musicbrainz_album_id
+	),
+	album_plays AS (
+    SELECT
+			m.musicbrainz_album_id,
+			SUM(pc.play_count) AS total_play_count,
+			MAX(pc.last_played) AS last_played
+    FROM metadata m
+    JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id
+    WHERE pc.user_id = ?`
+	args = append(args, user.Id)
+
+	if musicFolderId != 0 {
+		query += ` and m.music_folder_id = ?`
+		args = append(args, musicFolderId)
+	}
+
+	query += ` GROUP BY m.musicbrainz_album_id
+	),
+	album_artist_map AS (
+    SELECT
+        artist,
+        MIN(musicbrainz_artist_id) AS musicbrainz_artist_id
+    FROM metadata
+    WHERE musicbrainz_artist_id IS NOT NULL`
+
+	if musicFolderId != 0 {
+		query += ` and m.music_folder_id = ?`
+		args = append(args, musicFolderId)
+	}
+	query += ` GROUP BY artist
 	)
 	SELECT
-		r.musicbrainz_album_id AS id,
-		r.album AS name,
-		r.artist,
-		r.musicbrainz_album_id AS cover_art,
-		(SELECT COUNT(*) FROM metadata WHERE musicbrainz_album_id = r.musicbrainz_album_id) AS song_count,
-		(SELECT CAST(SUM(duration) AS INTEGER) FROM metadata WHERE musicbrainz_album_id = r.musicbrainz_album_id) AS duration,
-		COALESCE(SUM(pc.play_count), 0) as play_count,
-		r.date_added as created,
-		r.musicbrainz_artist_id AS artist_id,
-		s.created_at AS starred,
-		CAST(REPLACE(PRINTF('%4s', substr(r.release_date,1,4)), ' ', '0') AS INTEGER) AS year,
-		substr(r.genre,1,(instr(r.genre,';')-1)) AS genre,
-		max(pc.last_played) as played,
-		COALESCE(ur.rating, 0) AS user_rating,
-		r.label AS label_string,
-		r.musicbrainz_album_id AS musicbrainz_id,
-		r.genre AS genre_string,
-		r.artist AS display_artist,
-		lower(r.album) AS sort_name,
-		r.release_date AS release_date_string,
-		r.album_artist,
-		maa.musicbrainz_artist_id as album_artist_id
+    r.musicbrainz_album_id AS id,
+    r.album AS name,
+    r.artist,
+    r.musicbrainz_album_id AS cover_art,
+    a.song_count,
+    a.duration,
+    COALESCE(ap.total_play_count, 0) as play_count,
+    r.date_added as created,
+    r.musicbrainz_artist_id AS artist_id,
+    s.created_at AS starred,
+    CAST(REPLACE(PRINTF('%4s', substr(r.release_date,1,4)), ' ', '0') AS INTEGER) AS year,
+    substr(r.genre,1,(instr(r.genre,';')-1)) AS genre,
+    ap.last_played as played,
+    COALESCE(ur.rating, 0) AS user_rating,
+    r.label AS label_string,
+    r.musicbrainz_album_id AS musicbrainz_id,
+    r.genre AS genre_string,
+    r.artist AS display_artist,
+    LOWER(r.album) AS sort_name,
+    r.release_date AS release_date_string,
+    r.album_artist,
+    maa.musicbrainz_artist_id as album_artist_id
 	FROM ranked r
-	LEFT JOIN play_counts pc ON r.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = ?
-	LEFT JOIN user_ratings ur ON r.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = ?
-	LEFT JOIN metadata maa ON maa.artist = r.album_artist`
+	JOIN album_stats a ON a.musicbrainz_album_id = r.musicbrainz_album_id
+	LEFT JOIN album_plays ap ON ap.musicbrainz_album_id = r.musicbrainz_album_id
+	LEFT JOIN user_ratings ur ON r.musicbrainz_album_id = ur.metadata_id AND ur.user_id = ?
+	LEFT JOIN album_artist_map maa ON maa.artist = r.album_artist
+	LEFT JOIN user_stars s ON r.musicbrainz_album_id = s.metadata_id AND s.user_id = ?`
 
 	args = append(args, user.Id, user.Id)
 
@@ -76,9 +122,9 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	}
 
 	if sortType == "starred" {
-		query += ` JOIN user_stars s ON r.musicbrainz_album_id = s.metadata_id AND s.user_id = ? and s.created_at is not null`
+		query += ` JOIN user_stars us ON r.musicbrainz_album_id = us.metadata_id AND us.user_id = ? and us.created_at is not null`
 	} else {
-		query += ` LEFT JOIN user_stars s ON r.musicbrainz_album_id = s.metadata_id AND s.user_id = ?`
+		query += ` LEFT JOIN user_stars us ON r.musicbrainz_album_id = us.metadata_id AND us.user_id = ?`
 	}
 	args = append(args, user.Id)
 
