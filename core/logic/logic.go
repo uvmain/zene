@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"math/big"
 	mRand "math/rand"
@@ -147,6 +148,12 @@ func StringToIntSlice(folderString string) []int {
 		}
 	}
 	return folderIds
+}
+
+func GenerateNewApiKey() (string, error) {
+	timeNano := fmt.Sprintf("%d", time.Now().UnixNano())
+	apiKey := base64.StdEncoding.EncodeToString([]byte(timeNano))
+	return apiKey, nil
 }
 
 func GetDefaultRoleValue(roleName string) bool {
