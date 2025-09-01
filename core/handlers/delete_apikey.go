@@ -17,7 +17,7 @@ func HandleDeleteApiKey(w http.ResponseWriter, r *http.Request) {
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	userId := form["user_id"]
+	userId := form["userId"]
 	apiKeyId := form["id"]
 
 	ctx := r.Context()

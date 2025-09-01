@@ -17,7 +17,7 @@ func HandleGetApiKeys(w http.ResponseWriter, r *http.Request) {
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	userId := form["user_id"]
+	userId := form["userId"]
 
 	ctx := r.Context()
 
@@ -27,8 +27,8 @@ func HandleGetApiKeys(w http.ResponseWriter, r *http.Request) {
 	if userId != "" {
 		userIdInt, err = strconv.Atoi(userId)
 		if err != nil {
-			logger.Printf("Error converting user_id to int: %v", err)
-			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "user_id parameter should be an integer", "")
+			logger.Printf("Error converting userId to int: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "userId parameter should be an integer", "")
 			return
 		}
 	}

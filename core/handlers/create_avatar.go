@@ -34,6 +34,10 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if username == "" {
+		username = requestUser.Username
+	}
+
 	avatarUser, err := database.GetUserByUsername(ctx, username)
 	if err != nil {
 		logger.Printf("Error getting user ID for username %s: %v", username, err)
