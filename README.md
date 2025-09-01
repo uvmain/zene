@@ -4,16 +4,15 @@
 ## Self hosted Music Server and Web player
 ### Fast and feature packed with smart caching
 - All transcoded audio is cached locally and cleaned with smart rules
-- Fast full text search
-- wide support of If-Modified-Since headers for 304 responses
-- support for Accept-Encoding headers and gzip compression
+- Wide support of If-Modified-Since headers for 304 responses
+- Support for Accept-Encoding headers and gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
-- lyrics automatically fetched on demand from https://lrclib.net and saved locally
-- album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
-- artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
-- similar artists/songs are fetched from https://api.deezer.com and saved locally
+- Lyrics automatically fetched on demand from https://lrclib.net and saved locally
+- Album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
+- Artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
+- Similar artists/songs are fetched from https://api.deezer.com and saved locally
 
-### Uses the OpenSubsonic API, with a few extras
+### Uses the OpenSubsonic API
 Supports the following OpenSubsonic API extensions:
 - `apiKeyAuthentication` (this project supports password, enc:password, salt & token, and ApiKey auth)
 - `formPost` (all endpoints support GET and POST, with either formData values OR query parameters)
@@ -24,12 +23,13 @@ Supports the following OpenSubsonic API extensions:
 
 [Implemented OpenSubsonic API endpoints](./docs/implemented-opensubsonic-endpoints.md)
 
-### additional custom API endpoints include:
-- `createAvatar`
-- `updateAvatar`
-- `deleteAvatar`
-
-The above endpoints enable dynamic functionality consistent with the existing getAvatar endpoint
+### Additional custom API endpoints include:
+- `createAvatar` Accepts a `username` parameter and a `avatar` formFile key. Only admins can create avatars for other users.
+- `updateAvatar` Accepts a `username` parameter and a `avatar` formFile key. Only admins can update avatars for other users.
+- `deleteAvatar` Accepts a `username` parameter. Only admins can delete avatars for other users.
+- `createApiKey` Accepts a `userId` parameter. Only admins can create API keys for other users.
+- `getApiKeys` Accepts a `userId` parameter. Only admins can get API keys for other users.
+- `deleteApiKey` Requires a `apiKeyId` parameter. Accepts a `userId` parameter. Only admins can delete API keys for other users.
 
 ### Tech stack
 - `Sqlite` database

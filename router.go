@@ -174,6 +174,12 @@ func StartServer() *http.Server {
 	router.Handle("/rest/deleteUser.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUser)))
 	router.Handle("/rest/changePassword", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleChangePassword)))
 	router.Handle("/rest/changePassword.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleChangePassword)))
+	router.Handle("/rest/createApiKey", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateApiKey)))
+	router.Handle("/rest/createApiKey.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateApiKey)))
+	router.Handle("/rest/getApiKeys", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetApiKeys)))
+	router.Handle("/rest/getApiKeys.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetApiKeys)))
+	router.Handle("/rest/deleteApiKey", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteApiKey)))
+	router.Handle("/rest/deleteApiKey.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteApiKey)))
 	// Media library scanning
 	router.Handle("/rest/getScanStatus", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus)))
 	router.Handle("/rest/getScanStatus.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus)))

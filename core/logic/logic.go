@@ -14,6 +14,8 @@ import (
 	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -147,6 +149,15 @@ func StringToIntSlice(folderString string) []int {
 		}
 	}
 	return folderIds
+}
+
+func GenerateNewApiKey() (string, error) {
+	apiKey, err := uuid.NewRandom()
+	if err != nil {
+		return "", fmt.Errorf("generating new API key: %v", err)
+	}
+	apiKeyStr := strings.ReplaceAll(apiKey.String(), "-", "")
+	return apiKeyStr, nil
 }
 
 func GetDefaultRoleValue(roleName string) bool {
