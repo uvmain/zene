@@ -17,7 +17,7 @@ func HandleDeleteApiKey(w http.ResponseWriter, r *http.Request) {
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	userId := form["userId"]
+	userId := form["userid"]
 	apiKeyId := form["id"]
 
 	ctx := r.Context()
@@ -31,10 +31,10 @@ func HandleDeleteApiKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	apiKeyIdInt, err := strconv.Atoi(apiKeyId)
+	apiKeyIds, _, err := net.ParseDuplicateFormKeys(r, "id", true)
 	if err != nil {
-		logger.Printf("Error converting apiKeyId to int: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter should be an integer", "")
+		logger.Printf("Error parsing id parameter(s): %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid id parameter(s) received", "")
 		return
 	}
 
@@ -63,9 +63,9 @@ func HandleDeleteApiKey(w http.ResponseWriter, r *http.Request) {
 		userIdInt = requestUser.Id
 	}
 
-	err = database.DeleteApiKey(ctx, apiKeyIdInt, userIdInt)
+	err = database.DeleteApiKeys(ctx, apiKeyIds, userIdInt)
 	if err != nil {
-		logger.Printf("Error deleting API key %d: %v", apiKeyIdInt, err)
+		logger.Printf("Error deleting API key(s) %v: %v", apiKeyIds, err)
 		net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Server Error", "")
 		return
 	}

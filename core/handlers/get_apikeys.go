@@ -55,6 +55,9 @@ func HandleGetApiKeys(w http.ResponseWriter, r *http.Request) {
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
 		return
 	}
+	if apiKeys == nil {
+		apiKeys = []types.ApiKey{}
+	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 

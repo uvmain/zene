@@ -21,7 +21,7 @@ func HandleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 	playlistId := form["playlistid"]
 	playlistName := form["name"]
 
-	_, songIds, err := net.ParseDuplicateFormKeys(r, "songId", false)
+	_, songIds, err := net.ParseDuplicateFormKeys(r, "songid", false)
 	if err != nil {
 		logger.Printf("Error parsing songIds: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid songIds", "")

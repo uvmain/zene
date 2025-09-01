@@ -29,7 +29,7 @@ Supports the following OpenSubsonic API extensions:
 - `deleteAvatar` Accepts a `username` parameter. Only admins can delete avatars for other users.
 - `createApiKey` Accepts a `userId` parameter. Only admins can create API keys for other users.
 - `getApiKeys` Accepts a `userId` parameter. Only admins can get API keys for other users.
-- `deleteApiKey` Requires a `apiKeyId` parameter. Accepts a `userId` parameter. Only admins can delete API keys for other users.
+- `deleteApiKey` Requires one or more `id` parameter(s). Accepts a `userId` parameter. Only admins can delete API keys for other users.
 
 ### Tech stack
 - `Sqlite` database

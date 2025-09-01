@@ -144,7 +144,7 @@ func UpdateApiKeyLastUsed(ctx context.Context, apiKey string) error {
 	return nil
 }
 
-func DeleteApiKey(ctx context.Context, apiKeyId int, userId int) error {
+func DeleteApiKeys(ctx context.Context, apiKeyIds []int, userId int) error {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return fmt.Errorf("getting user from context: %v", err)
@@ -155,8 +155,15 @@ func DeleteApiKey(ctx context.Context, apiKeyId int, userId int) error {
 	}
 
 	var args []interface{}
-	query := `DELETE FROM api_keys WHERE id = ?`
-	args = append(args, apiKeyId)
+	query := `DELETE FROM api_keys WHERE id IN (`
+	for i := 0; i < len(apiKeyIds); i++ {
+		if i > 0 {
+			query += `,`
+		}
+		query += `?`
+		args = append(args, apiKeyIds[i])
+	}
+	query += `)`
 
 	if user.Id != 0 && user.AdminRole {
 		query += ` AND user_id = ?`

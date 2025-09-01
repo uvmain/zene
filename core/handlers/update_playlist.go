@@ -24,21 +24,21 @@ func HandleUpdatePlaylist(w http.ResponseWriter, r *http.Request) {
 	public := form["public"]
 	coverArt := form["coverart"]
 
-	allowedUsers, _, err := net.ParseDuplicateFormKeys(r, "allowedUserId", true)
+	allowedUsers, _, err := net.ParseDuplicateFormKeys(r, "alloweduserid", true)
 	if err != nil {
 		logger.Printf("Error parsing allowedUserId: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid allowedUserId", "")
 		return
 	}
 
-	_, songIdsToAdd, err := net.ParseDuplicateFormKeys(r, "songIdToAdd", false)
+	_, songIdsToAdd, err := net.ParseDuplicateFormKeys(r, "songidtoadd", false)
 	if err != nil {
 		logger.Printf("Error parsing songIdToAdd: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid songIdToAdd", "")
 		return
 	}
 
-	songIndexesToRemove, _, err := net.ParseDuplicateFormKeys(r, "songIndexToRemove", true)
+	songIndexesToRemove, _, err := net.ParseDuplicateFormKeys(r, "songindextoremove", true)
 	if err != nil {
 		logger.Printf("Error parsing songIndexToRemove: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid songIndexToRemove", "")

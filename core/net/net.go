@@ -173,6 +173,10 @@ func NormalisedForm(r *http.Request, w http.ResponseWriter) map[string]string {
 	return out
 }
 
+/*
+ParseDuplicateFormKeys parses duplicate form keys from the request.
+The key string should be passed in lowercase, as it is case-insensitive.
+*/
 func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) { // returns []int and []string, parses []int only if intArray is true
 	var err error
 	contentType := r.Header.Get("Content-Type")
@@ -187,7 +191,14 @@ func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, 
 	}
 
 	intSlice := []int{}
-	stringSlice := r.Form[key]
+	// lowercase the form strings first
+	for key, values := range r.Form {
+		for i := range values {
+			values[i] = strings.ToLower(values[i])
+		}
+		r.Form[key] = values
+	}
+	stringSlice := r.Form[strings.ToLower(key)]
 
 	if intArray {
 		for _, idStr := range stringSlice {
