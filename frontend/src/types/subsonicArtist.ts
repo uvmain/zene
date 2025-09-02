@@ -9,3 +9,12 @@ export interface SubsonicArtist {
   userRating: number
   averageRating: number
 }
+
+export interface SubsonicArtists {
+  index: Index[]
+}
+
+export interface Index {
+  name: string
+  artist: SubsonicArtist[]
+}

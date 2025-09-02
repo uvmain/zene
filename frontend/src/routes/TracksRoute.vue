@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '~/types'
 import { useBackendFetch } from '~/composables/useBackendFetch'
-import { useLogic } from '~/composables/useLogic'
+import { logic } from '~/composables/logic'
 import { useRandomSeed } from '~/composables/useRandomSeed'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const { routeTracks, clearRouteTracks } = useRouteTracks()
 const { backendFetchRequest } = useBackendFetch()
 const { getRandomSeed } = useRandomSeed()
-const { trackWithImageUrl } = useLogic()
+const { trackWithImageUrl } = logic()
 
 const LIMIT = 100 as const
 const offset = ref(0)

@@ -2,11 +2,11 @@
 import type { TrackMetadataWithImageUrl } from '~/types'
 import { useAuth } from '~/composables/useAuth'
 import { useBackendFetch } from '~/composables/useBackendFetch'
-import { useLogic } from '~/composables/useLogic'
+import { logic } from '~/composables/logic'
 
 const route = useRoute()
 const { backendFetchRequest } = useBackendFetch()
-const { getArtistUrl, getAlbumUrl, formatTime } = useLogic()
+const { getArtistUrl, getAlbumUrl, formatTime } = logic()
 const { userUsername, userSalt, userToken } = useAuth()
 
 const track = ref<TrackMetadataWithImageUrl | null>(null)

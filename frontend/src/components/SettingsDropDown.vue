@@ -1,10 +1,9 @@
 <script setup>
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import { openSubsonicFetchRequest } from '~/composables/useBackendFetch'
 import { useDebug } from '~/composables/useDebug'
 import { useSettings } from '~/composables/useSettings'
 
 const { streamQuality, StreamQualities } = useSettings()
-const { openSubsonicFetchRequest } = useBackendFetch()
 const { toggleDebug, debugLog, useDebugBool } = useDebug()
 
 const open = ref(false)

@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import type { AlbumMetadata } from '~/types'
-import dayjs from 'dayjs'
-import { useBackendFetch } from '~/composables/useBackendFetch'
-import { useRandomSeed } from '~/composables/useRandomSeed'
-
-const { backendFetchRequest } = useBackendFetch()
-const { getRandomSeed, refreshRandomSeed } = useRandomSeed()
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import { fetchAlbums } from '~/composables/backendFetch'
 
 const METADATA_COUNT = 20
 const isShaking = ref(false)
-const albumArray = ref<AlbumMetadata[]>([])
+const albumArray = ref<SubsonicAlbum[]>([])
 const index = ref(0)
 
 const indexCount = computed(() => {
@@ -28,36 +23,8 @@ function prevIndex() {
   }
 }
 
-async function getRandomAlbums(limit: number): Promise<AlbumMetadata[]> {
-  const randomSeed = getRandomSeed()
-  const formData = new FormData()
-  formData.append('random', randomSeed.toString())
-  formData.append('limit', limit.toString())
-  const response = await backendFetchRequest('albums', {
-    method: 'POST',
-    body: formData,
-  })
-  const json = await response.json()
-  const albumMetadata: AlbumMetadata[] = []
-  json.forEach((metadata: any) => {
-    const metadataInstance = {
-      artist: metadata.artist,
-      album: metadata.album,
-      album_artist: metadata.album_artist,
-      musicbrainz_album_id: metadata.musicbrainz_album_id as string,
-      musicbrainz_artist_id: metadata.musicbrainz_artist_id,
-      genres: metadata.genres.split(';').filter((genre: string) => genre !== ''),
-      release_date: dayjs(metadata.release_date).format('YYYY'),
-      image_url: `/api/albums/${metadata.musicbrainz_album_id}/art?size=xl`,
-    }
-    albumMetadata.push(metadataInstance)
-  })
-  return albumMetadata
-}
-
-async function getNewRandomMetadata() {
-  refreshRandomSeed()
-  albumArray.value = await getRandomAlbums(METADATA_COUNT)
+async function getRandomAlbums(limit: number) {
+  albumArray.value = await fetchAlbums('random', limit)
   index.value = 0
 }
 
@@ -66,11 +33,11 @@ function handleDiceClick() {
   setTimeout(() => {
     isShaking.value = false
   }, 200)
-  getNewRandomMetadata()
+  getRandomAlbums(METADATA_COUNT)
 }
 
 onBeforeMount(async () => {
-  albumArray.value = await getRandomAlbums(METADATA_COUNT)
+  await getRandomAlbums(METADATA_COUNT)
   index.value = 0
 })
 </script>
@@ -79,7 +46,7 @@ onBeforeMount(async () => {
   <section v-if="albumArray.length" class="overflow-hidden rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
-      :style="{ backgroundImage: `url(${albumArray[index].image_url})` }"
+      :style="{ backgroundImage: `url(/share/img/${albumArray[index].coverArt}?size=600)` }"
     >
       <div class="h-full w-full flex items-center justify-between backdrop-blur-md">
         <Album :album="albumArray[index]" size="xl" />

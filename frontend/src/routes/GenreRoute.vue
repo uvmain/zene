@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '~/types'
 import { useBackendFetch } from '~/composables/useBackendFetch'
-import { useLogic } from '~/composables/useLogic'
+import { logic } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()
 const { getGenreTracks } = useBackendFetch()
-const { trackWithImageUrl } = useLogic()
+const { trackWithImageUrl } = logic()
 
 const tracks = ref<TrackMetadataWithImageUrl[]>()
 

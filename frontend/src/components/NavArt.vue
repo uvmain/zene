@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useAuth } from '~/composables/useAuth'
-import { useLogic } from '~/composables/useLogic'
+import { logic } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const { currentlyPlayingTrack } = usePlaybackQueue()
-const { getTrackUrl, getArtistUrl, getAlbumUrl } = useLogic()
+const { getTrackUrl, getArtistUrl, getAlbumUrl } = logic()
 const { userUsername, userSalt, userToken } = useAuth()
 const router = useRouter()
 

@@ -1,14 +1,3 @@
-export interface SubsonicLyricsResponse {
-  'subsonic-response': {
-    status: string
-    version: string
-    type: string
-    serverVersion: string
-    openSubsonic: boolean
-    lyricsList: LyricsList
-  }
-}
-
 export interface LyricsList {
   structuredLyrics: StructuredLyric[]
 }
@@ -23,6 +12,6 @@ export interface StructuredLyric {
 }
 
 export interface StructuredLyricLine {
-  start?: number
+  start: number
   value: string
 }

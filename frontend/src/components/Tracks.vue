@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '~/types'
 import { useIntersectionObserver } from '@vueuse/core'
+import { logic } from '~/composables/logic'
 import { useAuth } from '~/composables/useAuth'
-import { useLogic } from '~/composables/useLogic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
@@ -17,7 +17,7 @@ const emits = defineEmits(['loadMore'])
 
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
-const { getTrackUrl, getArtistUrl, getAlbumUrl, formatTime } = useLogic()
+const { getTrackUrl, getArtistUrl, getAlbumUrl, formatTime } = logic()
 const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 const { userUsername, userSalt, userToken } = useAuth()
 

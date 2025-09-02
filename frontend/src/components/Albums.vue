@@ -1,15 +1,11 @@
 <script setup lang="ts">
+import { get } from 'node:http'
 import { useLocalStorage } from '@vueuse/core'
-import dayjs from 'dayjs'
-import { useBackendFetch } from '~/composables/useBackendFetch'
-import { useRandomSeed } from '~/composables/useRandomSeed'
+import { fetchAlbums } from '~/composables/backendFetch'
 
 const props = defineProps({
   limit: { type: Number, default: 30 },
 })
-
-const { backendFetchRequest } = useBackendFetch()
-const { refreshRandomAlbumSeed, getRandomAlbumSeed, randomAlbumSeed } = useRandomSeed()
 
 const recentlyAddedAlbums = ref()
 const showOrderOptions = ref(false)
@@ -34,42 +30,30 @@ function setOrder(order: 'recentlyUpdated' | 'random' | 'alphabetical') {
   getAlbums()
 }
 
-async function refreshAlbums() {
-  await refreshRandomAlbumSeed()
-  await getAlbums()
-}
-
 async function getAlbums() {
-  const formData = new FormData()
-  formData.append('recent', randomAlbumSeed.value.toString())
-  formData.append('random', randomAlbumSeed.value.toString())
-  formData.append('limit', props.limit.toString())
-  const response = await backendFetchRequest('albums', {
-    method: 'POST',
-    body: formData,
-  })
-  const json = await response.json()
-  const albums = json.map((album: any) => ({
-    album: album.album,
-    artist: album.artist,
-    album_artist: album.album_artist ?? album.artist,
-    musicbrainz_album_id: album.musicbrainz_album_id,
-    musicbrainz_artist_id: album.musicbrainz_artist_id,
-    release_date: dayjs(album.release_date).format('YYYY'),
-    image_url: `/api/albums/${album.musicbrainz_album_id}/art?size=lg`,
-  }))
-  recentlyAddedAlbums.value = albums
+  let type: string
+  switch (currentOrder.value) {
+    case 'recentlyUpdated':
+      type = 'newest'
+      break
+    case 'random':
+      type = 'random'
+      break
+    case 'alphabetical':
+      type = 'alphabeticalbyname'
+      break
+  }
+  await fetchAlbums(type, props.limit)
 }
 
 onBeforeMount(async () => {
-  getRandomAlbumSeed()
   await getAlbums()
 })
 </script>
 
 <template>
   <div class="relative">
-    <RefreshHeader :title="headerTitle" @refreshed="refreshAlbums()" @title-click="showOrderOptions = !showOrderOptions" />
+    <RefreshHeader :title="headerTitle" @refreshed="getAlbums()" @title-click="showOrderOptions = !showOrderOptions" />
     <div v-if="showOrderOptions" class="absolute left-0 top-0 z-10 w-auto border-1 border-white rounded-md border-solid bg-zene-800 text-white shadow-lg">
       <div class="cursor-pointer px-4 py-2 hover:bg-zene-600" @click="setOrder('recentlyUpdated')">
         Recently Updated

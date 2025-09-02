@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import type { ArtistMetadata } from '~/types'
-import { useAuth } from '~/composables/useAuth'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
 import { useSearch } from '~/composables/useSearch'
 
 const props = defineProps({
-  artist: { type: Object as PropType<ArtistMetadata>, required: true },
+  artist: { type: Object as PropType<SubsonicArtist>, required: true },
 })
-
-const { userUsername, userSalt, userToken } = useAuth()
 
 const { closeSearch } = useSearch()
 
@@ -20,13 +17,12 @@ function onImageError(event: Event) {
 }
 
 const coverArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${props.artist.musicbrainz_artist_id}`
-  return `/rest/getArtistArt.view${queryParamString}`
+  return `/share/img/${props.artist.musicBrainzId}?size=400`
 })
 
 function navigate() {
   closeSearch()
-  router.push(`/artists/${props.artist.musicbrainz_artist_id}`)
+  router.push(`/artists/${props.artist.musicBrainzId}`)
 }
 </script>
 
@@ -47,7 +43,7 @@ function navigate() {
       </div>
     </div>
     <div class="text-nowrap text-xs text-gray-300">
-      {{ artist.artist }}
+      {{ artist.name }}
     </div>
   </div>
 </template>
