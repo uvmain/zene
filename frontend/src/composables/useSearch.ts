@@ -1,33 +1,23 @@
-import type { AlbumMetadata, ArtistMetadata, GenreMetadata, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicGenre } from '~/types/subsonicGenres'
+import type { SubsonicSong } from '~/types/subsonicSong'
 import { useSessionStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
-import { useBackendFetch } from './useBackendFetch'
+import { fetchGenres } from './backendFetch'
 
 const searchInput = useSessionStorage<string>('searchInput', '')
-const { backendFetchRequest } = useBackendFetch()
-
-const searchResults = ref<TrackMetadataWithImageUrl[]>([])
-const searchResultsGenres = ref<any[]>([])
-const searchResultsArtists = ref<ArtistMetadata[]>([])
 
 export function useSearch() {
   const closeSearch = () => {
     searchInput.value = ''
   }
 
-  const getGenres = async () => {
-    const formData = new FormData()
-    formData.append('search', searchInput.value)
-    const response = await backendFetchRequest('genres', {
-      method: 'POST',
-      body: formData,
-    })
-    const json = await response.json() as GenreMetadata[]
-    if (json.length === 0) {
-      searchResultsGenres.value = []
-      return
+  const searchGenres = async () => {
+    const allGenres = await fetchGenres()
+    if (allGenres.length === 0) {
+      return [] as SubsonicGenre[]
     }
-    searchResultsGenres.value = json.slice(0, 12)
+    return allGenres.filter(genre => genre.value.toLowerCase().includes(searchInput.value.toLowerCase()))
   }
 
   const getArtists = async () => {
@@ -119,11 +109,7 @@ export function useSearch() {
   return {
     search,
     searchInput,
-    searchResults,
-    searchResultsGenres,
-    searchResultsArtists,
-    searchResultsTracks,
-    searchResultsAlbums,
+    searchGenres,
     closeSearch,
   }
 }

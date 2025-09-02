@@ -109,7 +109,7 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 	query += `
 	)
 		SELECT id, album_id, title, album, artist, track, year, genre, cover_art, size, duration, bitrate, path, 
-		created, disc_number, artist_id, genre_string, album_artist, bit_depth, sample_rate, channels,
+		created, disc_number, artist_id, genre_string, album_artist, album_artist_id, bit_depth, sample_rate, channels,
 		user_rating, average_rating, play_count, played, starred
 		FROM ranked
 		GROUP BY id
@@ -137,8 +137,8 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 		var starred sql.NullString
 
 		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
-			&result.Year, &result.Genre, &result.CoverArt,
-			&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
+			&result.Year, &result.Genre, &result.CoverArt, &result.Size, &durationFloat, &result.BitRate, &result.Path,
+			&result.Created, &result.DiscNumber, &result.ArtistId,
 			&genreString, &albumArtistName, &albumArtistId, &result.BitDepth, &result.SamplingRate, &result.ChannelCount,
 			&result.UserRating, &result.AverageRating, &result.PlayCount, &played, &starred); err != nil {
 			return nil, err

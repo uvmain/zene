@@ -1,13 +1,10 @@
-import type { AlbumMetadata, ArtistMetadata, Queue, TrackMetadata, TrackMetadataWithImageUrl } from '~/types'
-import { useBackendFetch } from './useBackendFetch'
-import { useLogic } from './useLogic'
-import { useRandomSeed } from './useRandomSeed'
+import type { Queue } from '~/types'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from './backendFetch'
 
-const { backendFetchRequest, getAlbumTracks, getArtistTracks } = useBackendFetch()
-const { randomSeed, refreshRandomSeed, getRandomSeed } = useRandomSeed()
-const { trackWithImageUrl, getRandomInteger } = useLogic()
-
-const currentlyPlayingTrack = ref<TrackMetadataWithImageUrl | undefined>()
+const currentlyPlayingTrack = ref<SubsonicSong | undefined>()
 const currentQueue = ref<Queue | undefined>()
 
 export function usePlaybackQueue() {
@@ -15,22 +12,22 @@ export function usePlaybackQueue() {
     currentlyPlayingTrack.value = undefined
   }
 
-  const setCurrentlyPlayingTrack = (track: TrackMetadata | TrackMetadataWithImageUrl) => {
-    currentlyPlayingTrack.value = trackWithImageUrl(track)
+  const setCurrentlyPlayingTrack = (track: SubsonicSong) => {
+    currentlyPlayingTrack.value = track
   }
 
-  const setCurrentlyPlayingTrackInQueue = (track: TrackMetadataWithImageUrl) => {
+  const setCurrentlyPlayingTrackInQueue = (track: SubsonicSong) => {
     if (!currentQueue.value) {
       return
     }
     const index = currentQueue.value.tracks.indexOf(track)
     currentQueue.value.position = index
-    currentlyPlayingTrack.value = trackWithImageUrl(track)
+    currentlyPlayingTrack.value = track
   }
 
-  const setCurrentQueue = (tracks: TrackMetadata[] | TrackMetadataWithImageUrl[], playFirstTrack: boolean = true) => {
+  const setCurrentQueue = (tracks: SubsonicSong[], playFirstTrack: boolean = true) => {
     currentQueue.value = {
-      tracks: tracks.map(track => trackWithImageUrl(track)),
+      tracks,
       position: 0,
     }
     if (playFirstTrack && tracks.length > 0) {
@@ -42,60 +39,39 @@ export function usePlaybackQueue() {
     currentQueue.value = undefined
   }
 
-  const getRandomTrack = async (): Promise<TrackMetadataWithImageUrl> => {
-    const seed = getRandomInteger()
-    const formData = new FormData()
-    formData.append('random', seed.toString())
-    formData.append('limit', '1')
-    const response = await backendFetchRequest(`tracks`, {
-      method: 'POST',
-      body: formData,
-    })
-    const json = await response.json() as TrackMetadata[]
-    const randomTrack = trackWithImageUrl(json[0])
+  const getRandomTrack = async (): Promise<SubsonicSong> => {
+    const randomTracks = await fetchRandomTracks(1)
+    const randomTrack = randomTracks[0]
     setCurrentlyPlayingTrack(randomTrack)
     currentQueue.value = undefined
     return randomTrack
   }
 
-  const play = async (artist?: ArtistMetadata, album?: AlbumMetadata, track?: TrackMetadata | TrackMetadataWithImageUrl) => {
+  const play = async (artist?: SubsonicArtist, album?: SubsonicAlbum, track?: SubsonicSong) => {
     if (track) {
-      setCurrentlyPlayingTrack(trackWithImageUrl(track))
+      setCurrentlyPlayingTrack(track)
       currentQueue.value = undefined
     }
     else if (album) {
-      const tracks = await getAlbumTracks(album.musicbrainz_album_id)
+      const tracks = await fetchAlbum(album.id).then(fetchedAlbum => fetchedAlbum.song)
       setCurrentQueue(tracks)
     }
     else if (artist) {
-      const tracks = await getArtistTracks(artist.musicbrainz_artist_id)
+      const tracks = await fetchArtistTopSongs(artist.id, 100)
       setCurrentQueue(tracks)
     }
   }
 
-  const getRandomTracks = async (): Promise<TrackMetadataWithImageUrl[]> => {
-    if (randomSeed.value === 0) {
-      randomSeed.value = getRandomInteger()
-    }
-    const formData = new FormData()
-    formData.append('random', randomSeed.value.toString())
-    formData.append('limit', '100')
-    const response = await backendFetchRequest(`tracks`, {
-      method: 'POST',
-      body: formData,
-    })
-    const json = await response.json() as TrackMetadata[]
-    const randomTracks = json.map((randomTrack) => {
-      return trackWithImageUrl(randomTrack)
-    })
+  const getRandomTracks = async (): Promise<SubsonicSong[]> => {
+    const randomTracks = await fetchRandomTracks()
     setCurrentQueue(randomTracks)
     return randomTracks
   }
 
-  const getNextTrack = async (): Promise<TrackMetadataWithImageUrl | undefined> => {
+  const getNextTrack = async (): Promise<SubsonicSong | undefined> => {
     if (currentQueue.value && currentQueue.value.tracks.length) {
       const currentIndex = currentQueue.value.position
-      let nextTrack: TrackMetadataWithImageUrl
+      let nextTrack: SubsonicSong | undefined
       if (currentIndex < currentQueue.value.tracks.length - 1) {
         nextTrack = currentQueue.value.tracks[currentIndex + 1]
         currentQueue.value.position = currentIndex + 1
@@ -104,7 +80,9 @@ export function usePlaybackQueue() {
         nextTrack = currentQueue.value.tracks[0]
         currentQueue.value.position = 0
       }
-      setCurrentlyPlayingTrack(nextTrack)
+      if (nextTrack !== undefined) {
+        setCurrentlyPlayingTrack(nextTrack)
+      }
       return nextTrack
     }
     else {
@@ -113,10 +91,10 @@ export function usePlaybackQueue() {
     }
   }
 
-  const getPreviousTrack = async (): Promise<TrackMetadataWithImageUrl | undefined> => {
+  const getPreviousTrack = async (): Promise<SubsonicSong | undefined> => {
     if (currentQueue.value && currentQueue.value.tracks.length) {
       const currentIndex = currentQueue.value.position
-      let prevTrack: TrackMetadataWithImageUrl
+      let prevTrack: SubsonicSong | undefined
       if (currentIndex > 0) {
         prevTrack = currentQueue.value.tracks[currentIndex - 1]
         currentQueue.value.position = currentIndex - 1
@@ -125,7 +103,9 @@ export function usePlaybackQueue() {
         prevTrack = currentQueue.value.tracks[currentQueue.value.tracks.length - 1]
         currentQueue.value.position = currentQueue.value.tracks.length - 1
       }
-      setCurrentlyPlayingTrack(prevTrack)
+      if (prevTrack !== undefined) {
+        setCurrentlyPlayingTrack(prevTrack)
+      }
       return prevTrack
     }
     else {
@@ -147,8 +127,5 @@ export function usePlaybackQueue() {
     getPreviousTrack,
     getRandomTrack,
     getRandomTracks,
-    randomSeed,
-    refreshRandomSeed,
-    getRandomSeed,
   }
 }

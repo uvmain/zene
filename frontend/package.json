@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@vueuse/core": "^13.0.0",
+    "blueimp-md5": "^2.19.0",
     "dayjs": "^1.11.13",
     "js-md5": "^0.8.3",
     "vue": "^3.4.29",
@@ -24,6 +25,7 @@
     "@iconify-json/carbon": "^1.2.3",
     "@iconify-json/tabler": "^1.2.6",
     "@tsconfig/node20": "^20.1.4",
+    "@types/blueimp-md5": "^2.18.2",
     "@types/node": "^24.0.1",
     "@unhead/vue": "^2.0.10",
     "@unocss/eslint-plugin": "^66.2.0",

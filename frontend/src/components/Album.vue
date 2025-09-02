@@ -1,24 +1,21 @@
 <script setup lang="ts">
-import type { AlbumMetadata } from '../types'
-import { useAuth } from '../composables/useAuth'
+import type { SubsonicAlbum } from '../types/subsonicAlbum'
 import { useSearch } from '../composables/useSearch'
 
 const props = defineProps({
-  album: { type: Object as PropType<AlbumMetadata>, required: true },
+  album: { type: Object as PropType<SubsonicAlbum>, required: true },
   size: { type: String, default: 'md' },
 })
 
 const router = useRouter()
 const { closeSearch } = useSearch()
-const { userIsAdminState, userUsername, userSalt, userToken } = useAuth()
 
 const artistAndDate = computed(() => {
-  return props.album.release_date !== 'Invalid Date' ? `${props.album.artist} • ${props.album.release_date}` : props.album.artist
+  return `${props.album.artist} • ${props.album.releaseDate}`
 })
 
 const coverArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${props.album.musicbrainz_album_id}`
-  return `/rest/getCoverArt.view${queryParamString}`
+  return `/share/img/${props.album.id}?size=400`
 })
 
 function onImageError(event: Event) {
@@ -29,21 +26,18 @@ function onImageError(event: Event) {
 
 function navigateAlbum() {
   closeSearch()
-  router.push(`/albums/${props.album.musicbrainz_album_id}`)
+  router.push(`/albums/${props.album.id}`)
 }
 
 function navigateArtist() {
   closeSearch()
-  router.push(`/artists/${props.album.musicbrainz_artist_id}`)
+  router.push(`/artists/${props.album.artistId}`)
 }
 </script>
 
 <template>
   <div>
-    <div v-if="userIsAdminState">
-      test
-    </div>
-    <div v-if="props.size === 'lg'" class="group h-32 w-24 md:h-40 md:w-30">
+    <div v-if="size === 'lg'" class="group h-32 w-24 md:h-40 md:w-30">
       <img class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-30" :src="coverArtUrl" alt="Album Cover" @error="onImageError" @click="navigateAlbum()" />
       <div class="relative">
         <PlayButton
@@ -53,7 +47,7 @@ function navigateArtist() {
         />
       </div>
       <div class="w-24 truncate text-nowrap text-xs md:w-30 md:text-sm">
-        {{ album.album }}
+        {{ album.name }}
       </div>
       <div class="w-24 cursor-pointer truncate text-nowrap text-xs text-gray-300 md:w-30" @click="navigateArtist()">
         {{ artistAndDate }}
@@ -63,13 +57,13 @@ function navigateArtist() {
       <img :src="coverArtUrl" class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-50" @error="onImageError" @click="navigateAlbum()">
       <div class="flex flex-col gap-2 text-center md:gap-5 md:text-left">
         <div class="cursor-pointer text-lg text-white font-bold md:text-4xl" @click="navigateAlbum()">
-          {{ album.album }}
+          {{ album.name }}
         </div>
         <div class="cursor-pointer text-sm text-white md:text-xl" @click="navigateArtist()">
           {{ artistAndDate }}
         </div>
         <div v-if="album.genres.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
-          <GenreBottle v-for="genre in album.genres" :key="genre" :genre />
+          <GenreBottle v-for="genre in album.genres" :key="genre.name" :genre="genre.name" />
         </div>
         <div class="flex justify-center md:justify-start">
           <PlayButton :album="album" />

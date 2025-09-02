@@ -131,7 +131,7 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 	query := `select m.musicbrainz_album_id as id, m.musicbrainz_artist_id as parent,
 		m.album, m.artist, REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_album_id as cover_art,
-		sum(m.duration) as duration, min(date_added) as created, m.label as label,
+		sum(m.duration) as duration, min(m.date_added) as created, m.label as label,
 		m.album_artist, m.genre as genres, m.musicbrainz_artist_id as musicbrainz_artist,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
@@ -147,7 +147,7 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 	left join metadata maa on maa.artist = m.album_artist
 	where m.musicbrainz_artist_id = ?
 	and f.user_id = ?
-	group by musicbrainz_album_id;`
+	group by m.musicbrainz_album_id;`
 
 	rows, err := DB.Query(query, musicbrainzArtistId, user.Id)
 	if err != nil {
