@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '~/types'
-import type { TokenResponse } from '~/types/auth'
+import type { SubsonicSong } from '~/types/subsonicSong'
 import { onKeyStroke } from '@vueuse/core'
-import { formatTime } from '~/composables/logic'
-import { useAuth } from '~/composables/useAuth'
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import { formatTime, getCoverArtUrl } from '~/composables/logic'
 import { useDebug } from '~/composables/useDebug'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
-import { useRandomSeed } from '~/composables/useRandomSeed'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 import { useSettings } from '~/composables/useSettings'
 
-const { getMimeType } = useBackendFetch()
-const { userUsername, userSalt, userToken } = useAuth()
 const { debugLog } = useDebug()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue, setCurrentlyPlayingTrack } = usePlaybackQueue()
-const { refreshRandomSeed } = useRandomSeed()
 const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount } = usePlaycounts()
@@ -35,15 +28,19 @@ const castPlayerController = ref<cast.framework.RemotePlayerController | null>(n
 const isCasting = ref(false)
 const castProgressInterval = ref<NodeJS.Timeout | null>(null)
 const castUrl = ref<string | null>()
-const temporaryToken = ref<TokenResponse | null>(null)
 const savedLocalPosition = ref<number>(0)
 const isTransitioningToCast = ref<boolean>(false)
 const isTransitioningFromCast = ref<boolean>(false)
 const showLyrics = ref<boolean>(false)
 
 const trackUrl = computed(() => {
-  const queryParamString = `u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&maxBitRate=${streamQuality.value}&id=${currentlyPlayingTrack.value?.musicbrainz_track_id}`
+  const apiKey = localStorage.get('apiKey')
+  const queryParamString = `apiKey=${apiKey}&c=zene-frontend&v=1.6.0&maxBitRate=${streamQuality.value}&id=${currentlyPlayingTrack.value?.musicBrainzId}&format=aac`
   return currentlyPlayingTrack.value ? `/rest/stream.view?${queryParamString}` : ''
+})
+
+const trackArtUrl = computed(() => {
+  return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.musicBrainzId) : ''
 })
 
 async function togglePlayback() {
@@ -154,9 +151,9 @@ function updateProgress() {
   }
 
   if (currentlyPlayingTrack.value && !playcountPosted.value) {
-    const halfwayPoint = Number.parseFloat(currentlyPlayingTrack.value.duration) / 2
+    const halfwayPoint = currentlyPlayingTrack.value.duration / 2
     if (currentTime.value >= halfwayPoint) {
-      postPlaycount(currentlyPlayingTrack.value.musicbrainz_track_id)
+      postPlaycount(currentlyPlayingTrack.value.musicBrainzId)
       playcountPosted.value = true
     }
   }
@@ -219,7 +216,6 @@ async function handlePreviousTrack() {
 }
 
 async function handleGetRandomTracks() {
-  refreshRandomSeed()
   await getRandomTracks()
   router.push('/queue')
 }
@@ -249,7 +245,7 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
   if (!audio) {
     return
   }
-  if (newTrack && newTrack.musicbrainz_track_id !== oldTrack?.musicbrainz_track_id) {
+  if (newTrack && newTrack.musicBrainzId !== oldTrack?.musicBrainzId) {
     audio.pause()
     audio.load()
     audio.addEventListener(
@@ -295,35 +291,21 @@ async function castAudio() {
 
   isTransitioningToCast.value = true
 
-  if (trackUrl.value.includes('?')) {
-    castUrl.value = `${trackUrl.value}&token=${temporaryToken.value?.token}`
-  }
-  else {
-    castUrl.value = `${trackUrl.value}?token=${temporaryToken.value?.token}`
-  }
   // prefix base url to requestUrl
   if (window) {
     const protocol = window.location.protocol
     const host = window.location.host
-    castUrl.value = `${protocol}//${host}${castUrl.value}`
+    castUrl.value = `${protocol}//${host}${trackUrl.value}`
   }
 
-  const contentType = await getMimeType(castUrl.value)
-  if (!contentType) {
-    console.error('Could not determine content type for casting')
-    isTransitioningToCast.value = false
-    return
-  }
-
-  debugLog(`Casting URL: ${castUrl.value} with content type: ${contentType}`)
-  const mediaInfo = new chrome.cast.media.MediaInfo(castUrl.value, contentType)
+  const mediaInfo = new chrome.cast.media.MediaInfo(castUrl.value ?? '', 'audio/aac')
 
   // Add metadata for better cast experience
   if (currentlyPlayingTrack.value) {
     mediaInfo.metadata = {
       title: currentlyPlayingTrack.value.title,
-      artist: currentlyPlayingTrack.value.artist || currentlyPlayingTrack.value.album_artist || '',
-      images: currentlyPlayingTrack.value.image_url ? [{ url: currentlyPlayingTrack.value.image_url }] : [],
+      artist: currentlyPlayingTrack.value.artist || currentlyPlayingTrack.value.artist || '',
+      images: [trackArtUrl.value],
     }
   }
 
@@ -573,12 +555,12 @@ async function onCastMediaInfoChanged() {
         const nextTrackIndex = currentQueue.value.position + 1
         const prevTrackIndex = currentQueue.value.position - 1
 
-        let targetTrack: TrackMetadataWithImageUrl | undefined
+        let targetTrack: SubsonicSong | undefined
 
         // Check if the remote track matches the next track in our queue
         if (nextTrackIndex < currentQueue.value.tracks.length) {
           const nextTrack = currentQueue.value.tracks[nextTrackIndex]
-          if (nextTrack.musicbrainz_track_id === remoteTrackId) {
+          if (nextTrack.id === remoteTrackId) {
             currentQueue.value.position = nextTrackIndex
             targetTrack = nextTrack
             debugLog('Remote player advanced to next track in queue')
@@ -588,7 +570,7 @@ async function onCastMediaInfoChanged() {
         // Check if the remote track matches the previous track in our queue
         if (!targetTrack && prevTrackIndex >= 0) {
           const prevTrack = currentQueue.value.tracks[prevTrackIndex]
-          if (prevTrack.musicbrainz_track_id === remoteTrackId) {
+          if (prevTrack.id === remoteTrackId) {
             currentQueue.value.position = prevTrackIndex
             targetTrack = prevTrack
             debugLog('Remote player went back to previous track in queue')
@@ -598,7 +580,7 @@ async function onCastMediaInfoChanged() {
         // Check if it's a track at the beginning or end (queue wrapping)
         if (!targetTrack) {
           for (let i = 0; i < currentQueue.value.tracks.length; i++) {
-            if (currentQueue.value.tracks[i].musicbrainz_track_id === remoteTrackId) {
+            if (currentQueue.value.tracks[i].id === remoteTrackId) {
               currentQueue.value.position = i
               targetTrack = currentQueue.value.tracks[i]
               debugLog(`Remote player jumped to track at position ${i}`)
@@ -704,7 +686,7 @@ onUnmounted(() => {
   <footer
     class="sticky bottom-0 mt-auto w-full bg-zene-700 bg-cover bg-center"
     :class="{ 'animate-pulse-bg': currentlyPlayingTrack && isPlaying }"
-    :style="{ backgroundImage: `url(${currentlyPlayingTrack?.image_url})` }"
+    :style="{ backgroundImage: `url(${trackArtUrl})` }"
   >
     <div v-if="showLyrics && currentlyPlayingTrack">
       <LyricsDisplay :track="currentlyPlayingTrack" :current-seconds="currentTime" @close="showLyrics = false" />
@@ -728,7 +710,7 @@ onUnmounted(() => {
               @input="seek"
             />
             <span id="duration" class="w-10 text-sm text-gray-2 md:w-12 sm:w-10 sm:text-sm">
-              {{ formatTime(currentlyPlayingTrack ? Number.parseFloat(currentlyPlayingTrack.duration) : 0) }}
+              {{ formatTime(currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0) }}
             </span>
           </div>
 

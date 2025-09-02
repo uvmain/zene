@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
+import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
 const props = defineProps({
@@ -15,14 +16,8 @@ const artistAndDate = computed(() => {
 })
 
 const coverArtUrl = computed(() => {
-  return `/share/img/${props.album.id}?size=400`
+  return getCoverArtUrl(props.album.id)
 })
-
-function onImageError(event: Event) {
-  const target = event.target as HTMLImageElement
-  target.onerror = null
-  target.src = '/default-square.png'
-}
 
 function navigateAlbum() {
   closeSearch()

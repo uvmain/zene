@@ -1,45 +1,29 @@
 <script setup lang="ts">
-import type { AlbumMetadata, TrackMetadataWithImageUrl } from '~/types'
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { fetchAlbum } from '~/composables/backendFetch'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks, clearRouteTracks } = useRouteTracks()
-const { backendFetchRequest, getAlbumTracks } = useBackendFetch()
 
-const album = ref<AlbumMetadata>()
-const tracks = ref<TrackMetadataWithImageUrl[]>()
+const album = ref<SubsonicAlbum>()
+const tracks = ref<SubsonicSong[]>()
 const musicbrainz_album_id = computed(() => `${route.params.musicbrainz_album_id}`)
 
 async function getAlbum() {
-  const response = await backendFetchRequest(`albums/${musicbrainz_album_id.value}`)
-  const json = await response.json()
-  album.value = {
-    album: json.album,
-    artist: json.artist,
-    album_artist: json.album_artist ?? json.artist,
-    musicbrainz_album_id: json.musicbrainz_album_id,
-    musicbrainz_artist_id: json.musicbrainz_artist_id,
-    release_date: json.release_date,
-    genres: json.genres ? json.genres.split(';').filter((genre: string) => genre !== '') : [],
-    image_url: `/api/albums/${json.musicbrainz_album_id}/art?size=lg`,
-  }
-}
-
-async function getAlbumTracksAndRouteTracks() {
-  const response = await getAlbumTracks(musicbrainz_album_id.value)
-  tracks.value = response
-  routeTracks.value = response
+  const response = await fetchAlbum(musicbrainz_album_id.value)
+  album.value = response
+  tracks.value = response.song
+  routeTracks.value = response.song
 }
 
 watch(() => route.params.musicbrainz_album_id, async () => {
   getAlbum()
-  getAlbumTracksAndRouteTracks()
 })
 
 onBeforeMount(async () => {
   await getAlbum()
-  await getAlbumTracksAndRouteTracks()
 })
 
 onUnmounted(() => clearRouteTracks())

@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import type { TrackMetadataWithImageUrl } from '~/types'
-import { useAuth } from '~/composables/useAuth'
+import { onImageError } from '~/composables/logic'
 import { useBackendFetch } from '~/composables/useBackendFetch'
-import { logic } from '~/composables/logic'
 
 const route = useRoute()
 const { backendFetchRequest } = useBackendFetch()
-const { getArtistUrl, getAlbumUrl, formatTime } = logic()
-const { userUsername, userSalt, userToken } = useAuth()
 
 const track = ref<TrackMetadataWithImageUrl | null>(null)
 const loading = ref(true)
@@ -46,12 +43,6 @@ function formatDate(dateString: string): string {
     return 'N/A'
   const date = new Date(dateString)
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-function onImageError(event: Event) {
-  const target = event.target as HTMLImageElement
-  target.onerror = null
-  target.src = '/default-square.png'
 }
 </script>
 

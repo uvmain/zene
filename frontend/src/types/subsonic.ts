@@ -1,8 +1,9 @@
 import type { SubsonicAlbum } from './subsonicAlbum'
-import type { SubsonicArtist, SubsonicArtists } from './subsonicArtist'
+import type { SubsonicArtist, SubsonicIndexArtists } from './subsonicArtist'
 import type { SubsonicGenres } from './subsonicGenres'
 import type { LyricsList } from './subsonicLyrics'
 import type { SubsonicSong } from './subsonicSong'
+import type { SubsonicUser } from './subsonicUser'
 
 export interface SubsonicResponse {
   'subsonic-response': {
@@ -54,5 +55,15 @@ export interface SubsonicArtistResponse extends SubsonicResponse {
 }
 
 export interface SubsonicArtistsResponse extends SubsonicResponse {
-  artists: SubsonicArtists
+  artists: SubsonicIndexArtists
+}
+
+export interface SubsonicUserResponse extends SubsonicResponse {
+  user: SubsonicUser
+}
+
+export interface SubsonicUsersResponse extends SubsonicResponse {
+  users: {
+    user: SubsonicUser[]
+  }
 }

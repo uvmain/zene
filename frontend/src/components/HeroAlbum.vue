@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/composables/backendFetch'
+import { getCoverArtUrl } from '~/composables/logic'
 
 const METADATA_COUNT = 20
 const isShaking = ref(false)
@@ -24,9 +25,13 @@ function prevIndex() {
 }
 
 async function getRandomAlbums(limit: number) {
-  albumArray.value = await fetchAlbums('random', limit)
+  albumArray.value = await fetchAlbums('random', limit, 0)
   index.value = 0
 }
+
+const coverArtUrl = computed(() => {
+  return getCoverArtUrl(albumArray.value[index.value].coverArt, 600)
+})
 
 function handleDiceClick() {
   isShaking.value = true
@@ -46,7 +51,7 @@ onBeforeMount(async () => {
   <section v-if="albumArray.length" class="overflow-hidden rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
-      :style="{ backgroundImage: `url(/share/img/${albumArray[index].coverArt}?size=600)` }"
+      :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
       <div class="h-full w-full flex items-center justify-between backdrop-blur-md">
         <Album :album="albumArray[index]" size="xl" />

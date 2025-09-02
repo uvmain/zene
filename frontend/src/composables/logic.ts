@@ -10,3 +10,13 @@ export function formatTime(time: number): string {
   const seconds = Math.floor(time % 60)
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
+
+export function getCoverArtUrl(musicbrainzId: string, size = 400): string {
+  return `/share/img/${musicbrainzId}?size=${size}`
+}
+
+export function onImageError(event: Event) {
+  const target = event.target as HTMLImageElement
+  target.onerror = null
+  target.src = '/default-square.png'
+}

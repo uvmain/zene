@@ -1,70 +1,44 @@
 <script setup lang="ts">
-import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '~/types'
-import dayjs from 'dayjs'
-import { useAuth } from '~/composables/useAuth'
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { fetchAlbum, fetchArtist } from '~/composables/backendFetch'
+import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()
-const { backendFetchRequest, getArtistAlbums, getArtistTracks } = useBackendFetch()
-const { userUsername, userSalt, userToken } = useAuth()
 
-const artist = ref<ArtistMetadata>()
-const tracks = ref<TrackMetadataWithImageUrl[]>()
-const albums = ref<AlbumMetadata[]>()
+const artist = ref<SubsonicArtist>()
+const tracks = ref<SubsonicSong[]>()
+const albums = ref<SubsonicAlbum[]>()
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 
 const artistArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${musicbrainz_artist_id.value}`
-  return `/rest/getArtistArt.view${queryParamString}`
+  return getCoverArtUrl(musicbrainz_artist_id.value)
 })
 
-async function getArtist() {
-  const response = await backendFetchRequest(`artists/${musicbrainz_artist_id.value}`)
-  const json = await response.json() as ArtistMetadata
-  artist.value = json
-}
+async function getData() {
+  artist.value = await fetchArtist(musicbrainz_artist_id.value)
 
-async function getTracks() {
-  const response = await getArtistTracks(musicbrainz_artist_id.value, 30)
-  tracks.value = response
-  routeTracks.value = response
-}
-
-async function getAlbums() {
-  const json = await getArtistAlbums(musicbrainz_artist_id.value)
-  const albumMetadata: AlbumMetadata[] = []
-  json.forEach((metadata: any) => {
-    const metadataInstance = {
-      artist: metadata.artist,
-      album: metadata.album,
-      album_artist: metadata.album_artist,
-      musicbrainz_album_id: metadata.musicbrainz_album_id as string,
-      musicbrainz_artist_id: metadata.musicbrainz_artist_id,
-      genres: metadata.genres.split(';').filter((genre: string) => genre !== ''),
-      release_date: dayjs(metadata.release_date).format('YYYY'),
-      image_url: `/api/albums/${metadata.musicbrainz_album_id}/art?size=xl`,
+  const albumTracks: SubsonicSong[] = []
+  const artistAlbums: SubsonicAlbum[] = []
+  artist.value.album.forEach(async (album) => {
+    const albumWithSongs = await fetchAlbum(album.id)
+    artistAlbums.push(albumWithSongs)
+    for (const track of albumWithSongs.song) {
+      albumTracks.push(track)
     }
-    albumMetadata.push(metadataInstance)
   })
-  albums.value = albumMetadata
-}
 
-function onImageError(event: Event) {
-  const target = event.target as HTMLImageElement
-  target.onerror = null
-  target.src = '/default-square.png'
+  albums.value = artistAlbums
+  tracks.value = albumTracks
+  routeTracks.value = albumTracks
 }
 
 onBeforeMount(async () => {
-  await getArtist()
-})
-
-onMounted(async () => {
-  await getTracks()
-  await getAlbums()
+  await getData()
 })
 </script>
 

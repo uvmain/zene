@@ -8,11 +8,13 @@ import type {
   SubsonicRandomSongsResponse,
   SubsonicResponse,
   SubsonicTopSongsResponse,
+  SubsonicUserResponse,
 } from '../types/subsonic'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicSong } from '~/types/subsonicSong'
+import type { SubsonicUser } from '~/types/subsonicUser'
 
 export async function openSubsonicFetchRequest(path: string, options: RequestInit = {}): Promise<Response> {
   const apiKey = localStorage.getItem('apiKey')
@@ -70,11 +72,12 @@ export async function fetchAlbum(musicbrainz_album_id: string): Promise<Subsonic
   return album
 }
 
-export async function fetchAlbums(type: string, size = 50): Promise<SubsonicAlbum[]> {
+export async function fetchAlbums(type: string, size = 50, offset = 0): Promise<SubsonicAlbum[]> {
   const formData = new FormData()
   formData.append('type', type)
   formData.append('size', size.toString())
-  const response = await openSubsonicFetchRequest('getAlbumList', {
+  formData.append('offset', offset.toString())
+  const response = await openSubsonicFetchRequest('GetAlbumList', {
     body: formData,
   })
   const json = await response.json() as SubsonicAlbumListResponse
@@ -112,11 +115,12 @@ export async function fetchArtists(limit = 0): Promise<SubsonicArtist[]> {
   const json = await response.json() as SubsonicArtistsResponse
   const artists = json.artists
   const artistArray: SubsonicArtist[] = []
-  artists.index.forEach((index) => {
-    index.artist.forEach((artist) => {
-      artistArray.push(artist)
-    })
-  })
+  for (const index of artists.index) {
+    for (const artist of index.artist) {
+      const data = await fetchArtist(artist.musicBrainzId)
+      artistArray.push(data)
+    }
+  }
   if (limit > 0) {
     return artistArray.slice(0, limit)
   }
@@ -162,4 +166,19 @@ export async function fetchLyrics(musicbrainz_artist_id: string): Promise<Struct
   })
   const json = await response.json() as SubsonicLyricsListResponse
   return json.lyricsList.structuredLyrics[0]
+}
+
+export async function fetchAlbumsForArtist(artistId: string): Promise<SubsonicAlbum[]> {
+  const formData = new FormData()
+  formData.append('id', artistId)
+  const response = await openSubsonicFetchRequest('getArtist', {
+    body: formData,
+  })
+  const json = await response.json() as SubsonicArtistResponse
+  const albums: SubsonicAlbum[] = []
+  for (const album of json.artist.album) {
+    const albumWithSongs = await fetchAlbum(album.id)
+    albums.push(albumWithSongs)
+  }
+  return albums
 }

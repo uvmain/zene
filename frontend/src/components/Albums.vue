@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { get } from 'node:http'
 import { useLocalStorage } from '@vueuse/core'
 import { fetchAlbums } from '~/composables/backendFetch'
 
@@ -7,7 +6,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
 })
 
-const recentlyAddedAlbums = ref()
+const albums = ref()
 const showOrderOptions = ref(false)
 const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical'>('currentAlbumOrder', 'recentlyUpdated')
 
@@ -43,7 +42,7 @@ async function getAlbums() {
       type = 'alphabeticalbyname'
       break
   }
-  await fetchAlbums(type, props.limit)
+  await fetchAlbums(type, props.limit, props.limit)
 }
 
 onBeforeMount(async () => {
@@ -66,7 +65,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div class="flex flex-wrap justify-center gap-6 md:justify-start">
-      <div v-for="album in recentlyAddedAlbums" :key="album.album" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+      <div v-for="album in albums" :key="album.album" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <Album :album="album" size="lg" />
       </div>
     </div>
