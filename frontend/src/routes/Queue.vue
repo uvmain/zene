@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '~/types'
+import type { SubsonicSong } from '~/types/subsonicSong'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const { currentQueue } = usePlaybackQueue()
 
-const tracks = computed(() => currentQueue?.value?.tracks ?? [] as TrackMetadataWithImageUrl[])
+const tracks = computed(() => currentQueue?.value?.tracks ?? [] as SubsonicSong[])
 </script>
 
 <template>

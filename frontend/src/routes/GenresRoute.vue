@@ -6,12 +6,8 @@ const router = useRouter()
 
 const genres = ref<SubsonicGenre[]>()
 
-async function getGenres() {
-  genres.value = await fetchGenres()
-}
-
 onBeforeMount(async () => {
-  await getGenres()
+  genres.value = await fetchGenres()
 })
 </script>
 

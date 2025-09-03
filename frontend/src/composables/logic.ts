@@ -5,6 +5,13 @@ export function niceDate(dateString: string): string {
   return date.isValid() ? date.format('DD/MM/YYYY') : 'Invalid Date'
 }
 
+export function formatDate(dateString: string): string {
+  if (!dateString)
+    return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
 export function formatTime(time: number): string {
   const minutes = Math.floor(time / 60)
   const seconds = Math.floor(time % 60)

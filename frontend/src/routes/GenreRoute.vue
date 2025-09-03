@@ -1,26 +1,19 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '~/types'
-import { useBackendFetch } from '~/composables/useBackendFetch'
-import { logic } from '~/composables/logic'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { fetchSongsByGenre } from '~/composables/backendFetch'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()
-const { getGenreTracks } = useBackendFetch()
-const { trackWithImageUrl } = logic()
 
-const tracks = ref<TrackMetadataWithImageUrl[]>()
+const tracks = ref<SubsonicSong[]>()
 
 const genre = computed(() => `${route.params.genre}`)
 
 onMounted(async () => {
-  const genreTracks = await getGenreTracks(genre.value, 30, true)
-  const tracksWithImages = genreTracks.map((element) => {
-    const newElement = trackWithImageUrl(element)
-    return newElement
-  })
-  routeTracks.value = tracksWithImages
-  tracks.value = tracksWithImages
+  const genreTracks = await fetchSongsByGenre(genre.value, 30, 0)
+  routeTracks.value = genreTracks
+  tracks.value = genreTracks
 })
 </script>
 

@@ -1,20 +1,18 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '~/types'
-import { onImageError } from '~/composables/logic'
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { fetchSong } from '~/composables/backendFetch'
+import { formatTime, getCoverArtUrl, onImageError } from '~/composables/logic'
 
 const route = useRoute()
-const { backendFetchRequest } = useBackendFetch()
 
-const track = ref<TrackMetadataWithImageUrl | null>(null)
+const track = ref<SubsonicSong>()
 const loading = ref(true)
 const error = ref<string | null>(null)
 
 const musicbrainzTrackId = computed(() => route.params.musicbrainz_track_id as string)
 
 const coverArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${track.value?.musicbrainz_album_id}`
-  return track.value ? `/rest/getCoverArt.view${queryParamString}` : '/default-square.png'
+  return track.value ? getCoverArtUrl(track.value?.musicBrainzId) : ''
 })
 
 onMounted(async () => {
@@ -24,10 +22,8 @@ onMounted(async () => {
     return
   }
   try {
-    const response = await backendFetchRequest(`tracks/${musicbrainzTrackId.value}`)
-    const trackMetadataWithImageUrl = await response.json() as TrackMetadataWithImageUrl
-    trackMetadataWithImageUrl.image_url = `/api/albums/${trackMetadataWithImageUrl.musicbrainz_album_id}/art`
-    track.value = trackMetadataWithImageUrl
+    const response = await fetchSong(musicbrainzTrackId.value)
+    track.value = response
   }
   catch (err) {
     error.value = 'Failed to fetch track details.'
@@ -37,13 +33,6 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
-function formatDate(dateString: string): string {
-  if (!dateString)
-    return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
 </script>
 
 <template>
@@ -62,21 +51,21 @@ function formatDate(dateString: string): string {
         </h1>
         <RouterLink
           class="mb-1 cursor-pointer text-xl text-gray-300 no-underline hover:underline hover:underline-white"
-          :to="getArtistUrl(track.musicbrainz_artist_id)"
+          :to="`/artists/${track.artistId}`"
         >
           Artist: {{ track.artist }}
         </RouterLink>
         <RouterLink
           class="mb-1 cursor-pointer text-lg text-gray-300 no-underline hover:underline hover:underline-white"
-          :to="getAlbumUrl(track.musicbrainz_album_id)"
+          :to="`/albums/${track.albumId}`"
         >
           Album: {{ track.album }}
         </RouterLink>
         <p class="mb-1 text-gray-300">
-          Duration: {{ formatTime(Number.parseFloat(track.duration)) }}
+          Duration: {{ formatTime(track.duration) }}
         </p>
-        <p v-if="track.release_date" class="mb-4 text-gray-300">
-          Released: {{ formatDate(track.release_date) }}
+        <p v-if="track" class="mb-4 text-gray-300">
+          Released: {{ track.year }}
         </p>
 
         <PlayButton :track="track" />

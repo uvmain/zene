@@ -26,28 +26,28 @@ export interface SubsonicAlbum {
   albumArtists: AlbumArtist2[]
 }
 
-export interface RecordLabel {
+interface RecordLabel {
   name: string
 }
 
-export interface Genre {
+interface Genre {
   name: string
 }
 
-export interface ReleaseDate {
+interface ReleaseDate {
   year: number
   month: number
   day: number
 }
 
-export interface Artist2 {
+interface Artist2 {
   id: string
   name: string
   userRating: number
   averageRating: number
 }
 
-export interface AlbumArtist2 {
+interface AlbumArtist2 {
   id: string
   name: string
   userRating: number

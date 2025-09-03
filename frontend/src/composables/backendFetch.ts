@@ -7,14 +7,14 @@ import type {
   SubsonicLyricsListResponse,
   SubsonicRandomSongsResponse,
   SubsonicResponse,
+  SubsonicSongResponse,
+  SubsonicSongsByGenreResponse,
   SubsonicTopSongsResponse,
-  SubsonicUserResponse,
 } from '../types/subsonic'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import type { SubsonicUser } from '~/types/subsonicUser'
 
 export async function openSubsonicFetchRequest(path: string, options: RequestInit = {}): Promise<Response> {
   const apiKey = localStorage.getItem('apiKey')
@@ -181,4 +181,26 @@ export async function fetchAlbumsForArtist(artistId: string): Promise<SubsonicAl
     albums.push(albumWithSongs)
   }
   return albums
+}
+
+export async function fetchSongsByGenre(genre: string, count: number, offset: number): Promise<SubsonicSong[]> {
+  const formData = new FormData()
+  formData.append('genre', genre)
+  formData.append('count', count.toString())
+  formData.append('offset', offset.toString())
+  const response = await openSubsonicFetchRequest('getSongsByGenre', {
+    body: formData,
+  })
+  const json = await response.json() as SubsonicSongsByGenreResponse
+  return json.songsByGenre.song
+}
+
+export async function fetchSong(musicbrainz_track_id: string): Promise<SubsonicSong> {
+  const formData = new FormData()
+  formData.append('id', musicbrainz_track_id)
+  const response = await openSubsonicFetchRequest('getSong', {
+    body: formData,
+  })
+  const json = await response.json() as SubsonicSongResponse
+  return json.song
 }

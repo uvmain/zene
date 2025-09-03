@@ -14,7 +14,7 @@ export interface SubsonicIndexArtists {
   index: Index[]
 }
 
-export interface Index {
+interface Index {
   name: string
   artist: SubsonicIndexArtist[]
 }
@@ -32,7 +32,7 @@ export interface SubsonicArtist {
   averageRating: number
 }
 
-export interface Album {
+interface Album {
   id: string
   parent: string
   isDir: boolean
@@ -54,20 +54,20 @@ export interface Album {
   displayAlbumArtist: string
 }
 
-export interface RecordLabel {
+interface RecordLabel {
   name: string
 }
 
-export interface Genre {
+interface Genre {
   name: string
 }
 
-export interface Artist2 {
+interface Artist2 {
   id: string
   name: string
 }
 
-export interface AlbumArtist {
+interface AlbumArtist {
   id: string
   name: string
 }

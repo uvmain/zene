@@ -32,6 +32,10 @@ export interface SubsonicTopSongsResponse extends SubsonicResponse {
   }
 }
 
+export interface SubsonicSongResponse extends SubsonicResponse {
+  song: SubsonicSong
+}
+
 export interface SubsonicGenresResponse extends SubsonicResponse {
   genres: SubsonicGenres
 }
@@ -65,5 +69,11 @@ export interface SubsonicUserResponse extends SubsonicResponse {
 export interface SubsonicUsersResponse extends SubsonicResponse {
   users: {
     user: SubsonicUser[]
+  }
+}
+
+export interface SubsonicSongsByGenreResponse extends SubsonicResponse {
+  songsByGenre: {
+    song: SubsonicSong[]
   }
 }

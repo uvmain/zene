@@ -28,16 +28,16 @@ export interface SubsonicSong {
   playcount?: number
 }
 
-export interface Genre2 {
+interface Genre2 {
   name: string
 }
 
-export interface Artist {
+interface Artist {
   id: string
   name: string
 }
 
-export interface AlbumArtist {
+interface AlbumArtist {
   id: string
   name: string
 }

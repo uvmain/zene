@@ -64,7 +64,8 @@
         "uvmain",
         "vueuse",
         "wal",
-        "zene"
+        "zene",
+        "zeneclient"
     ],
     "ignoreWords": [],
     "import": []

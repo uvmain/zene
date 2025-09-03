@@ -46,7 +46,7 @@ onBeforeMount(async () => {
   <section v-if="artist" class="h-80 rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
-      :style="{ backgroundImage: `url(${artist.image_url})` }"
+      :style="{ backgroundImage: `url(${artistArtUrl})` }"
     >
       <div class="h-full w-full flex items-center justify-center gap-6 align-middle backdrop-blur-md">
         <div class="mx-auto flex items-center justify-center gap-6 rounded-lg bg-black/40 p-4 align-middle">
@@ -58,7 +58,7 @@ onBeforeMount(async () => {
             />
           </div>
           <div class="text-7xl text-gray-300 font-bold">
-            {{ artist.artist }}
+            {{ artist.name }}
           </div>
         </div>
       </div>
@@ -69,7 +69,7 @@ onBeforeMount(async () => {
       Albums
     </h2>
     <div class="flex flex-wrap gap-6">
-      <div v-for="album in albums" :key="album.album" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+      <div v-for="album in albums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <Album :album="album" size="lg" />
       </div>
     </div>

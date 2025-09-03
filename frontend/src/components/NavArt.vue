@@ -14,19 +14,19 @@ const coverArtUrl = computed(() => {
   <div v-if="currentlyPlayingTrack" class="flex flex-col gap-2">
     <RouterLink
       class="cursor-pointer text-lg text-white/80 no-underline hover:underline hover:underline-white"
-      :to="getCoverArtUrl(currentlyPlayingTrack.id)"
+      :to="`/tracks/${currentlyPlayingTrack?.id}`"
     >
       {{ currentlyPlayingTrack?.title }}
     </RouterLink>
     <RouterLink
       class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
-      :to="getCoverArtUrl(currentlyPlayingTrack.artistId)"
+      :to="`/artists/${currentlyPlayingTrack.artistId}`"
     >
       {{ currentlyPlayingTrack?.artist }}
     </RouterLink>
     <RouterLink
       class="cursor-pointer text-sm text-white/80 no-underline hover:underline hover:underline-white"
-      :to="getCoverArtUrl(currentlyPlayingTrack.albumId)"
+      :to="`/albums/${currentlyPlayingTrack.albumId}`"
     >
       {{ currentlyPlayingTrack?.album }}
     </RouterLink>
