@@ -6,7 +6,7 @@ const { currentlyPlayingTrack } = usePlaybackQueue()
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.id) : '/default-square.png'
+  return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.albumId) : '/default-square.png'
 })
 </script>
 

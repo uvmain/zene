@@ -1,3 +1,4 @@
+import type { ReleaseDate } from '../types/subsonicAlbum'
 import dayjs from 'dayjs'
 
 export function niceDate(dateString: string): string {
@@ -26,4 +27,8 @@ export function onImageError(event: Event) {
   const target = event.target as HTMLImageElement
   target.onerror = null
   target.src = '/default-square.png'
+}
+
+export function parseReleaseDate(releaseDate: ReleaseDate): string {
+  return `${(releaseDate.year ?? 1).toString().padStart(4, '0')}`
 }

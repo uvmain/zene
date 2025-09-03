@@ -1,6 +1,6 @@
 import type { Queue } from '~/types'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from './backendFetch'
 
@@ -47,7 +47,7 @@ export function usePlaybackQueue() {
     return randomTrack
   }
 
-  const play = async (artist?: SubsonicArtist, album?: SubsonicAlbum, track?: SubsonicSong) => {
+  const play = async (artist?: SubsonicIndexArtist, album?: SubsonicAlbum, track?: SubsonicSong) => {
     if (track) {
       setCurrentlyPlayingTrack(track)
       currentQueue.value = undefined

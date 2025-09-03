@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import { fetchArtists } from '~/composables/backendFetch'
 
 const props = defineProps({
@@ -8,7 +8,7 @@ const props = defineProps({
 
 const router = useRouter()
 
-const artists = ref<SubsonicArtist[]>()
+const artists = ref<SubsonicIndexArtist[]>()
 
 const headerTitle = computed(() => {
   return 'Artists: Alphabetical'

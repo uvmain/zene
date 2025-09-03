@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import { fetchArtists } from '~/composables/backendFetch'
 
 const router = useRouter()
 
-const artists = ref<SubsonicArtist[]>()
+const artists = ref<SubsonicIndexArtist[]>()
 
 onBeforeMount(async () => {
   artists.value = await fetchArtists()

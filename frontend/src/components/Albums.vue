@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { useLocalStorage } from '@vueuse/core'
 import { fetchAlbums } from '~/composables/backendFetch'
 
@@ -6,7 +7,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
 })
 
-const albums = ref()
+const albums = ref<SubsonicAlbum[]>()
 const showOrderOptions = ref(false)
 const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical'>('currentAlbumOrder', 'recentlyUpdated')
 
@@ -42,7 +43,7 @@ async function getAlbums() {
       type = 'alphabeticalbyname'
       break
   }
-  await fetchAlbums(type, props.limit, props.limit)
+  albums.value = await fetchAlbums(type, props.limit, 0)
 }
 
 onBeforeMount(async () => {
@@ -65,7 +66,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div class="flex flex-wrap justify-center gap-6 md:justify-start">
-      <div v-for="album in albums" :key="album.album" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+      <div v-for="album in albums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <Album :album="album" size="lg" />
       </div>
     </div>

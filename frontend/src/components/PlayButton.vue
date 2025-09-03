@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 defineProps({
-  artist: { type: Object as PropType<SubsonicArtist>, required: false },
+  artist: { type: Object as PropType<SubsonicIndexArtist>, required: false },
   album: { type: Object as PropType<SubsonicAlbum>, required: false },
   track: { type: Object as PropType<SubsonicSong>, required: false },
   size: { type: String as PropType<'small' | 'medium' | 'large'>, default: 'medium', required: false },

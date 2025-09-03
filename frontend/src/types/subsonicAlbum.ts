@@ -34,7 +34,7 @@ interface Genre {
   name: string
 }
 
-interface ReleaseDate {
+export interface ReleaseDate {
   year: number
   month: number
   day: number

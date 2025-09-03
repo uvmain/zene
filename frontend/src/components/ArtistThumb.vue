@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useSearch } from '~/composables/useSearch'
 
 const props = defineProps({
-  artist: { type: Object as PropType<SubsonicArtist>, required: true },
+  artist: { type: Object as PropType<SubsonicIndexArtist>, required: true },
 })
 
 const { closeSearch } = useSearch()

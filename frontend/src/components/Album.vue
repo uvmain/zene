@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
+import { getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
 const props = defineProps({
@@ -12,7 +12,7 @@ const router = useRouter()
 const { closeSearch } = useSearch()
 
 const artistAndDate = computed(() => {
-  return `${props.album.artist} • ${props.album.releaseDate}`
+  return `${props.album.artist} • ${parseReleaseDate(props.album.releaseDate)}`
 })
 
 const coverArtUrl = computed(() => {
