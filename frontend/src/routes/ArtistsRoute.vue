@@ -1,20 +1,13 @@
 <script setup lang="ts">
-import type { ArtistMetadata } from '~/types'
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
+import { fetchArtists } from '~/composables/backendFetch'
 
 const router = useRouter()
-const { backendFetchRequest } = useBackendFetch()
 
-const artists = ref()
-
-async function getArtists() {
-  const response = await backendFetchRequest('artists')
-  const json = await response.json() as ArtistMetadata[]
-  artists.value = json
-}
+const artists = ref<SubsonicIndexArtist[]>()
 
 onBeforeMount(async () => {
-  await getArtists()
+  artists.value = await fetchArtists()
 })
 </script>
 
@@ -24,8 +17,8 @@ onBeforeMount(async () => {
       Recently Added Artists
     </h2>
     <div class="flex flex-wrap gap-6">
-      <div v-for="artist in artists" :key="artist.musicbrainz_artist_id" class="w-30 flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-        <ArtistThumb :artist="artist" class="cursor-pointer" @click="() => router.push(`/artists/${artist.musicbrainz_artist_id}`)" />
+      <div v-for="artist in artists" :key="artist.id" class="w-30 flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+        <ArtistThumb :artist="artist" class="cursor-pointer" @click="() => router.push(`/artists/${artist.musicBrainzId}`)" />
       </div>
     </div>
   </div>

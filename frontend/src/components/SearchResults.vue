@@ -1,7 +1,25 @@
 <script setup lang="ts">
+import type { SearchResult } from '~/types'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import { fetchAlbum } from '~/composables/backendFetch'
 import { useSearch } from '../composables/useSearch'
 
-const { searchInput, searchResultsGenres, searchResultsAlbums, searchResultsArtists, searchResultsTracks } = useSearch()
+const { searchInput, getSearchResults } = useSearch()
+
+const searchResults = ref<SearchResult | null>(null)
+const trackAlbums = ref<SubsonicAlbum[]>([])
+
+watch(searchInput, async (newValue) => {
+  if (newValue.length >= 3) {
+    searchResults.value = await getSearchResults()
+    searchResults.value?.songs.forEach(async (track) => {
+      const album = await fetchAlbum(track.albumId)
+      if (!trackAlbums.value.some(a => a.id === album.id)) {
+        trackAlbums.value.push(album)
+      }
+    })
+  }
+})
 </script>
 
 <template>
@@ -11,52 +29,56 @@ const { searchInput, searchResultsGenres, searchResultsAlbums, searchResultsArti
         Search results for "{{ searchInput }}":
       </h3>
       <h4>
-        Tracks: {{ searchResultsTracks.length }}
+        Tracks: {{ searchResults?.songs.length || 0 }}
       </h4>
       <div class="flex flex-nowrap gap-6 overflow-hidden">
         <div
-          v-for="track in searchResultsTracks"
+          v-for="track in searchResults?.songs"
           :key="track.title"
           class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
         >
           <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-300">
-            {{ track.track_number }} / {{ track.total_tracks }}
+            {{ track.track }}
           </div>
           <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-300">
             {{ track.title }}
           </div>
-          <Album :album="track" size="lg" />
+          <Album
+            v-if="trackAlbums.find(a => a.id === track.albumId)"
+            :album="trackAlbums.find(a => a.id === track.albumId)!"
+            size="lg"
+          />
         </div>
       </div>
       <h4>
-        Albums: {{ searchResultsAlbums.length }}
+        Albums: {{ searchResults?.albums.length || 0 }}
       </h4>
       <div class="flex flex-nowrap gap-6 overflow-hidden">
         <div
-          v-for="album in searchResultsAlbums"
-          :key="album.album"
+          v-for="album in searchResults?.albums"
+          :key="album.name"
           class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
         >
           <Album :album="album" size="lg" />
         </div>
       </div>
       <h4>
-        Artists: {{ searchResultsArtists.length }}
+        Artists: {{ searchResults?.artists.length || 0 }}
       </h4>
       <div class="flex flex-wrap gap-6 overflow-hidden">
         <div
-          v-for="artist in searchResultsArtists"
-          :key="artist.artist"
+          v-for="artist in searchResults?.artists"
+          :key="artist.name"
           class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
         >
           <ArtistThumb :artist="artist" />
         </div>
       </div>
       <h4>
-        Genres: {{ searchResultsGenres.length }}
+        Genres: {{ searchResults?.genres.length || 0 }}
       </h4>
-      <div v-if="searchResultsGenres.length > 0" class="flex flex-wrap gap-2 overflow-hidden">
-        <GenreBottle v-for="genre in searchResultsGenres" :key="genre" :genre="genre.genre" />
+      <div class="flex flex-wrap gap-2 overflow-hidden">
+        <GenreBottle v-for="genre in searchResults?.genres" :key="genre.value" :genre="genre.value" />
       </div>
     </div>
   </div>

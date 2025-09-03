@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicUser } from '~/types/subsonicUser'
-import { useBackendFetch } from '~/composables/useBackendFetch'
-
-const { openSubsonicFetchRequest, getCurrentUser, getUsers } = useBackendFetch()
+import { createUser, deleteUser, fetchCurrentUser, fetchUsers, updateUser } from '~/composables/users'
 
 const users = ref<SubsonicUser[]>([])
 const currentUser = ref<SubsonicUser>({} as SubsonicUser)
@@ -14,88 +12,41 @@ const newUser = ref<SubsonicUser>({} as SubsonicUser)
 const editingUser = ref<SubsonicUser>({} as SubsonicUser)
 const userToDelete = ref<SubsonicUser>({} as SubsonicUser)
 
-async function fetchCurrentUser() {
-  currentUser.value = await getCurrentUser()
+async function getCurrentUser() {
+  currentUser.value = await fetchCurrentUser()
 }
 
-async function fetchUsers() {
-  users.value = await getUsers()
+async function getUsers() {
+  users.value = await fetchUsers()
 }
 
 async function handleCreateUser() {
   if (!currentUser.value?.adminRole || !newUser.value)
     return
-  try {
-    const formData = new FormData()
-    formData.append('username', newUser.value.username)
-    formData.append('adminRole', newUser.value.adminRole)
-    formData.append('password', newUser.value.password)
-    formData.append('email', newUser.value.email)
-    const response = await openSubsonicFetchRequest('createUser.view', {
-      body: formData,
-    })
-    if (!response.ok) {
-      const errData = await response.json()
-      throw new Error(errData.message || `Failed to create user: ${response.statusText}`)
-    }
-    await fetchUsers()
-    showCreateUserDialog.value = false
-    newUser.value = {} as SubsonicUser
-  }
-  catch (error) {
-    console.error(`Error creating user: ${error}`)
-  }
+
+  await createUser(newUser.value)
+
+  await fetchUsers()
+  showCreateUserDialog.value = false
+  newUser.value = {} as SubsonicUser
 }
 
 async function handleUpdateUser() {
   if (!currentUser.value?.adminRole || !editingUser.value)
     return
-  try {
-    const formData = new FormData()
-    formData.append('username', editingUser.value.username)
-    formData.append('adminRole', editingUser.value.adminRole)
-    if (editingUser.value.password) {
-      formData.append('password', editingUser.value.password)
-    }
-    if (editingUser.value.email) {
-      formData.append('email', editingUser.value.email)
-    }
-    const response = await openSubsonicFetchRequest('updateUser.view', {
-      body: formData,
-    })
-    if (!response.ok) {
-      const errData = await response.json()
-      throw new Error(errData.message || `Failed to update user: ${response.statusText}`)
-    }
-    await fetchUsers()
-    showEditUserDialog.value = false
-    editingUser.value = {} as SubsonicUser
-  }
-  catch (error) {
-    console.error(`Error updating user: ${error}`)
-  }
+  await updateUser(editingUser.value)
+  await fetchUsers()
+  showEditUserDialog.value = false
+  editingUser.value = {} as SubsonicUser
 }
 
 async function handleDeleteUser() {
   if (!currentUser.value?.adminRole || !userToDelete.value)
     return
-  try {
-    const formData = new FormData()
-    formData.append('username', userToDelete.value.username)
-    const response = await openSubsonicFetchRequest('deleteUser.view', {
-      body: formData,
-    })
-    if (!response.ok) {
-      const errData = await response.json()
-      throw new Error(errData.message || `Failed to delete user: ${response.statusText}`)
-    }
-    await fetchUsers()
-    showDeleteUserDialog.value = false
-    userToDelete.value = {} as SubsonicUser
-  }
-  catch (error) {
-    console.error(`Error deleting user: ${error}`)
-  }
+  await deleteUser(userToDelete.value)
+  await fetchUsers()
+  showDeleteUserDialog.value = false
+  userToDelete.value = {} as SubsonicUser
 }
 
 function openCreateUserDialog() {
@@ -120,9 +71,9 @@ function openDeleteUserDialog(user: SubsonicUser) {
 }
 
 onMounted(async () => {
-  await fetchCurrentUser()
+  await getCurrentUser()
   if (currentUser.value?.adminRole) {
-    await fetchUsers()
+    await getUsers()
   }
 })
 </script>

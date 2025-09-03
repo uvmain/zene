@@ -7,7 +7,7 @@
 ## Frontend
 - The frontend is built with Vue 3, using the Composition API and TypeScript.
 - The frontend uses @antfu/eslint-config for linting - this means no semi colons, and single quotes for strings.
-- The frontend uses a custom backend fetch composable for making API requests: frontend/src/composables/useBackendFetch.ts
+- The frontend uses a custom backend fetch composable for making API requests: frontend/src/composables/backendFetch.ts
 - The frontend uses vite-ssg for static site generation, with a custom vite.config.ts for configuration.
 ## Project Structure
 - The project has a package.json in the root directory, which is used for managing local development dependencies and scripts.

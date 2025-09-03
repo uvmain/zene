@@ -3,10 +3,8 @@ package database
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 	"zene/core/logger"
-	"zene/core/logic"
 	"zene/core/types"
 
 	"github.com/timematic/anytime"
@@ -143,8 +141,8 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 
 	switch sortType {
 	case "random":
-		randomInt := logic.GenerateRandomInt(1, 10000000)
-		query += fmt.Sprintf(" order BY ((r.rowid * %d) %% 1000000)", randomInt)
+		// randomInt := logic.GenerateRandomInt(1, 10000000)
+		query += " order BY random()"
 	case "newest": // recently added albums
 		query += " order BY r.date_added desc"
 	case "byyear":

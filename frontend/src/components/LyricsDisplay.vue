@@ -1,47 +1,33 @@
 <script setup lang="ts">
-import type { TrackMetadata } from '../types'
 import type { StructuredLyricLine } from '../types/subsonicLyrics'
-import { useBackendFetch } from '../composables/useBackendFetch'
+import type { SubsonicSong } from '../types/subsonicSong'
+import { fetchLyrics } from '../composables/backendFetch'
 
 const props = defineProps({
-  track: { type: Object as PropType<TrackMetadata>, required: true },
+  track: { type: Object as PropType<SubsonicSong>, required: true },
   currentSeconds: { type: Number, default: 0 },
 })
 
 defineEmits(['close'])
 
-const { getLyrics } = useBackendFetch()
-
 const lyricsRef = ref<StructuredLyricLine[]>([])
 
-async function fetchLyrics() {
-  try {
-    const response = await getLyrics(props.track.musicbrainz_track_id)
-    if (response['subsonic-response'].lyricsList.structuredLyrics[0].synced) {
-      lyricsRef.value = response['subsonic-response'].lyricsList.structuredLyrics[0].line.map((line: StructuredLyricLine) => ({
-        start: line.start ? line.start / 1000 : undefined, // convert milliseconds to seconds
-        value: line.value,
-      }))
-    }
-    else {
-      lyricsRef.value = response['subsonic-response'].lyricsList.structuredLyrics[0].line.map((line: StructuredLyricLine) => ({
-        value: line.value,
-      }))
-    }
-  }
-  catch (error) {
-    console.error('Failed to fetch lyrics:', error)
-  }
+async function getLyrics() {
+  const lyrics = await fetchLyrics(props.track.musicBrainzId)
+  lyricsRef.value = lyrics.line.map(line => ({
+    start: line.start ? line.start / 1000 : 0, // convert milliseconds to seconds, default to 0
+    value: line.value,
+  }))
 }
 
 watch(props.track, async (newTrack, oldTrack) => {
   if (newTrack !== oldTrack) {
-    await fetchLyrics()
+    await getLyrics()
   }
 })
 
 onMounted(async () => {
-  await fetchLyrics()
+  await getLyrics()
 })
 </script>
 

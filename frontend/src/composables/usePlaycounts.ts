@@ -1,19 +1,12 @@
-import { useBackendFetch } from './useBackendFetch'
-
-const { backendFetchRequest } = useBackendFetch()
+import { postScrobble } from './backendFetch'
 
 const playcount_updated_musicbrainz_track_id = ref<string | undefined>()
 
 export function usePlaycounts() {
   const postPlaycount = async (musicbrainz_track_id: string): Promise<void> => {
-    const formData = new FormData()
-    formData.append('musicbrainz_track_id', musicbrainz_track_id)
-
-    const response = await backendFetchRequest('playcounts', {
-      body: formData,
-    })
-    if (!response.ok) {
-      throw new Error(`Failed to post playcount: ${response.statusText}`)
+    const responseOk = await postScrobble(musicbrainz_track_id)
+    if (!responseOk) {
+      throw new Error(`Failed to post playcount`)
     }
     playcount_updated_musicbrainz_track_id.value = musicbrainz_track_id
   }

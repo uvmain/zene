@@ -1,52 +1,31 @@
 <script setup lang="ts">
-import type { TrackMetadataWithImageUrl } from '~/types'
-import { useIntersectionObserver } from '@vueuse/core'
-import { useAuth } from '~/composables/useAuth'
-import { useLogic } from '~/composables/useLogic'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { formatTime, getCoverArtUrl, onImageError } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
-  tracks: { type: Object as PropType<TrackMetadataWithImageUrl[]>, required: true },
-  canLoadMore: { type: Boolean, default: true },
+  tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
 })
-
-const emits = defineEmits(['loadMore'])
 
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
-const { getTrackUrl, getArtistUrl, getAlbumUrl, formatTime } = useLogic()
 const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
-const { userUsername, userSalt, userToken } = useAuth()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
 
-const observer = ref<HTMLDivElement>()
-const observerIndex = computed(() => {
-  return props.tracks.length ? props.tracks.length - 3 : 0
-})
-
-useIntersectionObserver(
-  observer,
-  ([entry], _) => {
-    if (entry?.isIntersecting && props.canLoadMore) {
-      emits('loadMore')
-    }
-  },
-)
-
 function isTrackPlaying(trackId: string): boolean {
-  return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.musicbrainz_track_id === trackId) ?? false
+  return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.id === trackId) ?? false
 }
 
-function handlePlay(track: TrackMetadataWithImageUrl) {
-  if (currentQueue.value?.tracks.some(queueTrack => queueTrack.musicbrainz_track_id === track.musicbrainz_track_id)) {
+function handlePlay(track: SubsonicSong) {
+  if (currentQueue.value?.tracks.some(queueTrack => queueTrack.id === track.id)) {
     setCurrentlyPlayingTrackInQueue(track)
   }
-  else if (routeTracks.value?.some(queueTrack => queueTrack.musicbrainz_track_id === track.musicbrainz_track_id)) {
+  else if (routeTracks.value?.some(queueTrack => queueTrack.musicBrainzId === track.musicBrainzId)) {
     setCurrentlyPlayingTrackInRouteTracks(track)
   }
   else {
@@ -54,31 +33,19 @@ function handlePlay(track: TrackMetadataWithImageUrl) {
   }
 }
 
-function getCoverArtUrl(albumId: string) {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${albumId}`
-  return `/rest/getCoverArt.view${queryParamString}`
-}
-
-function onImageError(event: Event) {
-  const target = event.target as HTMLImageElement
-  target.onerror = null
-  target.src = '/default-square.png'
-}
-
 watch(currentlyPlayingTrack, async (newTrack) => {
   if (!newTrack)
     return
   await nextTick()
-  const index = props.tracks.findIndex(track => track.musicbrainz_track_id === newTrack.musicbrainz_track_id)
+  const index = props.tracks.findIndex(track => track.musicBrainzId === newTrack.musicBrainzId)
   currentRow.value = rowRefs.value[index]
   currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 })
 
 watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
   routeTracks.value?.forEach((track) => {
-    if (track.musicbrainz_track_id === newTrack) {
-      track.user_play_count = track.user_play_count + 1
-      track.global_play_count = track.global_play_count + 1
+    if (track.musicBrainzId === newTrack) {
+      track.playcount = (track.playcount ?? 0) + 1
     }
   })
 })
@@ -102,10 +69,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             Album
           </th>
           <th class="w-16 text-center text-sm">
-            My Plays
-          </th>
-          <th class="w-16 text-center text-sm">
-            All Plays
+            Play Count
           </th>
           <th class="w-16 text-center">
             <icon-tabler-clock-hour-3 class="inline" />
@@ -122,28 +86,26 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </td>
           <td><hr class="border-1 border-white/40 border-solid" /></td>
           <td><hr class="border-1 border-white/40 border-solid" /></td>
-          <td><hr class="border-1 border-white/40 border-solid" /></td>
         </tr>
       </thead>
       <tbody>
         <tr
           v-for="(track, index) in tracks"
-          :key="track.file_name"
+          :key="track.path"
           :ref="el => rowRefs[index] = el"
           class="group cursor-pointer transition-colors duration-200 ease-out hover:bg-zene-200/20"
-          :class="{ 'bg-white/02': index % 2 === 0, 'bg-zene-200/40': isTrackPlaying(track.musicbrainz_track_id) }"
+          :class="{ 'bg-white/02': index % 2 === 0, 'bg-zene-200/40': isTrackPlaying(track.id) }"
           @click="handlePlay(track)"
         >
           <td
             class="relative h-full w-15 flex items-center justify-center"
           >
-            <div v-if="canLoadMore && index === observerIndex" ref="observer" class="invisible" />
             <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
               <div v-if="!showAlbum">
-                <div v-if="Number.parseInt(track.total_discs) > 1" class="absolute bottom-0 text-xs opacity-50 -left-3">
-                  {{ track.disc_number }}
+                <div>
+                  {{ track.discNumber }}
                 </div>
-                <span>{{ track.track_number }}</span>
+                <span>{{ track.track }}</span>
               </div>
               <span v-else>{{ index }}</span>
             </div>
@@ -156,14 +118,14 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
               <div class="flex flex-col px-2">
                 <RouterLink
                   class="text-ellipsis text-lg text-white/80 no-underline hover:underline hover:underline-white"
-                  :to="getTrackUrl(track.musicbrainz_track_id)"
+                  :to="`/tracks/${track.id}`"
                   @click.stop
                 >
                   {{ track.title }}
                 </RouterLink>
                 <RouterLink
                   class="text-sm text-white/80 no-underline hover:underline hover:underline-white"
-                  :to="getArtistUrl(track.musicbrainz_artist_id)"
+                  :to="`/artists/${track.artistId}`"
                   @click.stop
                 >
                   {{ track.artist }}
@@ -173,26 +135,26 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </td>
 
           <td v-if="showAlbum" class="relative w-15 flex items-center justify-center">
-            <div v-if="Number.parseInt(track.total_discs) > 1" class="absolute bottom-0 left-3 text-xs opacity-50">
-              {{ track.disc_number }}
+            <div>
+              {{ track.discNumber }}
             </div>
             <div>
-              {{ track.track_number }}
+              {{ track.track }}
             </div>
           </td>
 
           <td v-if="showAlbum">
             <div class="flex flex-row items-center gap-2 px-1">
               <RouterLink
-                :to="getAlbumUrl(track.musicbrainz_album_id)"
+                :to="`/albums/${track.albumId}`"
                 class="flex items-center"
                 @click.stop
               >
-                <img class="size-10 rounded-lg rounded-md object-cover" :src="getCoverArtUrl(track.musicbrainz_album_id)" alt="Album Cover" @error="onImageError" />
+                <img class="size-10 rounded-lg rounded-md object-cover" :src="getCoverArtUrl(track.albumId)" alt="Album Cover" @error="onImageError" />
               </RouterLink>
               <RouterLink
                 class="text-white/80 no-underline hover:underline hover:underline-white"
-                :to="getAlbumUrl(track.musicbrainz_album_id)"
+                :to="`/albums/${track.albumId}`"
                 @click.stop
               >
                 {{ track.album }}
@@ -201,13 +163,10 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </td>
 
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
-            {{ track.user_play_count }}
+            {{ track.playcount ?? 0 }}
           </td>
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
-            {{ track.global_play_count }}
-          </td>
-          <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
-            {{ formatTime(Number.parseInt(track.duration)) }}
+            {{ formatTime(track.duration) }}
           </td>
         </tr>
       </tbody>

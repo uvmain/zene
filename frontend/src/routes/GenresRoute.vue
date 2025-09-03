@@ -1,20 +1,13 @@
 <script setup lang="ts">
-import type { Genre, SubsonicGenresResponse } from '~/types/subsonicGenres'
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import type { SubsonicGenre } from '~/types/subsonicGenres'
+import { fetchGenres } from '~/composables/backendFetch'
 
 const router = useRouter()
-const { openSubsonicFetchRequest } = useBackendFetch()
 
-const genres = ref<Genre[]>()
-
-async function getGenres() {
-  const response = await openSubsonicFetchRequest('getGenres.view')
-  const json = await response.json() as SubsonicGenresResponse
-  genres.value = json['subsonic-response'].genres.genre
-}
+const genres = ref<SubsonicGenre[]>()
 
 onBeforeMount(async () => {
-  await getGenres()
+  genres.value = await fetchGenres()
 })
 </script>
 

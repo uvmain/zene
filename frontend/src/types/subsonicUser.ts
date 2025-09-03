@@ -1,54 +1,20 @@
-export interface SubsonicUserResponse {
-  'subsonic-response': {
-    status: string
-    version: string
-    type: string
-    serverVersion: string
-    openSubsonic: boolean
-    error?: {
-      code: number
-      message: string
-      helpUrl?: string
-    }
-    user: SubsonicUser
-  }
-}
-
-export interface SubsonicUsersResponse {
-  'subsonic-response': {
-    status: string
-    version: string
-    type: string
-    serverVersion: string
-    openSubsonic: boolean
-    error?: {
-      code: number
-      message: string
-      helpUrl?: string
-    }
-    users: SubsonicUsers
-  }
-}
-
-export interface SubsonicUsers {
-  user: SubsonicUser[]
-}
-
 export interface SubsonicUser {
   folder: number[]
   username: string
+  password?: string
   email: string
-  password: string
-  scrobblingEnabled: string
-  adminRole: string
-  settingsRole: string
-  downloadRole: string
-  uploadRole: string
-  playlistRole: string
-  coverArtRole: string
-  commentRole: string
-  podcastRole: string
-  streamRole: string
-  jukeboxRole: string
-  shareRole: string
+  adminRole: boolean
+  scrobblingEnabled: boolean
+  streamRole: boolean
+  settingsRole: boolean
+  jukeboxRole: boolean
+  downloadRole: boolean
+  uploadRole: boolean
+  playlistRole: boolean
+  coverArtRole: boolean
+  commentRole: boolean
+  podcastRole: boolean
+  shareRole: boolean
+  videoConversionRole: boolean
+  maxBitRate: number
 }

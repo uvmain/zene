@@ -1,19 +1,8 @@
-export interface SubsonicGenresResponse {
-  'subsonic-response': {
-    status: string
-    version: string
-    type: string
-    serverVersion: string
-    openSubsonic: boolean
-    genres: Genres
-  }
+export interface SubsonicGenres {
+  genre: SubsonicGenre[]
 }
 
-export interface Genres {
-  genre: Genre[]
-}
-
-export interface Genre {
+export interface SubsonicGenre {
   song_count: string
   album_count: string
   value: string

@@ -1,70 +1,44 @@
 <script setup lang="ts">
-import type { AlbumMetadata, ArtistMetadata, TrackMetadataWithImageUrl } from '~/types'
-import dayjs from 'dayjs'
-import { useAuth } from '~/composables/useAuth'
-import { useBackendFetch } from '~/composables/useBackendFetch'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { fetchAlbumsForArtist, fetchArtist, fetchArtistTopSongs } from '~/composables/backendFetch'
+import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const route = useRoute()
 const { routeTracks } = useRouteTracks()
-const { backendFetchRequest, getArtistAlbums, getArtistTracks } = useBackendFetch()
-const { userUsername, userSalt, userToken } = useAuth()
 
-const artist = ref<ArtistMetadata>()
-const tracks = ref<TrackMetadataWithImageUrl[]>()
-const albums = ref<AlbumMetadata[]>()
+const artist = ref<SubsonicArtist>()
+const tracks = ref<SubsonicSong[]>()
+const albums = ref<SubsonicAlbum[]>()
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 
 const artistArtUrl = computed(() => {
-  const queryParamString = `?u=${userUsername.value}&s=${userSalt.value}&t=${userToken.value}&c=zene-frontend&v=1.6.0&id=${musicbrainz_artist_id.value}`
-  return `/rest/getArtistArt.view${queryParamString}`
+  return getCoverArtUrl(musicbrainz_artist_id.value)
 })
 
-async function getArtist() {
-  const response = await backendFetchRequest(`artists/${musicbrainz_artist_id.value}`)
-  const json = await response.json() as ArtistMetadata
-  artist.value = json
-}
+async function getData() {
+  const promisesArray = [
+    fetchArtist(musicbrainz_artist_id.value),
+    fetchAlbumsForArtist(musicbrainz_artist_id.value),
+    fetchArtistTopSongs(musicbrainz_artist_id.value),
+  ]
 
-async function getTracks() {
-  const response = await getArtistTracks(musicbrainz_artist_id.value, 30)
-  tracks.value = response
-  routeTracks.value = response
-}
-
-async function getAlbums() {
-  const json = await getArtistAlbums(musicbrainz_artist_id.value)
-  const albumMetadata: AlbumMetadata[] = []
-  json.forEach((metadata: any) => {
-    const metadataInstance = {
-      artist: metadata.artist,
-      album: metadata.album,
-      album_artist: metadata.album_artist,
-      musicbrainz_album_id: metadata.musicbrainz_album_id as string,
-      musicbrainz_artist_id: metadata.musicbrainz_artist_id,
-      genres: metadata.genres.split(';').filter((genre: string) => genre !== ''),
-      release_date: dayjs(metadata.release_date).format('YYYY'),
-      image_url: `/api/albums/${metadata.musicbrainz_album_id}/art?size=xl`,
-    }
-    albumMetadata.push(metadataInstance)
-  })
-  albums.value = albumMetadata
-}
-
-function onImageError(event: Event) {
-  const target = event.target as HTMLImageElement
-  target.onerror = null
-  target.src = '/default-square.png'
+  await Promise.all(promisesArray)
+    .then(
+      (results) => {
+        artist.value = results[0] as SubsonicArtist
+        albums.value = results[1] as SubsonicAlbum[]
+        tracks.value = results[2] as SubsonicSong[]
+        routeTracks.value = tracks.value
+      },
+    )
 }
 
 onBeforeMount(async () => {
-  await getArtist()
-})
-
-onMounted(async () => {
-  await getTracks()
-  await getAlbums()
+  await getData()
 })
 </script>
 
@@ -72,7 +46,7 @@ onMounted(async () => {
   <section v-if="artist" class="h-80 rounded-lg">
     <div
       class="h-full w-full bg-cover bg-center"
-      :style="{ backgroundImage: `url(${artist.image_url})` }"
+      :style="{ backgroundImage: `url(${artistArtUrl})` }"
     >
       <div class="h-full w-full flex items-center justify-center gap-6 align-middle backdrop-blur-md">
         <div class="mx-auto flex items-center justify-center gap-6 rounded-lg bg-black/40 p-4 align-middle">
@@ -84,7 +58,7 @@ onMounted(async () => {
             />
           </div>
           <div class="text-7xl text-gray-300 font-bold">
-            {{ artist.artist }}
+            {{ artist.name }}
           </div>
         </div>
       </div>
@@ -95,7 +69,7 @@ onMounted(async () => {
       Albums
     </h2>
     <div class="flex flex-wrap gap-6">
-      <div v-for="album in albums" :key="album.album" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+      <div v-for="album in albums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <Album :album="album" size="lg" />
       </div>
     </div>
