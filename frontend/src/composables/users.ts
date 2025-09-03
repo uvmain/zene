@@ -3,15 +3,13 @@ import type { SubsonicUser } from '~/types/subsonicUser'
 import { openSubsonicFetchRequest } from './backendFetch'
 
 export async function fetchCurrentUser(): Promise<SubsonicUser> {
-  const response = await openSubsonicFetchRequest('getUser')
-  const json = await response.json() as SubsonicUserResponse
-  return json.user
+  const response = await openSubsonicFetchRequest('getUser') as SubsonicUserResponse
+  return response.user
 }
 
 export async function fetchUsers(): Promise<SubsonicUser[]> {
-  const response = await openSubsonicFetchRequest('getUsers')
-  const json = await response.json() as SubsonicUsersResponse
-  return json.users.user
+  const response = await openSubsonicFetchRequest('getUsers') as SubsonicUsersResponse
+  return response.users.user
 }
 
 export async function createUser(user: SubsonicUser): Promise<void> {
@@ -23,9 +21,8 @@ export async function createUser(user: SubsonicUser): Promise<void> {
   const response = await openSubsonicFetchRequest('createUser', {
     body: formData,
   })
-  const json = await response.json() as SubsonicResponse
-  if (!response.ok) {
-    throw new Error(json['subsonic-response'].error?.message)
+  if (response.status !== 'ok') {
+    throw new Error(response.error?.message ?? 'Unknown error')
   }
 }
 
@@ -42,9 +39,8 @@ export async function updateUser(user: SubsonicUser): Promise<void> {
   const response = await openSubsonicFetchRequest('updateUser.view', {
     body: formData,
   })
-  const json = await response.json() as SubsonicResponse
-  if (!response.ok) {
-    throw new Error(json['subsonic-response'].error?.message)
+  if (response.status !== 'ok') {
+    throw new Error(response.error?.message ?? 'Unknown error')
   }
 }
 
@@ -54,8 +50,7 @@ export async function deleteUser(user: SubsonicUser) {
   const response = await openSubsonicFetchRequest('deleteUser.view', {
     body: formData,
   })
-  const json = await response.json() as SubsonicResponse
-  if (!response.ok) {
-    throw new Error(json['subsonic-response'].error?.message)
+  if (response.status !== 'ok') {
+    throw new Error(response.error?.message ?? 'Unknown error')
   }
 }

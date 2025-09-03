@@ -47,7 +47,6 @@ declare module 'vue' {
     IconTablerVolume2: typeof import('~icons/tabler/volume2')['default']
     IconTablerVolume3: typeof import('~icons/tabler/volume3')['default']
     IconTablerX: typeof import('~icons/tabler/x')['default']
-    Login: typeof import('./src/components/Login.vue')['default']
     LyricsDisplay: typeof import('./src/components/LyricsDisplay.vue')['default']
     NavArt: typeof import('./src/components/NavArt.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']

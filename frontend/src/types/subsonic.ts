@@ -1,24 +1,27 @@
 import type { SubsonicAlbum } from './subsonicAlbum'
+import type { SubsonicApiKey } from './subsonicApiKey'
 import type { SubsonicArtist, SubsonicIndexArtists } from './subsonicArtist'
 import type { SubsonicGenres } from './subsonicGenres'
 import type { LyricsList } from './subsonicLyrics'
 import type { SubsonicSong } from './subsonicSong'
 import type { SubsonicUser } from './subsonicUser'
 
+export interface SubsonicResponseWrapper {
+  'subsonic-response': SubsonicResponse
+}
+
 export interface SubsonicResponse {
-  'subsonic-response': {
-    status: string
-    version: string
-    type: string
-    serverVersion: string
-    openSubsonic: boolean
-    error?: {
-      code: number
-      message: string
-      helpUrl?: string
-    }
-    [key: string]: any
+  status: string
+  version: string
+  type: string
+  serverVersion: string
+  openSubsonic: boolean
+  error?: {
+    code: number
+    message: string
+    helpUrl?: string
   }
+  [key: string]: any
 }
 export interface SubsonicRandomSongsResponse extends SubsonicResponse {
   randomSongs: {
@@ -75,5 +78,19 @@ export interface SubsonicUsersResponse extends SubsonicResponse {
 export interface SubsonicSongsByGenreResponse extends SubsonicResponse {
   songsByGenre: {
     song: SubsonicSong[]
+  }
+}
+
+export interface SubsonicSearchResponse extends SubsonicResponse {
+  searchResult2: {
+    artist: SubsonicArtist[]
+    album: SubsonicAlbum[]
+    song: SubsonicSong[]
+  }
+}
+
+export interface SubsonicApiKeyResponse extends SubsonicResponse {
+  apiKeys: {
+    apiKey: SubsonicApiKey[]
   }
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { openSubsonicFetchRequest } from '~/composables/useBackendFetch'
+import { openSubsonicFetchRequest } from '~/composables/backendFetch'
 import { useDebug } from '~/composables/useDebug'
 import { useSettings } from '~/composables/useSettings'
 

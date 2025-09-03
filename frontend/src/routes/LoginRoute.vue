@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useLocalStorage } from '@vueuse/core'
 import md5 from 'blueimp-md5'
+import { fetchApiKeysWithTokenAndSalt, fetchNewApiKeyWithTokenAndSalt } from '~/composables/backendFetch'
 
 const router = useRouter()
 
@@ -10,32 +12,7 @@ const password = ref('')
 const loading = ref(false)
 const error = ref('')
 
-async function getNewApiKey(): Promise<string> {
-  try {
-    const formData = new FormData()
-    formData.append('u', username.value)
-    formData.append('t', token.value)
-    formData.append('s', salt.value)
-    formData.append('v', '1.16.1')
-    formData.append('c', 'zeneclient')
-    formData.append('f', 'json')
-
-    const url = 'http://localhost:8080/rest/createApiKey.view'
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-    })
-    const data = await response.json()
-    if (data?.['subsonic-response']?.status !== 'ok') {
-      throw new Error(data?.subsonicResponse?.error?.message || 'Failed to get new API key')
-    }
-    return data?.['subsonic-response']?.apiKeys.apiKey[0]?.api_key
-  }
-  catch (e: any) {
-    error.value = e?.message || 'Failed to get new API key'
-    return ''
-  }
-}
+const apiKey = useLocalStorage('apiKey', '')
 
 async function login() {
   error.value = ''
@@ -44,34 +21,17 @@ async function login() {
     salt.value = Math.random().toString(36).slice(2, 10)
     token.value = md5(password.value + salt.value)
 
-    const formData = new FormData()
-    formData.append('u', username.value)
-    formData.append('t', token.value)
-    formData.append('s', salt.value)
-    formData.append('v', '1.16.1')
-    formData.append('c', 'zeneclient')
-    formData.append('f', 'json')
+    const data = await fetchApiKeysWithTokenAndSalt(username.value, token.value, salt.value)
 
-    const url = 'http://localhost:8080/rest/getApiKeys.view'
-    const response = await fetch(url, {
-      method: 'POST',
-      body: formData,
-    })
-    const data = await response.json()
-    if (data?.['subsonic-response']?.status !== 'ok') {
-      throw new Error(data?.subsonicResponse?.error?.message || 'Login failed')
+    if (data.apiKeys.apiKey.length === 0) {
+      const newApiKey = await fetchNewApiKeyWithTokenAndSalt(username.value, token.value, salt.value)
+      apiKey.value = newApiKey
+      router.push('/')
     }
     else {
-      if (data?.['subsonic-response']?.apiKeys.apiKey.length === 0) {
-        const apiKey = await getNewApiKey()
-        localStorage.setItem('apiKey', apiKey)
-        router.push('/')
-      }
-      else {
-        const apiKey = data?.['subsonic-response']?.apiKeys.apiKey[0]?.api_key
-        localStorage.setItem('apiKey', apiKey)
-        router.push('/')
-      }
+      const existingApiKey = data?.apiKeys.apiKey[0]?.api_key
+      apiKey.value = existingApiKey
+      router.push('/')
     }
   }
   catch (e: any) {

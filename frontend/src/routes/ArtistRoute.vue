@@ -2,7 +2,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchAlbum, fetchArtist } from '~/composables/backendFetch'
+import { fetchAlbumsForArtist, fetchArtist, fetchArtistTopSongs } from '~/composables/backendFetch'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
@@ -20,21 +20,21 @@ const artistArtUrl = computed(() => {
 })
 
 async function getData() {
-  artist.value = await fetchArtist(musicbrainz_artist_id.value)
+  const promisesArray = [
+    fetchArtist(musicbrainz_artist_id.value),
+    fetchAlbumsForArtist(musicbrainz_artist_id.value),
+    fetchArtistTopSongs(musicbrainz_artist_id.value),
+  ]
 
-  const albumTracks: SubsonicSong[] = []
-  const artistAlbums: SubsonicAlbum[] = []
-  artist.value.album.forEach(async (album) => {
-    const albumWithSongs = await fetchAlbum(album.id)
-    artistAlbums.push(albumWithSongs)
-    for (const track of albumWithSongs.song) {
-      albumTracks.push(track)
-    }
-  })
-
-  albums.value = artistAlbums
-  tracks.value = albumTracks
-  routeTracks.value = albumTracks
+  await Promise.all(promisesArray)
+    .then(
+      (results) => {
+        artist.value = results[0] as SubsonicArtist
+        albums.value = results[1] as SubsonicAlbum[]
+        tracks.value = results[2] as SubsonicSong[]
+        routeTracks.value = tracks.value
+      },
+    )
 }
 
 onBeforeMount(async () => {

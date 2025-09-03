@@ -23,7 +23,6 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to parse size parameter", http.StatusBadRequest)
 			return
 		}
-		logger.Printf("sizeInt is %d", sizeInt)
 	}
 
 	ctx := r.Context()

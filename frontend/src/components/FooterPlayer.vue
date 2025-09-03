@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { onKeyStroke } from '@vueuse/core'
+import { onKeyStroke, useLocalStorage } from '@vueuse/core'
 import { formatTime, getCoverArtUrl } from '~/composables/logic'
 import { useDebug } from '~/composables/useDebug'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
@@ -14,6 +14,7 @@ const { streamQuality } = useSettings()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount } = usePlaycounts()
 const router = useRouter()
+const apiKey = useLocalStorage('apiKey', '')
 
 const audioRef = ref<HTMLAudioElement | null>(null)
 const isPlaying = ref(false)
@@ -34,8 +35,7 @@ const isTransitioningFromCast = ref<boolean>(false)
 const showLyrics = ref<boolean>(false)
 
 const trackUrl = computed(() => {
-  const apiKey = localStorage.get('apiKey')
-  const queryParamString = `apiKey=${apiKey}&c=zene-frontend&v=1.6.0&maxBitRate=${streamQuality.value}&id=${currentlyPlayingTrack.value?.musicBrainzId}&format=aac`
+  const queryParamString = `apiKey=${apiKey.value}&c=zene-frontend&v=1.6.0&maxBitRate=${streamQuality.value}&id=${currentlyPlayingTrack.value?.musicBrainzId}&format=aac`
   return currentlyPlayingTrack.value ? `/rest/stream.view?${queryParamString}` : ''
 })
 
