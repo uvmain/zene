@@ -148,8 +148,8 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 		var genresString sql.NullString
 		var releaseDateString sql.NullString
 		var played sql.NullString
-		var albumArtistId string
-		var albumArtistName string
+		var albumArtistId sql.NullString
+		var albumArtistName sql.NullString
 
 		if err := rows.Scan(&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
 			&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
@@ -176,8 +176,9 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 			{Id: album.ArtistId, Name: album.Artist},
 		}
 
-		album.AlbumArtists = []types.Artist{
-			{Id: albumArtistId, Name: albumArtistName},
+		album.AlbumArtists = []types.Artist{}
+		if albumArtistId.Valid && albumArtistName.Valid {
+			album.AlbumArtists = append(album.AlbumArtists, types.Artist{Id: albumArtistId.String, Name: albumArtistName.String})
 		}
 
 		album.RecordLabels = []types.ChildRecordLabel{}
@@ -259,8 +260,8 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 	for rows.Next() {
 		var result types.SubsonicChild
 
-		var albumArtistName string
-		var albumArtistId string
+		var albumArtistName sql.NullString
+		var albumArtistId sql.NullString
 		var genreString string
 		var durationFloat float64
 		var played sql.NullString
@@ -296,9 +297,11 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 		result.DisplayArtist = result.Artist
 
 		result.AlbumArtists = []types.ChildArtist{}
-		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
+		if albumArtistId.Valid && albumArtistName.Valid {
+			result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId.String, Name: albumArtistName.String})
+		}
 
-		result.DisplayAlbumArtist = albumArtistName
+		result.DisplayAlbumArtist = albumArtistName.String
 
 		results = append(results, result)
 	}

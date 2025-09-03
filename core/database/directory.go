@@ -157,8 +157,8 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 
 	for rows.Next() {
 		var child types.SubsonicChild
-		var albumArtistName string
-		var albumArtistId string
+		var albumArtistName sql.NullString
+		var albumArtistId sql.NullString
 		var genreString string
 		var labelString string
 		var durationFloat float64
@@ -186,9 +186,11 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 		child.DisplayArtist = child.Artist
 
 		child.AlbumArtists = []types.ChildArtist{}
-		child.AlbumArtists = append(child.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
+		if albumArtistId.Valid && albumArtistName.Valid {
+			child.AlbumArtists = append(child.AlbumArtists, types.ChildArtist{Id: albumArtistId.String, Name: albumArtistName.String})
+		}
 
-		child.DisplayAlbumArtist = albumArtistName
+		child.DisplayAlbumArtist = albumArtistName.String
 		children = append(children, child)
 	}
 

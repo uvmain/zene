@@ -129,8 +129,8 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 	for rows.Next() {
 		var result types.SubsonicChild
 
-		var albumArtistName string
-		var albumArtistId string
+		var albumArtistName sql.NullString
+		var albumArtistId sql.NullString
 		var genreString string
 		var durationFloat float64
 		var played sql.NullString
@@ -166,9 +166,11 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 		result.DisplayArtist = result.Artist
 
 		result.AlbumArtists = []types.ChildArtist{}
-		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
+		if albumArtistId.Valid && albumArtistName.Valid {
+			result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId.String, Name: albumArtistName.String})
+		}
 
-		result.DisplayAlbumArtist = albumArtistName
+		result.DisplayAlbumArtist = albumArtistName.String
 
 		results = append(results, result)
 	}

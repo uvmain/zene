@@ -62,8 +62,8 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 
 		var genreString string
 		var durationFloat float64
-		var albumArtistName string
-		var albumArtistId string
+		var albumArtistName sql.NullString
+		var albumArtistId sql.NullString
 		var starred sql.NullString
 		var played sql.NullString
 
@@ -110,9 +110,11 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 		result.DisplayArtist = result.Artist
 
 		result.AlbumArtists = []types.ChildArtist{}
-		result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId, Name: albumArtistName})
+		if albumArtistId.Valid && albumArtistName.Valid {
+			result.AlbumArtists = append(result.AlbumArtists, types.ChildArtist{Id: albumArtistId.String, Name: albumArtistName.String})
+		}
 
-		result.DisplayAlbumArtist = albumArtistName
+		result.DisplayAlbumArtist = albumArtistName.String
 
 		songs = append(songs, result)
 	}

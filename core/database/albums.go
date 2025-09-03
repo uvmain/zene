@@ -154,8 +154,8 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	var genresString sql.NullString
 	var releaseDateString sql.NullString
 	var played sql.NullString
-	var albumArtistId string
-	var albumArtistName string
+	var albumArtistId sql.NullString
+	var albumArtistName sql.NullString
 
 	err = DB.QueryRowContext(ctx, query, musicbrainzAlbumId, user.Id).Scan(
 		&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
@@ -195,8 +195,9 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 		{Id: album.ArtistId, Name: album.Artist},
 	}
 
-	album.AlbumArtists = []types.Artist{
-		{Id: albumArtistId, Name: albumArtistName},
+	album.AlbumArtists = []types.Artist{}
+	if albumArtistId.Valid && albumArtistName.Valid {
+		album.AlbumArtists = append(album.AlbumArtists, types.Artist{Id: albumArtistId.String, Name: albumArtistName.String})
 	}
 
 	releaseDateTime, err := anytime.Parse(releaseDateString.String)
