@@ -154,8 +154,6 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search artists", "")
 			return
 		}
-
-		logger.Printf("Found %d artists", len(artists))
 	}
 
 	albums := []types.AlbumId3{}
@@ -166,7 +164,6 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search albums", "")
 			return
 		}
-		logger.Printf("Found %d albums", len(albums))
 	}
 
 	songs := []types.SubsonicChild{}
@@ -177,7 +174,6 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search songs", "")
 			return
 		}
-		logger.Printf("Found %d songs", len(songs))
 	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
