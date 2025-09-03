@@ -154,9 +154,9 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	case "highest": // highest rated albums
 		query += " order by ur.rating desc, r.musicbrainz_album_id desc"
 	case "frequent": // most frequently played albums
-		query += " order by pc.play_count desc, r.musicbrainz_album_id desc"
+		query += " order by ap.play_count desc, r.musicbrainz_album_id desc"
 	case "recent": // recently played albums
-		query += " order by pc.last_played desc, r.musicbrainz_album_id desc"
+		query += " order by ap.last_played desc, r.musicbrainz_album_id desc"
 	case "alphabeticalbyname":
 		query += " order by r.album asc"
 	case "alphabeticalbyartist":
