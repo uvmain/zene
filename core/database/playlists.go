@@ -10,7 +10,7 @@ import (
 	"zene/core/types"
 )
 
-func createPlaylistTables(ctx context.Context) {
+func migratePlaylists(ctx context.Context) {
 	createPlaylistsTable(ctx)
 	createPlaylistsAllowedUsersTable(ctx)
 	createPlaylistEntriesTable(ctx)

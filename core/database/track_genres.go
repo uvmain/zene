@@ -8,7 +8,7 @@ import (
 	"zene/core/types"
 )
 
-func createTrackGenresTable(ctx context.Context) {
+func migrateTrackGenres(ctx context.Context) {
 	schema := `CREATE TABLE track_genres (
 		file_path TEXT NOT NULL,
 		genre TEXT NOT NULL,

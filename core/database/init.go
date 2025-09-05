@@ -10,6 +10,7 @@ import (
 	"zene/core/config"
 	"zene/core/io"
 	"zene/core/logger"
+	"zene/core/version"
 
 	_ "github.com/ncruces/go-sqlite3/driver"
 	_ "github.com/ncruces/go-sqlite3/embed"
@@ -21,28 +22,54 @@ var err error
 
 func Initialise(ctx context.Context) {
 	openDatabase(ctx)
-	createVersionsTable(ctx)
-	createMusicFoldersTable(ctx)
-	createUsersTable(ctx)
-	createApiKeysTable(ctx)
+	migrateVersions(ctx)
+	migrateMusicFolders(ctx)
+	migrateUsers(ctx)
+	migrateApiKeys(ctx)
 	CreateAdminUserIfRequired(ctx)
-	createMetadataTable(ctx)
-	createPlayCountsTable(ctx)
-	createChatsTable(ctx)
-	createLyricsTable(ctx)
-	createAlbumArtTable(ctx)
-	createArtistArtTable(ctx)
-	createTrackGenresTable(ctx)
-	createGenreCountsTable(ctx)
-	createAudioCacheTable(ctx)
-	createUserStarsTable(ctx)
-	createUserRatingsTable(ctx)
-	createScansTable(ctx)
-	createNowPlayingTable(ctx)
-	createSimilarArtistsTable(ctx)
-	createTopSongsTable(ctx)
-	createPlaylistTables(ctx)
-	createInternetRadioTable(ctx)
+	migrateMetadata(ctx)
+	migratePlayCounts(ctx)
+	migrateChats(ctx)
+	migrateLyrics(ctx)
+	migrateArt(ctx)
+	migrateTrackGenres(ctx)
+	migrateGenreCounts(ctx)
+	migrateAudioCache(ctx)
+	migrateUserStars(ctx)
+	migrateUserRatings(ctx)
+	migrateScans(ctx)
+	migrateNowPlaying(ctx)
+	migrateSimilarArtists(ctx)
+	migrateTopSongs(ctx)
+	migratePlaylists(ctx)
+	migrateInternetRadio(ctx)
+
+	checkVersion(ctx)
+}
+
+func checkVersion(ctx context.Context) {
+	existingVersion, err := GetLatestVersion(ctx)
+	if err != nil {
+		logger.Printf("Error getting latest version, defaulting to DB version 121: %v", err)
+		existingVersion = version.Version
+		existingVersion.DatabaseVersion = "121"
+	}
+
+	thisVersion := version.Version
+
+	if existingVersion.DatabaseVersion != thisVersion.DatabaseVersion {
+		logger.Printf("Database version change detected, migrating from %v to %v", existingVersion.DatabaseVersion, thisVersion.DatabaseVersion)
+		InsertVersion(ctx, thisVersion)
+	} else if existingVersion.ServerVersion != thisVersion.ServerVersion {
+		logger.Printf("Server version change detected, migrating from %v to %v", existingVersion.ServerVersion, thisVersion.ServerVersion)
+		InsertVersion(ctx, thisVersion)
+	} else if existingVersion.SubsonicApiVersion != thisVersion.SubsonicApiVersion {
+		logger.Printf("Subsonic API version change detected, migrating from %v to %v", existingVersion.SubsonicApiVersion, thisVersion.SubsonicApiVersion)
+		InsertVersion(ctx, thisVersion)
+	} else if existingVersion.OpenSubsonicApiVersion != thisVersion.OpenSubsonicApiVersion {
+		logger.Printf("OpenSubsonic API version change detected, migrating from %v to %v", existingVersion.OpenSubsonicApiVersion, thisVersion.OpenSubsonicApiVersion)
+		InsertVersion(ctx, thisVersion)
+	}
 }
 
 func openDatabase(ctx context.Context) {

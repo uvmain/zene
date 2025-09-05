@@ -51,6 +51,7 @@ type SubsonicStandard struct {
 	Playlists              *Playlists                `xml:"playlists,omitempty" json:"playlists,omitempty"`
 	InternetRadioStations  *InternetRadioStations    `xml:"internetRadioStations,omitempty" json:"internetRadioStations,omitempty"`
 	ApiKeys                *ApiKeys                  `xml:"apiKeys,omitempty" json:"apiKeys,omitempty"`
+	Bookmarks              *Bookmarks                `xml:"bookmarks,omitempty" json:"bookmarks,omitempty"`
 }
 
 type SubsonicResponse struct {

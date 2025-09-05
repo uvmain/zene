@@ -10,7 +10,7 @@ import (
 	"zene/core/types"
 )
 
-func createNowPlayingTable(ctx context.Context) {
+func migrateNowPlaying(ctx context.Context) {
 	schema := `CREATE TABLE now_playing (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER,

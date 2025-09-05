@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func createAudioCacheTable(ctx context.Context) {
+func migrateAudioCache(ctx context.Context) {
 	schema := `CREATE TABLE audio_cache (
 		cache_key TEXT PRIMARY KEY,
 		last_accessed TEXT NOT NULL

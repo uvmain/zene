@@ -6,7 +6,7 @@ import (
 	"zene/core/logic"
 )
 
-func createUserStarsTable(ctx context.Context) {
+func migrateUserStars(ctx context.Context) {
 	schema := `CREATE TABLE user_stars (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,

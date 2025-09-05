@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func createMusicFoldersTable(ctx context.Context) {
+func migrateMusicFolders(ctx context.Context) {
 	schema := `CREATE TABLE music_folders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL

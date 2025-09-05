@@ -10,7 +10,7 @@ type UserRating struct {
 	Rating     int
 }
 
-func createUserRatingsTable(ctx context.Context) {
+func migrateUserRatings(ctx context.Context) {
 	schema := `CREATE TABLE user_ratings (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
