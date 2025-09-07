@@ -43,6 +43,7 @@ func Initialise(ctx context.Context) {
 	migrateTopSongs(ctx)
 	migratePlaylists(ctx)
 	migrateInternetRadio(ctx)
+	migrateBookmarks(ctx)
 
 	checkVersion(ctx)
 }

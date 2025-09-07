@@ -180,6 +180,9 @@ func StartServer() *http.Server {
 	router.Handle("/rest/getApiKeys.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetApiKeys)))
 	router.Handle("/rest/deleteApiKey", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteApiKey)))
 	router.Handle("/rest/deleteApiKey.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteApiKey)))
+	// Bookmarks
+	router.Handle("/rest/createBookmark", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateBookmark)))
+	router.Handle("/rest/createBookmark.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateBookmark)))
 	// Media library scanning
 	router.Handle("/rest/getScanStatus", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus)))
 	router.Handle("/rest/getScanStatus.view", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus)))
