@@ -49,14 +49,16 @@ func Initialise(ctx context.Context) {
 }
 
 func checkVersion(ctx context.Context) {
+	thisVersion := version.Version
+
 	existingVersion, err := GetLatestVersion(ctx)
 	if err != nil {
-		logger.Printf("Error getting latest version, defaulting to DB version 121: %v", err)
+		logger.Printf("Error getting latest version, defaulting to DB version %s: %v", thisVersion.DatabaseVersion, err)
 		existingVersion = version.Version
-		existingVersion.DatabaseVersion = "121"
+		existingVersion.DatabaseVersion = thisVersion.DatabaseVersion
+		InsertVersion(ctx, existingVersion)
+		existingVersion, err = GetLatestVersion(ctx)
 	}
-
-	thisVersion := version.Version
 
 	if existingVersion.DatabaseVersion != thisVersion.DatabaseVersion {
 		logger.Printf("Database version change detected, migrating from %v to %v", existingVersion.DatabaseVersion, thisVersion.DatabaseVersion)
