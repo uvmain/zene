@@ -44,6 +44,7 @@ func Initialise(ctx context.Context) {
 	migratePlaylists(ctx)
 	migrateInternetRadio(ctx)
 	migrateBookmarks(ctx)
+	migratePlayqueues(ctx)
 
 	checkVersion(ctx)
 }
@@ -58,6 +59,9 @@ func checkVersion(ctx context.Context) {
 		existingVersion.DatabaseVersion = thisVersion.DatabaseVersion
 		InsertVersion(ctx, existingVersion)
 		existingVersion, err = GetLatestVersion(ctx)
+		if err != nil {
+			log.Fatalf("Error getting latest version after inserting default: %v", err)
+		}
 	}
 
 	if existingVersion.DatabaseVersion != thisVersion.DatabaseVersion {
