@@ -26,7 +26,7 @@ func HandleGetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestUser.AdminRole == false && username == requestUser.Username {
+	if !requestUser.AdminRole && username == requestUser.Username {
 		logger.Printf("User %s attempted to fetch avatars for another user without admin role", requestUser.Username)
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get avatars for another user", "")
 		return
