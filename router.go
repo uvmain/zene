@@ -150,6 +150,7 @@ func StartServer() *http.Server {
 	router.Handle("/rest/deletebookmark", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteBookmark)))
 	router.Handle("/rest/saveplayqueue", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSaveOrClearPlayqueue)))
 	router.Handle("/rest/saveplayqueuebyindex", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSaveOrClearPlayqueue)))
+	router.Handle("/rest/getplayqueuebyindex", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlayqueueByIndex)))
 	// Media library scanning
 	router.Handle("/rest/getscanstatus", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus)))
 	router.Handle("/rest/startscan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStartScan)))

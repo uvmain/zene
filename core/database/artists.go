@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"zene/core/logic"
 	"zene/core/types"
@@ -51,6 +52,9 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	}
 
 	albums, err := GetArtistChildren(ctx, musicbrainzArtistId)
+	if err != nil {
+		return result, fmt.Errorf("getting artist children: %v", err)
+	}
 
 	result.Album = []types.SubsonicChild{}
 	for _, album := range albums {

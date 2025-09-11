@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"zene/core/logic"
+	"zene/core/types"
 )
 
 func migratePlayqueues(ctx context.Context) {
@@ -68,4 +69,42 @@ func UpsertPlayqueue(ctx context.Context, trackIds []string, currentIndex int, p
 		return err
 	}
 	return nil
+}
+
+func GetPlayqueue(ctx context.Context) (types.PlayqueueRowParsed, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return types.PlayqueueRowParsed{}, fmt.Errorf("getting user by context in GetPlayqueue")
+	}
+
+	query := `select u.username, p.changed as changed_date,
+		p.changed_by as changed_by,
+		p.position,
+		p.track_ids,
+		p.current_index
+		from playqueues p
+		join users u on u.id = p.user_id`
+
+	row := DB.QueryRowContext(ctx, query+" where p.user_id = ?;", user.Id)
+
+	var username, changed, changedBy, trackIds string
+	var position, currentIndex int
+	err = row.Scan(&username, &changed, &changedBy, &position, &trackIds, &currentIndex)
+	if err != nil {
+		return types.PlayqueueRowParsed{}, err
+	}
+
+	trackIdArray := []string{}
+	if trackIds != "" {
+		trackIdArray = append(trackIdArray, logic.StringToArray(trackIds, ",")...)
+	}
+
+	return types.PlayqueueRowParsed{
+		Username:     username,
+		Changed:      changed,
+		ChangedBy:    changedBy,
+		Position:     position,
+		TrackIds:     trackIdArray,
+		CurrentIndex: currentIndex,
+	}, nil
 }

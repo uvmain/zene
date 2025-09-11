@@ -36,6 +36,9 @@ func UpsertUserRating(ctx context.Context, userId int, metadataId string, rating
 	if !isValidMetadataResponse {
 		return fmt.Errorf("invalid metadata ID: %s", metadataId)
 	}
+	if err != nil {
+		return err
+	}
 
 	query := `INSERT OR REPLACE INTO user_ratings (user_id, metadata_id, rating)
 		VALUES (?, ?, ?);`

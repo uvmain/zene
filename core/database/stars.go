@@ -24,6 +24,9 @@ func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
 	if !isValidMetadataResponse {
 		return fmt.Errorf("invalid metadata ID: %s", metadataId)
 	}
+	if err != nil {
+		return err
+	}
 
 	query := `INSERT OR IGNORE INTO user_stars (user_id, metadata_id, created_at)
 		VALUES (?, ?, ?);`
