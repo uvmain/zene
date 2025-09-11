@@ -12,7 +12,7 @@ import (
 	"zene/core/types"
 )
 
-func createUsersTable(ctx context.Context) {
+func migrateUsers(ctx context.Context) {
 	schema := `CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,

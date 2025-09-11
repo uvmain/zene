@@ -10,7 +10,7 @@ type UserRating struct {
 	Rating     int
 }
 
-func createUserRatingsTable(ctx context.Context) {
+func migrateUserRatings(ctx context.Context) {
 	schema := `CREATE TABLE user_ratings (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
@@ -35,6 +35,9 @@ func UpsertUserRating(ctx context.Context, userId int, metadataId string, rating
 	isValidMetadataResponse, _, err := IsValidMetadataId(ctx, metadataId)
 	if !isValidMetadataResponse {
 		return fmt.Errorf("invalid metadata ID: %s", metadataId)
+	}
+	if err != nil {
+		return err
 	}
 
 	query := `INSERT OR REPLACE INTO user_ratings (user_id, metadata_id, rating)

@@ -54,7 +54,7 @@ func HandleDeleteApiKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestUser.AdminRole == false && requestUser.Id != userIdInt {
+	if !requestUser.AdminRole && requestUser.Id != userIdInt {
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "user not authorized to delete API key for other users", "")
 		return
 	}

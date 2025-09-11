@@ -65,6 +65,11 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 	for _, trackId := range metadataIds {
 		if submissionBool {
 			err = database.UpsertPlayCount(ctx, user.Id, trackId)
+			if err != nil {
+				logger.Printf("Error upserting play count for user %d: %v", user.Id, err)
+				net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to upsert user play count", "")
+				return
+			}
 		}
 		err = database.UpsertNowPlaying(ctx, user.Id, trackId, timeInt, 0, playerName)
 		if err != nil {

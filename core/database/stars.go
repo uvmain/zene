@@ -6,7 +6,7 @@ import (
 	"zene/core/logic"
 )
 
-func createUserStarsTable(ctx context.Context) {
+func migrateUserStars(ctx context.Context) {
 	schema := `CREATE TABLE user_stars (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,
@@ -23,6 +23,9 @@ func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
 	isValidMetadataResponse, _, err := IsValidMetadataId(ctx, metadataId)
 	if !isValidMetadataResponse {
 		return fmt.Errorf("invalid metadata ID: %s", metadataId)
+	}
+	if err != nil {
+		return err
 	}
 
 	query := `INSERT OR IGNORE INTO user_stars (user_id, metadata_id, created_at)

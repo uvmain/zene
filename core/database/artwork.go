@@ -9,14 +9,9 @@ import (
 	"zene/core/types"
 )
 
-func createAlbumArtTable(ctx context.Context) {
-	schema := `CREATE TABLE album_art (musicbrainz_album_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
-	createTable(ctx, schema)
-}
-
-func createArtistArtTable(ctx context.Context) {
-	schema := `CREATE TABLE artist_art (musicbrainz_artist_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`
-	createTable(ctx, schema)
+func migrateArt(ctx context.Context) {
+	createTable(ctx, `CREATE TABLE album_art (musicbrainz_album_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`)
+	createTable(ctx, `CREATE TABLE artist_art (musicbrainz_artist_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`)
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {

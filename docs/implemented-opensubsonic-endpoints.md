@@ -84,11 +84,13 @@
 - [x] deleteUser
 - [x] changePassword
 ## Bookmarks
-- [ ] getBookmarks
-- [ ] createBookmark
-- [ ] deleteBookmark
-- [ ] getPlayQueue
-- [ ] savePlayQueue
+- [x] getBookmarks
+- [x] createBookmark
+- [x] deleteBookmark
+- [x] getPlayQueue
+- [x] getPlayQueueByIndex
+- [x] savePlayQueue
+- [x] savePlayQueueByIndex
 ## Media library scanning
 - [x] getScanStatus
 - [x] startScan

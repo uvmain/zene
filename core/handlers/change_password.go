@@ -29,7 +29,7 @@ func HandleChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestUser.AdminRole == false {
+	if !requestUser.AdminRole {
 		logger.Printf("User %s attempted to create a user without admin role", requestUser.Username)
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to change passwords", "")
 		return

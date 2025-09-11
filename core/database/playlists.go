@@ -10,7 +10,7 @@ import (
 	"zene/core/types"
 )
 
-func createPlaylistTables(ctx context.Context) {
+func migratePlaylists(ctx context.Context) {
 	createPlaylistsTable(ctx)
 	createPlaylistsAllowedUsersTable(ctx)
 	createPlaylistEntriesTable(ctx)
@@ -116,6 +116,9 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 			return types.PlaylistRow{}, fmt.Errorf("creating playlist: %v", err)
 		}
 		lastInserted, err := result.LastInsertId()
+		if err != nil {
+			return types.PlaylistRow{}, fmt.Errorf("getting last inserted ID: %v", err)
+		}
 		newPlaylistId = int(lastInserted)
 
 		if len(songIds) > 0 {

@@ -33,7 +33,7 @@ func getImageFromFilePath(filePath string) (image.Image, error) {
 func getImageFromInternet(imageUrl string) (image.Image, error) {
 	res, err := http.Get(imageUrl)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to download image: %w", err)
+		return nil, fmt.Errorf("downloading image: %w", err)
 	}
 	defer res.Body.Close()
 
@@ -52,7 +52,7 @@ func getImageFromInternet(imageUrl string) (image.Image, error) {
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("Failed to decode image: %w", err)
+		return nil, fmt.Errorf("decoding image: %w", err)
 	}
 
 	return img, nil

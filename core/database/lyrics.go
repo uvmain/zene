@@ -8,7 +8,7 @@ import (
 	"zene/core/types"
 )
 
-func createLyricsTable(ctx context.Context) {
+func migrateLyrics(ctx context.Context) {
 	schema := `CREATE TABLE track_lyrics (
 		musicbrainz_track_id TEXT PRIMARY KEY,
     plain_lyrics TEXT,

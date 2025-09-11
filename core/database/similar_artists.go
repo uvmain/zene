@@ -10,7 +10,7 @@ import (
 	"zene/core/types"
 )
 
-func createSimilarArtistsTable(ctx context.Context) {
+func migrateSimilarArtists(ctx context.Context) {
 	schema := `CREATE TABLE similar_artists (
 		artist_id TEXT NOT NULL,
 		similar_artist_id TEXT NOT NULL,

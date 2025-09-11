@@ -48,7 +48,7 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestUser.AdminRole == false {
+	if !requestUser.AdminRole {
 		logger.Printf("User %s attempted to update a user without admin role", requestUser.Username)
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to update users", "")
 		return

@@ -19,7 +19,7 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 
 	scanStatus, err := scanner.RunScan(r.Context())
 	if err != nil {
-		if scanStatus.Scanning == true {
+		if scanStatus.Scanning {
 			logger.Printf("Error starting scan: %v", scanStatus)
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "A scan is already in progress. Please wait for it to complete before starting a new one.", "")
 			return

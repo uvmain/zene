@@ -4,16 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 	"zene/core/logger"
-	"zene/core/logic"
 	"zene/core/types"
-	"zene/core/version"
 )
 
-func createVersionsTable(ctx context.Context) {
-	schema := `CREATE TABLE versions (
+func migrateVersions(ctx context.Context) {
+	schema := `CREATE TABLE IF NOT EXISTS versions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		server_version TEXT NOT NULL,
 		database_version TEXT NOT NULL,
@@ -22,31 +19,6 @@ func createVersionsTable(ctx context.Context) {
 		timestamp TEXT NOT NULL
 	);`
 	createTable(ctx, schema)
-
-	newVersion := types.Version{
-		ServerVersion:          version.Version.ServerVersion,
-		DatabaseVersion:        version.Version.DatabaseVersion,
-		SubsonicApiVersion:     version.Version.SubsonicApiVersion,
-		OpenSubsonicApiVersion: version.Version.OpenSubsonicApiVersion,
-		Timestamp:              logic.GetCurrentTimeFormatted(),
-	}
-
-	latestVersion, err := GetLatestVersion(ctx)
-	if err == sql.ErrNoRows {
-		logger.Printf("No versions found, inserting initial version: %v", newVersion)
-		err := InsertVersion(ctx, newVersion)
-		if err != nil {
-			log.Fatalf("Error inserting version: %v", err)
-		}
-	}
-
-	if latestVersion.ServerVersion != newVersion.ServerVersion {
-		logger.Printf("updating versions table: %v", newVersion)
-		err := InsertVersion(ctx, newVersion)
-		if err != nil {
-			log.Fatalf("Error inserting version: %v", err)
-		}
-	}
 }
 
 func InsertVersion(ctx context.Context, version types.Version) error {

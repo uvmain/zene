@@ -7,7 +7,7 @@ import (
 	"zene/core/types"
 )
 
-func createChatsTable(ctx context.Context) {
+func migrateChats(ctx context.Context) {
 	schema := `CREATE TABLE chats (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,

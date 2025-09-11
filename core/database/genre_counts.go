@@ -6,7 +6,7 @@ import (
 	"zene/core/logger"
 )
 
-func createGenreCountsTable(ctx context.Context) {
+func migrateGenreCounts(ctx context.Context) {
 	schema := `CREATE TABLE genre_counts (
 		genre TEXT NOT NULL,
 		song_count INTEGER NOT NULL,

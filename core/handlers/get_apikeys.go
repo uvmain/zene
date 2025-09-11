@@ -40,7 +40,7 @@ func HandleGetApiKeys(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if requestUser.AdminRole == false && requestUser.Id != userIdInt {
+	if !requestUser.AdminRole && requestUser.Id != userIdInt {
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "user not authorized to create API key for this user", "")
 		return
 	}

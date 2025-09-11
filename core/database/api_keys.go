@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func createApiKeysTable(ctx context.Context) {
+func migrateApiKeys(ctx context.Context) {
 	schema := `CREATE TABLE api_keys (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,

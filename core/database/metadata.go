@@ -8,7 +8,7 @@ import (
 	"zene/core/types"
 )
 
-func createMetadataTable(ctx context.Context) {
+func migrateMetadata(ctx context.Context) {
 	schema := `CREATE TABLE metadata (
 		file_path TEXT PRIMARY KEY,
 		file_name TEXT NOT NULL,

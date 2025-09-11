@@ -26,7 +26,7 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	requestUser, _ := database.GetUserByContext(ctx)
-	if requestUser.AdminRole == true && username != "" {
+	if requestUser.AdminRole && username != "" {
 		// Admin can request any user
 		user, err = database.GetUserByUsername(ctx, username)
 		if err != nil {
