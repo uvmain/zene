@@ -18,6 +18,7 @@ Supports the following OpenSubsonic API extensions:
 - `formPost` (all endpoints support GET and POST, with either formData values OR query parameters)
 - `songLyrics` (lyrics are pulled from lrclib on request, and saved locally in the database for future calls)
 - `transcodeOffset` (supports streaming from an offset)
+- `indexBasedQueue` (enables savePlayQueueByIndex and getPlayQueueByIndex endpoints)
 
 ### Supports the following OpenSubsonic API endpoints:
 

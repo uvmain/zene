@@ -33,12 +33,17 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 		Name:     "songLyrics",
 		Versions: []int{1},
 	}
+	extension5 := types.OpenSubsonicExtensions{
+		Name:     "indexBasedQueue",
+		Versions: []int{1},
+	}
 
 	response.SubsonicResponse.OpenSubsonicExtensions = []*types.OpenSubsonicExtensions{
 		&extension1,
 		&extension2,
 		&extension3,
 		&extension4,
+		&extension5,
 	}
 
 	net.WriteSubsonicResponse(w, r, response, format)
