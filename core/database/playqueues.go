@@ -22,6 +22,21 @@ func migratePlayqueues(ctx context.Context) {
 	createIndex(ctx, "idx_playqueues_user", "playqueues", []string{"user_id"}, false)
 }
 
+func ClearPlayqueue(ctx context.Context) error {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return fmt.Errorf("getting user by context in ClearPlayqueue")
+	}
+
+	query := `DELETE FROM playqueues WHERE user_id = ?;`
+
+	_, err = DB.ExecContext(ctx, query, user.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func UpsertPlayqueue(ctx context.Context, trackIds []string, currentId string, position int, changedBy string) error {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
