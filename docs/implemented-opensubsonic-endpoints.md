@@ -88,7 +88,9 @@
 - [x] createBookmark
 - [x] deleteBookmark
 - [ ] getPlayQueue
+- [ ] getPlayQueueByIndex
 - [x] savePlayQueue
+- [x] savePlayQueueByIndex
 ## Media library scanning
 - [x] getScanStatus
 - [x] startScan

@@ -19,6 +19,7 @@ func HandleSaveOrClearPlayqueue(w http.ResponseWriter, r *http.Request) {
 	format := form["f"]
 	positionString := form["position"]
 	current := form["current"]
+	currentIndexString := form["currentindex"]
 	client := form["c"]
 
 	ctx := r.Context()
@@ -26,12 +27,12 @@ func HandleSaveOrClearPlayqueue(w http.ResponseWriter, r *http.Request) {
 	_, idArray, err := net.ParseDuplicateFormKeys(r, "id", false)
 	if err != nil {
 		logger.Printf("Error parsing id parameters: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "at least one valid id parameter is required if current is set", "")
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "error parsing id parameters", "")
 		return
 	}
 
-	if len(idArray) == 0 && current != "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "at least one id parameter is required if current is set", "")
+	if len(idArray) == 0 && (current != "" || currentIndexString != "") {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "at least one id parameter is required if current or currentIndex is set", "")
 		return
 	}
 
@@ -44,16 +45,28 @@ func HandleSaveOrClearPlayqueue(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var indexInt int
 	if current != "" {
 		found := false
-		for _, id := range idArray {
+		for index, id := range idArray {
 			if id == current {
 				found = true
+				indexInt = index
 				break
 			}
 		}
 		if !found {
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "current parameter must be one of the id parameters", "")
+			return
+		}
+	} else if currentIndexString != "" {
+		indexInt, err = strconv.Atoi(currentIndexString)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "currentIndex parameter should be an integer", "")
+			return
+		}
+		if indexInt < 0 || indexInt >= len(idArray) {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "currentIndex parameter is out of range", "")
 			return
 		}
 	}
@@ -66,7 +79,7 @@ func HandleSaveOrClearPlayqueue(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if len(idArray) > 0 {
-		err = database.UpsertPlayqueue(ctx, idArray, current, position, client)
+		err = database.UpsertPlayqueue(ctx, idArray, indexInt, position, client)
 		if err != nil {
 			logger.Printf("Error inserting playqueue: %v", err)
 			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to add playqueue", "")

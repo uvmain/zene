@@ -14,7 +14,7 @@ func migratePlayqueues(ctx context.Context) {
 		changed_by TEXT NOT NULL,
 		position INTEGER NOT NULL,
 		track_ids TEXT NOT NULL,
-		current_id TEXT,
+		current_index INTEGER DEFAULT 0,
 		UNIQUE(user_id),
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
@@ -37,7 +37,7 @@ func ClearPlayqueue(ctx context.Context) error {
 	return nil
 }
 
-func UpsertPlayqueue(ctx context.Context, trackIds []string, currentId string, position int, changedBy string) error {
+func UpsertPlayqueue(ctx context.Context, trackIds []string, currentIndex int, position int, changedBy string) error {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return fmt.Errorf("getting user by context in UpsertPlayqueue")
@@ -53,17 +53,17 @@ func UpsertPlayqueue(ctx context.Context, trackIds []string, currentId string, p
 
 	changed := logic.GetCurrentTimeFormatted()
 
-	query := `INSERT INTO playqueues (user_id, changed, changed_by, position, track_ids, current_id)
+	query := `INSERT INTO playqueues (user_id, changed, changed_by, position, track_ids, current_index)
 		VALUES (?, ?, ?, ?, ?, ?)
 		ON CONFLICT(user_id) DO UPDATE SET
 			changed=excluded.changed,
 			changed_by=excluded.changed_by,
 			position=excluded.position,
 			track_ids=excluded.track_ids,
-			current_id=excluded.current_id
+			current_index=excluded.current_index
 		WHERE playqueues.user_id=excluded.user_id;`
 
-	_, err = DB.ExecContext(ctx, query, user.Id, changed, changedBy, position, trackIdsString, currentId)
+	_, err = DB.ExecContext(ctx, query, user.Id, changed, changedBy, position, trackIdsString, currentIndex)
 	if err != nil {
 		return err
 	}
