@@ -32,6 +32,11 @@ Supports the following OpenSubsonic API extensions:
 - `getApiKeys` Accepts a `userId` parameter. Only admins can get API keys for other users.
 - `deleteApiKey` Requires one or more `id` parameter(s). Accepts a `userId` parameter. Only admins can delete API keys for other users.
 
+## Installation
+- create a `.env` file using `.env.example` as a guide
+- copy the `docker-compose.yml` file into the same directory, and update the mount points as required
+- `docker compose up -d` to pull the image and run the container in the background
+
 ### Tech stack
 - `Sqlite` database
 - `Go` backend

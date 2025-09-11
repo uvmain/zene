@@ -1,6 +1,6 @@
 services:
   zene:
-    image: zene:latest
+    image: uvmain/zene:latest
     container_name: zene
     env_file:
       - .env

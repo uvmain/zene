@@ -1,1 +1,1 @@
-git pull && docker build -t zene:latest . && docker compose up -d
+git pull && docker build -t uvmain/zene:latest . && docker compose up -d
