@@ -158,7 +158,7 @@ func HandleUpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if musicFolderId != "" {
-		folderIdInts, _, err := net.ParseDuplicateFormKeys(r, "musicfolderid", true)
+		folderIdInts, _, err := net.ParseDuplicateFormKeys(r, "musicFolderId", true)
 		if err != nil {
 			logger.Printf("Error parsing musicFolderId: %v", err)
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid musicFolderId", "")
