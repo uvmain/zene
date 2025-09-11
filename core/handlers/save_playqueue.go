@@ -35,11 +35,6 @@ func HandleSaveOrClearPlayqueue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if positionString == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "position parameter is required", "")
-		return
-	}
-
 	var position int
 	if positionString != "" {
 		position, err = strconv.Atoi(positionString)
