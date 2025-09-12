@@ -2,8 +2,12 @@
 <!-- GitHub Actions SAST badge -->
 [![SAST Code Scanning](https://github.com/uvmain/zene/actions/workflows/sast.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/sast.yml)
 
+
 <!-- Dependency Scanning badge -->
 [![Dependency Scanning](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml)
+
+<!-- Build badge -->
+[![Build](https://github.com/uvmain/zene/actions/workflows/build.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/build.yml)
 
 # Zene
 ![Zene screenshot](./docs/assets/zene-home.webp)
