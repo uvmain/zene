@@ -1,3 +1,6 @@
+<!-- GitHub Actions SAST badge -->
+[![SAST Code Scanning](https://github.com/uvmain/zene/actions/workflows/sast.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/sast.yml)
+
 # Zene
 ![Zene screenshot](./docs/assets/zene-home.webp)
 
