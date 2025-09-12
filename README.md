@@ -1,7 +1,9 @@
 
 
 [![SAST Code Scanning](https://github.com/uvmain/zene/actions/workflows/sast.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/sast.yml)
+&nbsp;
 [![Dependency Scanning](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml)
+&nbsp;
 [![Build](https://github.com/uvmain/zene/actions/workflows/build.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/build.yml)
 
 # Zene
