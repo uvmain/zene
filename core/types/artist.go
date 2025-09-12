@@ -5,7 +5,7 @@ type Artist struct {
 	Name           string          `xml:"name,attr" json:"name"`
 	CoverArt       string          `xml:"coverArt,attr,omitempty" json:"coverArt,omitempty"`
 	ArtistImageUrl string          `xml:"artistImageUrl,attr,omitempty" json:"artistImageUrl,omitempty"`
-	AlbumCount     int             `xml:"albumCount,attr,omitempty" json:"albumCount,omitempty"`
+	AlbumCount     int             `xml:"albumCount,attr" json:"albumCount"`
 	Starred        string          `xml:"starred,attr,omitempty" json:"starred,omitempty"`
 	Album          []SubsonicChild `xml:"album,omitempty" json:"album,omitempty"`
 	MusicBrainzId  string          `xml:"musicBrainzId,attr,omitempty" json:"musicBrainzId,omitempty"`

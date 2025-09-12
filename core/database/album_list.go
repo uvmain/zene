@@ -115,7 +115,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	args = append(args, user.Id, user.Id)
 
 	if sortType == "bygenre" {
-		query += ` join track_genres tg on tg.file_path = m.file_path and lower(tg.genre) = lower(?)`
+		query += ` join track_genres tg on tg.file_path = r.file_path and lower(tg.genre) = lower(?)`
 		args = append(args, genre)
 	}
 
