@@ -11,6 +11,6 @@ type SubsonicDirectory struct {
 	CoverArt      string          `xml:"coverArt,attr" json:"coverArt"`
 	SongCount     int             `xml:"songCount,attr" json:"songCount"`
 	MediaType     string          `xml:"mediaType,attr" json:"mediaType"`
-	AlbumCount    int             `xml:"albumCount,attr,omitempty" json:"albumCount,omitempty"`
+	AlbumCount    int             `xml:"albumCount,attr" json:"albumCount"`
 	Child         []SubsonicChild `xml:"child" json:"child"`
 }

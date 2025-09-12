@@ -42,8 +42,9 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 
 	query := `SELECT case when substr(m.artist,1,1) GLOB '*[0-9]*' then '#' else upper(substr(m.artist,1,1)) end as artist_index,
 		m.musicbrainz_artist_id, m.artist, s.created_at, COALESCE(ur.rating, 0) AS user_rating, COALESCE(AVG(gr.rating),0.0) AS average_rating,
-		coalesce(count(distinct m.album), 0) as album_count
+		coalesce(count(distinct maa.album), 0) as album_count
 		FROM metadata m
+		left join metadata maa on m.artist = m.album_artist and maa.musicbrainz_album_id = m.musicbrainz_album_id
 		LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = ?
 		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = ?
 		LEFT JOIN user_ratings gr ON m.musicbrainz_artist_id = gr.metadata_id`
@@ -60,7 +61,7 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 	}
 
 	query += ` GROUP BY m.musicbrainz_artist_id, m.artist, s.created_at, ur.rating
-		ORDER BY artist_index asc, artist asc;`
+		ORDER BY artist_index asc, m.artist asc;`
 
 	rows, err = DB.QueryContext(ctx, query, args...)
 	if err != nil {

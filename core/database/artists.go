@@ -57,9 +57,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	}
 
 	result.Album = []types.SubsonicChild{}
-	for _, album := range albums {
-		result.Album = append(result.Album, album)
-	}
+	result.Album = append(result.Album, albums...)
 
 	return result, nil
 }
