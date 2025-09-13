@@ -1,0 +1,115 @@
+package database
+
+import (
+	"context"
+	"fmt"
+)
+
+func migratePodcasts(ctx context.Context) {
+	schema := `CREATE TABLE podcast_channels (
+		 id INTEGER PRIMARY KEY AUTOINCREMENT,
+		url TEXT NOT NULL,
+		title TEXT,
+		description TEXT,
+    	cover_art TEXT,
+		original_image_url TEXT,
+    	last_refresh TEXT,
+		status TEXT DEFAULT, 'new' -- new / downloading / completed / error / deleted / skipped
+	    created_at TEXT,
+		error_message TEXT,
+		user_id INTEGER NOT NULL,
+		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+	);`
+	createTable(ctx, schema)
+	createIndex(ctx, "idx_podcast_channels_user_id", "podcast_channels", []string{"user_id"}, false)
+
+	schema = `CREATE TABLE podcast_episodes (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		channel_id INTEGER NOT NULL REFERENCES podcast_channels(id) ON DELETE CASCADE,
+		guid TEXT,
+		title TEXT,
+		description TEXT,
+		publish_date TEXT,
+		duration INTEGER,
+		status TEXT DEFAULT, 'new', -- new / completed / skipped
+		file_path TEXT,
+		enclosure_url TEXT,
+		stream_id TEXT,
+		created_at TEXT NOT NULL
+	);`
+}
+
+func CreatePodcastChannel(ctx context.Context, url string, title string, description string, coverArt string, lastRefresh string) error {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return fmt.Errorf("getting user from context: %v", err)
+	}
+
+	if !user.PodcastRole {
+		return fmt.Errorf("user not authorized to create Podcast channels")
+	}
+
+	query := `INSERT INTO podcast_channels (url, title, description, cover_art, last_refresh, user_id)
+		VALUES (?, ?, ?, ?, ?, ?)`
+
+	_, err = DB.ExecContext(ctx, query, url, title, description, coverArt, lastRefresh, user.Id)
+	if err != nil {
+		return fmt.Errorf("inserting podcast channel: %v", err)
+	}
+
+	return nil
+}
+
+func UpdatePodcastChannel(ctx context.Context, channelId int, url string, title string, description string, coverArt string, lastRefresh string) error {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return fmt.Errorf("getting user from context: %v", err)
+	}
+
+	if !user.PodcastRole {
+		return fmt.Errorf("user not authorized to update Podcast channels")
+	}
+	query := `UPDATE podcast_channels SET url = ?, title = ?, description = ?, cover_art = ?, last_refresh = ? WHERE id = ? AND user_id = ?`
+
+	result, err := DB.ExecContext(ctx, query, url, title, description, coverArt, lastRefresh, channelId, user.Id)
+	if err != nil {
+		return fmt.Errorf("updating podcast channel: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("getting rows affected: %v", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no podcast channel found with the given ID for this user")
+	}
+
+	return nil
+}
+
+func DeletePodcastChannel(ctx context.Context, channelId int) error {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return fmt.Errorf("getting user from context: %v", err)
+	}
+
+	if !user.PodcastRole {
+		return fmt.Errorf("user not authorized to delete Podcast channels")
+	}
+
+	query := `DELETE FROM podcast_channels WHERE id = ? AND user_id = ?`
+
+	result, err := DB.ExecContext(ctx, query, channelId, user.Id)
+	if err != nil {
+		return fmt.Errorf("deleting podcast channel: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("getting rows affected: %v", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no podcast channel found with the given ID for this user")
+	}
+	return nil
+}

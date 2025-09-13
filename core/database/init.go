@@ -45,6 +45,7 @@ func Initialise(ctx context.Context) {
 	migrateInternetRadio(ctx)
 	migrateBookmarks(ctx)
 	migratePlayqueues(ctx)
+	migratePodcasts(ctx)
 
 	checkVersion(ctx)
 }
