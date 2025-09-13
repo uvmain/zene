@@ -3,18 +3,19 @@ package database
 import (
 	"context"
 	"fmt"
+	"zene/core/logic"
 )
 
 func migratePodcasts(ctx context.Context) {
 	schema := `CREATE TABLE podcast_channels (
-		 id INTEGER PRIMARY KEY AUTOINCREMENT,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		url TEXT NOT NULL,
 		title TEXT,
 		description TEXT,
     	cover_art TEXT,
 		original_image_url TEXT,
     	last_refresh TEXT,
-		status TEXT DEFAULT, 'new' -- new / downloading / completed / error / deleted / skipped
+		status TEXT DEFAULT 'new', -- new / downloading / completed / error / deleted / skipped
 	    created_at TEXT,
 		error_message TEXT,
 		user_id INTEGER NOT NULL,
@@ -26,20 +27,26 @@ func migratePodcasts(ctx context.Context) {
 	schema = `CREATE TABLE podcast_episodes (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		channel_id INTEGER NOT NULL REFERENCES podcast_channels(id) ON DELETE CASCADE,
-		guid TEXT,
 		title TEXT,
+		album TEXT,
+		artist TEXT,
+		year TEXT,
+		cover_art TEXT,
+		size TEXT,
+		content_type TEXT,
+		suffix TEXT,
+		duration INTEGER,
+		bit_rate TEXT,
 		description TEXT,
 		publish_date TEXT,
-		duration INTEGER,
-		status TEXT DEFAULT, 'new', -- new / completed / skipped
+		status TEXT DEFAULT 'new',  -- new / downloading / completed / error / deleted / skipped
 		file_path TEXT,
-		enclosure_url TEXT,
 		stream_id TEXT,
 		created_at TEXT NOT NULL
 	);`
 }
 
-func CreatePodcastChannel(ctx context.Context, url string, title string, description string, coverArt string, lastRefresh string) error {
+func CreatePodcastChannel(ctx context.Context, url string, title string, description string, original_image_url string, lastRefresh string) error {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return fmt.Errorf("getting user from context: %v", err)
@@ -49,10 +56,12 @@ func CreatePodcastChannel(ctx context.Context, url string, title string, descrip
 		return fmt.Errorf("user not authorized to create Podcast channels")
 	}
 
-	query := `INSERT INTO podcast_channels (url, title, description, cover_art, last_refresh, user_id)
-		VALUES (?, ?, ?, ?, ?, ?)`
+	createdAt := logic.GetCurrentTimeFormatted()
 
-	_, err = DB.ExecContext(ctx, query, url, title, description, coverArt, lastRefresh, user.Id)
+	query := `INSERT INTO podcast_channels (url, title, description, original_image_url, last_refresh, user_id, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`
+
+	_, err = DB.ExecContext(ctx, query, url, title, description, original_image_url, lastRefresh, user.Id, createdAt)
 	if err != nil {
 		return fmt.Errorf("inserting podcast channel: %v", err)
 	}

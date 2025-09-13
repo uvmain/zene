@@ -124,6 +124,8 @@ func StartServer() *http.Server {
 	router.Handle("/rest/unstar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUnStar)))
 	router.Handle("/rest/setrating", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSetRating)))
 	router.Handle("/rest/scrobble", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleScrobble)))
+	// Podcasts
+	router.Handle("/rest/createpodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePodcastChannel)))
 	// Jukebox
 	router.Handle("/rest/jukeboxcontrol", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
 	// Internet radio
