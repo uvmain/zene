@@ -115,12 +115,12 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, a
 		}
 	}
 
-	img, err := getImageFromInternet(artistArtUrl)
+	img, err := GetImageFromInternet(artistArtUrl)
 	if err != nil {
 		logger.Printf("Failed to get artist art image for %s from %s: %v", musicBrainzArtistId, artistArtUrl, err)
 		return
 	}
-	go resizeImageAndSaveAsJPG(img, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
+	go ResizeImageAndSaveAsJPG(img, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
 
 	err = database.InsertArtistArtRow(ctx, musicBrainzArtistId, logic.GetCurrentTimeFormatted())
 	if err != nil {

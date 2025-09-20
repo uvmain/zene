@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"zene/core/logic"
 )
@@ -46,7 +47,7 @@ func migratePodcasts(ctx context.Context) {
 	);`
 }
 
-func CreatePodcastChannel(ctx context.Context, url string, title string, description string, original_image_url string, lastRefresh string) error {
+func CreatePodcastChannel(ctx context.Context, url string, title string, description string, original_image_url string, cover_art string, lastRefresh string) error {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return fmt.Errorf("getting user from context: %v", err)
@@ -58,10 +59,10 @@ func CreatePodcastChannel(ctx context.Context, url string, title string, descrip
 
 	createdAt := logic.GetCurrentTimeFormatted()
 
-	query := `INSERT INTO podcast_channels (url, title, description, original_image_url, last_refresh, user_id, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO podcast_channels (url, title, description, cover_art, original_image_url, last_refresh, user_id, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
-	_, err = DB.ExecContext(ctx, query, url, title, description, original_image_url, lastRefresh, user.Id, createdAt)
+	_, err = DB.ExecContext(ctx, query, url, title, description, cover_art, original_image_url, lastRefresh, user.Id, createdAt)
 	if err != nil {
 		return fmt.Errorf("inserting podcast channel: %v", err)
 	}
@@ -121,4 +122,21 @@ func DeletePodcastChannel(ctx context.Context, channelId int) error {
 		return fmt.Errorf("no podcast channel found with the given ID for this user")
 	}
 	return nil
+}
+
+func IsValidPodcastCover(ctx context.Context, coverArtId string) (bool, error) {
+	query := `SELECT cover_art
+		FROM podcast_channels
+		WHERE cover_art = ?`
+	row := DB.QueryRowContext(ctx, query, coverArtId)
+
+	var dbCoverArtId string
+	if err := row.Scan(&dbCoverArtId); err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, fmt.Errorf("checking podcast cover validity: %v", err)
+	}
+
+	return dbCoverArtId == coverArtId, nil
 }

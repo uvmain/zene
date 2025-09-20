@@ -49,6 +49,12 @@ func CreateDirs() {
 		CreateDir(config.ArtistArtFolder)
 	}
 
+	if FileExists(config.PodcastArtFolder) {
+		logger.Println("Podcast artwork folder already exists")
+	} else {
+		CreateDir(config.PodcastArtFolder)
+	}
+
 	if FileExists(config.AudioCacheFolder) {
 		logger.Println("Database folder already exists")
 	} else {

@@ -25,6 +25,7 @@ var AudioFileTypes []string
 var ArtworkFolder string
 var AlbumArtFolder string
 var ArtistArtFolder string
+var PodcastArtFolder string
 var AudioCacheFolder string
 var AudioCacheMaxMB int
 var AudioCacheMaxDays int
@@ -59,6 +60,7 @@ func LoadConfig() {
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")
+	PodcastArtFolder = filepath.Join(ArtworkFolder, "podcasts")
 
 	audioCacheMaxMB := os.Getenv("AUDIO_CACHE_MAX_MB")
 	if audioCacheMaxMB == "" {
