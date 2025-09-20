@@ -88,7 +88,7 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 
 	if ctx.Err() != nil {
 		database.UpdateScanProgress(ctx, scanId, scanUpdate)
-		return fmt.Errorf("Scan was cancelled, context error: %v", ctx.Err())
+		return fmt.Errorf("scan was cancelled, context error: %v", ctx.Err())
 	}
 
 	start := time.Now()
@@ -100,7 +100,7 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 	for _, musicDir := range config.MusicDirs {
 		changesMade, err = scanMusicDir(ctx, musicDir)
 		if err != nil {
-			return fmt.Errorf("Error scanning music directory %s: %v", musicDir, err)
+			return fmt.Errorf("scanning music directory %s: %v", musicDir, err)
 		}
 	}
 
@@ -109,23 +109,23 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 
 		err := database.RepopulateGenreCountsTable(ctx)
 		if err != nil {
-			return fmt.Errorf("Error repopulating genre counts table: %v", err)
+			return fmt.Errorf("repopulating genre counts table: %v", err)
 		}
 
 		err = PopulateSimilarArtistsTable(ctx)
 		if err != nil {
-			return fmt.Errorf("Error populating similar artists table: %v", err)
+			return fmt.Errorf("populating similar artists table: %v", err)
 		}
 
 		err = PopulateTopSongsTable(ctx)
 		if err != nil {
-			return fmt.Errorf("Error populating top songs table: %v", err)
+			return fmt.Errorf("populating top songs table: %v", err)
 		}
 	}
 
 	fileAndFolderCount, err := database.GetFileAndFolderCounts(ctx)
 	if err != nil {
-		return fmt.Errorf("Error getting file and folder counts: %v", err)
+		return fmt.Errorf("getting file and folder counts: %v", err)
 	}
 
 	scanUpdate = database.ScanRow{
@@ -148,14 +148,14 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 	logger.Printf("Scan: Getting list of audio files in the filesystem")
 	audioFiles, err := getAudioFiles(ctx, musicDir)
 	if err != nil {
-		return false, fmt.Errorf("Error scanning music directory for audio files: %v", err)
+		return false, fmt.Errorf("scanning music directory for audio files: %v", err)
 	}
 
 	// get a current list of files from the metadata table
 	logger.Printf("Scan: Getting list of metadata in the database")
 	metadataFiles, err := database.SelectTrackFilesForScanner(ctx, musicDir)
 	if err != nil {
-		return false, fmt.Errorf("Error scanning database for metadata files: %v", err)
+		return false, fmt.Errorf("scanning database for metadata files: %v", err)
 	}
 
 	// for each file found, either insert or update a metadata row
@@ -164,11 +164,11 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 		changesMade = true
 	}
 	if err != nil {
-		return false, fmt.Errorf("Error getting outdated or missing files: %v", err)
+		return false, fmt.Errorf("getting outdated or missing files: %v", err)
 	}
 	err = upsertMetadataForFiles(ctx, audioFilesToInsert)
 	if err != nil {
-		return false, fmt.Errorf("Error upserting metadata rows: %v", err)
+		return false, fmt.Errorf("upserting metadata rows: %v", err)
 	}
 
 	// for each metadata row that does not exist in the files list, delete that row
@@ -186,7 +186,7 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 		logger.Printf("Scan: deleting orphaned metadata rows")
 		err = database.DeleteMetadataRows(ctx, filepaths)
 		if err != nil {
-			return false, fmt.Errorf("Error deleting orphan metadata rows: %v", err)
+			return false, fmt.Errorf("deleting orphan metadata rows: %v", err)
 		} else {
 			fileCount += len(filepaths)
 		}
@@ -198,12 +198,12 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 
 	err = getAlbumArtworkForMusicDir(ctx, musicDir)
 	if err != nil {
-		return changesMade, fmt.Errorf("Error getting album artwork for music dir %s: %v", musicDir, err)
+		return changesMade, fmt.Errorf("getting album artwork for music dir %s: %v", musicDir, err)
 	}
 
 	err = getArtistArtworkForMusicDir(ctx, musicDir)
 	if err != nil {
-		return changesMade, fmt.Errorf("Error getting artist artwork for music dir %s: %v", musicDir, err)
+		return changesMade, fmt.Errorf("getting artist artwork for music dir %s: %v", musicDir, err)
 	}
 
 	return changesMade, nil
@@ -212,7 +212,7 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 func getAudioFiles(ctx context.Context, musicDir string) ([]types.File, error) {
 	audioFiles, err := io.GetFiles(ctx, musicDir, config.AudioFileTypes)
 	if err != nil {
-		return []types.File{}, fmt.Errorf("Error getting slice of audio files from the filesystem: %v", err)
+		return []types.File{}, fmt.Errorf("getting slice of audio files from the filesystem: %v", err)
 	}
 	return audioFiles, nil
 }
@@ -310,7 +310,7 @@ func upsertMetadataForFiles(ctx context.Context, files []types.File) error {
 	logger.Printf("Scan: Upserting metadata for %d files", len(metadataSlice))
 	err := database.UpsertMetadataRows(ctx, metadataSlice)
 	if err != nil {
-		return fmt.Errorf("Error upserting metadata rows: %v", err)
+		return fmt.Errorf("upserting metadata rows: %v", err)
 	}
 
 	if len(metadataSlice) > 0 {
