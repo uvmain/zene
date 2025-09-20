@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"zene/core/logger"
 	"zene/core/logic"
+	"zene/core/types"
 )
 
 func migratePodcasts(ctx context.Context) {
@@ -141,4 +143,81 @@ func IsValidPodcastCover(ctx context.Context, coverArtId string) (bool, error) {
 	}
 
 	return dbCoverArtId == coverArtId, nil
+}
+
+func GetPodcasts(ctx context.Context, podcastId int, includeEpisodes bool) ([]types.PodcastChannel, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return []types.PodcastChannel{}, err
+	}
+
+	var args []interface{}
+	query := `select p.id,
+		p.title,
+		p.url,
+		p.description,
+		p.cover_art,
+		p.original_image_url,
+		p.last_refresh,
+		p.status,
+		p.created_at,
+		p.error_message
+	from users u
+	join podcast_channels p on p.user_id = u.id
+	where u.id = ?`
+	args = append(args, user.Id)
+
+	if podcastId != 0 {
+		query += ` AND p.id = ?`
+		args = append(args, podcastId)
+	}
+
+	rows, err := DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("querying podcasts: %v", err)
+	}
+	defer rows.Close()
+
+	var channelArray []types.PodcastChannel
+
+	for rows.Next() {
+		var channel types.PodcastChannel
+		var errorMessage sql.NullString
+		var lastRefreshed sql.NullString
+		if err := rows.Scan(
+			&channel.Id,
+			&channel.Title,
+			&channel.Url,
+			&channel.Description,
+			&channel.CoverArt,
+			&channel.OriginalImageUrl,
+			&lastRefreshed,
+			&channel.Status,
+			&channel.CreatedAt,
+			&errorMessage,
+		); err != nil {
+			return nil, fmt.Errorf("scanning channel row: %v", err)
+		}
+
+		channel.ParentId = channel.Id
+		channel.ChannelId = channel.Id
+		channel.Type = "podcast"
+		channel.IsDir = "false"
+		channel.IsVideo = "false"
+
+		if lastRefreshed.Valid {
+			channel.LastRefresh = lastRefreshed.String
+		}
+		if errorMessage.Valid {
+			channel.ErrorMessage = errorMessage.String
+		}
+
+		if includeEpisodes {
+			logger.Printf("fetch episodes and add to channel.Episodes")
+		}
+
+		channelArray = append(channelArray, channel)
+	}
+
+	return channelArray, nil
 }

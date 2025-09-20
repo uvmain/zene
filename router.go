@@ -125,6 +125,7 @@ func StartServer() *http.Server {
 	// Sharing
 	// Podcast
 	apiRouter.Handle("/rest/createpodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePodcastChannel)))
+	apiRouter.Handle("/rest/getpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcasts)))
 	// Jukebox
 	apiRouter.Handle("/rest/jukeboxcontrol", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
 	// Internet radio
