@@ -9,7 +9,11 @@ import (
 )
 
 func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
-	imageId := r.PathValue("imageId")
+	if net.MethodIsNotGetOrPost(w, r) {
+		return
+	}
+
+	imageId := r.PathValue("image_id")
 
 	form := net.NormalisedForm(r, w)
 	sizeQueryParameter := form["size"]

@@ -45,6 +45,8 @@ func migratePodcasts(ctx context.Context) {
 		stream_id TEXT,
 		created_at TEXT NOT NULL
 	);`
+	createTable(ctx, schema)
+	createIndex(ctx, "idx_podcast_episodes_channel_id", "podcast_episodes", []string{"channel_id"}, false)
 }
 
 func CreatePodcastChannel(ctx context.Context, url string, title string, description string, original_image_url string, cover_art string, lastRefresh string) error {

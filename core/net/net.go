@@ -61,8 +61,12 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 	_, err = io.Copy(out, response.Body)
 	if err != nil {
 		out.Close()
-		zene_io.Cleanup(fileName)
-		return err
+		stringErr := fmt.Sprintf("error copying response body to file: %v", err)
+		err = zene_io.Cleanup(fileName)
+		if err != nil {
+			return fmt.Errorf("%s: %v", stringErr, err)
+		}
+		return fmt.Errorf(stringErr)
 	}
 
 	out.Close()

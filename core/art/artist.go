@@ -20,14 +20,17 @@ import (
 func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, artistName string) {
 	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)
 	if err != nil {
-		logger.Printf("Error getting artist subdirectories from database: %v", err)
+		logger.Printf("Error getting artist subdirectories from database in ImportArtForAlbumArtist: %v", err)
 	}
 
 	existingRow, err := database.SelectArtistArtByMusicBrainzArtistId(ctx, musicBrainzArtistId)
 	if err != nil {
-		logger.Printf("Error getting artist art data from database: %v", err)
+		logger.Printf("Error getting artist art data from database in ImportArtForAlbumArtist: %v", err)
 	}
 	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
+	if err != nil {
+		logger.Printf("Error parsing existing row time in ImportArtForAlbumArtist: %v", err)
+	}
 
 	directories := []string{}
 

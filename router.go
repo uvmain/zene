@@ -4,7 +4,6 @@ import (
 	"embed"
 	"io"
 	"io/fs"
-	"log"
 	"net/http"
 	"path"
 	"strings"
@@ -23,7 +22,14 @@ import (
 //go:embed all:frontend/dist
 var dist embed.FS
 var distSubFS fs.FS
-var err error
+
+func init() {
+	var err error
+	distSubFS, err = fs.Sub(dist, "frontend/dist")
+	if err != nil {
+		panic("Failed to create sub filesystem: " + err.Error())
+	}
+}
 
 type CaseInsensitiveMux struct {
 	mux *http.ServeMux
@@ -42,130 +48,134 @@ func NewCaseInsensitiveMux() *CaseInsensitiveMux {
 }
 
 func (c *CaseInsensitiveMux) Handle(pattern string, handler http.Handler) {
-	// normalize the registered pattern
+	// lowercase the registered pattern
 	c.mux.Handle(strings.ToLower(pattern), handler)
 }
 
 func (c *CaseInsensitiveMux) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	// normalize the registered pattern
+	// lowercase the registered pattern
 	c.mux.HandleFunc(strings.ToLower(pattern), handler)
 }
 
 func StartServer() *http.Server {
 
-	router := NewCaseInsensitiveMux()
-	// all registered paths should be lowercase
-
-	distSubFS, err = fs.Sub(dist, "frontend/dist")
-	if err != nil {
-		log.Fatal("Failed to create sub filesystem:", err)
-	}
-
-	// unauthenticated routes
-	router.Handle("GET /share/img/{imageId}", http.HandlerFunc(handlers.HandleGetShareImg))
-
+	// API router (case-insensitive)
+	apiRouter := NewCaseInsensitiveMux()
+	// all registered API paths should be lowercase
+	apiRouter.Handle("/share/img/{image_id}", http.HandlerFunc(handlers.HandleGetShareImg))
 	/* cSpell:disable */
 
-	// OpenSubsonic routes
-	/// System
-	router.Handle("/rest/ping", http.HandlerFunc(handlers.HandlePing))
-	router.Handle("/rest/getlicense", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense)))
-	router.Handle("/rest/getopensubsonicextensions", http.HandlerFunc(handlers.HandleOpenSubsonicExtensions))
-	router.Handle("/rest/tokeninfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))
-	/// Browsing
-	router.Handle("/rest/getmusicfolders", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders)))
-	router.Handle("/rest/getindexes", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetIndexes)))
-	router.Handle("/rest/getmusicdirectory", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicDirectory)))
-	router.Handle("/rest/getgenres", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))
-	router.Handle("/rest/getartists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))
-	router.Handle("/rest/getartist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))
-	router.Handle("/rest/getalbum", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbum)))
-	router.Handle("/rest/getsong", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSong)))
-	router.Handle("/rest/getvideos", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideos)))
-	router.Handle("/rest/getvideoinfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideoInfo)))
-	router.Handle("/rest/getartistinfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistInfo)))
-	router.Handle("/rest/getartistinfo2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistInfo)))
-	router.Handle("/rest/getalbuminfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumInfo)))
-	router.Handle("/rest/getalbuminfo2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumInfo)))
-	router.Handle("/rest/getsimilarsongs", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSimilarSongs)))
-	router.Handle("/rest/getsimilarsongs2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSimilarSongs)))
-	router.Handle("/rest/gettopsongs", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTopSongs)))
+	// System
+	apiRouter.Handle("/rest/ping", http.HandlerFunc(handlers.HandlePing))
+	apiRouter.Handle("/rest/getlicense", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleLicense)))
+	apiRouter.Handle("/rest/getopensubsonicextensions", http.HandlerFunc(handlers.HandleOpenSubsonicExtensions))
+	apiRouter.Handle("/rest/tokeninfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleTokenInfo)))
+	// Browsing
+	apiRouter.Handle("/rest/getmusicfolders", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicFolders)))
+	apiRouter.Handle("/rest/getindexes", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetIndexes)))
+	apiRouter.Handle("/rest/getmusicdirectory", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetMusicDirectory)))
+	apiRouter.Handle("/rest/getgenres", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetGenres)))
+	apiRouter.Handle("/rest/getartists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtists)))
+	apiRouter.Handle("/rest/getartist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtist)))
+	apiRouter.Handle("/rest/getalbum", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbum)))
+	apiRouter.Handle("/rest/getsong", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSong)))
+	apiRouter.Handle("/rest/getvideos", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideos)))
+	apiRouter.Handle("/rest/getvideoinfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetVideoInfo)))
+	apiRouter.Handle("/rest/getartistinfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistInfo)))
+	apiRouter.Handle("/rest/getartistinfo2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistInfo)))
+	apiRouter.Handle("/rest/getalbuminfo", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumInfo)))
+	apiRouter.Handle("/rest/getalbuminfo2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumInfo)))
+	apiRouter.Handle("/rest/getsimilarsongs", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSimilarSongs)))
+	apiRouter.Handle("/rest/getsimilarsongs2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSimilarSongs)))
+	apiRouter.Handle("/rest/gettopsongs", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTopSongs)))
 	// Album/song lists
-	router.Handle("/rest/getalbumlist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumList)))
-	router.Handle("/rest/getalbumlist2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumList)))
-	router.Handle("/rest/getrandomsongs", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetRandomSongs)))
-	router.Handle("/rest/getsongsbygenre", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSongsByGenre)))
-	router.Handle("/rest/getnowplaying", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetNowPlaying)))
-	router.Handle("/rest/getstarred", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetStarred)))
-	router.Handle("/rest/getstarred2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetStarred)))
+	apiRouter.Handle("/rest/getalbumlist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumList)))
+	apiRouter.Handle("/rest/getalbumlist2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumList)))
+	apiRouter.Handle("/rest/getrandomsongs", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetRandomSongs)))
+	apiRouter.Handle("/rest/getsongsbygenre", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetSongsByGenre)))
+	apiRouter.Handle("/rest/getnowplaying", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetNowPlaying)))
+	apiRouter.Handle("/rest/getstarred", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetStarred)))
+	apiRouter.Handle("/rest/getstarred2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetStarred)))
 	// Searching
-	router.Handle("/rest/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
-	router.Handle("/rest/search2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
-	router.Handle("/rest/search3", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
+	apiRouter.Handle("/rest/search", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
+	apiRouter.Handle("/rest/search2", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
+	apiRouter.Handle("/rest/search3", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSearch)))
 	// Playlists
-	router.Handle("/rest/getplaylists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylists)))
-	router.Handle("/rest/getplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylist)))
-	router.Handle("/rest/createplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePlaylist)))
-	router.Handle("/rest/updateplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdatePlaylist)))
-	router.Handle("/rest/deleteplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePlaylist)))
+	apiRouter.Handle("/rest/getplaylists", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylists)))
+	apiRouter.Handle("/rest/getplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlaylist)))
+	apiRouter.Handle("/rest/createplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePlaylist)))
+	apiRouter.Handle("/rest/updateplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdatePlaylist)))
+	apiRouter.Handle("/rest/deleteplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePlaylist)))
 	// Media retrieval
-	router.Handle("/rest/stream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))
-	router.Handle("/rest/download", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))
-	router.Handle("/rest/getcaptions", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCaptions)))
-	router.Handle("/rest/getcoverart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))
-	router.Handle("/rest/getlyrics", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyrics)))
-	router.Handle("/rest/getlyricsbysongid", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyricsBySongId)))
-	router.Handle("/rest/getavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAvatar)))
-	router.Handle("/rest/createavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar)))
-	router.Handle("/rest/updateavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar)))
-	router.Handle("/rest/deleteavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar)))
+	apiRouter.Handle("/rest/stream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))
+	apiRouter.Handle("/rest/download", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))
+	apiRouter.Handle("/rest/getcaptions", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCaptions)))
+	apiRouter.Handle("/rest/getcoverart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))
+	apiRouter.Handle("/rest/getlyrics", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyrics)))
+	apiRouter.Handle("/rest/getlyricsbysongid", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetLyricsBySongId)))
+	apiRouter.Handle("/rest/getavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAvatar)))
+	apiRouter.Handle("/rest/createavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateAvatar)))
+	apiRouter.Handle("/rest/updateavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAvatar)))
+	apiRouter.Handle("/rest/deleteavatar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAvatar)))
 	// Media annotation
-	router.Handle("/rest/star", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStar)))
-	router.Handle("/rest/unstar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUnStar)))
-	router.Handle("/rest/setrating", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSetRating)))
-	router.Handle("/rest/scrobble", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleScrobble)))
-	// Podcasts
-	router.Handle("/rest/createpodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePodcastChannel)))
+	apiRouter.Handle("/rest/star", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStar)))
+	apiRouter.Handle("/rest/unstar", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUnStar)))
+	apiRouter.Handle("/rest/setrating", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSetRating)))
+	apiRouter.Handle("/rest/scrobble", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleScrobble)))
+	// Sharing
+	// Podcast
+	apiRouter.Handle("/rest/createpodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePodcastChannel)))
 	// Jukebox
-	router.Handle("/rest/jukeboxcontrol", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
+	apiRouter.Handle("/rest/jukeboxcontrol", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
 	// Internet radio
-	router.Handle("/rest/getinternetradiostations", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetInternetRadioStations)))
-	router.Handle("/rest/createinternetradiostation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateInternetRadioStation)))
-	router.Handle("/rest/updateinternetradiostation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateInternetRadioStation)))
-	router.Handle("/rest/deleteinternetradiostation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteInternetRadioStation)))
+	apiRouter.Handle("/rest/getinternetradiostations", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetInternetRadioStations)))
+	apiRouter.Handle("/rest/createinternetradiostation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateInternetRadioStation)))
+	apiRouter.Handle("/rest/updateinternetradiostation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateInternetRadioStation)))
+	apiRouter.Handle("/rest/deleteinternetradiostation", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteInternetRadioStation)))
 	// Chat
-	router.Handle("/rest/getchatmessages", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages)))
-	router.Handle("/rest/addchatmessage", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleAddChatMessage)))
+	apiRouter.Handle("/rest/getchatmessages", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetChatMessages)))
+	apiRouter.Handle("/rest/addchatmessage", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleAddChatMessage)))
 	// User management
-	router.Handle("/rest/getuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))
-	router.Handle("/rest/getusers", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUsers)))
-	router.Handle("/rest/createuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateUser)))
-	router.Handle("/rest/updateuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateUser)))
-	router.Handle("/rest/deleteuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUser)))
-	router.Handle("/rest/changepassword", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleChangePassword)))
-	router.Handle("/rest/createapikey", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateApiKey)))
-	router.Handle("/rest/getapikeys", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetApiKeys)))
-	router.Handle("/rest/deleteapikey", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteApiKey)))
+	apiRouter.Handle("/rest/getuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUser)))
+	apiRouter.Handle("/rest/getusers", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetUsers)))
+	apiRouter.Handle("/rest/createuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateUser)))
+	apiRouter.Handle("/rest/updateuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateUser)))
+	apiRouter.Handle("/rest/deleteuser", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteUser)))
+	apiRouter.Handle("/rest/changepassword", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleChangePassword)))
+	apiRouter.Handle("/rest/createapikey", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateApiKey)))
+	apiRouter.Handle("/rest/getapikeys", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetApiKeys)))
+	apiRouter.Handle("/rest/deleteapikey", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteApiKey)))
 	// Bookmarks
-	router.Handle("/rest/createbookmark", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateBookmark)))
-	router.Handle("/rest/getbookmarks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetBookmarks)))
-	router.Handle("/rest/deletebookmark", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteBookmark)))
-	router.Handle("/rest/saveplayqueue", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSaveOrClearPlayqueue)))
-	router.Handle("/rest/saveplayqueuebyindex", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSaveOrClearPlayqueue)))
-	router.Handle("/rest/getplayqueue", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlayqueue)))
-	router.Handle("/rest/getplayqueuebyindex", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlayqueueByIndex)))
+	apiRouter.Handle("/rest/createbookmark", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateBookmark)))
+	apiRouter.Handle("/rest/getbookmarks", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetBookmarks)))
+	apiRouter.Handle("/rest/deletebookmark", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteBookmark)))
+	apiRouter.Handle("/rest/saveplayqueue", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSaveOrClearPlayqueue)))
+	apiRouter.Handle("/rest/saveplayqueuebyindex", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSaveOrClearPlayqueue)))
+	apiRouter.Handle("/rest/getplayqueue", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlayqueue)))
+	apiRouter.Handle("/rest/getplayqueuebyindex", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPlayqueueByIndex)))
+	apiRouter.Handle("/rest/getscanstatus", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus)))
 	// Media library scanning
-	router.Handle("/rest/getscanstatus", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetScanStatus)))
-	router.Handle("/rest/startscan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStartScan)))
-	// server 404
-	router.Handle("/rest/{unknownEndpoint}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleNotFound)))
-
+	apiRouter.Handle("/rest/startscan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStartScan)))
+	apiRouter.Handle("/rest/{unknownEndpoint}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleNotFound)))
 	/* cSpell:enable */
 
-	router.HandleFunc("/", handleFrontend)
+	// frontend router (case-sensitive, for static files and SPA)
+	frontendMux := http.NewServeMux()
+	frontendMux.HandleFunc("/", handleFrontend)
+
+	// main handler
+	mainHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// backend routes (case-insensitive)
+		if strings.HasPrefix(strings.ToLower(r.URL.Path), "/rest/") || strings.HasPrefix(strings.ToLower(r.URL.Path), "/share/") {
+			apiRouter.ServeHTTP(w, r)
+			return
+		}
+		// frontend routes
+		frontendMux.ServeHTTP(w, r)
+	})
 
 	handler := cors.AllowAll().Handler(
-		gziphandler.GzipHandler(router),
+		gziphandler.GzipHandler(mainHandler),
 	)
 
 	var serverAddress string

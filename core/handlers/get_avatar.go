@@ -48,5 +48,9 @@ func HandleGetAvatar(w http.ResponseWriter, r *http.Request) {
 	mimeType := http.DetectContentType(avatarBlob)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(avatarBlob)
+	_, err = w.Write(avatarBlob)
+	if err != nil {
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "failed to write file", "")
+		return
+	}
 }

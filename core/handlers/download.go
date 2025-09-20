@@ -39,5 +39,9 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	mimeType := http.DetectContentType(fileBlob)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(fileBlob)
+	_, err = w.Write(fileBlob)
+	if err != nil {
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "failed to write file", "")
+		return
+	}
 }

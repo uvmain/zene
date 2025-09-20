@@ -159,8 +159,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			// ValidateAuth already handled the error response.
 			return
 		}
-		ctx := context.WithValue(r.Context(), "username", userName)
-		ctx = context.WithValue(ctx, "userId", userId)
+		ctx := context.WithValue(r.Context(), types.ContextKey("username"), userName)
+		ctx = context.WithValue(ctx, types.ContextKey("userId"), userId)
 		r = r.WithContext(ctx)
 
 		form := net.NormalisedForm(r, w)
