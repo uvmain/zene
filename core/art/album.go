@@ -149,6 +149,15 @@ func getAlbumArtFromInternet(ctx context.Context, musicBrainzAlbumId string, alb
 	}
 }
 
+func GetArtForTrack(ctx context.Context, musicBrainzTrackId string, size int) ([]byte, time.Time, error) {
+	albumId, err := database.SelectAlbumIdByTrackId(ctx, musicBrainzTrackId)
+	if err != nil {
+		logger.Printf("Error getting album ID for track %s: %v", musicBrainzTrackId, err)
+		return nil, time.Now(), fmt.Errorf("album not found: %s", musicBrainzTrackId)
+	}
+	return GetArtForAlbum(ctx, albumId, size)
+}
+
 func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size int) ([]byte, time.Time, error) {
 	file_name := fmt.Sprintf("%s_%s.jpg", musicBrainzAlbumId, "xl")
 	filePath, _ := filepath.Abs(filepath.Join(config.AlbumArtFolder, file_name))

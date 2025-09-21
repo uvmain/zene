@@ -7,6 +7,7 @@ import (
 	"zene/core/art"
 	"zene/core/config"
 	"zene/core/database"
+	"zene/core/logger"
 	"zene/core/logic"
 
 	"github.com/mmcdole/gofeed"
@@ -25,6 +26,10 @@ func CreateNewPodcastFromFeedUrl(ctx context.Context, feedUrl string) error {
 	feed, err := fp.ParseURL(feedUrl)
 	if err != nil {
 		return fmt.Errorf("parsing feed URL: %v", err)
+	}
+
+	for _, item := range feed.Items {
+		logger.Printf("guid: %s title: %v", item.GUID, item.Title)
 	}
 
 	coverArt, err := SavePodcastChannelImage(ctx, feed.Image.URL)

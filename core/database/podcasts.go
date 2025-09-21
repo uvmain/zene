@@ -30,6 +30,7 @@ func migratePodcasts(ctx context.Context) {
 	schema = `CREATE TABLE podcast_episodes (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		channel_id INTEGER NOT NULL REFERENCES podcast_channels(id) ON DELETE CASCADE,
+		guid TEXT,
 		title TEXT,
 		album TEXT,
 		artist TEXT,
@@ -130,9 +131,17 @@ func DeletePodcastChannel(ctx context.Context, channelId int) error {
 
 func IsValidPodcastCover(ctx context.Context, coverArtId string) (bool, error) {
 	query := `SELECT cover_art
-		FROM podcast_channels
-		WHERE cover_art = ?`
-	row := DB.QueryRowContext(ctx, query, coverArtId)
+		FROM (
+				SELECT cover_art
+				FROM podcast_channels
+				WHERE cover_art = ?
+				UNION ALL
+				SELECT cover_art
+				FROM podcast_episodes
+				WHERE cover_art = ?
+		)
+		LIMIT 1;`
+	row := DB.QueryRowContext(ctx, query, coverArtId, coverArtId)
 
 	var dbCoverArtId string
 	if err := row.Scan(&dbCoverArtId); err != nil {
