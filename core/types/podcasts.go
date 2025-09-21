@@ -77,3 +77,7 @@ type PodcastEpisodeRow struct {
 type PodcastChannels struct {
 	PodcastChannels []PodcastChannel `json:"channel" xml:"channel"`
 }
+
+type NewestPodcasts struct {
+	Episodes []PodcastEpisode `json:"episode,omitempty" xml:"episode,omitempty"`
+}

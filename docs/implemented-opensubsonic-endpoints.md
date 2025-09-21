@@ -61,7 +61,7 @@
 ## Podcast
 - [x] getPodcasts
 - [x] getPodcastEpisode
-- [ ] getNewestPodcasts
+- [x] getNewestPodcasts
 - [ ] refreshPodcasts
 - [x] createPodcastChannel
 - [x] deletePodcastChannel

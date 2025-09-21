@@ -455,3 +455,60 @@ func GetPodcastEpisodesByChannelId(ctx context.Context, channelId int) ([]types.
 
 	return episodes, nil
 }
+
+func GetNewestPodcastEpisodes(ctx context.Context, count int) ([]types.PodcastEpisode, error) {
+	var episodes []types.PodcastEpisode
+	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,
+		pe.status, pe.id, 'false', pe.year, pc.categories, pe.cover_art, pe.size, pe.content_type,
+		pe.suffix, pe.duration, pe.bit_rate, pe.file_path
+	from podcast_episodes pe
+	join podcast_channels pc on pc.id = pe.channel_id
+	order by pe.publish_date desc
+	limit ?;`
+	rows, err := DB.QueryContext(ctx, query, count)
+	if err != nil {
+		return nil, fmt.Errorf("querying newest podcast episodes: %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var episode types.PodcastEpisode
+		var genresString sql.NullString
+		if err := rows.Scan(
+			&episode.Id,
+			&episode.StreamId,
+			&episode.ChannelId,
+			&episode.Title,
+			&episode.Description,
+			&episode.PublishDate,
+			&episode.Status,
+			&episode.Parent,
+			&episode.IsDir,
+			&episode.Year,
+			&genresString,
+			&episode.CoverArt,
+			&episode.Size,
+			&episode.ContentType,
+			&episode.Suffix,
+			&episode.Duration,
+			&episode.BitRate,
+			&episode.Path,
+		); err != nil {
+			return nil, fmt.Errorf("scanning podcast episode row: %v", err)
+		}
+		episode.Genres = []types.ChildGenre{}
+		for _, genre := range strings.Split(genresString.String, ",") {
+			episode.Genres = append(episode.Genres, types.ChildGenre{Name: genre})
+		}
+
+		episode.Genre = episode.Genres[0].Name
+
+		episodes = append(episodes, episode)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterating podcast episodes rows: %v", err)
+	}
+
+	return episodes, nil
+}

@@ -56,6 +56,7 @@ type SubsonicStandard struct {
 	PlayQueueByIndex       *PlayqueueByIndex         `xml:"playQueueByIndex,omitempty" json:"playQueueByIndex,omitempty"`
 	PodcastChannels        *PodcastChannels          `xml:"podcasts,omitempty" json:"podcasts,omitempty"`
 	PodcastEpisode         *PodcastEpisode           `xml:"podcastEpisode,omitempty" json:"podcastEpisode,omitempty"`
+	NewestPodcasts         *NewestPodcasts           `xml:"newestPodcasts,omitempty" json:"newestPodcasts,omitempty"`
 }
 
 type SubsonicResponse struct {
