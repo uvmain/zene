@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"zene/core/art"
 	"zene/core/config"
@@ -48,8 +49,27 @@ func CreateNewPodcastFromFeedUrl(ctx context.Context, feedUrl string) error {
 }
 
 func createPodcastEpisodesForFeed(ctx context.Context, feed *gofeed.Feed, podcastId int) error {
-	podcastEpisodes := make([]types.PodcastEpisodeRow, 0, len(feed.Items))
+	existingEpisodes, err := database.GetPodcastEpisodesByChannelId(ctx, podcastId)
+	if err != nil {
+		return fmt.Errorf("getting existing podcast episodes: %v", err)
+	}
+
+	existingGuids := []string{}
+	for _, episode := range existingEpisodes {
+		existingGuids = append(existingGuids, episode.StreamId)
+	}
+
+	newEpisodes := []*gofeed.Item{}
 	for _, item := range feed.Items {
+		// if item.GUID does not exist in existingEpisodes
+		if !slices.Contains(existingGuids, item.GUID) {
+			// then create a new episode
+			newEpisodes = append(newEpisodes, item)
+		}
+	}
+
+	podcastEpisodes := make([]types.PodcastEpisodeRow, 0, len(newEpisodes))
+	for _, item := range newEpisodes {
 
 		authors := ""
 		for _, author := range item.Authors {
@@ -119,4 +139,67 @@ func SavePodcastImage(ctx context.Context, imageUrl string) (string, error) {
 	}
 
 	return coverArtUuid, nil
+}
+
+func RefreshAllPodcasts(ctx context.Context) error {
+	logger.Printf("Refreshing all podcasts...")
+	existingPodcasts, err := database.GetPodcasts(ctx, 0, false)
+	if err != nil {
+		logger.Printf("Error fetching podcasts: %v", err)
+		return err
+	}
+
+	for _, podcast := range existingPodcasts {
+		go RefreshPodcast(podcast)
+	}
+	return nil
+}
+
+func RefreshPodcast(podcast types.PodcastChannel) error {
+	ctx := context.Background()
+
+	existingPodcastId, err := strconv.Atoi(podcast.Id)
+	if err != nil {
+		logger.Printf("Error converting existing podcast ID to int: %v", err)
+		return fmt.Errorf("converting existing podcast ID to int: %v", err)
+	}
+
+	fp := gofeed.NewParser()
+	feed, err := fp.ParseURL(podcast.Url)
+	if err != nil {
+		logger.Printf("Error parsing feed URL: %v", err)
+		return fmt.Errorf("parsing feed URL: %v", err)
+	}
+
+	var coverArt string
+	if feed.Image.URL != podcast.OriginalImageUrl {
+		coverArt, err = SavePodcastImage(ctx, feed.Image.URL)
+		if err != nil {
+			logger.Printf("Error saving podcast channel image: %v", err)
+			return fmt.Errorf("saving podcast channel image: %v", err)
+		}
+	} else {
+		coverArt = podcast.CoverArt
+	}
+
+	if err := database.UpdatePodcastChannel(
+		ctx,
+		existingPodcastId,
+		podcast.Url,
+		feed.Title,
+		feed.Description,
+		feed.Image.URL,
+		coverArt,
+		podcast.LastRefresh,
+		feed.Categories,
+	); err != nil {
+		logger.Printf("Error updating podcast channel: %v", err)
+		return fmt.Errorf("updating podcast channel: %v", err)
+	}
+
+	logger.Printf("Updated podcast channel '%s', fetching any new episodes...", feed.Title)
+
+	go createPodcastEpisodesForFeed(ctx, feed, existingPodcastId)
+
+	return nil
 }

@@ -87,18 +87,12 @@ func CreatePodcastChannel(ctx context.Context, url string, title string, descrip
 	return int(lastInsertId), nil
 }
 
-func UpdatePodcastChannel(ctx context.Context, channelId int, url string, title string, description string, coverArt string, lastRefresh string) error {
-	user, err := GetUserByContext(ctx)
-	if err != nil {
-		return fmt.Errorf("getting user from context: %v", err)
-	}
+func UpdatePodcastChannel(ctx context.Context, channelId int, url string, title string, description string, originalImageUrl string, coverArt string, lastRefresh string, categories []string) error {
+	query := `UPDATE podcast_channels SET url = ?, title = ?, description = ?, original_image_url = ?, cover_art = ?, last_refresh = ?, categories = ? WHERE id = ?`
 
-	if !user.PodcastRole {
-		return fmt.Errorf("user not authorized to update Podcast channels")
-	}
-	query := `UPDATE podcast_channels SET url = ?, title = ?, description = ?, cover_art = ?, last_refresh = ? WHERE id = ? AND user_id = ?`
+	categoriesString := strings.Join(categories, ",")
 
-	result, err := DB.ExecContext(ctx, query, url, title, description, coverArt, lastRefresh, channelId, user.Id)
+	result, err := DB.ExecContext(ctx, query, url, title, description, originalImageUrl, coverArt, lastRefresh, categoriesString, channelId)
 	if err != nil {
 		return fmt.Errorf("updating podcast channel: %v", err)
 	}
