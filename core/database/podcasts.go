@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
+	"strings"
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/types"
@@ -15,12 +17,13 @@ func migratePodcasts(ctx context.Context) {
 		url TEXT NOT NULL,
 		title TEXT,
 		description TEXT,
-    	cover_art TEXT,
+		cover_art TEXT,
 		original_image_url TEXT,
-    	last_refresh TEXT,
+		last_refresh TEXT,
 		status TEXT DEFAULT 'new', -- new / downloading / completed / error / deleted / skipped
-	    created_at TEXT,
+		created_at TEXT,
 		error_message TEXT,
+		categories TEXT,
 		user_id INTEGER NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
@@ -46,33 +49,42 @@ func migratePodcasts(ctx context.Context) {
 		status TEXT DEFAULT 'new',  -- new / downloading / completed / error / deleted / skipped
 		file_path TEXT,
 		stream_id TEXT,
-		created_at TEXT NOT NULL
+		created_at TEXT NOT NULL,
+		UNIQUE (channel_id, guid)
+		FOREIGN KEY (channel_id) REFERENCES podcast_channels(id) ON DELETE CASCADE
 	);`
 	createTable(ctx, schema)
 	createIndex(ctx, "idx_podcast_episodes_channel_id", "podcast_episodes", []string{"channel_id"}, false)
 }
 
-func CreatePodcastChannel(ctx context.Context, url string, title string, description string, original_image_url string, cover_art string, lastRefresh string) error {
+func CreatePodcastChannel(ctx context.Context, url string, title string, description string, original_image_url string, cover_art string, lastRefresh string, categories []string) (int, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
-		return fmt.Errorf("getting user from context: %v", err)
+		return 0, fmt.Errorf("getting user from context: %v", err)
 	}
 
 	if !user.PodcastRole {
-		return fmt.Errorf("user not authorized to create Podcast channels")
+		return 0, fmt.Errorf("user not authorized to create Podcast channels")
 	}
 
 	createdAt := logic.GetCurrentTimeFormatted()
 
-	query := `INSERT INTO podcast_channels (url, title, description, cover_art, original_image_url, last_refresh, user_id, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO podcast_channels (url, title, description, cover_art, original_image_url, last_refresh, user_id, created_at, categories)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
-	_, err = DB.ExecContext(ctx, query, url, title, description, cover_art, original_image_url, lastRefresh, user.Id, createdAt)
+	categoriesString := strings.Join(categories, ",")
+
+	result, err := DB.ExecContext(ctx, query, url, title, description, cover_art, original_image_url, lastRefresh, user.Id, createdAt, categoriesString)
 	if err != nil {
-		return fmt.Errorf("inserting podcast channel: %v", err)
+		return 0, fmt.Errorf("inserting podcast channel: %v", err)
 	}
 
-	return nil
+	lastInsertId, err := result.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("getting last insert ID: %v", err)
+	}
+
+	return int(lastInsertId), nil
 }
 
 func UpdatePodcastChannel(ctx context.Context, channelId int, url string, title string, description string, coverArt string, lastRefresh string) error {
@@ -222,11 +234,224 @@ func GetPodcasts(ctx context.Context, podcastId int, includeEpisodes bool) ([]ty
 		}
 
 		if includeEpisodes {
-			logger.Printf("fetch episodes and add to channel.Episodes")
+			channelIdInt, err := strconv.Atoi(channel.Id)
+			if err != nil {
+				return nil, fmt.Errorf("converting channel id to int: %v", err)
+			}
+			episodes, err := GetPodcastEpisodesByChannelId(ctx, channelIdInt)
+			if err != nil {
+				return nil, fmt.Errorf("getting podcast episodes by channel id: %v", err)
+			}
+			channel.Episodes = episodes
+		}
+
+		if len(channel.Episodes) > 0 {
+			// get first episode's stream ID
+			channel.StreamId = channel.Episodes[0].StreamId
 		}
 
 		channelArray = append(channelArray, channel)
 	}
 
 	return channelArray, nil
+}
+
+func InsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) error {
+	query := `INSERT INTO podcast_episodes (
+		channel_id,
+		guid,
+		title,
+		album,
+		artist,
+		year,
+		cover_art,
+		size,
+		content_type,
+		suffix,
+		duration,
+		bit_rate,
+		description,
+		publish_date,
+		status,
+		file_path,
+		stream_id,
+		created_at
+	)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+
+	suffix := strings.Split(episode.Suffix, "?")[0] //remove trailing query params
+
+	_, err = DB.ExecContext(ctx, query,
+		episode.ChannelId,
+		episode.Guid,
+		episode.Title,
+		episode.Album,
+		episode.Artist,
+		episode.Year,
+		episode.CoverArt,
+		episode.Size,
+		episode.ContentType,
+		suffix,
+		episode.Duration,
+		episode.BitRate,
+		episode.Description,
+		episode.PublishDate,
+		episode.Status,
+		episode.FilePath,
+		episode.StreamId,
+		episode.CreatedAt,
+	)
+
+	if err != nil {
+		return fmt.Errorf("inserting podcast episode: %v", err)
+	}
+
+	return nil
+}
+
+func InsertPodcastEpisodes(episodes []types.PodcastEpisodeRow) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	tx, err := DB.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("beginning transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	for _, episode := range episodes {
+		if err := InsertPodcastEpisode(ctx, episode); err != nil {
+			return fmt.Errorf("inserting podcast episode: %v", err)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("committing transaction: %v", err)
+	}
+
+	return nil
+}
+
+func UpdatePodcastChannelLastRefresh(channelId int) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	query := `UPDATE podcast_channels SET last_refresh = ? WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, logic.GetCurrentTimeFormatted(), channelId)
+	if err != nil {
+		logger.Printf("Error updating podcast channel last refresh: %v", err)
+		return fmt.Errorf("updating podcast channel last refresh: %v", err)
+	}
+	return nil
+}
+
+func GetPodcastEpisodeById(ctx context.Context, episodeId int) (types.PodcastEpisode, error) {
+	var episode types.PodcastEpisode
+	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,
+		pe.status, pe.id, 'false', pe.year, pc.categories, pe.cover_art, pe.size, pe.content_type,
+		pe.suffix, pe.duration, pe.bit_rate, pe.file_path
+	from podcast_episodes pe
+	join podcast_channels pc on pc.id = pe.channel_id
+	where pe.id = ?`
+	row := DB.QueryRowContext(ctx, query, episodeId)
+	var genresString sql.NullString
+
+	if err := row.Scan(
+		&episode.Id,
+		&episode.StreamId,
+		&episode.ChannelId,
+		&episode.Title,
+		&episode.Description,
+		&episode.PublishDate,
+		&episode.Status,
+		&episode.Parent,
+		&episode.IsDir,
+		&episode.Year,
+		&genresString,
+		&episode.CoverArt,
+		&episode.Size,
+		&episode.ContentType,
+		&episode.Suffix,
+		&episode.Duration,
+		&episode.BitRate,
+		&episode.Path,
+	); err != nil {
+		if err == sql.ErrNoRows {
+			return types.PodcastEpisode{}, nil
+		}
+		return types.PodcastEpisode{}, fmt.Errorf("getting podcast episode by id: %v", err)
+	}
+
+	episode.Genres = []types.ChildGenre{}
+	for _, genre := range strings.Split(genresString.String, ",") {
+		episode.Genres = append(episode.Genres, types.ChildGenre{Name: genre})
+	}
+
+	episode.Genre = episode.Genres[0].Name
+
+	return episode, nil
+}
+
+func DeletePodcastEpisodeById(ctx context.Context, episodeId string) error {
+	query := `DELETE FROM podcast_episodes WHERE id = ?;`
+	_, err := DB.ExecContext(ctx, query, episodeId)
+	if err != nil {
+		return fmt.Errorf("deleting podcast episode by id: %v", err)
+	}
+	return nil
+}
+
+func GetPodcastEpisodesByChannelId(ctx context.Context, channelId int) ([]types.PodcastEpisode, error) {
+	var episodes []types.PodcastEpisode
+	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,
+		pe.status, pe.id, 'false', pe.year, pc.categories, pe.cover_art, pe.size, pe.content_type,
+		pe.suffix, pe.duration, pe.bit_rate, pe.file_path
+	from podcast_episodes pe
+	join podcast_channels pc on pc.id = pe.channel_id
+	where pc.id = ?
+	order by pe.publish_date desc;`
+	rows, err := DB.QueryContext(ctx, query, channelId)
+	if err != nil {
+		return nil, fmt.Errorf("querying podcast episodes by channel id: %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var episode types.PodcastEpisode
+		var genresString sql.NullString
+		if err := rows.Scan(
+			&episode.Id,
+			&episode.StreamId,
+			&episode.ChannelId,
+			&episode.Title,
+			&episode.Description,
+			&episode.PublishDate,
+			&episode.Status,
+			&episode.Parent,
+			&episode.IsDir,
+			&episode.Year,
+			&genresString,
+			&episode.CoverArt,
+			&episode.Size,
+			&episode.ContentType,
+			&episode.Suffix,
+			&episode.Duration,
+			&episode.BitRate,
+			&episode.Path,
+		); err != nil {
+			return nil, fmt.Errorf("scanning podcast episode row: %v", err)
+		}
+		episode.Genres = []types.ChildGenre{}
+		for _, genre := range strings.Split(genresString.String, ",") {
+			episode.Genres = append(episode.Genres, types.ChildGenre{Name: genre})
+		}
+
+		episode.Genre = episode.Genres[0].Name
+
+		episodes = append(episodes, episode)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterating podcast episodes rows: %v", err)
+	}
+
+	return episodes, nil
 }

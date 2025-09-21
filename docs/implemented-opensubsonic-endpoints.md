@@ -59,12 +59,13 @@
 - [ ] updateShare
 - [ ] deleteShare
 ## Podcast
-- [ ] getPodcasts
+- [x] getPodcasts
+- [x] getPodcastEpisode
 - [ ] getNewestPodcasts
 - [ ] refreshPodcasts
-- [ ] createPodcastChannel
-- [ ] deletePodcastChannel
-- [ ] deletePodcastEpisode
+- [x] createPodcastChannel
+- [x] deletePodcastChannel
+- [x] deletePodcastEpisode
 - [ ] downloadPodcastEpisode
 ## Jukebox
 - [x] jukeboxControl[^1]

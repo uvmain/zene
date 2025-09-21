@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/podcasts"
@@ -20,6 +21,19 @@ func HandleCreatePodcastChannel(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
+	requestUser, err := database.GetUserByContext(ctx)
+	if err != nil {
+		logger.Printf("Error getting user by context: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "Error fetching user from context", "")
+		return
+	}
+
+	if !requestUser.PodcastRole {
+		logger.Printf("User %s attempted to create a podcast channel without podcast role", requestUser.Username)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to create podcast channels", "")
+		return
+	}
+
 	if url == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "url parameter is required", "")
 		return
@@ -27,7 +41,7 @@ func HandleCreatePodcastChannel(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	err := podcasts.CreateNewPodcastFromFeedUrl(ctx, url)
+	err = podcasts.CreateNewPodcastFromFeedUrl(ctx, url)
 	if err != nil {
 		logger.Printf("Error creating podcast: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error creating podcast", "")

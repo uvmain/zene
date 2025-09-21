@@ -22,11 +22,12 @@
 
 ### Uses the OpenSubsonic API
 Supports the following OpenSubsonic API extensions:
-- `apiKeyAuthentication` (this project supports password, enc:password, salt & token, and ApiKey auth)
-- `formPost` (all endpoints support GET and POST, with either formData values OR query parameters)
-- `songLyrics` (lyrics are pulled from lrclib on request, and saved locally in the database for future calls)
-- `transcodeOffset` (supports streaming from an offset)
-- `indexBasedQueue` (enables savePlayQueueByIndex and getPlayQueueByIndex endpoints)
+- `apiKeyAuthentication` this project supports password, enc:password, salt & token, and ApiKey auth
+- `formPost` all endpoints support GET and POST, with either formData values OR query parameters
+- `songLyrics` lyrics are pulled from lrclib on request, and saved locally in the database for future calls
+- `transcodeOffset` supports streaming from an offset
+- `indexBasedQueue` enables savePlayQueueByIndex and getPlayQueueByIndex endpoints
+- `getPodcastEpisode` enables the getPodcastEpisode endpoint
 
 ### Supports the following OpenSubsonic API endpoints:
 

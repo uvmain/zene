@@ -14,6 +14,7 @@ import (
 
 var BaseUrl string
 var MusicDirs []string
+var PodcastDirectory string
 var DatabaseDirectory string
 var LibraryDirectory string
 var TempDirectory string
@@ -61,6 +62,13 @@ func LoadConfig() {
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")
 	PodcastArtFolder = filepath.Join(ArtworkFolder, "podcasts")
+
+	podcastDirectory := os.Getenv("PODCAST_DIRECTORY")
+	if podcastDirectory == "" {
+		PodcastDirectory = filepath.Join(dataPath, "podcasts")
+	} else {
+		PodcastDirectory, _ = filepath.Abs(podcastDirectory)
+	}
 
 	audioCacheMaxMB := os.Getenv("AUDIO_CACHE_MAX_MB")
 	if audioCacheMaxMB == "" {

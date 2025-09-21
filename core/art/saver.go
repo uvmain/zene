@@ -41,20 +41,10 @@ func GetImageFromInternet(imageUrl string) (image.Image, error) {
 		return nil, fmt.Errorf("bad status downloading image: %s", res.Status)
 	}
 
-	contentType := res.Header.Get("Content-Type")
-
-	var img image.Image
-	switch contentType {
-	case "image/png":
-		img, err = png.Decode(res.Body)
-	default:
-		img, _, err = image.Decode(res.Body)
-	}
-
+	img, _, err := image.Decode(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("decoding image: %w", err)
 	}
-
 	return img, nil
 }
 

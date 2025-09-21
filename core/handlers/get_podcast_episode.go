@@ -10,15 +10,14 @@ import (
 	"zene/core/types"
 )
 
-func HandleGetPodcasts(w http.ResponseWriter, r *http.Request) {
+func HandleGetPodcastEpisode(w http.ResponseWriter, r *http.Request) {
 	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	includeEpisodes := form["includeepisodes"]
-	podcastId := form["id"]
+	episodeId := form["id"]
 
 	ctx := r.Context()
 
@@ -35,41 +34,31 @@ func HandleGetPodcasts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if includeEpisodes != "true" && includeEpisodes != "false" && includeEpisodes != "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Parameter 'includeEpisodes' must be 'true' or 'false'", "")
+	if episodeId == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Parameter 'id' is required", "")
 		return
 	}
 
-	if includeEpisodes == "" {
-		includeEpisodes = "true"
-	}
-
-	var podcastIdInt int
-	if podcastId != "" {
-		podcastIdInt, err = strconv.Atoi(podcastId)
+	var episodeIdInt int
+	if episodeId != "" {
+		episodeIdInt, err = strconv.Atoi(episodeId)
 		if err != nil {
-			logger.Printf("Error converting podcast id to int: %v", err)
+			logger.Printf("Error converting podcast episode id to int: %v", err)
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter should be an integer", "")
 			return
 		}
 	}
 
-	includeEpisodesBool := includeEpisodes == "true"
-
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	podcasts, err := database.GetPodcasts(ctx, podcastIdInt, includeEpisodesBool)
+	episode, err := database.GetPodcastEpisodeById(ctx, episodeIdInt)
 	if err != nil {
 		logger.Printf("Error querying database in GetPodcasts: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to query database", "")
 		return
 	}
-	if podcasts == nil {
-		podcasts = []types.PodcastChannel{}
-	}
 
-	response.SubsonicResponse.PodcastChannels = &types.PodcastChannels{}
-	response.SubsonicResponse.PodcastChannels.PodcastChannels = podcasts
+	response.SubsonicResponse.PodcastEpisode = &episode
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }
