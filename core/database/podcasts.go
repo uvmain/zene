@@ -48,8 +48,8 @@ func migratePodcasts(ctx context.Context) {
 		publish_date TEXT,
 		status TEXT DEFAULT 'new',  -- new / downloading / completed / error / deleted / skipped
 		file_path TEXT,
-		stream_id TEXT,
 		created_at TEXT NOT NULL,
+		source_url TEXT,
 		UNIQUE (channel_id, guid)
 		FOREIGN KEY (channel_id) REFERENCES podcast_channels(id) ON DELETE CASCADE
 	);`
@@ -105,6 +105,33 @@ func UpdatePodcastChannel(ctx context.Context, channelId int, url string, title 
 		return fmt.Errorf("no podcast channel found with the given ID for this user")
 	}
 
+	return nil
+}
+
+func UpdatePodcastChannelStatus(ctx context.Context, channelId int, status string) error {
+	query := `UPDATE podcast_channels SET status = ? WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, status, channelId)
+	if err != nil {
+		return fmt.Errorf("updating podcast channel status: %v", err)
+	}
+	return nil
+}
+
+func UpdatePodcastEpisodeStatus(ctx context.Context, episodeId int, status string) error {
+	query := `UPDATE podcast_episodes SET status = ? WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, status, episodeId)
+	if err != nil {
+		return fmt.Errorf("updating podcast episode status: %v", err)
+	}
+	return nil
+}
+
+func AddFileDetailsToEpisode(ctx context.Context, episodeId int, filePath string, size int64, contentType string, duration string, bitRate string) error {
+	query := `UPDATE podcast_episodes SET file_path = ?, size = ?, content_type = ?, duration = ?, bit_rate = ? WHERE id = ?`
+	_, err := DB.ExecContext(ctx, query, filePath, size, contentType, duration, bitRate, episodeId)
+	if err != nil {
+		return fmt.Errorf("adding file details to podcast episode: %v", err)
+	}
 	return nil
 }
 
@@ -237,6 +264,8 @@ func GetPodcasts(ctx context.Context, podcastId int, includeEpisodes bool) ([]ty
 				return nil, fmt.Errorf("getting podcast episodes by channel id: %v", err)
 			}
 			channel.Episodes = episodes
+		} else {
+			channel.Episodes = []types.PodcastEpisode{}
 		}
 
 		if len(channel.Episodes) > 0 {
@@ -250,7 +279,7 @@ func GetPodcasts(ctx context.Context, podcastId int, includeEpisodes bool) ([]ty
 	return channelArray, nil
 }
 
-func InsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) error {
+func UpsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) error {
 	query := `INSERT INTO podcast_episodes (
 		channel_id,
 		guid,
@@ -268,12 +297,32 @@ func InsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) 
 		publish_date,
 		status,
 		file_path,
-		stream_id,
-		created_at
+		created_at,
+		source_url
 	)
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	ON CONFLICT (id) DO UPDATE SET
+		guid = excluded.guid,
+		title = excluded.title,
+		album = excluded.album,
+		artist = excluded.artist,
+		year = excluded.year,
+		cover_art = excluded.cover_art,
+		size = excluded.size,
+		content_type = excluded.content_type,
+		suffix = excluded.suffix,
+		duration = excluded.duration,
+		bit_rate = excluded.bit_rate,
+		description = excluded.description,
+		publish_date = excluded.publish_date,
+		status = excluded.status,
+		file_path = excluded.file_path,
+		created_at = excluded.created_at,
+		source_url = excluded.source_url
+	`
 
 	suffix := strings.Split(episode.Suffix, "?")[0] //remove trailing query params
+	suffix = strings.TrimPrefix(suffix, ".")        //remove leading dot
 
 	_, err = DB.ExecContext(ctx, query,
 		episode.ChannelId,
@@ -292,8 +341,8 @@ func InsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) 
 		episode.PublishDate,
 		episode.Status,
 		episode.FilePath,
-		episode.StreamId,
 		episode.CreatedAt,
+		episode.SourceUrl,
 	)
 
 	if err != nil {
@@ -313,8 +362,8 @@ func InsertPodcastEpisodes(episodes []types.PodcastEpisodeRow) error {
 	defer tx.Rollback()
 
 	for _, episode := range episodes {
-		if err := InsertPodcastEpisode(ctx, episode); err != nil {
-			return fmt.Errorf("inserting podcast episode: %v", err)
+		if err := UpsertPodcastEpisode(ctx, episode); err != nil {
+			return fmt.Errorf("upserting podcast episode: %v", err)
 		}
 	}
 
@@ -341,7 +390,7 @@ func GetPodcastEpisodeById(ctx context.Context, episodeId int) (types.PodcastEpi
 	var episode types.PodcastEpisode
 	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,
 		pe.status, pe.id, 'false', pe.year, pc.categories, pe.cover_art, pe.size, pe.content_type,
-		pe.suffix, pe.duration, pe.bit_rate, pe.file_path
+		pe.suffix, pe.duration, pe.bit_rate, pe.file_path, pe.source_url
 	from podcast_episodes pe
 	join podcast_channels pc on pc.id = pe.channel_id
 	where pe.id = ?`
@@ -367,6 +416,7 @@ func GetPodcastEpisodeById(ctx context.Context, episodeId int) (types.PodcastEpi
 		&episode.Duration,
 		&episode.BitRate,
 		&episode.Path,
+		&episode.SourceUrl,
 	); err != nil {
 		if err == sql.ErrNoRows {
 			return types.PodcastEpisode{}, nil
@@ -397,7 +447,7 @@ func GetPodcastEpisodesByChannelId(ctx context.Context, channelId int) ([]types.
 	var episodes []types.PodcastEpisode
 	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,
 		pe.status, pe.id, 'false', pe.year, pc.categories, pe.cover_art, pe.size, pe.content_type,
-		pe.suffix, pe.duration, pe.bit_rate, pe.file_path
+		pe.suffix, pe.duration, pe.bit_rate, pe.file_path, pe.source_url
 	from podcast_episodes pe
 	join podcast_channels pc on pc.id = pe.channel_id
 	where pc.id = ?
@@ -430,6 +480,7 @@ func GetPodcastEpisodesByChannelId(ctx context.Context, channelId int) ([]types.
 			&episode.Duration,
 			&episode.BitRate,
 			&episode.Path,
+			&episode.SourceUrl,
 		); err != nil {
 			return nil, fmt.Errorf("scanning podcast episode row: %v", err)
 		}
@@ -454,7 +505,7 @@ func GetNewestPodcastEpisodes(ctx context.Context, count int) ([]types.PodcastEp
 	var episodes []types.PodcastEpisode
 	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,
 		pe.status, pe.id, 'false', pe.year, pc.categories, pe.cover_art, pe.size, pe.content_type,
-		pe.suffix, pe.duration, pe.bit_rate, pe.file_path
+		pe.suffix, pe.duration, pe.bit_rate, pe.file_path, pe.source_url
 	from podcast_episodes pe
 	join podcast_channels pc on pc.id = pe.channel_id
 	order by pe.publish_date desc
@@ -487,6 +538,7 @@ func GetNewestPodcastEpisodes(ctx context.Context, count int) ([]types.PodcastEp
 			&episode.Duration,
 			&episode.BitRate,
 			&episode.Path,
+			&episode.SourceUrl,
 		); err != nil {
 			return nil, fmt.Errorf("scanning podcast episode row: %v", err)
 		}

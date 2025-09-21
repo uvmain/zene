@@ -28,7 +28,7 @@ type PodcastChannel struct {
 	LastRefresh      string           `json:"lastRefresh" xml:"lastRefresh,attr"`
 	CreatedAt        string           `json:"created" xml:"created,attr"`
 	ErrorMessage     string           `json:"errorMessage,omitempty" xml:"errorMessage,attr,omitempty"`
-	Episodes         []PodcastEpisode `json:"episode,omitempty" xml:"episode,omitempty"`
+	Episodes         []PodcastEpisode `json:"episode" xml:"episode"`
 }
 
 type PodcastEpisode struct {
@@ -43,7 +43,7 @@ type PodcastEpisode struct {
 	IsDir       string        `json:"isDir" xml:"isDir,attr"`
 	Year        string        `json:"year" xml:"year,attr"`
 	Genre       string        `json:"genre" xml:"genre,attr"`
-	Genres      []ChildGenre  `xml:"genres" json:"genres,omitempty"`
+	Genres      []ChildGenre  `xml:"genres" json:"genres"`
 	CoverArt    string        `json:"coverArt" xml:"coverArt,attr"`
 	Size        string        `json:"size" xml:"size,attr"`
 	ContentType string        `json:"contentType" xml:"contentType,attr"`
@@ -51,6 +51,7 @@ type PodcastEpisode struct {
 	Duration    string        `json:"duration" xml:"duration,attr"`
 	BitRate     string        `json:"bitRate" xml:"bitRate,attr"`
 	Path        string        `json:"path" xml:"path,attr"`
+	SourceUrl   string        `json:"sourceUrl" xml:"sourceUrl,attr"`
 }
 
 type PodcastEpisodeRow struct {
@@ -70,8 +71,8 @@ type PodcastEpisodeRow struct {
 	PublishDate string
 	Status      string
 	FilePath    string
-	StreamId    string
 	CreatedAt   string
+	SourceUrl   string
 }
 
 type PodcastChannels struct {

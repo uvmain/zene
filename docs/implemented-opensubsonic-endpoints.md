@@ -66,7 +66,7 @@
 - [x] createPodcastChannel
 - [x] deletePodcastChannel
 - [x] deletePodcastEpisode
-- [ ] downloadPodcastEpisode
+- [x] downloadPodcastEpisode
 ## Jukebox
 - [x] jukeboxControl[^1]
 ## Internet radio

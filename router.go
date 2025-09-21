@@ -131,7 +131,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/createpodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePodcastChannel)))
 	apiRouter.Handle("/rest/deletepodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePodcastChannel)))
 	apiRouter.Handle("/rest/deletepodcastepisode", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePodcastEpisode)))
-	// apiRouter.Handle("/rest/downloadpodcastepisode", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownloadPodcastEpisode)))
+	apiRouter.Handle("/rest/downloadpodcastepisode", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownloadPodcastEpisode)))
 	// Jukebox
 	apiRouter.Handle("/rest/jukeboxcontrol", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleJukeboxControl)))
 	// Internet radio

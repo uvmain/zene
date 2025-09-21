@@ -106,6 +106,7 @@ func createPodcastEpisodesForFeed(ctx context.Context, feed *gofeed.Feed, podcas
 			// FilePath:    item.Enclosure.Url,
 			// StreamId:    item.StreamId,
 			CreatedAt: logic.GetCurrentTimeFormatted(),
+			SourceUrl: episodeLink.URL,
 		}
 		podcastEpisodes = append(podcastEpisodes, episode)
 	}

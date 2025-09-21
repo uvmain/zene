@@ -49,6 +49,37 @@ func GetMetadata(ctx context.Context, audiofilePath string) (types.FileMetadata,
 	return parsedTags, nil
 }
 
+func GetDurationAndBitrate(ctx context.Context, audiofilePath string) (string, string, error) {
+	cmd := exec.CommandContext(ctx, config.FfprobePath,
+		"-v", "quiet",
+		"-show_entries", "format=duration,bit_rate",
+		"-of", "json",
+		audiofilePath,
+	)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		logger.Printf("Error running ffprobe: %s", output)
+		return "", "", err
+	}
+
+	var ffprobeOutput struct {
+		Format struct {
+			Duration string `json:"duration"`
+			BitRate  string `json:"bit_rate"`
+		} `json:"format"`
+	}
+
+	if err := json.Unmarshal(output, &ffprobeOutput); err != nil {
+		return "", "", err
+	}
+
+	if ffprobeOutput.Format.Duration == "" || ffprobeOutput.Format.BitRate == "" {
+		return "0", "0", fmt.Errorf("ffprobe did not return duration/bitrate")
+	}
+
+	return ffprobeOutput.Format.Duration, ffprobeOutput.Format.BitRate, nil
+}
+
 func GetMetadataFromFile(ctx context.Context, audiofilePath string) (types.FfprobeStandard, error) {
 	cmd := exec.CommandContext(ctx, config.FfprobePath, "-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", audiofilePath)
 	output, err := cmd.CombinedOutput()
