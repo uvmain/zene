@@ -434,6 +434,54 @@ func GetPodcastEpisodeById(ctx context.Context, episodeId int) (types.PodcastEpi
 	return episode, nil
 }
 
+func GetPodcastEpisodeByGuid(ctx context.Context, episodeGuid string) (types.PodcastEpisode, error) {
+	var episode types.PodcastEpisode
+	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,
+		pe.status, pe.id, 'false', pe.year, pc.categories, pe.cover_art, pe.size, pe.content_type,
+		pe.suffix, pe.duration, pe.bit_rate, pe.file_path, pe.source_url
+	from podcast_episodes pe
+	join podcast_channels pc on pc.id = pe.channel_id
+	where pe.guid = ?`
+	row := DB.QueryRowContext(ctx, query, episodeGuid)
+	var genresString sql.NullString
+
+	if err := row.Scan(
+		&episode.Id,
+		&episode.StreamId,
+		&episode.ChannelId,
+		&episode.Title,
+		&episode.Description,
+		&episode.PublishDate,
+		&episode.Status,
+		&episode.Parent,
+		&episode.IsDir,
+		&episode.Year,
+		&genresString,
+		&episode.CoverArt,
+		&episode.Size,
+		&episode.ContentType,
+		&episode.Suffix,
+		&episode.Duration,
+		&episode.BitRate,
+		&episode.Path,
+		&episode.SourceUrl,
+	); err != nil {
+		if err == sql.ErrNoRows {
+			return types.PodcastEpisode{}, nil
+		}
+		return types.PodcastEpisode{}, fmt.Errorf("getting podcast episode by id: %v", err)
+	}
+
+	episode.Genres = []types.ChildGenre{}
+	for _, genre := range strings.Split(genresString.String, ",") {
+		episode.Genres = append(episode.Genres, types.ChildGenre{Name: genre})
+	}
+
+	episode.Genre = episode.Genres[0].Name
+
+	return episode, nil
+}
+
 func DeletePodcastEpisodeById(ctx context.Context, episodeId string) error {
 	query := `DELETE FROM podcast_episodes WHERE id = ?;`
 	_, err := DB.ExecContext(ctx, query, episodeId)

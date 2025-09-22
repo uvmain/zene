@@ -6,11 +6,11 @@ import (
 	"zene/core/logger"
 )
 
-func GetCoverArtType(ctx context.Context, coverArtId string) (string, error) {
-	IsValidMetadataId, metadataStruct, err := IsValidMetadataId(ctx, coverArtId)
+func GetMediaCoverType(ctx context.Context, mediaId string) (string, error) {
+	IsValidMetadataId, metadataStruct, err := IsValidMetadataId(ctx, mediaId)
 	if err != nil && err.Error() != "checking metadata ID validity: sql: no rows in result set" {
-		logger.Printf("error checking coverArt id parameter: %v", err)
-		return "", fmt.Errorf("error checking coverArt id parameter: %v", err)
+		logger.Printf("error checking media id parameter: %v", err)
+		return "", fmt.Errorf("error checking media id parameter: %v", err)
 	}
 
 	if IsValidMetadataId {
@@ -23,13 +23,13 @@ func GetCoverArtType(ctx context.Context, coverArtId string) (string, error) {
 		}
 	}
 
-	isValidPodcastCover, err := IsValidPodcastCover(ctx, coverArtId)
+	isValidPodcastGuid, err := IsValidPodcastCover(ctx, mediaId)
 	if err != nil && err.Error() != "checking podcast cover validity: sql: no rows in result set" {
 		logger.Printf("error checking podcast cover validity: %v", err)
 		return "", fmt.Errorf("error checking podcast cover validity: %v", err)
 	}
 
-	if isValidPodcastCover {
+	if isValidPodcastGuid {
 		return "podcast", nil
 	}
 

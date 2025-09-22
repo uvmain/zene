@@ -23,7 +23,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := net.NormalisedForm(r, w)
-	musicBrainzTrackId := form["id"]
+	streamId := form["id"]
 	maxBitRateString := form["maxbitrate"]
 	streamFormat := form["format"]
 	timeOffsetString := form["timeoffset"]
@@ -31,7 +31,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	if musicBrainzTrackId == "" {
+	if streamId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
 	}
@@ -79,28 +79,35 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// This is unused - we send the header anyway, even if they don't ask for it
+	// This parameter is unused - we send the Content-Length header anyway, even if they don't ask for it
 	// var estimateContentLength bool
 	// estimateContentLengthString := r.FormValue("estimateContentLength")
 	// if estimateContentLengthString != "" {
 	// 	estimateContentLength = net.ParseBooleanFromString(w, r, estimateContentLengthString)
 	// }
 
+	// This parameter is unused - it is for Video, which Zene does not support
 	// var converted bool
 	// convertedString := r.FormValue("converted")
 	// if convertedString != "" {
 	// 	converted = net.ParseBooleanFromString(w, r, convertedString)
 	// }
 
-	track, err := database.SelectTrack(ctx, musicBrainzTrackId)
+	mediaFilepath, err := database.GetMediaFilePath(ctx, streamId)
+
 	if err != nil {
-		logger.Printf("Error querying database for track %s: %v", musicBrainzTrackId, err)
+		logger.Printf("Error querying database for media filepath %s: %v", streamId, err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "File not found in database.", "")
 		return
 	}
 
+	if mediaFilepath == "" {
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "File not available to stream.", "")
+		return
+	}
+
 	if streamFormat == "raw" {
-		fileInfo, modTime, file, err := OpenFile(track.FilePath)
+		fileInfo, modTime, file, err := OpenFile(mediaFilepath)
 		if err != nil {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error opening file.", "")
 			return
@@ -115,7 +122,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ffmpeg.TranscodeAndStream(ctx, w, r, track.FilePath, musicBrainzTrackId, maxBitRate, timeOffset, streamFormat)
+	err = ffmpeg.TranscodeAndStream(ctx, w, r, mediaFilepath, streamId, maxBitRate, timeOffset, streamFormat)
 	if err != nil {
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error streaming audio", "")
 		return

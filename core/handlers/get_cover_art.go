@@ -39,9 +39,9 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	coverArtType, err := database.GetCoverArtType(ctx, idParameter)
+	mediaArtType, err := database.GetMediaCoverType(ctx, idParameter)
 	if err != nil {
-		errorString := "error getting coverArt type from id parameter"
+		errorString := "error getting media type from id parameter"
 		logger.Printf("%s: %v", errorString, err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
 		return
@@ -50,7 +50,7 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 	var imageBlob []byte
 	var lastModified time.Time
 
-	switch coverArtType {
+	switch mediaArtType {
 	case "track":
 		imageBlob, lastModified, err = art.GetArtForTrack(ctx, idParameter, sizeInt)
 	case "album":
