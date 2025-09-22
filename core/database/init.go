@@ -45,6 +45,7 @@ func Initialise(ctx context.Context) {
 	migrateInternetRadio(ctx)
 	migrateBookmarks(ctx)
 	migratePlayqueues(ctx)
+	migratePodcasts(ctx)
 
 	checkVersion(ctx)
 }
@@ -104,7 +105,10 @@ func openDatabase(ctx context.Context) {
 func CleanShutdown() {
 	if DB != nil {
 		log.Println("Closing database...")
-		DB.Exec("PRAGMA wal_checkpoint(FULL);")
+		_, err = DB.Exec("PRAGMA wal_checkpoint(FULL);")
+		if err != nil {
+			log.Printf("Error committing WAL checkpoint on shutdown: %v", err)
+		}
 		DB.Close()
 
 		// wait for data to be flushed to disk

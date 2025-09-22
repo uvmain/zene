@@ -136,7 +136,7 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 }
 
 func GetUserByContext(ctx context.Context) (types.User, error) {
-	val := ctx.Value("userId")
+	val := ctx.Value(types.ContextKey("userId"))
 	userId, ok := val.(int)
 	if !ok {
 		return types.User{}, fmt.Errorf("userId missing or invalid in context")

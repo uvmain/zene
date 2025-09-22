@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"zene/core/database"
 	"zene/core/io"
+	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/types"
 )
@@ -14,23 +15,30 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := net.NormalisedForm(r, w)
-	musicBrainzTrackId := form["id"]
+	mediaId := form["id"]
 
 	ctx := r.Context()
 
-	if musicBrainzTrackId == "" {
+	if mediaId == "" {
 		errorString := "invalid id parameter"
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
 		return
 	}
 
-	track, err := database.SelectTrack(ctx, musicBrainzTrackId)
+	mediaFilepath, err := database.GetMediaFilePath(ctx, mediaId)
+
 	if err != nil {
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "track ID not found", "")
+		logger.Printf("Error querying database for media filepath %s: %v", mediaId, err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "File not found in database.", "")
 		return
 	}
 
-	fileBlob, err := io.GetFileBlob(ctx, track.FilePath)
+	if mediaFilepath == "" {
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "File not available to stream.", "")
+		return
+	}
+
+	fileBlob, err := io.GetFileBlob(ctx, mediaFilepath)
 	if err != nil {
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "file not found", "")
 		return
@@ -39,5 +47,9 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 	mimeType := http.DetectContentType(fileBlob)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(fileBlob)
+	_, err = w.Write(fileBlob)
+	if err != nil {
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "failed to write file", "")
+		return
+	}
 }

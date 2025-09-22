@@ -2,6 +2,8 @@ package types
 
 import "time"
 
+type ContextKey string
+
 type FileMetadata struct {
 	Format              string `json:"format"`
 	Duration            string `json:"duration"`

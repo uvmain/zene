@@ -14,6 +14,7 @@ import (
 
 var BaseUrl string
 var MusicDirs []string
+var PodcastDirectory string
 var DatabaseDirectory string
 var LibraryDirectory string
 var TempDirectory string
@@ -25,6 +26,7 @@ var AudioFileTypes []string
 var ArtworkFolder string
 var AlbumArtFolder string
 var ArtistArtFolder string
+var PodcastArtFolder string
 var AudioCacheFolder string
 var AudioCacheMaxMB int
 var AudioCacheMaxDays int
@@ -59,6 +61,14 @@ func LoadConfig() {
 	ArtworkFolder = filepath.Join(dataPath, "artwork")
 	AlbumArtFolder = filepath.Join(ArtworkFolder, "album")
 	ArtistArtFolder = filepath.Join(ArtworkFolder, "artist")
+	PodcastArtFolder = filepath.Join(ArtworkFolder, "podcasts")
+
+	podcastDirectory := os.Getenv("PODCAST_DIRECTORY")
+	if podcastDirectory == "" {
+		PodcastDirectory = filepath.Join(dataPath, "podcasts")
+	} else {
+		PodcastDirectory, _ = filepath.Abs(podcastDirectory)
+	}
 
 	audioCacheMaxMB := os.Getenv("AUDIO_CACHE_MAX_MB")
 	if audioCacheMaxMB == "" {

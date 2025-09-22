@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchRandomTracks } from '~/composables/backendFetch'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 

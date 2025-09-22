@@ -61,8 +61,12 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 	_, err = io.Copy(out, response.Body)
 	if err != nil {
 		out.Close()
-		zene_io.Cleanup(fileName)
-		return err
+		stringErr := fmt.Sprintf("error copying response body to file: %v", err)
+		err = zene_io.Cleanup(fileName)
+		if err != nil {
+			return fmt.Errorf("%s: %v", stringErr, err)
+		}
+		return fmt.Errorf(stringErr)
 	}
 
 	out.Close()
@@ -71,6 +75,43 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 		zene_io.Cleanup(fileName)
 		return fmt.Errorf("unzipping %s: %v", fileName, err)
 	}
+
+	return nil
+}
+
+func DownloadBinaryFile(url string, filePath string) error {
+	logger.Println("Downloading:", url)
+	response, err := http.Get(url)
+	if err != nil {
+		zene_io.Cleanup(filePath)
+		return fmt.Errorf("downloading binary file from %s: %v", url, err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		logger.Printf("Bad status downloading binary file: %s", response.Status)
+		return fmt.Errorf("bad status downloading binary file: %s", response.Status)
+	}
+
+	out, err := os.Create(filePath)
+	if err != nil {
+		out.Close()
+		zene_io.Cleanup(filePath)
+		return err
+	}
+
+	_, err = io.Copy(out, response.Body)
+	if err != nil {
+		out.Close()
+		stringErr := fmt.Sprintf("error copying response body to file: %v", err)
+		err = zene_io.Cleanup(filePath)
+		if err != nil {
+			return fmt.Errorf("%s: %v", stringErr, err)
+		}
+		return fmt.Errorf(stringErr)
+	}
+
+	out.Close()
 
 	return nil
 }

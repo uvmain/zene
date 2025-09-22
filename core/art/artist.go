@@ -20,14 +20,17 @@ import (
 func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, artistName string) {
 	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)
 	if err != nil {
-		logger.Printf("Error getting artist subdirectories from database: %v", err)
+		logger.Printf("Error getting artist subdirectories from database in ImportArtForAlbumArtist: %v", err)
 	}
 
 	existingRow, err := database.SelectArtistArtByMusicBrainzArtistId(ctx, musicBrainzArtistId)
 	if err != nil {
-		logger.Printf("Error getting artist art data from database: %v", err)
+		logger.Printf("Error getting artist art data from database in ImportArtForAlbumArtist: %v", err)
 	}
 	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
+	if err != nil {
+		logger.Printf("Error parsing existing row time in ImportArtForAlbumArtist: %v", err)
+	}
 
 	directories := []string{}
 
@@ -115,12 +118,12 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, a
 		}
 	}
 
-	img, err := getImageFromInternet(artistArtUrl)
+	img, err := GetImageFromInternet(artistArtUrl)
 	if err != nil {
 		logger.Printf("Failed to get artist art image for %s from %s: %v", musicBrainzArtistId, artistArtUrl, err)
 		return
 	}
-	go resizeImageAndSaveAsJPG(img, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
+	go ResizeImageAndSaveAsJPG(img, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
 
 	err = database.InsertArtistArtRow(ctx, musicBrainzArtistId, logic.GetCurrentTimeFormatted())
 	if err != nil {
@@ -129,6 +132,11 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, a
 }
 
 func GetArtForArtist(ctx context.Context, musicBrainzArtistId string, size int) ([]byte, time.Time, error) {
+	// prevent path traversal
+	if strings.Contains(musicBrainzArtistId, "/") || strings.Contains(musicBrainzArtistId, "\\") || strings.Contains(musicBrainzArtistId, "..") {
+		return nil, time.Now(), fmt.Errorf("invalid artist ID")
+	}
+
 	file_name := fmt.Sprintf("%s.jpg", musicBrainzArtistId)
 	filePath, _ := filepath.Abs(filepath.Join(config.ArtistArtFolder, file_name))
 

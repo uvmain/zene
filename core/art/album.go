@@ -21,14 +21,17 @@ import (
 func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName string, artistName string) {
 	trackMetadataRows, err := database.SelectTracksByAlbumId(ctx, musicBrainzAlbumId)
 	if err != nil {
-		logger.Printf("Error getting track data from database: %v", err)
+		logger.Printf("Error getting track data from database in ImportArtForAlbum: %v", err)
 	}
 
 	existingRow, err := database.SelectAlbumArtByMusicBrainzAlbumId(ctx, musicBrainzAlbumId)
 	if err != nil {
-		logger.Printf("Error getting album art data from database: %v", err)
+		logger.Printf("Error getting album art data from database in ImportArtForAlbum: %v", err)
 	}
 	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
+	if err != nil {
+		logger.Printf("Error parsing existing row time in ImportArtForAlbum: %v", err)
+	}
 
 	directories := []string{}
 
@@ -130,15 +133,15 @@ func getAlbumArtFromInternet(ctx context.Context, musicBrainzAlbumId string, alb
 		}
 	}
 
-	img, err := getImageFromInternet(albumArtUrl)
+	img, err := GetImageFromInternet(albumArtUrl)
 	if err != nil {
 		logger.Printf("Failed to get album art image for %s from %s: %v", musicBrainzAlbumId, albumArtUrl, err)
 		return
 	}
-	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "sm"}, "_")), 64)
-	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 128)
-	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 256)
-	go resizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
+	go ResizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "sm"}, "_")), 64)
+	go ResizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "md"}, "_")), 128)
+	go ResizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "lg"}, "_")), 256)
+	go ResizeImageAndSaveAsJPG(img, filepath.Join(config.AlbumArtFolder, strings.Join([]string{musicBrainzAlbumId, "xl"}, "_")), 512)
 
 	err = database.InsertAlbumArtRow(ctx, musicBrainzAlbumId, logic.GetCurrentTimeFormatted())
 	if err != nil {
@@ -146,7 +149,20 @@ func getAlbumArtFromInternet(ctx context.Context, musicBrainzAlbumId string, alb
 	}
 }
 
+func GetArtForTrack(ctx context.Context, musicBrainzTrackId string, size int) ([]byte, time.Time, error) {
+	albumId, err := database.SelectAlbumIdByTrackId(ctx, musicBrainzTrackId)
+	if err != nil {
+		logger.Printf("Error getting album ID for track %s: %v", musicBrainzTrackId, err)
+		return nil, time.Now(), fmt.Errorf("album not found: %s", musicBrainzTrackId)
+	}
+	return GetArtForAlbum(ctx, albumId, size)
+}
+
 func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size int) ([]byte, time.Time, error) {
+	// prevent path traversal
+	if strings.Contains(musicBrainzAlbumId, "/") || strings.Contains(musicBrainzAlbumId, "\\") || strings.Contains(musicBrainzAlbumId, "..") {
+		return nil, time.Now(), fmt.Errorf("invalid album ID")
+	}
 	file_name := fmt.Sprintf("%s_%s.jpg", musicBrainzAlbumId, "xl")
 	filePath, _ := filepath.Abs(filepath.Join(config.AlbumArtFolder, file_name))
 

@@ -3,15 +3,11 @@ package logic
 import (
 	"context"
 	"fmt"
+	"zene/core/types"
 )
 
-type ContextKey string
-
-const UserIdKey ContextKey = "userId"
-const UsernameKey ContextKey = "username"
-
 func GetUserIdFromContext(ctx context.Context) (int, error) {
-	val := ctx.Value(UserIdKey)
+	val := ctx.Value(types.ContextKey("userId"))
 	userId, ok := val.(int)
 	if !ok {
 		return 0, fmt.Errorf("userId missing or invalid in context")
@@ -20,7 +16,7 @@ func GetUserIdFromContext(ctx context.Context) (int, error) {
 }
 
 func GetUsernameFromContext(ctx context.Context) (string, error) {
-	val := ctx.Value(UsernameKey)
+	val := ctx.Value(types.ContextKey("userName"))
 	username, ok := val.(string)
 	if !ok || username == "" {
 		return "", fmt.Errorf("username missing or invalid in context")

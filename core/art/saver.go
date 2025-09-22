@@ -30,7 +30,7 @@ func getImageFromFilePath(filePath string) (image.Image, error) {
 	return img, err
 }
 
-func getImageFromInternet(imageUrl string) (image.Image, error) {
+func GetImageFromInternet(imageUrl string) (image.Image, error) {
 	res, err := http.Get(imageUrl)
 	if err != nil {
 		return nil, fmt.Errorf("downloading image: %w", err)
@@ -41,20 +41,10 @@ func getImageFromInternet(imageUrl string) (image.Image, error) {
 		return nil, fmt.Errorf("bad status downloading image: %s", res.Status)
 	}
 
-	contentType := res.Header.Get("Content-Type")
-
-	var img image.Image
-	switch contentType {
-	case "image/png":
-		img, err = png.Decode(res.Body)
-	default:
-		img, _, err = image.Decode(res.Body)
-	}
-
+	img, _, err := image.Decode(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("decoding image: %w", err)
 	}
-
 	return img, nil
 }
 
@@ -85,7 +75,7 @@ func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) 
 	}
 }
 
-func resizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) {
+func ResizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) error {
 	if filepath.Ext(outputPath) != ".jpg" {
 		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
 	}
@@ -95,15 +85,17 @@ func resizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) 
 	outFile, err := os.Create(outputPath)
 	if err != nil {
 		logger.Printf("Failed to create output file: %v", err)
-		return
+		return err
 	}
 	defer outFile.Close()
 
 	opts := jpeg.Options{Quality: 90}
 	if err := jpeg.Encode(outFile, resizedImg, &opts); err != nil {
 		logger.Printf("Failed to encode image to jpg: %v", err)
-		return
+		return err
 	}
+
+	return nil
 }
 
 func resizeBytesAndSaveAsJPG(imgBytes []byte, outputPath string, pixelSize int) {

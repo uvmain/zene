@@ -18,10 +18,9 @@ const (
 )
 
 var (
-	target     string
-	fileString string
-	platform   = runtime.GOOS
-	arch       = runtime.GOARCH
+	target   string
+	platform = runtime.GOOS
+	arch     = runtime.GOARCH
 )
 
 func downloadFfmpegBinary() error {

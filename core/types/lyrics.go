@@ -21,7 +21,7 @@ type StructuredLyrics struct {
 }
 
 type SubsonicLyricsList struct {
-	StructuredLyrics []StructuredLyrics `xml:"structuredLyrics,attr" json:"structuredLyrics"`
+	StructuredLyrics []StructuredLyrics `xml:"structuredLyrics" json:"structuredLyrics"`
 }
 
 type LyricsDatabaseRow struct {

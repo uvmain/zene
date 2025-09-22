@@ -7,13 +7,15 @@
     "./frontend"
   ],
   "scripts": {
-    "setup": "go install github.com/air-verse/air@latest && go mod download",
+    "setup": "go install github.com/air-verse/air@latest && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go mod download",
     "clean:build": "rimraf -v -I zene zene.exe frontend/dist tmp",
     "clean:modules": "rimraf -v -I frontend/node_modules node_modules",
     "clean": "npm run clean:build && npm run clean:modules",
     "dev:backend": "air",
+    "dev:backend:windows": "air -build.cmd \"go build -o ./tmp/main.exe\" -build.bin \"./tmp/main.exe\"",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
+    "dev:windows": "concurrently npm:caddy npm:dev:backend:windows npm:dev:frontend",
     "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && cpy zene . --rename=zene.exe",
     "build:frontend": "npm run build --workspace frontend",
     "build": "npm run build:frontend && npm run build:backend",
@@ -21,7 +23,9 @@
     "preview:go": "zene.exe",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
-    "lint": "npm run lint --workspace frontend",
+    "lint:frontend": "npm run lint --workspace frontend",
+    "lint:backend": "golangci-lint run",
+    "lint": "npm run lint:frontend && npm run lint:backend",
     "cspell": "cspell \"**/*.{go,ts,js,vue}\""
   },
   "repository": {

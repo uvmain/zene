@@ -1,4 +1,4 @@
-import type { SubsonicResponse, SubsonicUserResponse, SubsonicUsersResponse } from '~/types/subsonic'
+import type { SubsonicUserResponse, SubsonicUsersResponse } from '~/types/subsonic'
 import type { SubsonicUser } from '~/types/subsonicUser'
 import { openSubsonicFetchRequest } from './backendFetch'
 

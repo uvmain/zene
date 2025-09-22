@@ -39,7 +39,7 @@ func CreateDir(directoryPath string) {
 func GetChangedTime(path string) (time.Time, error) {
 	t, err := times.Stat(path)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("Error retrieving file times for %s: %v", path, err)
+		return time.Time{}, fmt.Errorf("retrieving file times for %s: %v", path, err)
 	}
 
 	modTime := t.ModTime()
@@ -123,11 +123,11 @@ func DeleteFile(filePath string) error {
 	filePathAbs, _ := filepath.Abs(filePath)
 
 	if _, err := os.Stat(filePathAbs); os.IsNotExist(err) {
-		return fmt.Errorf("Error deleting file - file does not exist: %s:  %s", filePathAbs, err)
+		return fmt.Errorf("deleting file - file does not exist: %s:  %s", filePathAbs, err)
 	} else {
 		err := os.Remove(filePathAbs)
 		if err != nil {
-			return fmt.Errorf("Error deleting file %s: %s", filePathAbs, err)
+			return fmt.Errorf("deleting file %s: %s", filePathAbs, err)
 		}
 	}
 	return nil
@@ -138,12 +138,12 @@ func Cleanup(fileName string) error {
 
 	err := os.Remove(fileName)
 	if err != nil {
-		return fmt.Errorf("Error removing file %s: %v", fileName, err)
+		return fmt.Errorf("removing file %s: %v", fileName, err)
 	}
 
 	err = os.RemoveAll(macosxDir)
 	if err != nil {
-		return fmt.Errorf("Error removing file %s: %v", fileName, err)
+		return fmt.Errorf("removing directory %s: %v", macosxDir, err)
 	}
 
 	return nil

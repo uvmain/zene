@@ -45,8 +45,8 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 	if typeParam == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "type parameter is required", "")
 		return
-	} else if !(typeParam == "random" || typeParam == "newest" || typeParam == "highest" || typeParam == "frequent" || typeParam == "recent" ||
-		typeParam == "alphabeticalbyname" || typeParam == "alphabeticalbyartist" || typeParam == "starred" || typeParam == "byyear" || typeParam == "bygenre") {
+	} else if typeParam != "random" && typeParam != "newest" && typeParam != "highest" && typeParam != "frequent" && typeParam != "recent" &&
+		typeParam != "alphabeticalbyname" && typeParam != "alphabeticalbyartist" && typeParam != "starred" && typeParam != "byyear" && typeParam != "bygenre" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid type parameter", "")
 		return
 	}

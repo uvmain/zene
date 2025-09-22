@@ -39,42 +39,36 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	valid, metadataStruct, err := database.IsValidMetadataId(ctx, idParameter)
-	if err != nil || !valid {
-		errorString := "invalid id parameter"
+	mediaArtType, err := database.GetMediaCoverType(ctx, idParameter)
+	if err != nil {
+		errorString := "error getting media type from id parameter"
+		logger.Printf("%s: %v", errorString, err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
 		return
 	}
 
 	var imageBlob []byte
 	var lastModified time.Time
-	if metadataStruct.MusicbrainzTrackId {
-		albumId, err := database.SelectAlbumIdByTrackId(ctx, idParameter)
-		if err != nil {
-			logger.Printf("Error getting album ID for track %s: %v", idParameter, err)
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Album not found", "")
-			return
-		}
-		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, albumId, sizeInt)
-		if err != nil {
-			logger.Printf("Error getting album cover art for %s: %v", idParameter, err)
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
-			return
-		}
-	} else if metadataStruct.MusicbrainzAlbumId {
+
+	switch mediaArtType {
+	case "track":
+		imageBlob, lastModified, err = art.GetArtForTrack(ctx, idParameter, sizeInt)
+	case "album":
 		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, idParameter, sizeInt)
-		if err != nil {
-			logger.Printf("Error getting album cover art for %s: %v", idParameter, err)
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
-			return
-		}
-	} else if metadataStruct.MusicbrainzArtistId {
+	case "artist":
 		imageBlob, lastModified, err = art.GetArtForArtist(ctx, idParameter, sizeInt)
-		if err != nil {
-			logger.Printf("Error getting artist cover art for %s: %v", idParameter, err)
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
-			return
-		}
+	case "podcast":
+		imageBlob, lastModified, err = art.GetArtForPodcast(ctx, idParameter, sizeInt)
+	default:
+		logger.Printf("Error getting cover art for %s: %v", idParameter, err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+		return
+	}
+
+	if err != nil {
+		logger.Printf("Error getting cover art for %s: %v", idParameter, err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+		return
 	}
 
 	if net.IfModifiedResponse(w, r, lastModified) {

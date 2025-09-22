@@ -21,7 +21,7 @@ func UpsertUserAvatarImage(userId int, img image.Image) error {
 		}
 	}
 
-	go resizeImageAndSaveAsJPG(img, filePath, 512)
+	go ResizeImageAndSaveAsJPG(img, filePath, 512)
 
 	return nil
 }

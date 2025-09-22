@@ -37,6 +37,10 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 		Name:     "indexBasedQueue",
 		Versions: []int{1},
 	}
+	extension6 := types.OpenSubsonicExtensions{
+		Name:     "getPodcastEpisode",
+		Versions: []int{1},
+	}
 
 	response.SubsonicResponse.OpenSubsonicExtensions = []*types.OpenSubsonicExtensions{
 		&extension1,
@@ -44,6 +48,7 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 		&extension3,
 		&extension4,
 		&extension5,
+		&extension6,
 	}
 
 	net.WriteSubsonicResponse(w, r, response, format)
