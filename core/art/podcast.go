@@ -5,12 +5,18 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 	"zene/core/config"
 	"zene/core/logic"
 )
 
 func GetArtForPodcast(ctx context.Context, coverArtId string, size int) ([]byte, time.Time, error) {
+	// prevent path traversal
+	if strings.Contains(coverArtId, "/") || strings.Contains(coverArtId, "\\") || strings.Contains(coverArtId, "..") {
+		return nil, time.Now(), fmt.Errorf("invalid podcast coverArtId")
+	}
+
 	file_name := fmt.Sprintf("%s.jpg", coverArtId)
 	filePath, _ := filepath.Abs(filepath.Join(config.PodcastArtFolder, file_name))
 

@@ -132,6 +132,11 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, a
 }
 
 func GetArtForArtist(ctx context.Context, musicBrainzArtistId string, size int) ([]byte, time.Time, error) {
+	// prevent path traversal
+	if strings.Contains(musicBrainzArtistId, "/") || strings.Contains(musicBrainzArtistId, "\\") || strings.Contains(musicBrainzArtistId, "..") {
+		return nil, time.Now(), fmt.Errorf("invalid artist ID")
+	}
+
 	file_name := fmt.Sprintf("%s.jpg", musicBrainzArtistId)
 	filePath, _ := filepath.Abs(filepath.Join(config.ArtistArtFolder, file_name))
 
