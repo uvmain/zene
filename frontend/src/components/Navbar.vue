@@ -99,6 +99,24 @@ function handleLinkClick() {
           <icon-tabler-playlist />
           Playlists
         </RouterLink>
+        <RouterLink
+          to="/radio"
+          class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
+          :class="{ 'ml-4': currentRoute === '/radio' }"
+          @click="handleLinkClick"
+        >
+          <icon-tabler-radio />
+          Radio
+        </RouterLink>
+        <RouterLink
+          to="/podcasts"
+          class="block flex gap-x-2 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200"
+          :class="{ 'ml-4': currentRoute === '/podcasts' }"
+          @click="handleLinkClick"
+        >
+          <icon-tabler-microphone />
+          Podcasts
+        </RouterLink>
       </nav>
     </div>
     <NavArt class="mt-auto" />
