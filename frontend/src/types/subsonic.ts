@@ -3,6 +3,8 @@ import type { SubsonicApiKey } from './subsonicApiKey'
 import type { SubsonicArtist, SubsonicIndexArtists } from './subsonicArtist'
 import type { SubsonicGenres } from './subsonicGenres'
 import type { LyricsList } from './subsonicLyrics'
+import type { SubsonicPodcastChannel } from './subsonicPodcasts'
+import type { SubsonicRadioStation } from './subsonicRadioStations'
 import type { SubsonicSong } from './subsonicSong'
 import type { SubsonicUser } from './subsonicUser'
 
@@ -92,5 +94,17 @@ export interface SubsonicSearchResponse extends SubsonicResponse {
 export interface SubsonicApiKeyResponse extends SubsonicResponse {
   apiKeys: {
     apiKey: SubsonicApiKey[]
+  }
+}
+
+export interface SubsonicRadioStationsResponse extends SubsonicResponse {
+  internetRadioStations: {
+    internetRadioStation: SubsonicRadioStation[]
+  }
+}
+
+export interface SubsonicPodcastChannelsResponse extends SubsonicResponse {
+  podcasts: {
+    channel: SubsonicPodcastChannel[]
   }
 }

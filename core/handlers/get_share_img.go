@@ -3,9 +3,12 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 	"zene/core/art"
+	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/net"
+	"zene/core/types"
 )
 
 func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
@@ -31,14 +34,36 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	imageBlob, lastModified, err := art.GetArtForAlbum(ctx, imageId, sizeInt)
+	mediaArtType, err := database.GetMediaCoverType(ctx, imageId)
 	if err != nil {
+		errorString := "error getting media type from id parameter"
+		logger.Printf("%s: %v", errorString, err)
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
+		return
+	}
+
+	var imageBlob []byte
+	var lastModified time.Time
+
+	switch mediaArtType {
+	case "track":
+		imageBlob, lastModified, err = art.GetArtForTrack(ctx, imageId, sizeInt)
+	case "album":
+		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, imageId, sizeInt)
+	case "artist":
 		imageBlob, lastModified, err = art.GetArtForArtist(ctx, imageId, sizeInt)
-		if err != nil {
-			logger.Printf("Error getting image for %s: %v", imageId, err)
-			http.Error(w, "Failed to get image", http.StatusInternalServerError)
-			return
-		}
+	case "podcast":
+		imageBlob, lastModified, err = art.GetArtForPodcast(ctx, imageId, sizeInt)
+	default:
+		logger.Printf("Error getting cover art for %s: %v", imageId, err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+		return
+	}
+
+	if err != nil {
+		logger.Printf("Error getting cover art for %s: %v", imageId, err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Cover art not found", "")
+		return
 	}
 
 	if net.IfModifiedResponse(w, r, lastModified) {

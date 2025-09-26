@@ -110,6 +110,7 @@ type SessionCheck struct {
 
 type File struct {
 	FileName     string `json:"file_name"`
+	FilePath     string `json:"file_path"`
 	FilePathAbs  string `json:"file_path_absolute"`
 	DateModified string `json:"date_modified"`
 }

@@ -1,0 +1,130 @@
+<script setup lang="ts">
+import type { SubsonicPodcastChannelsResponse, SubsonicResponse } from '~/types/subsonic'
+import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
+import { openSubsonicFetchRequest } from '~/composables/backendFetch'
+
+const router = useRouter()
+
+const showModal = ref(false)
+const isSubmitting = ref(false)
+const submitError = ref('')
+const showSuccess = ref(false)
+
+const newPodcastUrl = ref('')
+
+const podcasts = ref<SubsonicPodcastChannel[]>([])
+
+async function createNewPodcast() {
+  if (isSubmitting.value)
+    return
+  isSubmitting.value = true
+  submitError.value = ''
+  showSuccess.value = false
+  const formData = new FormData()
+  formData.append('url', newPodcastUrl.value)
+  const response = await openSubsonicFetchRequest<SubsonicResponse>('createPodcastChannel', {
+    body: formData,
+  })
+  if (response?.error?.message) {
+    submitError.value = response.error.message
+    isSubmitting.value = false
+    return
+  }
+  showSuccess.value = true
+  getPodcasts()
+  setTimeout(() => {
+    showModal.value = false
+    showSuccess.value = false
+    isSubmitting.value = false
+  }, 1000)
+}
+
+async function getPodcasts() {
+  const formData = new FormData()
+  formData.append('includeEpisodes', false.toString())
+  const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getPodcasts', {
+    body: formData,
+  })
+  podcasts.value = response?.podcasts?.channel
+  podcasts.value.forEach((podcast) => {
+    podcast.coverArt = `/share/img/${podcast.coverArt}?size=400`
+  })
+}
+
+function navigateToPodcast(podcastId: string) {
+  router.push(`/podcasts/${podcastId}`)
+}
+
+onBeforeMount(getPodcasts)
+</script>
+
+<template>
+  <div class="p-4 space-y-4">
+    <button class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" @click="showModal = true">
+      Add New Podcast Channel
+    </button>
+
+    <div class="mt-8">
+      <h2 class="mb-4 text-lg font-bold">
+        Podcasts
+      </h2>
+      <div v-if="podcasts.length === 0" class="text-gray-500">
+        No podcasts found.
+      </div>
+      <div class="flex flex-wrap justify-center gap-6 md:justify-start">
+        <div
+          v-for="podcast in podcasts" :key="podcast.id"
+          class="flex flex-row gap-2 overflow-hidden transition duration-200 hover:scale-101 hover:cursor-pointer"
+          @click="navigateToPodcast(podcast.id)"
+        >
+          <img
+            :src="podcast.coverArt"
+            alt="Podcast Cover"
+            class="h-48 w-48 rounded-lg object-cover"
+          />
+          <div class="flex flex-col justify-center gap-1 p-2">
+            <span class="text-xl font-semibold">
+              {{ podcast.title }}
+            </span>
+            <span class="text-sm text-white text-op-80">
+              {{ podcast.description }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <teleport to="body">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div class="relative max-w-md w-full rounded-lg bg-white p-6 shadow-lg">
+          <button class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" aria-label="Close" @click="showModal = false">
+            X
+          </button>
+          <h2 class="mb-4 text-xl font-bold">
+            Add New Podcast
+          </h2>
+          <form class="space-y-4" @submit.prevent="createNewPodcast">
+            <div>
+              <label for="stream-url" class="mb-1 block font-medium">Stream URL</label>
+              <input id="stream-url" v-model="newPodcastUrl" type="text" class="w-full border rounded px-3 py-2" placeholder="Enter stream URL" required />
+            </div>
+            <button
+              type="submit"
+              class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              :disabled="isSubmitting || showSuccess"
+            >
+              <span v-if="isSubmitting && !showSuccess">Adding...</span>
+              <span v-else-if="showSuccess">
+                <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+              </span>
+              <span v-else>Add Radio Station</span>
+            </button>
+            <div v-if="submitError" class="mt-2 text-sm text-red-600">
+              {{ submitError }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </teleport>
+  </div>
+</template>

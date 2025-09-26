@@ -97,6 +97,7 @@ func GetFiles(ctx context.Context, directoryPath string, extensions []string) ([
 		}
 
 		var foundFile types.File
+		foundFile.FilePath = path
 		foundFile.FilePathAbs, err = filepath.Abs(path)
 		if err != nil {
 			logger.Printf("Error getting absolute file path for %s: %v", path, err)
