@@ -21,7 +21,7 @@ func GetMediaFilePath(ctx context.Context, mediaId string) (string, error) {
 		union ALL
 		select file_path
 		from podcast_episodes
-		where guid = ?
+		where guid = ? and file_path is not ''
 		) limit 1;`
 	err := DB.QueryRowContext(ctx, query, mediaId, mediaId).Scan(&filePath)
 	if err != nil {

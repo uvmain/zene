@@ -8,6 +8,7 @@ import (
 	"zene/core/database"
 	"zene/core/io"
 	"zene/core/logger"
+	"zene/core/podcasts"
 	"zene/core/types"
 )
 
@@ -68,5 +69,12 @@ func cleanupMissingPodcasts(ctx context.Context) {
 				}
 			}
 		}
+	}
+}
+
+func fetchNewPodcastEpisodes(ctx context.Context) {
+	err := podcasts.RefreshAllPodcasts(ctx)
+	if err != nil {
+		logger.Printf("Failed to refresh podcast episodes: %v", err)
 	}
 }

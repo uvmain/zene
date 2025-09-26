@@ -663,3 +663,68 @@ func GetPodcastEpisodesUserless(ctx context.Context) ([]types.PodcastEpisode, er
 
 	return episodes, nil
 }
+
+func GetPodcastsUserless(ctx context.Context, podcastId string) ([]types.PodcastChannel, error) {
+	query := `select p.id,
+		p.title,
+		p.url,
+		p.description,
+		p.cover_art,
+		p.original_image_url,
+		p.last_refresh,
+		p.status,
+		p.created_at,
+		p.error_message
+	from podcast_channels p`
+
+	var args []interface{}
+	if podcastId != "" {
+		query += ` where p.id = $1;`
+		args = append(args, podcastId)
+	}
+
+	rows, err := DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("querying podcasts: %v", err)
+	}
+	defer rows.Close()
+
+	var channelArray []types.PodcastChannel
+
+	for rows.Next() {
+		var channel types.PodcastChannel
+		var errorMessage sql.NullString
+		var lastRefreshed sql.NullString
+		if err := rows.Scan(
+			&channel.Id,
+			&channel.Title,
+			&channel.Url,
+			&channel.Description,
+			&channel.CoverArt,
+			&channel.OriginalImageUrl,
+			&lastRefreshed,
+			&channel.Status,
+			&channel.CreatedAt,
+			&errorMessage,
+		); err != nil {
+			return nil, fmt.Errorf("scanning channel row: %v", err)
+		}
+
+		channel.ParentId = channel.Id
+		channel.ChannelId = channel.Id
+		channel.Type = "podcast"
+		channel.IsDir = "false"
+		channel.IsVideo = "false"
+
+		if lastRefreshed.Valid {
+			channel.LastRefresh = lastRefreshed.String
+		}
+		if errorMessage.Valid {
+			channel.ErrorMessage = errorMessage.String
+		}
+
+		channelArray = append(channelArray, channel)
+	}
+
+	return channelArray, nil
+}

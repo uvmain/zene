@@ -1,6 +1,7 @@
 package podcasts
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"path/filepath"
@@ -68,18 +69,42 @@ func createPodcastEpisodesForFeed(ctx context.Context, feed *gofeed.Feed, podcas
 		}
 	}
 
+	if len(newEpisodes) > 0 {
+		logger.Printf("Found %d new episodes for podcast ID %d, %s", len(newEpisodes), podcastId, feed.Title)
+	}
+
 	podcastEpisodes := make([]types.PodcastEpisodeRow, 0, len(newEpisodes))
 	for _, item := range newEpisodes {
+
+		if len(item.Enclosures) == 0 {
+			logger.Printf("Skipping episode '%s' (GUID: %s) for podcast ID %d: no enclosures found", item.Title, item.GUID, podcastId)
+			continue
+		}
 
 		authors := ""
 		for _, author := range item.Authors {
 			authors += author.Name + ", "
 		}
-		authors = authors[:len(authors)-2] // remove trailing comma and space
+		if len(authors) > 2 {
+			authors = authors[:len(authors)-2] // remove trailing comma and space
+		}
 
-		coverArt, err := SavePodcastImage(ctx, item.Image.URL)
-		if err != nil {
-			return fmt.Errorf("saving podcast episode cover art: %v", err)
+		var imageUrl string
+		var coverArt string
+		if item.Image != nil {
+			imageUrl = cmp.Or(item.Image.URL, item.ITunesExt.Image)
+			coverArt, err = SavePodcastImage(ctx, imageUrl)
+			if err != nil {
+				logger.Printf("Error saving podcast episode cover art: %v", err)
+				return fmt.Errorf("saving podcast episode cover art: %v", err)
+			}
+		} else {
+			podcastChannel, err := database.GetPodcastsUserless(ctx, strconv.Itoa(podcastId))
+			if err != nil {
+				logger.Printf("Error getting podcast channels: %v", err)
+				return fmt.Errorf("getting podcast channels: %v", err)
+			}
+			coverArt = podcastChannel[0].CoverArt
 		}
 
 		episodeLink := item.Enclosures[0]
@@ -118,6 +143,8 @@ func createPodcastEpisodesForFeed(ctx context.Context, feed *gofeed.Feed, podcas
 
 	database.UpdatePodcastChannelLastRefresh(podcastId)
 
+	logger.Printf("Inserted %d new episodes for podcast ID %d, %s", len(podcastEpisodes), podcastId, feed.Title)
+
 	return nil
 }
 
@@ -144,13 +171,14 @@ func SavePodcastImage(ctx context.Context, imageUrl string) (string, error) {
 
 func RefreshAllPodcasts(ctx context.Context) error {
 	logger.Printf("Refreshing all podcasts...")
-	existingPodcasts, err := database.GetPodcasts(ctx, 0, false)
+	existingPodcasts, err := database.GetPodcastsUserless(ctx, "")
 	if err != nil {
 		logger.Printf("Error fetching podcasts: %v", err)
 		return err
 	}
 
 	for _, podcast := range existingPodcasts {
+		logger.Printf("Refreshing podcast episodes for %s", podcast.Title)
 		go RefreshPodcast(podcast)
 	}
 	return nil

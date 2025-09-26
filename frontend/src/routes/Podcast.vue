@@ -13,7 +13,7 @@ const podcast = ref<SubsonicPodcastChannel>()
 
 async function getPodcast() {
   const formData = new FormData()
-  formData.append('includeEpisodes', true.toString())
+  // formData.append('includeEpisodes', true.toString())
   formData.append('id', route.params.podcast_id.toString())
   const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getPodcasts', {
     body: formData,
@@ -71,6 +71,9 @@ onBeforeMount(getPodcast)
             {{ podcast.description }}
           </div>
         </div>
+      </div>
+      <div v-if="podcast.lastRefresh === ''" class="mx-auto">
+        Episodes are being refreshed...
       </div>
       <div v-for="episode in podcast.episode" :key="episode.id">
         <div class="mx-auto max-w-60dvw flex flex-row justify-start gap-4 align-top transition duration-200 hover:scale-101">

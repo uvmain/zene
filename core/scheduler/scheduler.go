@@ -12,6 +12,7 @@ func Initialise(ctx context.Context) {
 	startNowPlayingCleanupRoutine(ctx)
 	startOrphanedPlaylistEntriesCleanupRoutine(ctx)
 	startPodcastCleanupRoutine(ctx)
+	startPodcastEpisodeRefreshRoutine(ctx)
 }
 
 func startAudioCacheCleanupRoutine(ctx context.Context) {
@@ -85,6 +86,25 @@ func startPodcastCleanupRoutine(ctx context.Context) {
 				return
 			case <-ticker.C:
 				cleanupMissingPodcasts(ctx)
+			}
+		}
+	}()
+}
+
+func startPodcastEpisodeRefreshRoutine(ctx context.Context) {
+	logger.Println("Scheduler: starting podcast episode refresh routine")
+	go func() {
+		fetchNewPodcastEpisodes(ctx)
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Println("Scheduler: stopping podcast episode refresh routine")
+				return
+			case <-ticker.C:
+				fetchNewPodcastEpisodes(ctx)
 			}
 		}
 	}()
