@@ -14,7 +14,7 @@ const podcast = ref<SubsonicPodcastChannel>()
 async function getPodcast() {
   const formData = new FormData()
   formData.append('includeEpisodes', true.toString())
-  formData.append('includeEpisodes', true.toString())
+  formData.append('id', route.params.podcast_id.toString())
   const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getPodcasts', {
     body: formData,
   })
