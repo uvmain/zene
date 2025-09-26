@@ -41,7 +41,7 @@ async function createNewPodcast() {
 
 async function getPodcasts() {
   const formData = new FormData()
-  formData.append('includeEpisodes', false.toString())
+  formData.append('includeEpisodes', true.toString())
   const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getPodcasts', {
     body: formData,
   })
@@ -73,22 +73,26 @@ onBeforeMount(getPodcasts)
       </div>
       <div class="flex flex-wrap justify-center gap-6 md:justify-start">
         <div
-          v-for="podcast in podcasts" :key="podcast.id"
-          class="flex flex-row gap-2 overflow-hidden transition duration-200 hover:scale-101 hover:cursor-pointer"
+          v-for="podcast in podcasts"
+          :key="podcast.id" class="mx-auto max-w-60dvw flex flex-row gap-4 align-top transition duration-150 hover:scale-101"
           @click="navigateToPodcast(podcast.id)"
         >
           <img
             :src="podcast.coverArt"
             alt="Podcast Cover"
-            class="h-48 w-48 rounded-lg object-cover"
+            class="size-50 rounded-lg object-cover"
           />
-          <div class="flex flex-col justify-center gap-1 p-2">
-            <span class="text-xl font-semibold">
+          <div class="my-auto flex flex-col gap-4">
+            <div class="text-2xl font-bold">
               {{ podcast.title }}
-            </span>
-            <span class="text-sm text-white text-op-80">
-              {{ podcast.description }}
-            </span>
+            </div>
+            <div
+              class="line-clamp-5 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-white text-op-80"
+              v-html="podcast.description.replaceAll(/\n/g, '<br>')"
+            />
+            <div v-if="podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+              <GenreBottle v-for="genre in podcast.episode[0].genres" :key="genre.name" :genre="genre.name" />
+            </div>
           </div>
         </div>
       </div>

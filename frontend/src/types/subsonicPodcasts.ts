@@ -1,5 +1,3 @@
-import type { SubsonicGenre } from './subsonicGenres'
-
 export interface SubsonicPodcastChannel {
   id: string
   parent: string
@@ -19,6 +17,10 @@ export interface SubsonicPodcastChannel {
   episode: SubsonicPodcastEpisode[]
 }
 
+export interface SubsonicPodcastGenre {
+  name: string
+}
+
 export interface SubsonicPodcastEpisode {
   id: string
   streamId: string
@@ -31,7 +33,7 @@ export interface SubsonicPodcastEpisode {
   isDir: string
   year: string
   genre: string
-  genres: SubsonicGenre[]
+  genres: SubsonicPodcastGenre[]
   coverArt: string
   size: string
   contentType: string
