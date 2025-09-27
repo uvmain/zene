@@ -19,7 +19,21 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 
 	var args []interface{}
 
-	query := `WITH base_tracks as (
+	query := `WITH rand AS (
+		SELECT rowid
+		FROM metadata
+		ORDER BY (rowid * ?) % 1000000
+	  limit ? offset ?
+	),`
+
+	if seed == 0 {
+		seed = logic.GenerateRandomInt(1, 10000000)
+	}
+
+	args = append(args, seed, count, offset)
+
+	query += `
+	base_tracks as (
 		select m.musicbrainz_track_id as musicbrainz_track_id ,
 			m.musicbrainz_album_id as musicbrainz_album_id,
 			m.title as title,
@@ -44,8 +58,10 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 			m.channels as channel_count,
 			us.created_at AS starred_date,
 			m.label,
-			u.id as user_id
-		from metadata m
+			u.id as user_id,
+			m.rowid as row_id
+		from rand
+		join metadata m on rand.rowid = m.rowid
 		join user_music_folders f on f.folder_id = m.music_folder_id
 		join users u on f.user_id = u.id
 		left join track_genres g on m.file_path = g.file_path
@@ -54,19 +70,8 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		LEFT JOIN pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND f.user_id = pc.user_id
 		LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
 		left join metadata maa on maa.artist = m.album_artist
-		`
-
-	if seed == 0 {
-		seed = logic.GenerateRandomInt(1, 10000000)
-	}
-
-	query += `
-			group by m.musicbrainz_track_id
-			order BY ((m.rowid * ?) % 1000000)
-		`
-	args = append(args, seed)
-
-	query += `),
+		group by m.musicbrainz_track_id
+	),
 	gr as (
 		SELECT metadata_id,
 			AVG(rating) AS avg_rating
@@ -106,7 +111,8 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		pc.played as last_played,
 		bt.starred_date as starred_date,
 		bt.label
-	from base_tracks bt
+	from rand
+	join base_tracks bt on bt.row_id = rand.rowid
 	join users u on bt.user_id = u.id
 	LEFT JOIN user_ratings ur ON bt.musicbrainz_album_id = ur.metadata_id AND ur.user_id = bt.user_id
 	LEFT JOIN gr ON bt.musicbrainz_album_id = gr.metadata_id
@@ -135,9 +141,6 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		query += ` and year <= ?`
 		args = append(args, toYear)
 	}
-
-	query += ` limit ? offset ?`
-	args = append(args, count, offset)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
