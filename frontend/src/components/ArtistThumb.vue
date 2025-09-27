@@ -12,7 +12,7 @@ const { closeSearch } = useSearch()
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.artist.musicBrainzId)
+  return getCoverArtUrl(props.artist.musicBrainzId, 200)
 })
 
 function navigate() {
@@ -27,6 +27,9 @@ function navigate() {
       <img
         class="h-full w-full rounded-md object-cover"
         :src="coverArtUrl"
+        loading="lazy"
+        width="200"
+        height="200"
         @error="onImageError"
       />
       <div class="relative">

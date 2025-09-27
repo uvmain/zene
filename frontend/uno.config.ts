@@ -1,4 +1,6 @@
+import presetWebFonts from '@unocss/preset-web-fonts'
 import { presetWind3 } from '@unocss/preset-wind3'
+
 import {
   defineConfig,
   transformerDirectives,
@@ -26,15 +28,18 @@ export default defineConfig({
         600: '#872341',
         700: '#544F57',
         800: '#22092C',
-        // 200: '#BED754',
-        // 400: '#E3651D',
-        // 600: '#750E21',
-        // 800: '#191919',
       },
     },
   },
   presets: [
     presetWind3(),
+    presetWebFonts({
+      provider: 'google',
+      fonts: {
+        jura: ['Jura:300,400,500,600,700'],
+        montserrat: ['Montserrat:100,200,300,400,500,600,700,800,900'],
+      },
+    }),
   ],
   transformers: [
     transformerDirectives(),

@@ -4,6 +4,7 @@ import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
+import Unfonts from 'unplugin-fonts/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -24,6 +25,14 @@ export default defineConfig({
         compilerOptions: {
           isCustomElement: tag => tag === 'google-cast-launcher',
         },
+      },
+    }),
+    Unfonts({
+      google: {
+        families: [
+          'Montserrat',
+          'Jura',
+        ],
       },
     }),
     Icons(),

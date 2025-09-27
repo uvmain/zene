@@ -10,7 +10,7 @@ const props = defineProps({
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
 })
 
-const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
+const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrack } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
 const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
@@ -23,7 +23,7 @@ function isTrackPlaying(trackId: string): boolean {
 
 function handlePlay(track: SubsonicSong) {
   if (currentQueue.value?.tracks.some(queueTrack => queueTrack.id === track.id)) {
-    setCurrentlyPlayingTrackInQueue(track)
+    setCurrentlyPlayingTrack(track)
   }
   else if (routeTracks.value?.some(queueTrack => queueTrack.musicBrainzId === track.musicBrainzId)) {
     setCurrentlyPlayingTrackInRouteTracks(track)

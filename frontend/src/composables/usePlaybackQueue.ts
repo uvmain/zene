@@ -13,15 +13,10 @@ export function usePlaybackQueue() {
   }
 
   const setCurrentlyPlayingTrack = (track: SubsonicSong) => {
-    currentlyPlayingTrack.value = track
-  }
-
-  const setCurrentlyPlayingTrackInQueue = (track: SubsonicSong) => {
-    if (!currentQueue.value) {
-      return
+    if (currentQueue.value) {
+      const index = currentQueue.value.tracks.indexOf(track)
+      currentQueue.value.position = index
     }
-    const index = currentQueue.value.tracks.indexOf(track)
-    currentQueue.value.position = index
     currentlyPlayingTrack.value = track
   }
 
@@ -118,7 +113,6 @@ export function usePlaybackQueue() {
     currentlyPlayingTrack,
     currentQueue,
     clearQueue,
-    setCurrentlyPlayingTrackInQueue,
     resetCurrentlyPlayingTrack,
     setCurrentlyPlayingTrack,
     setCurrentQueue,
