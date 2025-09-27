@@ -11,7 +11,7 @@ import (
 	"zene/core/types"
 )
 
-func GetRandomSongs(ctx context.Context, count int, genre string, fromYear string, toYear string, musicFolderInt int) ([]types.SubsonicChild, error) {
+func GetRandomSongs(ctx context.Context, count int, genre string, fromYear string, toYear string, musicFolderInt int, seed int, offset int) ([]types.SubsonicChild, error) {
 	requestUser, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.SubsonicChild{}, err
@@ -19,26 +19,101 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 
 	var args []interface{}
 
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as album_id, m.title, m.album, m.artist, COALESCE(m.track_number, 0) as track,
-		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
-		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
-		m.genre, m.album_artist, maa.musicbrainz_artist_id as album_artist_id, m.bit_depth, m.sample_rate, m.channels,
-		COALESCE(ur.rating, 0) AS user_rating,
-		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
-		COALESCE(SUM(pc.play_count), 0) AS play_count,
-		max(pc.last_played) as played,
-		us.created_at AS starred
-	from metadata m
-	join user_music_folders f on f.folder_id = m.music_folder_id
-	join track_genres g on m.file_path = g.file_path
-	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
-	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
-	left join metadata maa on maa.artist = m.album_artist`
+	query := `WITH base_tracks as (
+		select m.musicbrainz_track_id as musicbrainz_track_id ,
+			m.musicbrainz_album_id as musicbrainz_album_id,
+			m.title as title,
+			m.album as album,
+			m.artist as artist,
+			m.track_number as track_number,
+			REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
+			substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
+			m.musicbrainz_track_id as cover_art,
+			m.size as size,
+			m.duration as duration,
+			m.bitrate as bit_rate,
+			m.file_path as file_path,
+			m.date_added as date_created,
+			m.disc_number as disc_number,
+			m.musicbrainz_artist_id as musicbrainz_artist_id,
+			m.genre as genre_string,
+			m.album_artist as album_artist,
+			maa.musicbrainz_artist_id as album_artist_id,
+			m.bit_depth as bit_depth,
+			m.sample_rate as sample_rate,
+			m.channels as channel_count,
+			us.created_at AS starred_date,
+			m.label,
+			u.id as user_id
+		from metadata m
+		join user_music_folders f on f.folder_id = m.music_folder_id
+		join users u on f.user_id = u.id
+		left join track_genres g on m.file_path = g.file_path
+		LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
+		LEFT JOIN gr ON m.musicbrainz_album_id = gr.metadata_id
+		LEFT JOIN pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND f.user_id = pc.user_id
+		LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
+		left join metadata maa on maa.artist = m.album_artist
+		`
 
-	query += ` where f.user_id = ?`
+	if seed == 0 {
+		seed = logic.GenerateRandomInt(1, 10000000)
+	}
+
+	query += `
+			group by m.musicbrainz_track_id
+			order BY ((m.rowid * ?) % 1000000)
+		`
+	args = append(args, seed)
+
+	query += `),
+	gr as (
+		SELECT metadata_id,
+			AVG(rating) AS avg_rating
+		FROM user_ratings
+		GROUP BY metadata_id
+	),
+	pc AS (
+		SELECT musicbrainz_track_id, user_id, SUM(play_count) AS play_count, MAX(last_played) AS played
+		FROM play_counts 
+		GROUP BY musicbrainz_track_id, user_id
+	)
+	select bt.musicbrainz_track_id,
+		bt.musicbrainz_album_id,
+		bt.title,
+		bt.album,
+		bt.artist,
+		coalesce(bt.track_number,0) as track_number,
+		bt.year,
+		bt.genre,
+		bt.cover_art,
+		bt.size,
+		bt.duration,
+		bt.bit_rate,
+		bt.file_path,
+		bt.date_created,
+		bt.disc_number,
+		bt.musicbrainz_artist_id,
+		bt.genre_string,
+		bt.album_artist,
+		bt.album_artist_id,
+		bt.bit_depth,
+		bt.sample_rate,
+		bt.channel_count,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(gr.avg_rating, 0) AS average_rating,
+		coalesce(pc.play_count, 0) as play_count,
+		pc.played as last_played,
+		bt.starred_date as starred_date,
+		bt.label
+	from base_tracks bt
+	join users u on bt.user_id = u.id
+	LEFT JOIN user_ratings ur ON bt.musicbrainz_album_id = ur.metadata_id AND ur.user_id = bt.user_id
+	LEFT JOIN gr ON bt.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN pc ON bt.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
+	where u.id = ?
+	`
+
 	args = append(args, requestUser.Id)
 
 	if genre != "" {
@@ -61,13 +136,8 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		args = append(args, toYear)
 	}
 
-	query += ` group by m.musicbrainz_track_id`
-
-	randomInt := logic.GenerateRandomInt(1, 10000000)
-	query += fmt.Sprintf(" order BY ((m.rowid * %d) %% 1000000)", randomInt)
-
-	query += ` limit ?`
-	args = append(args, count)
+	query += ` limit ? offset ?`
+	args = append(args, count, offset)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -85,6 +155,7 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		var albumArtistId sql.NullString
 		var starred sql.NullString
 		var played sql.NullString
+		var labels sql.NullString
 
 		result.IsDir = false
 		result.MediaType = "song"
@@ -100,7 +171,7 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
 			&result.ArtistId, &genreString, &albumArtistName, &albumArtistId, &result.BitDepth, &result.SamplingRate,
 			&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
-			&played, &starred); err != nil {
+			&played, &starred, &labels); err != nil {
 			logger.Printf("Failed to scan row in GetSongsByGenre: %v", err)
 			return []types.SubsonicChild{}, err
 		}
@@ -135,6 +206,12 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		}
 
 		result.DisplayAlbumArtist = albumArtistName.String
+
+		if labels.Valid {
+			result.RecordLabels = []types.ChildRecordLabel{
+				{Name: labels.String},
+			}
+		}
 
 		songs = append(songs, result)
 	}

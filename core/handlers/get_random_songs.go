@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"zene/core/database"
 	"zene/core/logger"
-	"zene/core/logic"
 	"zene/core/net"
 	"zene/core/subsonic"
 	"zene/core/types"
@@ -26,21 +25,12 @@ func HandleGetRandomSongs(w http.ResponseWriter, r *http.Request) {
 	fromYear := form["fromyear"]
 	toYear := form["toyear"]
 	musicFolderId := form["musicfolderid"]
+	seed := form["seed"]
+	offset := form["offset"]
 
 	ctx := r.Context()
 
-	ifModifiedSinceHeader := r.Header.Get("If-Modified-Since")
-	if ifModifiedSinceHeader != "" {
-		latestScan, err := database.GetLatestCompletedScan(ctx)
-		if err == nil {
-			latestScanTime := logic.GetStringTimeFormatted(latestScan.CompletedDate)
-			if net.IfModifiedResponse(w, r, latestScanTime) {
-				return
-			}
-		}
-	}
-
-	var countInt int
+	countInt := 10
 	if count != "" {
 		var err error
 		countInt, err = strconv.Atoi(count)
@@ -48,8 +38,26 @@ func HandleGetRandomSongs(w http.ResponseWriter, r *http.Request) {
 			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "count parameter must be an integer", "")
 			return
 		}
-	} else {
-		countInt = 10 // default to ten if param is not provided
+	}
+
+	seedInt := 0
+	if seed != "" {
+		var err error
+		seedInt, err = strconv.Atoi(seed)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "seed parameter must be an integer", "")
+			return
+		}
+	}
+
+	offsetInt := 0
+	if offset != "" {
+		var err error
+		offsetInt, err = strconv.Atoi(offset)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "offset parameter must be an integer", "")
+			return
+		}
 	}
 
 	var fromYearInt int
@@ -95,7 +103,7 @@ func HandleGetRandomSongs(w http.ResponseWriter, r *http.Request) {
 		musicFolderIdInt = 0
 	}
 
-	songs, err := database.GetRandomSongs(ctx, countInt, genre, fromYear, toYear, musicFolderIdInt)
+	songs, err := database.GetRandomSongs(ctx, countInt, genre, fromYear, toYear, musicFolderIdInt, seedInt, offsetInt)
 	if err != nil {
 		logger.Printf("Error getting random songs: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error getting random songs", "")

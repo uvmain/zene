@@ -16,7 +16,11 @@ const artistAndDate = computed(() => {
 })
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.album.id)
+  return getCoverArtUrl(props.album.id, 200)
+})
+
+const coverArtUrlLarge = computed(() => {
+  return getCoverArtUrl(props.album.id, 400)
 })
 
 function navigateAlbum() {
@@ -33,7 +37,15 @@ function navigateArtist() {
 <template>
   <div>
     <div v-if="size === 'lg'" class="group h-32 w-24 md:h-40 md:w-30">
-      <img class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-30" :src="coverArtUrl" alt="Album Cover" @error="onImageError" @click="navigateAlbum()" />
+      <img
+        class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-30"
+        :src="coverArtUrl"
+        alt="Album Cover"
+        loading="lazy"
+        width="200"
+        height="200"
+        @error="onImageError" @click="navigateAlbum()"
+      />
       <div class="relative">
         <PlayButton
           size="small"
@@ -49,7 +61,15 @@ function navigateArtist() {
       </div>
     </div>
     <div v-else-if="props.size === 'xl'" class="h-full flex flex-col items-center gap-2 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-3 md:flex-row md:gap-6 md:p-10">
-      <img :src="coverArtUrl" class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-50" @error="onImageError" @click="navigateAlbum()">
+      <img
+        :src="coverArtUrlLarge"
+        class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-50"
+        loading="lazy"
+        width="400"
+        height="400"
+        @error="onImageError"
+        @click="navigateAlbum()"
+      >
       <div class="flex flex-col gap-2 text-center md:gap-5 md:text-left">
         <div class="cursor-pointer text-lg text-white font-bold md:text-4xl" @click="navigateAlbum()">
           {{ album.name }}

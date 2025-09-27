@@ -3,7 +3,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { usePlaybackQueue } from './usePlaybackQueue'
 
 const routeTracks = useLocalStorage<SubsonicSong[]>('routeTracks', [] as SubsonicSong[])
-const { setCurrentQueue, setCurrentlyPlayingTrackInQueue } = usePlaybackQueue()
+const { setCurrentQueue, setCurrentlyPlayingTrack } = usePlaybackQueue()
 
 export function useRouteTracks() {
   const clearRouteTracks = () => {
@@ -12,7 +12,7 @@ export function useRouteTracks() {
 
   const setCurrentlyPlayingTrackInRouteTracks = (track: SubsonicSong) => {
     setCurrentQueue(routeTracks.value)
-    setCurrentlyPlayingTrackInQueue(track)
+    setCurrentlyPlayingTrack(track)
   }
 
   return {

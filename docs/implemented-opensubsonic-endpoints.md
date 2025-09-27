@@ -24,7 +24,7 @@
 ## Album/song lists
 - [x] getAlbumList
 - [x] getAlbumList2
-- [x] getRandomSongs
+- [x] getRandomSongs[^7]
 - [x] getSongsByGenre
 - [x] getNowPlaying
 - [x] getStarred
@@ -102,3 +102,4 @@
 [^4]: Notes property is not supported.
 [^5]: Top songs are fetched from Deezer, not lastfm.
 [^6]: Additionally allows `coverArt` and multiple `allowedUserId` params to be sent
+[^7]: Additionally allows `seed` and `offset` params to be sent to enable paging through the same random results
