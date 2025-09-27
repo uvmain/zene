@@ -50,6 +50,7 @@ func migrateMetadata(ctx context.Context) {
 	createIndex(ctx, "idx_metadata_album_lower", "metadata", []string{"lower(album)"}, false)
 	createIndex(ctx, "idx_metadata_title_lower", "metadata", []string{"lower(title)"}, false)
 	createIndex(ctx, "idx_metadata_date_added_album_id", "metadata", []string{"date_added", "musicbrainz_album_id"}, false)
+	createIndex(ctx, "idx_metadata_album_artist", "metadata", []string{"album_artist", "musicbrainz_album_id"}, false)
 }
 
 func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) error {

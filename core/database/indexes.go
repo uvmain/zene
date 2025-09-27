@@ -40,15 +40,38 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 	var rows *sql.Rows
 	var err error
 
-	query := `SELECT case when substr(m.artist,1,1) GLOB '*[0-9]*' then '#' else upper(substr(m.artist,1,1)) end as artist_index,
-		m.musicbrainz_artist_id, m.artist, s.created_at, COALESCE(ur.rating, 0) AS user_rating, COALESCE(AVG(gr.rating),0.0) AS average_rating,
-		coalesce(count(distinct maa.album), 0) as album_count
-		FROM metadata m
-		left join metadata maa on m.artist = m.album_artist and maa.musicbrainz_album_id = m.musicbrainz_album_id
-		LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = ?
-		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = ?
-		LEFT JOIN user_ratings gr ON m.musicbrainz_artist_id = gr.metadata_id`
-	args := []any{userId, userId}
+	query := `WITH gr AS (
+		SELECT metadata_id, AVG(rating) AS avg_rating
+		FROM user_ratings
+		GROUP BY metadata_id
+	),
+	album_count AS (
+		select musicbrainz_artist_id, count(musicbrainz_album_id) as album_count
+		from (
+		SELECT musicbrainz_album_id,
+					musicbrainz_artist_id
+		FROM metadata
+		WHERE artist = album_artist
+		GROUP BY musicbrainz_artist_id, musicbrainz_album_id
+		)
+		GROUP BY musicbrainz_artist_id
+	)
+	SELECT
+		CASE WHEN substr(m.artist,1,1) GLOB '[0-9]' THEN '#' ELSE upper(substr(m.artist,1,1)) END AS artist_index,
+		m.musicbrainz_artist_id,
+		m.artist,
+		MAX(s.created_at) AS created_at,
+		COALESCE(max(ur.rating), 0) AS user_rating,
+		COALESCE(gr.avg_rating, 0.0) AS average_rating,
+		ac.album_count AS album_count
+	FROM metadata m
+	JOIN album_count ac on ac.musicbrainz_artist_id = m.musicbrainz_artist_id
+	JOIN user_music_folders mf ON mf.folder_id = m.music_folder_id
+	JOIN users u ON u.id = mf.user_id AND u.id = ?
+	LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = u.id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = u.id
+	LEFT JOIN gr ON m.musicbrainz_artist_id = gr.metadata_id`
+	args := []any{userId}
 
 	if len(musicFolderIds) > 0 {
 		placeholders := make([]string, len(musicFolderIds))
@@ -60,8 +83,8 @@ func getArtistIndexes(ctx context.Context, userId int, musicFolderIds []int) ([]
 		query += ` WHERE m.music_folder_id IN (` + strings.Join(placeholders, ",") + `)`
 	}
 
-	query += ` GROUP BY m.musicbrainz_artist_id, m.artist, s.created_at, ur.rating
-		ORDER BY artist_index asc, m.artist asc;`
+	query += ` GROUP BY m.musicbrainz_artist_id, m.artist
+		ORDER BY m.artist asc;`
 
 	rows, err = DB.QueryContext(ctx, query, args...)
 	if err != nil {
