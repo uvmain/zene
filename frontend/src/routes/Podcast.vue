@@ -79,7 +79,7 @@ onBeforeMount(getPodcast)
       <div class="pb-4">
         <div class="group relative mx-auto max-w-60dvw flex flex-row gap-4 align-top">
           <button
-            class="invisible absolute right-0 rounded bg-zene-600 px-4 py-2 text-white transition group-hover:visible hover:bg-red-700"
+            class="invisible absolute right-0 bg-zene-600 px-4 py-2 text-white transition group-hover:visible hover:bg-red-700"
             @click="showDeleteChannelModal = true"
           >
             Delete Podcast
@@ -87,7 +87,7 @@ onBeforeMount(getPodcast)
           <img
             :src="podcast.coverArt"
             alt="Podcast Cover"
-            class="size-70 rounded-lg object-cover"
+            class="size-70 object-cover"
           />
           <div class="my-auto flex flex-col gap-4">
             <div class="mb-4 text-2xl font-bold">
@@ -113,18 +113,18 @@ onBeforeMount(getPodcast)
             <img
               :src="episode.coverArt"
               alt="Podcast Cover"
-              class="z-1 col-span-full row-span-full my-auto h-48 w-48 rounded-lg object-cover"
+              class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
             />
             <div class="z-2 col-span-full row-span-full m-2 size-12 hover:text-zene-200">
-              <icon-tabler-progress-down v-if="episode.status === 'downloading'" class="size-8 rounded bg-dark bg-opacity-50 p-2" />
-              <icon-tabler-play
+              <icon-nrk-progress v-if="episode.status === 'downloading'" class="size-8 bg-dark bg-opacity-50 p-2" />
+              <icon-nrk-media-play
                 v-else-if="episode.status === 'completed'"
-                class="size-8 rounded bg-dark bg-opacity-50 p-2 outline-3 outline-green outline-solid -outline-offset-3"
+                class="size-8 bg-dark bg-opacity-50 p-2 outline-3 outline-green outline-solid -outline-offset-3"
                 @click="playEpisodeInNewTab(episode.id)"
               />
-              <icon-tabler-download
+              <icon-nrk-download
                 v-else
-                class="size-8 rounded bg-dark bg-opacity-50 p-2"
+                class="size-8 bg-dark bg-opacity-50 p-2"
                 @click="downloadEpisode(episode.id)"
               />
             </div>
@@ -142,15 +142,15 @@ onBeforeMount(getPodcast)
       </div>
     </div>
     <div v-if="showDeleteChannelModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="w-80 rounded-lg bg-dark p-6 text-center shadow-lg">
+      <div class="w-80 bg-dark p-6 text-center shadow-lg">
         <div class="mb-4 text-lg font-semibold">
           Are you sure you want to delete this podcast channel?
         </div>
         <div class="mt-6 flex justify-center gap-4">
-          <button class="rounded bg-gray-400 px-4 py-2 text-white hover:bg-gray-500" @click="showDeleteChannelModal = false">
+          <button class="bg-gray-400 px-4 py-2 text-white hover:bg-gray-500" @click="showDeleteChannelModal = false">
             Cancel
           </button>
-          <button class="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700" @click="confirmDeletePodcast">
+          <button class="bg-red-600 px-4 py-2 text-white hover:bg-red-700" @click="confirmDeletePodcast">
             Delete
           </button>
         </div>

@@ -18,6 +18,8 @@ export default defineConfig({
     'mobile-padding': 'p-3 md:p-6',
     'mobile-margin': 'm-3 md:m-6',
     'mobile-gap': 'gap-3 md:gap-6',
+    'corner-cut': '[clip-path:polygon(10px_0,100%_0,100%_100%,0_100%,0_15px)]',
+    'corner-cut-large': '[clip-path:polygon(30px_0,100%_0,100%_100%,0_100%,0_45px)]',
   },
   theme: {
     colors: {

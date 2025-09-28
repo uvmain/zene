@@ -30,6 +30,6 @@ const coverArtUrl = computed(() => {
     >
       {{ currentlyPlayingTrack?.album }}
     </RouterLink>
-    <img :src="coverArtUrl" class="w-full cursor-pointer rounded-lg object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.albumId}`)">
+    <img :src="coverArtUrl" class="w-full cursor-pointer object-cover" @error="onImageError" @click="() => router.push(`/albums/${currentlyPlayingTrack?.albumId}`)">
   </div>
 </template>

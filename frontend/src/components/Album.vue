@@ -12,7 +12,15 @@ const router = useRouter()
 const { closeSearch } = useSearch()
 
 const artistAndDate = computed(() => {
-  return `${props.album.artist} • ${parseReleaseDate(props.album.releaseDate)}`
+  if (props.album.releaseDate) {
+    return `${props.album.artist} • ${parseReleaseDate(props.album.releaseDate)}`
+  }
+  else if (props.album.year) {
+    return `${props.album.artist} • ${props.album.year}`
+  }
+  else {
+    return props.album.artist
+  }
 })
 
 const coverArtUrl = computed(() => {
@@ -38,7 +46,7 @@ function navigateArtist() {
   <div>
     <div v-if="size === 'lg'" class="group h-32 w-24 md:h-40 md:w-30">
       <img
-        class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-30"
+        class="h-24 w-24 cursor-pointer object-cover md:size-30"
         :src="coverArtUrl"
         alt="Album Cover"
         loading="lazy"
@@ -48,7 +56,6 @@ function navigateArtist() {
       />
       <div class="relative">
         <PlayButton
-          size="small"
           :album="album"
           class="invisible absolute bottom-2 right-1 z-10 group-hover:visible"
         />
@@ -63,7 +70,7 @@ function navigateArtist() {
     <div v-else-if="props.size === 'xl'" class="h-full flex flex-col items-center gap-2 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlLarge"
-        class="h-24 w-24 cursor-pointer rounded-lg object-cover md:size-50"
+        class="h-24 w-24 cursor-pointer object-cover md:size-50"
         loading="lazy"
         width="400"
         height="400"

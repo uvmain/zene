@@ -52,7 +52,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
 </script>
 
 <template>
-  <div class="rounded-lg bg-black/20 p-4">
+  <div class="corner-cut-large bg-black/20 p-4">
     <table class="h-full w-full table-auto text-left">
       <thead>
         <tr class="text-lg text-white/70">
@@ -72,7 +72,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             Play Count
           </th>
           <th class="w-16 text-center">
-            <icon-tabler-clock-hour-3 class="inline" />
+            <icon-nrk-clock class="inline" />
           </th>
         </tr>
         <tr>
@@ -102,14 +102,14 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           >
             <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
               <div v-if="!showAlbum">
-                <div>
+                <div class="absolute left--4 text-sm text-gray-400">
                   {{ track.discNumber }}
                 </div>
-                <span>{{ track.track }}</span>
+                <div>{{ track.track }}</div>
               </div>
               <span v-else>{{ index }}</span>
             </div>
-            <icon-tabler-player-play-filled
+            <icon-nrk-media-play
               class="absolute m-auto translate-x-[-1rem] text-xl opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
             />
           </td>
@@ -150,7 +150,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 class="flex items-center"
                 @click.stop
               >
-                <img class="size-10 rounded-lg rounded-md object-cover" :src="getCoverArtUrl(track.albumId)" alt="Album Cover" @error="onImageError" />
+                <img class="size-10 object-cover" :src="getCoverArtUrl(track.albumId)" alt="Album Cover" @error="onImageError" />
               </RouterLink>
               <RouterLink
                 class="text-white/80 no-underline hover:underline hover:underline-white"
