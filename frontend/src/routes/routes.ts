@@ -8,6 +8,7 @@ import Genre from './GenreRoute.vue'
 import Genres from './GenresRoute.vue'
 import Home from './HomeRoute.vue'
 import Login from './LoginRoute.vue'
+import Playlist from './PlaylistRoute.vue'
 import Playlists from './PlaylistsRoute.vue'
 import Podcast from './Podcast.vue'
 import Podcasts from './Podcasts.vue'
@@ -30,6 +31,7 @@ export const routes: RouteRecordRaw[] = [
   { path: '/tracks/:musicbrainz_track_id', name: 'Track', component: Track as Component },
   { path: '/queue', name: 'Queue', component: Queue as Component },
   { path: '/playlists', name: 'Playlists', component: Playlists as Component },
+  { path: '/playlists/:playlist_id', name: 'Playlist', component: Playlist as Component },
   { path: '/radio', name: 'Radio', component: Radio as Component },
   { path: '/podcasts', name: 'Podcasts', component: Podcasts as Component },
   { path: '/podcasts/:podcast_id', name: 'Podcast', component: Podcast as Component },

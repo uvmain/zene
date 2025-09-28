@@ -135,7 +135,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </td>
 
           <td v-if="showAlbum" class="relative w-15 flex items-center justify-center">
-            <div>
+            <div v-if="track.discNumber > 1" class="absolute left-2 text-sm text-gray-400">
               {{ track.discNumber }}
             </div>
             <div>
