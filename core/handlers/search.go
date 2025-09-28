@@ -155,6 +155,9 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if artists == nil {
+		artists = []types.Artist{}
+	}
 
 	albums := []types.AlbumId3{}
 	if albumCount > 0 {
@@ -165,6 +168,9 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	if albums == nil {
+		albums = []types.AlbumId3{}
+	}
 
 	songs := []types.SubsonicChild{}
 	if songCount > 0 {
@@ -174,6 +180,9 @@ func HandleSearch(w http.ResponseWriter, r *http.Request) {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to search songs", "")
 			return
 		}
+	}
+	if songs == nil {
+		songs = []types.SubsonicChild{}
 	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)

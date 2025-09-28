@@ -1,5 +1,5 @@
 import type { SearchResult } from '~/types'
-import { useDebounce, useSessionStorage } from '@vueuse/core'
+import { useSessionStorage } from '@vueuse/core'
 import { fetchSearchResults } from './backendFetch'
 
 const searchInput = useSessionStorage<string>('searchInput', '')
@@ -9,10 +9,11 @@ export function useSearch() {
     searchInput.value = ''
   }
 
-  const debouncedInput = useDebounce(searchInput, 1000)
-
   const getSearchResults = async (): Promise<SearchResult> => {
-    return fetchSearchResults(debouncedInput.value)
+    if (!searchInput.value || searchInput.value.length < 3) {
+      return Promise.resolve({} as SearchResult)
+    }
+    return fetchSearchResults(searchInput.value)
   }
 
   return {
