@@ -43,16 +43,16 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="artist" class="h-80 rounded-lg">
+  <section v-if="artist" class="h-80">
     <div
-      class="h-full w-full bg-cover bg-center"
+      class="corner-cut-large h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${artistArtUrl})` }"
     >
-      <div class="h-full w-full flex items-center justify-center gap-6 align-middle backdrop-blur-md">
-        <div class="mx-auto flex items-center justify-center gap-6 rounded-lg bg-black/40 p-4 align-middle">
+      <div class="h-full w-full flex items-center justify-center gap-6 align-middle backdrop-blur-lg">
+        <div class="w-full flex items-center justify-center gap-6 bg-black/60 p-4 align-middle">
           <div class="size-60">
             <img
-              class="h-full w-full rounded-md object-cover"
+              class="h-full w-full object-cover"
               :src="artistArtUrl"
               @error="onImageError"
             />

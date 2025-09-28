@@ -40,12 +40,12 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="dropdownRef" class="relative z-20 inline-block text-left">
-    <icon-tabler-settings class="cursor-pointer text-2xl" @click="toggle" />
+    <icon-nrk-settings class="cursor-pointer text-2xl" @click="toggle" />
 
     <transition name="fade">
       <div
         v-if="open"
-        class="absolute right-0 mt-2 w-64 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 md:w-56"
+        class="-md absolute right-0 mt-2 w-64 origin-top-right bg-white shadow-lg ring-1 ring-black ring-opacity-5 md:w-56"
       >
         <div class="py-1">
           <div
@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
             <label class="mb-2 block text-base text-gray-500 md:mb-1 md:text-sm">Stream Quality</label>
             <select
               v-model="streamQuality"
-              class="w-full border border-gray-300 rounded-md px-3 py-2 text-base text-gray-700 md:px-2 md:py-1 md:text-sm focus:outline-none focus:ring focus:ring-blue-200"
+              class="-md w-full border border-gray-300 px-3 py-2 text-base text-gray-700 md:px-2 md:py-1 md:text-sm focus:outline-none focus:ring focus:ring-blue-200"
             >
               <option
                 v-for="quality in StreamQualities"

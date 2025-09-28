@@ -716,36 +716,36 @@ onUnmounted(() => {
 
           <!-- Buttons -->
           <div class="mt-2 flex flex-row items-center justify-center gap-x-2 md:mt-2 md:gap-x-4 sm:gap-x-2">
-            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="stopPlayback()">
-              <icon-tabler-player-stop class="text-lg md:text-xl sm:text-lg" />
+            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="stopPlayback()">
+              <icon-nrk-media-stop class="text-lg md:text-xl sm:text-lg" />
             </button>
-            <button id="shuffle" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-tabler-arrows-shuffle class="text-lg md:text-xl sm:text-lg" />
+            <button id="shuffle" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
+              <icon-nrk-reorder class="text-lg md:text-xl sm:text-lg" />
             </button>
-            <button id="back" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
-              <icon-tabler-player-skip-back class="text-lg md:text-xl sm:text-lg" />
+            <button id="back" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
+              <icon-nrk-media-previous class="text-lg md:text-xl sm:text-lg" />
             </button>
             <button
               id="play-pause"
-              class="h-12 w-12 flex cursor-pointer items-center justify-center rounded-md border-none text-white font-semibold outline-none md:h-12 md:w-12 sm:h-12 sm:w-12"
+              class="corner-cut size-12 flex cursor-pointer items-center justify-center border-none text-white font-semibold outline-none md:h-12 md:w-12 sm:h-12 sm:w-12"
               :class="isPlayPauseActive ? 'bg-zene-200' : 'bg-zene-400 transition-colors duration-200'"
               @click="togglePlayback()"
             >
-              <icon-tabler-player-play v-if="!isPlaying" class="text-2xl md:text-3xl sm:text-2xl" />
-              <icon-tabler-player-pause v-else class="text-2xl md:text-3xl sm:text-2xl" />
+              <icon-nrk-media-play v-if="!isPlaying" class="text-2xl md:text-3xl sm:text-2xl" />
+              <icon-nrk-media-pause v-else class="text-2xl md:text-3xl sm:text-2xl" />
             </button>
-            <button id="forward" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
-              <icon-tabler-player-skip-forward class="text-lg md:text-xl sm:text-lg" />
+            <button id="forward" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
+              <icon-nrk-media-next class="text-lg md:text-xl sm:text-lg" />
             </button>
-            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-tabler-repeat class="text-lg md:text-xl sm:text-lg" />
+            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
+              <icon-nrk-media-jumpto class="text-lg md:text-xl sm:text-lg" />
             </button>
             <button
               id="shuffle"
-              class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
+              class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
               @click="handleGetRandomTracks()"
             >
-              <icon-tabler-dice-3 class="text-lg md:text-xl sm:text-lg" />
+              <icon-nrk-dice-3-active class="text-lg md:text-xl sm:text-lg" />
             </button>
           </div>
         </div>
@@ -761,28 +761,28 @@ onUnmounted(() => {
         <!-- Lyrics button -->
         <button
           id="lyrics"
-          class="h-10 w-10 flex cursor-pointer items-center justify-center rounded-full border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
+          class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-zene-400/0 text-white font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
           @click="showLyrics = !showLyrics"
         >
-          <icon-tabler-microphone-2 class="text-lg md:text-xl sm:text-lg" />
+          <icon-nrk-mening class="text-lg md:text-xl sm:text-lg" />
         </button>
 
         <!-- Playlist button -->
         <div>
           <RouterLink
             to="/queue"
-            class="block flex gap-x-1 rounded-lg px-3 py-2 text-white no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
+            class="block flex gap-x-1 px-3 py-2 text-white no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
           >
-            <icon-tabler-playlist class="text-xl sm:text-xl" />
+            <icon-nrk-media-playlist class="text-xl sm:text-xl" />
           </RouterLink>
         </div>
 
         <!-- Volume controls -->
         <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 md:gap-2">
           <div @click="toggleMute()">
-            <icon-tabler-volume v-if="audioRef.volume > 0.5" class="text-sm sm:text-sm" />
-            <icon-tabler-volume-2 v-else-if="audioRef.volume > 0" class="text-sm sm:text-sm" />
-            <icon-tabler-volume-3 v-else class="text-sm sm:text-sm" />
+            <icon-nrk-media-volume-3 v-if="audioRef.volume > 0.66" class="text-sm sm:text-sm" />
+            <icon-nrk-media-volume-2 v-else-if="audioRef.volume > 0.33" class="text-sm sm:text-sm" />
+            <icon-nrk-media-volume-1 v-else class="text-sm sm:text-sm" />
           </div>
           <input
             type="range"

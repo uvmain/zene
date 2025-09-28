@@ -15,7 +15,10 @@ function navigateToGenre() {
 </script>
 
 <template>
-  <button class="cursor-pointer rounded-full border-none bg-zene-400 px-3 py-1 text-sm text-white outline-none transition-all duration-200 hover:from-zene-400 hover:to-zene-200 hover:bg-gradient-to-b hover:shadow-sm hover:shadow-zene-400" @click="navigateToGenre()">
+  <button
+    class="corner-cut cursor-pointer border-none bg-zene-400 px-3 py-1 text-sm text-white outline-none transition-all duration-200 hover:from-zene-400 hover:to-zene-200 hover:bg-gradient-to-b hover:shadow-sm hover:shadow-zene-400"
+    @click="navigateToGenre()"
+  >
     {{ genre }}
   </button>
 </template>

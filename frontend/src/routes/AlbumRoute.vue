@@ -32,7 +32,7 @@ onUnmounted(() => clearRouteTracks())
 <template>
   <div v-if="album && tracks">
     <div class="flex flex-grow flex-col gap-6">
-      <Album :album="album" size="xl" class="rounded-lg" />
+      <Album :album="album" size="xl" />
       <Tracks :tracks="tracks" />
     </div>
   </div>

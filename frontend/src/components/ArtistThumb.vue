@@ -12,7 +12,7 @@ const { closeSearch } = useSearch()
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.artist.musicBrainzId, 200)
+  return getCoverArtUrl(props.artist.coverArt, 200)
 })
 
 function navigate() {
@@ -25,7 +25,7 @@ function navigate() {
   <div class="w-30 flex flex-col cursor-pointer gap-2" @click="navigate()">
     <div class="group size-30">
       <img
-        class="h-full w-full rounded-md object-cover"
+        class="h-full w-full object-cover"
         :src="coverArtUrl"
         loading="lazy"
         width="200"
@@ -34,7 +34,6 @@ function navigate() {
       />
       <div class="relative">
         <PlayButton
-          size="small"
           :artist="artist"
           class="invisible absolute bottom-2 right-1 z-10 group-hover:visible"
         />

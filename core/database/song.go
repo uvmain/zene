@@ -115,7 +115,8 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 	left join metadata maa on maa.artist = m.album_artist
 	where m.musicbrainz_album_id = ?
 	and u.user_id = ?
-	group by m.musicbrainz_track_id;`
+	group by m.musicbrainz_track_id
+	order by m.disc_number asc, m.track_number asc;`
 
 	var results []types.SubsonicChild
 

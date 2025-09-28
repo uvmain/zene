@@ -22,7 +22,7 @@ async function refresh() {
     <h2 class="cursor-pointer text-lg font-semibold" @click="emits('titleClick')">
       {{ title }}
     </h2>
-    <icon-tabler-refresh class="cursor-pointer text-sm" :class="{ spin: refreshed }" @click="refresh()" />
+    <icon-nrk-refresh class="cursor-pointer text-sm" :class="{ spin: refreshed }" @click="refresh()" />
   </div>
 </template>
 

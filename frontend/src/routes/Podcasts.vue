@@ -60,14 +60,11 @@ onBeforeMount(getPodcasts)
 
 <template>
   <div class="p-4 space-y-4">
-    <button class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" @click="showModal = true">
+    <button class="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" @click="showModal = true">
       Add New Podcast Channel
     </button>
 
     <div class="mt-8">
-      <h2 class="mb-4 text-lg font-bold">
-        Podcasts
-      </h2>
       <div v-if="podcasts.length === 0" class="text-gray-500">
         No podcasts found.
       </div>
@@ -80,7 +77,7 @@ onBeforeMount(getPodcasts)
           <img
             :src="podcast.coverArt"
             alt="Podcast Cover"
-            class="size-50 rounded-lg object-cover"
+            class="size-50 object-cover"
           />
           <div class="my-auto flex flex-col gap-4">
             <div class="text-2xl font-bold">
@@ -100,7 +97,7 @@ onBeforeMount(getPodcasts)
 
     <teleport to="body">
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-        <div class="relative max-w-md w-full rounded-lg bg-white p-6 shadow-lg">
+        <div class="relative max-w-md w-full bg-white p-6 shadow-lg">
           <button class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" aria-label="Close" @click="showModal = false">
             X
           </button>
@@ -110,11 +107,11 @@ onBeforeMount(getPodcasts)
           <form class="space-y-4" @submit.prevent="createNewPodcast">
             <div>
               <label for="stream-url" class="mb-1 block font-medium">Stream URL</label>
-              <input id="stream-url" v-model="newPodcastUrl" type="text" class="w-full border rounded px-3 py-2" placeholder="Enter stream URL" required />
+              <input id="stream-url" v-model="newPodcastUrl" type="text" class="w-full border px-3 py-2" placeholder="Enter stream URL" required />
             </div>
             <button
               type="submit"
-              class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              class="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
               :disabled="isSubmitting || showSuccess"
             >
               <span v-if="isSubmitting && !showSuccess">Adding...</span>

@@ -22,7 +22,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
   >
     <!-- Mobile close button -->
     <div class="mb-4 flex justify-start md:hidden">
-      <icon-tabler-x class="text-2xl text-white transition-colors hover:text-zene-200" @click="closeMobileNav" />
+      <icon-nrk-close class="text-2xl text-white transition-colors hover:text-zene-200" @click="closeMobileNav" />
     </div>
 
     <div class="flex flex-col space-y-6">

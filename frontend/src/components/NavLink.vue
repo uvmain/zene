@@ -32,7 +32,7 @@ function handleLinkClick() {
     }"
     @click="handleLinkClick"
   >
-    <icon-tabler-arrow-down-right
+    <icon-nrk-arrow-right
       class="size-8 translate-y--1 text-cyan opacity-0 transition-all duration-300"
       :class="{
         'opacity-100': currentRoute === routeProp,
