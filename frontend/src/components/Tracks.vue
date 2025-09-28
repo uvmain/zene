@@ -55,7 +55,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
   <div class="corner-cut-large bg-black/20 p-4">
     <table class="h-full w-full table-auto text-left">
       <thead>
-        <tr class="text-lg text-white/70">
+        <tr class="text-lg text-zgray-200">
           <th class="w-15 text-center">
             #
           </th>
@@ -93,8 +93,12 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           v-for="(track, index) in tracks"
           :key="track.path"
           :ref="el => rowRefs[index] = el"
-          class="group cursor-pointer transition-colors duration-200 ease-out hover:bg-zene-200/20"
-          :class="{ 'bg-white/02': index % 2 === 0, 'bg-zene-200/40': isTrackPlaying(track.id) }"
+          class="group cursor-pointer transition-colors duration-200 ease-out"
+          :class="{
+            'hover:bg-accent2/50': !isTrackPlaying(track.id),
+            'bg-white/02': !isTrackPlaying(track.id) && index % 2 === 0,
+            'bg-accent1/50': isTrackPlaying(track.id),
+          }"
           @click="handlePlay(track)"
         >
           <td
@@ -102,7 +106,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           >
             <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
               <div v-if="!showAlbum">
-                <div class="absolute left--4 text-sm text-gray-400">
+                <div class="absolute left--4 text-sm text-zgray-400">
                   {{ track.discNumber }}
                 </div>
                 <div>{{ track.track }}</div>
@@ -117,14 +121,14 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             <div class="flex shrink">
               <div class="flex flex-col px-2">
                 <RouterLink
-                  class="text-ellipsis text-lg text-white/80 no-underline hover:underline hover:underline-white"
+                  class="text-ellipsis text-lg text-zgray-200 no-underline hover:underline hover:underline-white"
                   :to="`/tracks/${track.id}`"
                   @click.stop
                 >
                   {{ track.title }}
                 </RouterLink>
                 <RouterLink
-                  class="text-sm text-white/80 no-underline hover:underline hover:underline-white"
+                  class="text-zgray-300 text-sm no-underline hover:underline hover:underline-white"
                   :to="`/artists/${track.artistId}`"
                   @click.stop
                 >
@@ -135,7 +139,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </td>
 
           <td v-if="showAlbum" class="relative w-15 flex items-center justify-center">
-            <div v-if="track.discNumber > 1" class="absolute left-2 text-sm text-gray-400">
+            <div v-if="track.discNumber > 1" class="absolute left-2 text-sm text-zgray-400">
               {{ track.discNumber }}
             </div>
             <div>
@@ -153,7 +157,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 <img class="size-10 object-cover" :src="getCoverArtUrl(track.albumId)" alt="Album Cover" @error="onImageError" />
               </RouterLink>
               <RouterLink
-                class="text-white/80 no-underline hover:underline hover:underline-white"
+                class="text-zgray-200 no-underline hover:underline hover:underline-white"
                 :to="`/albums/${track.albumId}`"
                 @click.stop
               >

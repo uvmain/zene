@@ -71,7 +71,7 @@ onBeforeMount(getPodcast)
 
 <template>
   <div>
-    <div v-if="!podcast" class="text-gray-500">
+    <div v-if="!podcast" class="text-zgray-200">
       Podcast not found.
     </div>
     <div v-else class="flex flex-col gap-6">
@@ -79,7 +79,7 @@ onBeforeMount(getPodcast)
       <div class="pb-4">
         <div class="group relative mx-auto max-w-60dvw flex flex-row gap-4 align-top">
           <button
-            class="invisible absolute right-0 bg-zene-600 px-4 py-2 text-white transition group-hover:visible hover:bg-red-700"
+            class="z-button absolute right-0 opacity-0 group-hover:opacity-100"
             @click="showDeleteChannelModal = true"
           >
             Delete Podcast
@@ -94,7 +94,7 @@ onBeforeMount(getPodcast)
               {{ podcast.title }}
             </div>
             <div
-              class="line-clamp-6 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-white text-op-80"
+              class="line-clamp-6 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
               v-html="podcast.description.replaceAll(/\n/g, '<br>')"
             />
             <div v-if="podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
@@ -134,7 +134,7 @@ onBeforeMount(getPodcast)
               {{ episode.title }}
             </div>
             <div
-              class="line-clamp-6 max-h-30 overflow-hidden text-ellipsis whitespace-normal text-pretty text-white text-op-80"
+              class="line-clamp-6 max-h-30 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
               v-html="episode.description.replaceAll(/\n/g, '<br>')"
             />
           </div>
@@ -147,10 +147,10 @@ onBeforeMount(getPodcast)
           Are you sure you want to delete this podcast channel?
         </div>
         <div class="mt-6 flex justify-center gap-4">
-          <button class="bg-gray-400 px-4 py-2 text-white hover:bg-gray-500" @click="showDeleteChannelModal = false">
+          <button class="bg-gray-400 px-4 py-2 hover:bg-gray-500" @click="showDeleteChannelModal = false">
             Cancel
           </button>
-          <button class="bg-red-600 px-4 py-2 text-white hover:bg-red-700" @click="confirmDeletePodcast">
+          <button class="bg-red-600 px-4 py-2 hover:bg-red-700" @click="confirmDeletePodcast">
             Delete
           </button>
         </div>

@@ -16,11 +16,17 @@ function nextIndex() {
   if (index.value < indexCount.value - 1) {
     index.value += 1
   }
+  else {
+    index.value = 0
+  }
 }
 
 function prevIndex() {
   if (index.value > 0) {
     index.value -= 1
+  }
+  else {
+    index.value = indexCount.value - 1
   }
 }
 
@@ -53,22 +59,20 @@ onBeforeMount(async () => {
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
-      <div class="h-full w-full flex items-center justify-between backdrop-blur-md">
+      <div class="h-full w-full flex items-center justify-between from-zgray-800 bg-gradient-to-tl backdrop-blur-md">
         <Album :album="albumArray[index]" size="xl" />
-        <div class="corner-cut m-3 mb-auto flex gap-2 bg-zene-700/60 p-3 text-white/80 md:m-6 md:mb-auto md:p-2">
+        <div class="corner-cut m-3 mb-auto flex gap-2 bg-zgray-600 p-3 md:m-6 md:mb-auto md:p-2">
           <icon-nrk-chevron-left
-            class="cursor-pointer text-2xl opacity-80 md:text-3xl active:opacity-100"
-            :class="{ 'hover:text-zene-200': index !== 0 }"
+            class="cursor-pointer text-2xl opacity-80 md:text-3xl hover:text-accent2 active:opacity-100"
             @click="prevIndex"
           />
           <icon-nrk-dice-3
-            class="cursor-pointer text-2xl opacity-80 md:text-3xl hover:text-zene-200 active:opacity-100"
+            class="cursor-pointer text-2xl opacity-80 md:text-3xl hover:text-accent2 active:opacity-100"
             :class="{ shake: isShaking }"
             @click="handleDiceClick()"
           />
           <icon-nrk-chevron-right
-            class="cursor-pointer text-2xl opacity-80 md:text-3xl hover:text-zene-200 active:opacity-100"
-            :class="{ 'text-gray': index === indexCount - 1 }"
+            class="cursor-pointer text-2xl opacity-80 md:text-3xl hover:text-accent2 active:opacity-0"
             @click="nextIndex"
           />
         </div>

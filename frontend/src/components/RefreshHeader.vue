@@ -18,10 +18,10 @@ async function refresh() {
 </script>
 
 <template>
-  <div class="flex flex-row items-center justify-center gap-x-2 py-2 md:justify-start">
-    <h2 class="cursor-pointer text-lg font-semibold" @click="emits('titleClick')">
+  <div class="flex flex-row items-center justify-center gap-x-2 py-4 md:justify-start">
+    <button class="z-button" @click="emits('titleClick')">
       {{ title }}
-    </h2>
+    </button>
     <icon-nrk-refresh class="cursor-pointer text-sm" :class="{ spin: refreshed }" @click="refresh()" />
   </div>
 </template>

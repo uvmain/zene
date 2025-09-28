@@ -35,7 +35,7 @@ onMounted(async () => {
   <div v-if="lyricsRef.length > 0" class="left-0 top-0 isolate z-200 max-h-80vh flex items-center justify-center overflow-y-scroll bg-black/80 p-4 backdrop-blur-2xl">
     <div>
       <div class="">
-        <button class="ml-2 mt-2 bg-zene-400/20 p-1 text-white hover:bg-zene-400/30" @click="$emit('close')">
+        <button class="ml-2 mt-2 bg-zgray-400/20 p-1 hover:bg-zgray-400/30" @click="$emit('close')">
           Close
         </button>
       </div>
@@ -45,7 +45,7 @@ onMounted(async () => {
             v-for="(line, index) in lyricsRef" :key="index"
             :class="{
               'text-green': line.start && line.start <= currentSeconds && (lyricsRef[index + 1]?.start ?? 0) > currentSeconds,
-              'text-white': (line.start ?? 0) >= currentSeconds,
+              '': (line.start ?? 0) >= currentSeconds,
             }"
           >
             {{ (line.start ?? 0) <= currentSeconds && (lyricsRef[index + 1]?.start ?? 0) > currentSeconds

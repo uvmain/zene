@@ -51,7 +51,7 @@ onBeforeMount(getRadioStations)
 
 <template>
   <div class="p-4 space-y-4">
-    <button class="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" @click="showModal = true">
+    <button class="z-button" @click="showModal = true">
       Add New Radio Station
     </button>
 
@@ -59,21 +59,21 @@ onBeforeMount(getRadioStations)
       <h2 class="mb-4 text-lg font-bold">
         Internet Radio Stations
       </h2>
-      <div v-if="radioStations.length === 0" class="text-gray-500">
+      <div v-if="radioStations.length === 0" class="text-zgray-200">
         No radio stations found.
       </div>
       <ul v-else class="space-y-4">
-        <li v-for="station in radioStations" :key="station.id" class="border bg-white p-4 shadow">
-          <div class="text-lg text-blue-700 font-semibold">
+        <li v-for="station in radioStations" :key="station.id" class="border bg-zgray-600 p-4 shadow">
+          <div class="text-lg text-zgray-200 font-semibold">
             {{ station.name }}
           </div>
           <div class="mt-1 text-sm">
-            <span class="font-medium">Stream URL:</span>
-            <a :href="station.streamUrl" target="_blank" class="text-blue-600 hover:underline">{{ station.streamUrl }}</a>
+            <span class="font-medium">Stream URL: </span>
+            <a :href="station.streamUrl" target="_blank" class="text-zgray-200 hover:underline">{{ station.streamUrl }}</a>
           </div>
           <div class="mt-1 text-sm">
-            <span class="font-medium">Homepage:</span>
-            <a :href="station.homepageUrl" target="_blank" class="text-blue-600 hover:underline">{{ station.homepageUrl }}</a>
+            <span class="font-medium">Homepage: </span>
+            <a :href="station.homepageUrl" target="_blank" class="text-zgray-200 hover:underline">{{ station.homepageUrl }}</a>
           </div>
         </li>
       </ul>
@@ -81,29 +81,29 @@ onBeforeMount(getRadioStations)
 
     <teleport to="body">
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-        <div class="relative max-w-md w-full bg-white p-6 shadow-lg">
-          <button class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" aria-label="Close" @click="showModal = false">
+        <div class="relative max-w-md w-full bg-zgray-800 p-6 shadow-lg">
+          <button class="z-button absolute right-2 top-2" aria-label="Close" @click="showModal = false">
             X
           </button>
-          <h2 class="mb-4 text-xl font-bold">
+          <h2 class="mb-4 text-xl text-zgray-200 font-bold">
             Add New Radio Station
           </h2>
           <form class="space-y-4" @submit.prevent="createNewRadioStation">
             <div>
-              <label for="stream-url" class="mb-1 block font-medium">Stream URL</label>
-              <input id="stream-url" v-model="newStreamUrl" type="text" class="w-full border px-3 py-2" placeholder="Enter stream URL" required />
+              <label for="stream-url" class="mb-1 block text-zgray-200 font-medium">Stream URL</label>
+              <input id="stream-url" v-model="newStreamUrl" type="text" class="w-auto border px-3 py-2" placeholder="Enter stream URL" required />
             </div>
             <div>
-              <label for="stream-name" class="mb-1 block font-medium">Station Name</label>
-              <input id="stream-name" v-model="newStreamName" type="text" class="w-full border px-3 py-2" placeholder="Enter station name" required />
+              <label for="stream-name" class="mb-1 block text-zgray-200 font-medium">Station Name</label>
+              <input id="stream-name" v-model="newStreamName" type="text" class="w-auto border px-3 py-2" placeholder="Enter station name" required />
             </div>
             <div>
-              <label for="homepage-url" class="mb-1 block font-medium">Homepage URL</label>
-              <input id="homepage-url" v-model="newStreamHomepageUrl" type="text" class="w-full border px-3 py-2" placeholder="Enter homepage URL" />
+              <label for="homepage-url" class="mb-1 block text-zgray-200 font-medium">Homepage URL</label>
+              <input id="homepage-url" v-model="newStreamHomepageUrl" type="text" class="w-auto border px-3 py-2" placeholder="Enter homepage URL" />
             </div>
             <button
               type="submit"
-              class="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              class="z-button"
               :disabled="isSubmitting || showSuccess"
             >
               <span v-if="isSubmitting && !showSuccess">Adding...</span>

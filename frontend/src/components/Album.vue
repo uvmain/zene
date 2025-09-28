@@ -63,11 +63,11 @@ function navigateArtist() {
       <div class="w-24 truncate text-nowrap text-xs md:w-30 md:text-sm">
         {{ album.name }}
       </div>
-      <div class="w-24 cursor-pointer truncate text-nowrap text-xs text-gray-300 md:w-30" @click="navigateArtist()">
+      <div class="text-zgray-300 w-24 cursor-pointer truncate text-nowrap text-xs md:w-30" @click="navigateArtist()">
         {{ artistAndDate }}
       </div>
     </div>
-    <div v-else-if="props.size === 'xl'" class="h-full flex flex-col items-center gap-2 from-zene-600/90 via-zene-600/80 bg-gradient-to-r p-3 md:flex-row md:gap-6 md:p-10">
+    <div v-else-if="props.size === 'xl'" class="corner-cut-large h-full flex flex-col items-center gap-2 from-zgray-600/90 bg-gradient-to-r p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlLarge"
         class="h-24 w-24 cursor-pointer object-cover md:size-50"
@@ -78,10 +78,10 @@ function navigateArtist() {
         @click="navigateAlbum()"
       >
       <div class="flex flex-col gap-2 text-center md:gap-5 md:text-left">
-        <div class="cursor-pointer text-lg text-white font-bold md:text-4xl" @click="navigateAlbum()">
+        <div class="cursor-pointer text-lg font-bold md:text-4xl" @click="navigateAlbum()">
           {{ album.name }}
         </div>
-        <div class="cursor-pointer text-sm text-white md:text-xl" @click="navigateArtist()">
+        <div class="cursor-pointer text-sm md:text-xl" @click="navigateArtist()">
           {{ artistAndDate }}
         </div>
         <div v-if="album.genres.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">

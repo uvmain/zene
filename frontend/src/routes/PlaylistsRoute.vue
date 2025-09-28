@@ -61,12 +61,12 @@ onBeforeMount(getPlaylists)
 
 <template>
   <div class="p-4 space-y-4">
-    <button class="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700" @click="showModal = true">
+    <button class="z-button" @click="showModal = true">
       Create New Playlist
     </button>
 
     <div class="mt-8">
-      <div v-if="playlists.length === 0" class="text-gray-500">
+      <div v-if="playlists.length === 0" class="text-zgray-200">
         No playlists found.
       </div>
       <div class="flex flex-wrap justify-center gap-6 md:justify-start">
@@ -94,22 +94,29 @@ onBeforeMount(getPlaylists)
     </div>
 
     <teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-        <div class="relative max-w-md w-full bg-white p-6 shadow-lg">
-          <button class="absolute right-2 top-2 text-gray-500 hover:text-gray-700" aria-label="Close" @click="showModal = false">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+        <div class="relative max-w-md w-full bg-zgray-600 p-6 shadow-lg">
+          <button class="z-button absolute right-2 top-2" aria-label="Close" @click="showModal = false">
             X
           </button>
-          <h2 class="mb-4 text-xl font-bold">
+          <h2 class="mb-4 text-xl text-zgray-200 font-bold">
             Add New Playlist
           </h2>
           <form class="space-y-4" @submit.prevent="createNewPlaylist">
             <div>
-              <label for="playlist-name" class="mb-1 block font-medium">Playlist Name</label>
-              <input id="playlist-name" v-model="newPlaylistName" type="text" class="w-full border px-3 py-2" placeholder="Enter playlist name" required />
+              <label for="playlist-name" class="mb-1 block text-zgray-200 font-medium">Playlist Name</label>
+              <input
+                id="playlist-name"
+                v-model="newPlaylistName"
+                type="text"
+                class="w-auto border px-3 py-2"
+                placeholder="Enter playlist name"
+                required
+              />
             </div>
             <button
               type="submit"
-              class="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              class="z-button"
               :disabled="isSubmitting || showSuccess"
             >
               <span v-if="isSubmitting && !showSuccess">Adding...</span>

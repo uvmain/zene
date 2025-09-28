@@ -25,7 +25,7 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
 </script>
 
 <template>
-  <div v-if="searchInput.length >= 3" class="corner-cut-large mt-2 from-zene-400 to-zene-700 bg-gradient-to-b">
+  <div v-if="searchInput.length >= 3" class="corner-cut-large mt-2 from-accent2 to-zgray-800 bg-gradient-to-br">
     <div class="flex flex-col gap-2 p-4">
       <h3>
         Search results for "{{ searchInput }}":
@@ -39,7 +39,7 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
           :key="track.path"
           class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
         >
-          <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-300">
+          <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-zgray-200">
             {{ track.title }}
           </div>
           <Album :album="trackToAlbum(track)" size="lg" />

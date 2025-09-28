@@ -14,7 +14,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
 
   <!-- Navbar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col from-zene-600 to-zene-700 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
+    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col from-zgray-800 to-zgray-600 bg-gradient-to-b p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
     :class="{
       'translate-x-0': isMobileNavOpen,
       '-translate-x-full md:translate-x-0': !isMobileNavOpen,
@@ -22,7 +22,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
   >
     <!-- Mobile close button -->
     <div class="mb-4 flex justify-start md:hidden">
-      <icon-nrk-close class="text-2xl text-white transition-colors hover:text-zene-200" @click="closeMobileNav" />
+      <icon-nrk-close class="hover: text-2xl text-zgray-200 transition-colors" @click="closeMobileNav" />
     </div>
 
     <div class="flex flex-col space-y-6">
@@ -32,7 +32,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
           Zene
         </div>
       </div>
-      <nav class="flex flex-col gap-y-1 px-2 text-xl text-white">
+      <nav class="flex flex-col gap-y-1 px-2 text-xl">
         <NavLink route-name="Home" route-prop="/" />
         <NavLink route-name="Albums" route-prop="/albums" />
         <NavLink route-name="Tracks" route-prop="/tracks" />

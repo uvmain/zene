@@ -54,14 +54,14 @@ onBeforeMount(async () => {
 <template>
   <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="getAlbums()" @title-click="showOrderOptions = !showOrderOptions" />
-    <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto border-1 border-white border-solid bg-zene-800 text-white shadow-lg">
-      <div class="cursor-pointer px-4 py-2 hover:bg-zene-600" @click="setOrder('recentlyUpdated')">
+    <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto border-1 border-zgray-200 border-solid bg-zgray-800">
+      <div class="cursor-pointer px-4 py-2 hover:bg-accent1" @click="setOrder('recentlyUpdated')">
         Recently Updated
       </div>
-      <div class="cursor-pointer px-4 py-2 hover:bg-zene-600" @click="setOrder('random')">
+      <div class="cursor-pointer px-4 py-2 hover:bg-accent1" @click="setOrder('random')">
         Random
       </div>
-      <div class="cursor-pointer px-4 py-2 hover:bg-zene-600" @click="setOrder('alphabetical')">
+      <div class="cursor-pointer px-4 py-2 hover:bg-accent1" @click="setOrder('alphabetical')">
         Alphabetical
       </div>
     </div>

@@ -57,7 +57,7 @@ onBeforeMount(async () => {
               @error="onImageError"
             />
           </div>
-          <div class="text-7xl text-gray-300 font-bold">
+          <div class="text-7xl text-zgray-200 font-bold">
             {{ artist.name }}
           </div>
         </div>

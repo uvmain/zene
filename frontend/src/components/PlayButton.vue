@@ -16,11 +16,11 @@ const { play } = usePlaybackQueue()
 <template>
   <div class="flex items-center align-middle">
     <button
-      class="group corner-cut size-12 cursor-pointer border-none bg-zene-400 px-3 py-1 text-white outline-none transition-all duration-200 hover:from-zene-400 hover:to-zene-200 hover:bg-gradient-to-b hover:shadow-sm hover:shadow-zene-400"
+      class="z-button size-12"
       @click="play(artist, album, track)"
     >
       <icon-nrk-media-play
-        class="translate-x--1 translate-y-1 text-xl transition-all duration-200 group-hover:translate-x-1 md:text-2xl"
+        class="text-xl text-zgray-200"
       />
     </button>
   </div>
