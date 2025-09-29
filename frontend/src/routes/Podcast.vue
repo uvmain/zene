@@ -71,7 +71,7 @@ onBeforeMount(getPodcast)
 
 <template>
   <div>
-    <div v-if="!podcast" class="text-zgray-200">
+    <div v-if="!podcast" class="text-primary">
       Podcast not found.
     </div>
     <div v-else class="flex flex-col gap-6">
@@ -98,7 +98,7 @@ onBeforeMount(getPodcast)
               v-html="podcast.description.replaceAll(/\n/g, '<br>')"
             />
             <div v-if="podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
-              <GenreBottle v-for="genre in podcast.episode[0].genres" :key="genre.name" :genre="genre.name" />
+              <GenreBottle v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@ onBeforeMount(getPodcast)
               alt="Podcast Cover"
               class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
             />
-            <div class="z-2 col-span-full row-span-full m-2 size-12 hover:text-zene-200">
+            <div class="hover:text-zene-200 z-2 col-span-full row-span-full m-2 size-12">
               <icon-nrk-progress v-if="episode.status === 'downloading'" class="size-8 bg-dark bg-opacity-50 p-2" />
               <icon-nrk-media-play
                 v-else-if="episode.status === 'completed'"

@@ -684,7 +684,7 @@ onUnmounted(() => {
 
 <template>
   <footer
-    class="sticky bottom-0 mt-auto w-full bg-zgray-600"
+    class="sticky bottom-0 mt-auto w-full background-2"
   >
     <div v-if="showLyrics && currentlyPlayingTrack">
       <LyricsDisplay :track="currentlyPlayingTrack" :current-seconds="currentTime" @close="showLyrics = false" />
@@ -697,17 +697,17 @@ onUnmounted(() => {
         <div class="">
           <!-- Progress Bar -->
           <div v-if="audioRef" class="max-w-xs w-full flex flex-row items-center gap-2 lg:max-w-200 md:max-w-lg sm:max-w-md md:gap-2">
-            <span id="currentTime" class="w-10 text-right text-sm text-zgray-200 md:w-12 sm:w-10 sm:text-sm">
+            <span id="currentTime" class="w-10 text-right text-sm text-muted md:w-12 sm:w-10 sm:text-sm">
               {{ formatTime(currentTime) }}
             </span>
             <input
               type="range"
-              class="h-2 w-full cursor-pointer bg-zgray-200 accent-accent2 md:h-1"
+              class="h-2 w-full cursor-pointer background-2 accent-primary1 md:h-1"
               :max="currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0"
               :value="currentTime"
               @input="seek"
             />
-            <span id="duration" class="w-10 text-sm text-zgray-200 md:w-12 sm:w-10 sm:text-sm">
+            <span id="duration" class="w-10 text-sm text-muted md:w-12 sm:w-10 sm:text-sm">
               {{ formatTime(currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0) }}
             </span>
           </div>
@@ -715,35 +715,35 @@ onUnmounted(() => {
           <!-- Buttons -->
           <div class="mt-2 flex flex-row items-center justify-center gap-x-2 md:mt-2 md:gap-x-4 sm:gap-x-2">
             <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="stopPlayback()">
-              <icon-nrk-media-stop class="text-lg text-zgray-200 md:text-xl sm:text-lg" />
+              <icon-nrk-media-stop class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>
             <button id="shuffle" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-nrk-reorder class="text-lg text-zgray-200 md:text-xl sm:text-lg" />
+              <icon-nrk-reorder class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>
             <button id="back" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
-              <icon-nrk-media-previous class="text-lg text-zgray-200 md:text-xl sm:text-lg" />
+              <icon-nrk-media-previous class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>
             <button
               id="play-pause"
-              class="z-button size-12"
-              :class="isPlayPauseActive ? 'bg-accent1' : 'bg-accent2 transition-colors duration-200'"
+              class="corner-cut size-12 flex cursor-pointer cursor-pointer items-center justify-center border-none px-3 py-1 text-sm text-muted font-semibold outline-none transition-all duration-200 hover:from-primary1 hover:bg-gradient-to-br hover:text-primary"
+              :class="isPlayPauseActive ? 'bg-primary1' : 'bg-primary2 transition-colors duration-200'"
               @click="togglePlayback()"
             >
-              <icon-nrk-media-play v-if="!isPlaying" class="text-2xl md:text-3xl sm:text-2xl" />
-              <icon-nrk-media-pause v-else class="text-2xl md:text-3xl sm:text-2xl" />
+              <icon-nrk-media-play v-if="!isPlaying" class="text-2xl md:text-3xl" />
+              <icon-nrk-media-pause v-else class="text-2xl md:text-3xl" />
             </button>
             <button id="forward" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
-              <icon-nrk-media-next class="text-lg text-zgray-200 md:text-xl sm:text-lg" />
+              <icon-nrk-media-next class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>
             <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-nrk-media-jumpto class="text-lg text-zgray-200 md:text-xl sm:text-lg" />
+              <icon-nrk-media-jumpto class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>
             <button
               id="shuffle"
               class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
               @click="handleGetRandomTracks()"
             >
-              <icon-nrk-dice-3-active class="text-lg text-zgray-200 md:text-xl sm:text-lg" />
+              <icon-nrk-dice-3-active class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>
           </div>
         </div>
@@ -759,17 +759,17 @@ onUnmounted(() => {
         <!-- Lyrics button -->
         <button
           id="lyrics"
-          class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 text-zgray-200 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
+          class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
           @click="showLyrics = !showLyrics"
         >
-          <icon-nrk-mening class="text-lg text-zgray-200 md:text-xl sm:text-lg" />
+          <icon-nrk-mening class="text-lg text-muted md:text-xl sm:text-lg" />
         </button>
 
         <!-- Playlist button -->
         <div>
           <RouterLink
             to="/queue"
-            class="block flex gap-x-1 px-3 py-2 text-zgray-200 no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
+            class="block flex gap-x-1 px-3 py-2 text-muted no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
           >
             <icon-nrk-media-playlist class="text-xl sm:text-xl" />
           </RouterLink>
@@ -778,13 +778,13 @@ onUnmounted(() => {
         <!-- Volume controls -->
         <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 md:gap-2">
           <div @click="toggleMute()">
-            <icon-nrk-media-volume-3 v-if="audioRef.volume > 0.66" class="text-sm text-zgray-200 sm:text-sm" />
-            <icon-nrk-media-volume-2 v-else-if="audioRef.volume > 0.33" class="text-sm text-zgray-200 sm:text-sm" />
-            <icon-nrk-media-volume-1 v-else class="text-sm text-zgray-200 sm:text-sm" />
+            <icon-nrk-media-volume-3 v-if="audioRef.volume > 0.66" class="text-sm text-muted sm:text-sm" />
+            <icon-nrk-media-volume-2 v-else-if="audioRef.volume > 0.33" class="text-sm text-muted sm:text-sm" />
+            <icon-nrk-media-volume-1 v-else class="text-sm text-muted sm:text-sm" />
           </div>
           <input
             type="range"
-            class="h-2 w-20 cursor-pointer bg-zgray-200 accent-accent2 md:w-30 sm:w-24"
+            class="h-2 w-20 cursor-pointer background-1 accent-primary2 md:w-30 sm:w-24 active:accent-primary1"
             max="1"
             step="0.01"
             :value="currentVolume"

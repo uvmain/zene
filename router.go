@@ -15,7 +15,7 @@ import (
 	"zene/core/logic"
 	"zene/core/net"
 
-	"github.com/NYTimes/gziphandler"
+	"github.com/go-swiss/compress"
 	"github.com/rs/cors"
 )
 
@@ -182,7 +182,7 @@ func StartServer() *http.Server {
 	})
 
 	handler := cors.AllowAll().Handler(
-		gziphandler.GzipHandler(mainHandler),
+		compress.Middleware(mainHandler),
 	)
 
 	var serverAddress string

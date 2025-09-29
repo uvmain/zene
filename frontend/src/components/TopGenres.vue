@@ -17,7 +17,7 @@ onBeforeMount(async () => {
   <div>
     <RefreshHeader title="Top Genres" @refreshed="getGenres()" />
     <div class="flex flex-wrap justify-center gap-2 md:justify-start">
-      <GenreBottle v-for="genre in genres" :key="genre.value" :genre="genre.value" />
+      <GenreBottle v-for="genre in genres?.filter(g => g.value !== '')" :key="genre.value" :genre="genre.value" />
     </div>
   </div>
 </template>

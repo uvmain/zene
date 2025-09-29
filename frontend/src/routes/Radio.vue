@@ -59,46 +59,46 @@ onBeforeMount(getRadioStations)
       <h2 class="mb-4 text-lg font-bold">
         Internet Radio Stations
       </h2>
-      <div v-if="radioStations.length === 0" class="text-zgray-200">
+      <div v-if="radioStations.length === 0" class="text-primary">
         No radio stations found.
       </div>
       <ul v-else class="space-y-4">
-        <li v-for="station in radioStations" :key="station.id" class="border bg-zgray-600 p-4 shadow">
-          <div class="text-lg text-zgray-200 font-semibold">
+        <li v-for="station in radioStations" :key="station.id" class="border background-2 p-4 shadow">
+          <div class="text-lg text-primary font-semibold">
             {{ station.name }}
           </div>
           <div class="mt-1 text-sm">
             <span class="font-medium">Stream URL: </span>
-            <a :href="station.streamUrl" target="_blank" class="text-zgray-200 hover:underline">{{ station.streamUrl }}</a>
+            <a :href="station.streamUrl" target="_blank" class="text-muted hover:underline">{{ station.streamUrl }}</a>
           </div>
           <div class="mt-1 text-sm">
             <span class="font-medium">Homepage: </span>
-            <a :href="station.homepageUrl" target="_blank" class="text-zgray-200 hover:underline">{{ station.homepageUrl }}</a>
+            <a :href="station.homepageUrl" target="_blank" class="text-muted hover:underline">{{ station.homepageUrl }}</a>
           </div>
         </li>
       </ul>
     </div>
 
     <teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-        <div class="relative max-w-md w-full bg-zgray-800 p-6 shadow-lg">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
+        <div class="relative max-w-md w-full background-3 p-6 shadow-lg">
           <button class="z-button absolute right-2 top-2" aria-label="Close" @click="showModal = false">
             X
           </button>
-          <h2 class="mb-4 text-xl text-zgray-200 font-bold">
+          <h2 class="mb-4 text-xl text-primary font-bold">
             Add New Radio Station
           </h2>
           <form class="space-y-4" @submit.prevent="createNewRadioStation">
             <div>
-              <label for="stream-url" class="mb-1 block text-zgray-200 font-medium">Stream URL</label>
+              <label for="stream-url" class="mb-1 block text-muted font-medium">Stream URL</label>
               <input id="stream-url" v-model="newStreamUrl" type="text" class="w-auto border px-3 py-2" placeholder="Enter stream URL" required />
             </div>
             <div>
-              <label for="stream-name" class="mb-1 block text-zgray-200 font-medium">Station Name</label>
+              <label for="stream-name" class="mb-1 block text-muted font-medium">Station Name</label>
               <input id="stream-name" v-model="newStreamName" type="text" class="w-auto border px-3 py-2" placeholder="Enter station name" required />
             </div>
             <div>
-              <label for="homepage-url" class="mb-1 block text-zgray-200 font-medium">Homepage URL</label>
+              <label for="homepage-url" class="mb-1 block text-muted font-medium">Homepage URL</label>
               <input id="homepage-url" v-model="newStreamHomepageUrl" type="text" class="w-auto border px-3 py-2" placeholder="Enter homepage URL" />
             </div>
             <button

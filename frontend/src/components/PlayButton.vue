@@ -20,7 +20,7 @@ const { play } = usePlaybackQueue()
       @click="play(artist, album, track)"
     >
       <icon-nrk-media-play
-        class="text-xl text-zgray-200"
+        class="text-xl text-primary"
       />
     </button>
   </div>

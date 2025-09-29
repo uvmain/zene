@@ -40,31 +40,31 @@ onMounted(async () => {
     <div v-if="loading" class="text-center">
       Loading track details...
     </div>
-    <div v-if="error" class="text-center text-accent1">
+    <div v-if="error" class="text-accent1 text-center">
       {{ error }}
     </div>
     <div v-if="track && !loading && !error" class="flex flex-col gap-8 md:flex-row">
       <img v-if="coverArtUrl" :src="coverArtUrl" alt="Album Art" class="h-auto max-w-30vw w-full shadow-lg" @error="onImageError">
       <div class="flex flex-col md:w-2/3">
-        <h1 class="mb-2 text-3xl text-zgray-200 font-bold">
+        <h1 class="mb-2 text-3xl text-primary font-bold">
           {{ track.title }}
         </h1>
         <RouterLink
-          class="mb-1 cursor-pointer text-xl text-zgray-200 no-underline hover:underline hover:underline-white"
+          class="mb-1 cursor-pointer text-xl text-muted no-underline hover:underline hover:underline-white"
           :to="`/artists/${track.artistId}`"
         >
           Artist: {{ track.artist }}
         </RouterLink>
         <RouterLink
-          class="mb-1 cursor-pointer text-lg text-zgray-200 no-underline hover:underline hover:underline-white"
+          class="mb-1 cursor-pointer text-lg text-muted no-underline hover:underline hover:underline-white"
           :to="`/albums/${track.albumId}`"
         >
           Album: {{ track.album }}
         </RouterLink>
-        <p class="mb-1 text-zgray-200">
+        <p class="mb-1 text-muted">
           Duration: {{ formatTime(track.duration) }}
         </p>
-        <p v-if="track" class="mb-4 text-zgray-200">
+        <p v-if="track" class="mb-4 text-muted">
           Released: {{ track.year }}
         </p>
 

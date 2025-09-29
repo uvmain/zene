@@ -55,7 +55,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
   <div class="corner-cut-large bg-black/20 p-4">
     <table class="h-full w-full table-auto text-left">
       <thead>
-        <tr class="text-lg text-zgray-200">
+        <tr class="text-lg text-muted">
           <th class="w-15 text-center">
             #
           </th>
@@ -76,16 +76,16 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </th>
         </tr>
         <tr>
-          <td><hr class="border-1 border-white/40 border-solid" /></td>
-          <td><hr class="border-1 border-white/40 border-solid" /></td>
+          <td><HRule /></td>
+          <td><HRule /></td>
           <td v-if="showAlbum">
-            <hr class="border-1 border-white/40 border-solid" />
+            <HRule />
           </td>
           <td v-if="showAlbum">
-            <hr class="border-1 border-white/40 border-solid" />
+            <HRule />
           </td>
-          <td><hr class="border-1 border-white/40 border-solid" /></td>
-          <td><hr class="border-1 border-white/40 border-solid" /></td>
+          <td><HRule /></td>
+          <td><HRule /></td>
         </tr>
       </thead>
       <tbody>
@@ -95,9 +95,9 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           :ref="el => rowRefs[index] = el"
           class="group cursor-pointer transition-colors duration-200 ease-out"
           :class="{
-            'hover:bg-accent2/50': !isTrackPlaying(track.id),
-            'bg-white/02': !isTrackPlaying(track.id) && index % 2 === 0,
-            'bg-accent1/50': isTrackPlaying(track.id),
+            'hover:bg-primary2': !isTrackPlaying(track.id),
+            'bg-zshade-800/30 dark:bg-zshade-200/30': !isTrackPlaying(track.id) && index % 2 === 0,
+            'bg-primary1/50': isTrackPlaying(track.id),
           }"
           @click="handlePlay(track)"
         >
@@ -106,7 +106,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           >
             <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
               <div v-if="!showAlbum">
-                <div class="absolute left--4 text-sm text-zgray-400">
+                <div v-if="track.discNumber > 1" class="absolute left--4 text-sm text-muted opacity-50">
                   {{ track.discNumber }}
                 </div>
                 <div>{{ track.track }}</div>
@@ -121,14 +121,14 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             <div class="flex shrink">
               <div class="flex flex-col px-2">
                 <RouterLink
-                  class="text-ellipsis text-lg text-zgray-200 no-underline hover:underline hover:underline-white"
+                  class="text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
                   :to="`/tracks/${track.id}`"
                   @click.stop
                 >
                   {{ track.title }}
                 </RouterLink>
                 <RouterLink
-                  class="text-zgray-300 text-sm no-underline hover:underline hover:underline-white"
+                  class="text-sm text-muted no-underline hover:underline hover:underline-white"
                   :to="`/artists/${track.artistId}`"
                   @click.stop
                 >
@@ -139,7 +139,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </td>
 
           <td v-if="showAlbum" class="relative w-15 flex items-center justify-center">
-            <div v-if="track.discNumber > 1" class="absolute left-2 text-sm text-zgray-400">
+            <div v-if="track.discNumber > 1" class="absolute left-2 text-sm text-muted opacity-60">
               {{ track.discNumber }}
             </div>
             <div>
@@ -157,7 +157,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 <img class="size-10 object-cover" :src="getCoverArtUrl(track.albumId)" alt="Album Cover" @error="onImageError" />
               </RouterLink>
               <RouterLink
-                class="text-zgray-200 no-underline hover:underline hover:underline-white"
+                class="text-muted no-underline hover:underline hover:underline-white"
                 :to="`/albums/${track.albumId}`"
                 @click.stop
               >

@@ -65,7 +65,7 @@ onBeforeMount(getPodcasts)
     </button>
 
     <div class="mt-8">
-      <div v-if="podcasts.length === 0" class="text-zgray-200">
+      <div v-if="podcasts.length === 0" class="text-primary">
         No podcasts found.
       </div>
       <div class="flex flex-wrap justify-center gap-6 md:justify-start">
@@ -88,7 +88,7 @@ onBeforeMount(getPodcasts)
               v-html="podcast.description.replaceAll(/\n/g, '<br>')"
             />
             <div v-if="podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
-              <GenreBottle v-for="genre in podcast.episode[0].genres" :key="genre.name" :genre="genre.name" />
+              <GenreBottle v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
             </div>
           </div>
         </div>
@@ -96,17 +96,17 @@ onBeforeMount(getPodcasts)
     </div>
 
     <teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-        <div class="relative max-w-md w-full bg-zgray-800 p-6">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
+        <div class="relative max-w-md w-full background-3 p-6">
           <button class="z-button" aria-label="Close" @click="showModal = false">
             X
           </button>
-          <h2 class="mb-4 text-xl text-zgray-200 font-bold">
+          <h2 class="mb-4 text-xl text-primary font-bold">
             Add New Podcast
           </h2>
           <form class="space-y-4" @submit.prevent="createNewPodcast">
             <div>
-              <label for="stream-url" class="mb-1 block text-zgray-200 font-medium">Stream URL</label>
+              <label for="stream-url" class="mb-1 block text-muted font-medium">Stream URL</label>
               <input
                 id="stream-url"
                 v-model="newPodcastUrl"
@@ -123,7 +123,7 @@ onBeforeMount(getPodcasts)
             >
               <span v-if="isSubmitting && !showSuccess">Adding...</span>
               <span v-else-if="showSuccess">
-                <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-primary1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
               </span>
               <span v-else>Add Radio Station</span>
             </button>

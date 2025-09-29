@@ -60,14 +60,14 @@ function navigateArtist() {
           class="invisible absolute bottom-2 right-1 z-10 group-hover:visible"
         />
       </div>
-      <div class="w-24 truncate text-nowrap text-xs md:w-30 md:text-sm">
+      <div class="w-24 truncate text-nowrap text-xs text-primary md:w-30 md:text-sm">
         {{ album.name }}
       </div>
-      <div class="text-zgray-300 w-24 cursor-pointer truncate text-nowrap text-xs md:w-30" @click="navigateArtist()">
+      <div class="w-24 cursor-pointer truncate text-nowrap text-xs md:w-30" @click="navigateArtist()">
         {{ artistAndDate }}
       </div>
     </div>
-    <div v-else-if="props.size === 'xl'" class="corner-cut-large h-full flex flex-col items-center gap-2 from-zgray-600/90 bg-gradient-to-r p-3 md:flex-row md:gap-6 md:p-10">
+    <div v-else-if="props.size === 'xl'" class="corner-cut-large h-full flex flex-col items-center gap-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlLarge"
         class="h-24 w-24 cursor-pointer object-cover md:size-50"
@@ -85,7 +85,7 @@ function navigateArtist() {
           {{ artistAndDate }}
         </div>
         <div v-if="album.genres.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
-          <GenreBottle v-for="genre in album.genres" :key="genre.name" :genre="genre.name" />
+          <GenreBottle v-for="genre in album.genres.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
         </div>
         <div class="flex justify-center md:justify-start">
           <PlayButton :album="album" />

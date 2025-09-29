@@ -13,7 +13,7 @@
 ### Fast and feature packed with smart caching
 - All transcoded audio is cached locally and cleaned with smart rules
 - Wide support of If-Modified-Since headers for 304 responses
-- Support for Accept-Encoding headers and gzip compression
+- Support for Accept-Encoding headers and brotli/gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
 - Lyrics automatically fetched on demand from https://lrclib.net and saved locally
 - Album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
