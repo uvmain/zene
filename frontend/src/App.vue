@@ -19,6 +19,7 @@ html, body, #app {
   font-family: 'Jura', sans-serif;
   min-height: 100vh;
   @apply standard;
+  @apply font-semibold;
 }
 
 button, input, select, textarea {

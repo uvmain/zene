@@ -15,10 +15,9 @@ function navigateToGenre() {
 </script>
 
 <template>
-  <button
-    class="z-button"
+  <ZButton
     @click="navigateToGenre()"
   >
     {{ genre }}
-  </button>
+  </ZButton>
 </template>

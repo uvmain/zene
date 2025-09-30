@@ -684,7 +684,7 @@ onUnmounted(() => {
 
 <template>
   <footer
-    class="sticky bottom-0 mt-auto w-full background-2"
+    class="sticky bottom-0 mt-auto w-full border-0 border-t-1 border-zshade-400 border-zshade-600 border-solid background-2"
   >
     <div v-if="showLyrics && currentlyPlayingTrack">
       <LyricsDisplay :track="currentlyPlayingTrack" :current-seconds="currentTime" @close="showLyrics = false" />
@@ -723,15 +723,15 @@ onUnmounted(() => {
             <button id="back" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
               <icon-nrk-media-previous class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>
-            <button
+            <ZButton
               id="play-pause"
-              class="corner-cut size-12 flex cursor-pointer cursor-pointer items-center justify-center border-none px-3 py-1 text-sm text-muted font-semibold outline-none transition-all duration-200 hover:from-primary1 hover:bg-gradient-to-br hover:text-primary"
-              :class="isPlayPauseActive ? 'bg-primary1' : 'bg-primary2 transition-colors duration-200'"
+              :primary="true"
+              :size12="true"
               @click="togglePlayback()"
             >
               <icon-nrk-media-play v-if="!isPlaying" class="text-2xl md:text-3xl" />
               <icon-nrk-media-pause v-else class="text-2xl md:text-3xl" />
-            </button>
+            </ZButton>
             <button id="forward" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
               <icon-nrk-media-next class="text-lg text-muted md:text-xl sm:text-lg" />
             </button>

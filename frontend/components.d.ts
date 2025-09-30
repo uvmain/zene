@@ -17,6 +17,7 @@ declare module 'vue' {
     HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
     HeroAlbum: typeof import('./src/components/HeroAlbum.vue')['default']
     HRule: typeof import('./src/components/HRule.vue')['default']
+    IconFluentDarkTheme24Regular: typeof import('~icons/fluent/dark-theme24-regular')['default']
     IconNrkChevronLeft: typeof import('~icons/nrk/chevron-left')['default']
     IconNrkChevronRight: typeof import('~icons/nrk/chevron-right')['default']
     IconNrkClock: typeof import('~icons/nrk/clock')['default']

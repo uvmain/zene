@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.0.0",
+    "@iconify-json/fluent": "^1.2.32",
     "@iconify-json/nrk": "^1.2.7",
     "@types/blueimp-md5": "^2.18.2",
     "@types/node": "^24.0.1",

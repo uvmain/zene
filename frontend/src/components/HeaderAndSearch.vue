@@ -28,7 +28,7 @@ const toggleDark = useToggle(isDark)
             v-model="searchInput"
             placeholder="Type here to search"
             type="text"
-            class="border border-primary2 background-2 py-2 pl-10 focus:border-primary2 focus:border-solid md:pr-full focus:shadow-primary2 hover:shadow-lg focus:outline-none"
+            class="border-1 border-primary2 background-2 py-2 pl-10 focus:border-primary2 dark:border-opacity-60 focus:border-solid md:pr-full focus:shadow-primary2 hover:shadow-lg focus:outline-none"
             @change="getSearchResults()"
             @input="getSearchResults()"
             @keydown.escape="searchInput = ''"
@@ -37,8 +37,7 @@ const toggleDark = useToggle(isDark)
       </div>
       <div id="user-and-settings" class="flex gap-4 text-muted">
         <div class="items-center justify-center hover:cursor-pointer hover:text-primary" @click="toggleDark()">
-          <icon-nrk-media-tilgjengelighet-ikkelengertilgjengelig v-if="isDark" class="text-2xl" />
-          <icon-nrk-sleep v-else class="text-2xl" />
+          <icon-fluent-dark-theme-24-regular class="text-2xl" />
         </div>
         <SettingsDropDown class="items-center justify-center hover:cursor-pointer hover:text-primary" />
         <div class="items-center justify-center hover:cursor-pointer hover:text-primary">

@@ -61,7 +61,7 @@ onBeforeMount(async () => {
     >
       <div class="h-full w-full flex items-center justify-between background-grad-2 backdrop-blur-md">
         <Album :album="albumArray[index]" size="xl" />
-        <div class="corner-cut m-3 mb-auto flex gap-2 background-3 p-3 md:m-6 md:mb-auto md:p-2">
+        <div class="corner-cut m-3 mb-auto flex gap-2 background-2 p-3 md:m-6 md:mb-auto md:p-2">
           <icon-nrk-chevron-left
             class="cursor-pointer text-2xl opacity-80 md:text-3xl hover:text-primary2 active:opacity-100"
             @click="prevIndex"

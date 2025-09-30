@@ -52,7 +52,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
 </script>
 
 <template>
-  <div class="corner-cut-large bg-black/20 p-4">
+  <div class="corner-cut-large background-2 p-4">
     <table class="h-full w-full table-auto text-left">
       <thead>
         <tr class="text-lg text-muted">
@@ -95,9 +95,9 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           :ref="el => rowRefs[index] = el"
           class="group cursor-pointer transition-colors duration-200 ease-out"
           :class="{
-            'hover:bg-primary2': !isTrackPlaying(track.id),
-            'bg-zshade-800/30 dark:bg-zshade-200/30': !isTrackPlaying(track.id) && index % 2 === 0,
-            'bg-primary1/50': isTrackPlaying(track.id),
+            'hover:bg-primary2/40': !isTrackPlaying(track.id),
+            'background-3': !isTrackPlaying(track.id) && index % 2 === 0,
+            'bg-primary1/40': isTrackPlaying(track.id),
           }"
           @click="handlePlay(track)"
         >
