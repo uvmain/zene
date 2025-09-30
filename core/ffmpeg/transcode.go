@@ -58,25 +58,34 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	if timeOffset > 0 {
-		logger.Printf("Transcoding %s to stream at %dk starting from %ds (no cache)", filePathAbs, maxBitRate, timeOffset)
+		logger.Printf("Transcoding %s to stream at %s %dk starting from %ds (no cache)", filePathAbs, format, maxBitRate, timeOffset)
 	} else {
-		logger.Printf("Transcoding %s to stream at %dk", filePathAbs, maxBitRate)
+		logger.Printf("Transcoding %s to stream at %s %dk", filePathAbs, format, maxBitRate)
 	}
 
-	// Build ffmpeg arguments
+	// Build ffmpeg arguments based on format
 	args := []string{"-loglevel", "error"}
 	if timeOffset > 0 {
 		// Place -ss before -i for faster seek
 		args = append(args, "-ss", fmt.Sprintf("%d", timeOffset))
 	}
-	args = append(args,
-		"-i", filePathAbs,
-		"-vn",
-		"-c:a", format,
-		"-b:a", fmt.Sprintf("%dk", maxBitRate),
-		"-f", "adts",
-		"pipe:1",
-	)
+	args = append(args, "-i", filePathAbs, "-vn")
+
+	var codec, muxer, contentType string
+	switch format {
+	case "aac":
+		codec = "aac"
+		muxer = "adts"
+		contentType = "audio/aac"
+	case "mp3":
+		codec = "libmp3lame"
+		muxer = "mp3"
+		contentType = "audio/mpeg"
+	default:
+		return fmt.Errorf("unsupported format: %s", format)
+	}
+
+	args = append(args, "-c:a", codec, "-b:a", fmt.Sprintf("%dk", maxBitRate), "-f", muxer, "pipe:1")
 
 	cmd := exec.CommandContext(ctx, config.FfmpegPath, args...)
 
@@ -100,7 +109,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		}
 	}()
 
-	w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
+	w.Header().Set("Content-Type", contentType)
 
 	var mw io.Writer = w
 	var cacheFile *os.File

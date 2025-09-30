@@ -12,7 +12,7 @@ defineEmits(['click'])
     class="corner-cut inline-flex items-center align-middle hover:bg-primary1"
     :class="{
       'bg-primary2': primary,
-      'bg-zshade-600 dark:bg-zshade-100': !primary,
+      'bg-zshade-600 dark:bg-zshade-400': !primary,
     }"
   >
     <button
