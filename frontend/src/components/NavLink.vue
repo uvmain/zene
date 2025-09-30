@@ -28,14 +28,14 @@ function handleLinkClick() {
     :class="{
       'translate-x--8': currentRoute !== routeProp,
       'hover:translate-x--6': currentRoute !== routeProp,
-      'translate-x-0': currentRoute === routeProp,
+      'translate-x-0': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
     }"
     @click="handleLinkClick"
   >
-    <icon-nrk-arrow-right
-      class="size-8 translate-y--1 text-cyan opacity-0 transition-all duration-300"
+    <icon-nrk-chevron-right
+      class="size-8 translate-y--1 text-primary1 opacity-0 transition-all duration-300"
       :class="{
-        'opacity-100': currentRoute === routeProp,
+        'opacity-100': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
       }"
     />
     {{ routeName }}
@@ -43,11 +43,7 @@ function handleLinkClick() {
 </template>
 
 <style scoped>
-a {
-  @apply uppercase;
-}
-
 .navlink {
-  @apply block flex gap-x-1 py-2 text-white font-semibold no-underline transition-all duration-100;
+  @apply block flex gap-x-1 py-2 text-muted font-semibold no-underline transition-all duration-100 uppercase;
 }
 </style>

@@ -15,10 +15,9 @@ function navigateToGenre() {
 </script>
 
 <template>
-  <button
-    class="corner-cut cursor-pointer border-none bg-zene-400 px-3 py-1 text-sm text-white outline-none transition-all duration-200 hover:from-zene-400 hover:to-zene-200 hover:bg-gradient-to-b hover:shadow-sm hover:shadow-zene-400"
+  <ZButton
     @click="navigateToGenre()"
   >
     {{ genre }}
-  </button>
+  </ZButton>
 </template>

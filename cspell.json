@@ -50,6 +50,7 @@
         "musicfolderid",
         "ncruces",
         "nfnt",
+        "nrk",
         "playlistid",
         "Scrobble",
         "Scrobbling",
@@ -67,7 +68,8 @@
         "vueuse",
         "wal",
         "zene",
-        "zeneclient"
+        "zeneclient",
+        "zshade"
     ],
     "ignoreWords": [],
     "import": []

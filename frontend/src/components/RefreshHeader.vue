@@ -18,11 +18,11 @@ async function refresh() {
 </script>
 
 <template>
-  <div class="flex flex-row items-center justify-center gap-x-2 py-2 md:justify-start">
-    <h2 class="cursor-pointer text-lg font-semibold" @click="emits('titleClick')">
+  <div class="flex flex-row items-center justify-center gap-x-2 py-4 md:justify-start">
+    <ZButton @click="emits('titleClick')">
       {{ title }}
-    </h2>
-    <icon-nrk-refresh class="cursor-pointer text-sm" :class="{ spin: refreshed }" @click="refresh()" />
+    </ZButton>
+    <icon-nrk-refresh class="cursor-pointer text-sm hover:text-primary2" :class="{ spin: refreshed }" @click="refresh()" />
   </div>
 </template>
 
@@ -32,11 +32,11 @@ async function refresh() {
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(-360deg);
+    transform: rotate(360deg);
   }
 }
 
 .spin {
-  animation: spin 0.5s linear;
+  animation: spin 0.3s linear;
 }
 </style>

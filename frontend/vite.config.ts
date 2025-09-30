@@ -30,7 +30,6 @@ export default defineConfig({
     Unfonts({
       google: {
         families: [
-          'Montserrat',
           'Jura',
         ],
       },

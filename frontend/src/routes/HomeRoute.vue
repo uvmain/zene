@@ -1,10 +1,8 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-4">
     <HeroAlbum />
-    <section class="grid grid-cols-1 gap-6 md:grid-cols-4">
-      <Albums class="md:col-span-2" />
-      <Artists />
-      <TopGenres />
-    </section>
+    <Albums :limit="20" />
+    <Artists :limit="10" />
+    <TopGenres />
   </div>
 </template>

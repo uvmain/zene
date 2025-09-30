@@ -18,7 +18,7 @@ onBeforeMount(async () => {
     </h2>
     <div class="flex flex-wrap gap-6">
       <div v-if="genres" class="flex flex-wrap cursor-pointer gap-2">
-        <div v-for="genre in genres" :key="genre.value">
+        <div v-for="genre in genres.filter(g => g.value !== '')" :key="genre.value">
           <GenreBottle :genre="genre.value" class="cursor-pointer" @click="() => router.push(`/genres/${genre.value}`)" />
         </div>
       </div>

@@ -49,7 +49,7 @@ onBeforeMount(async () => {
       :style="{ backgroundImage: `url(${artistArtUrl})` }"
     >
       <div class="h-full w-full flex items-center justify-center gap-6 align-middle backdrop-blur-lg">
-        <div class="w-full flex items-center justify-center gap-6 bg-black/60 p-4 align-middle">
+        <div class="w-full flex items-center justify-center gap-6 background-grad-2 p-4 align-middle">
           <div class="size-60">
             <img
               class="h-full w-full object-cover"
@@ -57,7 +57,7 @@ onBeforeMount(async () => {
               @error="onImageError"
             />
           </div>
-          <div class="text-7xl text-gray-300 font-bold">
+          <div class="text-7xl text-primary font-bold">
             {{ artist.name }}
           </div>
         </div>

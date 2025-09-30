@@ -20,7 +20,7 @@ const toggleDark = useToggle(isDark)
 
       <div class="flex flex-grow items-center justify-center">
         <div class="relative max-w-xs w-full md:max-w-md md:w-1/2">
-          <span class="absolute inset-y-0 left-0 h-full flex items-center justify-center pl-3 text-gray-400">
+          <span class="absolute inset-y-0 left-0 h-full flex items-center justify-center pl-3 text-muted">
             <icon-nrk-search class="text-xl" />
           </span>
           <input
@@ -28,20 +28,19 @@ const toggleDark = useToggle(isDark)
             v-model="searchInput"
             placeholder="Type here to search"
             type="text"
-            class="border border-zene-400 bg-gray-800 py-2 pl-10 text-white focus:border-zene-200 focus:border-solid md:pr-full focus:shadow-zene-400 hover:shadow-lg focus:outline-none"
+            class="border-1 border-primary2 background-2 py-2 pl-10 focus:border-primary2 dark:border-opacity-60 focus:border-solid md:pr-full focus:shadow-primary2 hover:shadow-lg focus:outline-none"
             @change="getSearchResults()"
             @input="getSearchResults()"
             @keydown.escape="searchInput = ''"
           >
         </div>
       </div>
-      <div id="user-and-settings" class="flex gap-4 text-gray-400">
-        <div class="items-center justify-center hover:cursor-pointer hover:text-white" @click="toggleDark()">
-          <icon-nrk-media-tilgjengelighet-ikkelengertilgjengelig v-if="isDark" class="text-2xl" />
-          <icon-nrk-sleep v-else class="text-2xl" />
+      <div id="user-and-settings" class="flex gap-4 text-muted">
+        <div class="items-center justify-center hover:cursor-pointer hover:text-primary" @click="toggleDark()">
+          <icon-fluent-dark-theme-24-regular class="text-2xl" />
         </div>
-        <SettingsDropDown class="items-center justify-center hover:text-white" />
-        <div class="items-center justify-center hover:cursor-pointer hover:text-white">
+        <SettingsDropDown class="items-center justify-center hover:cursor-pointer hover:text-primary" />
+        <div class="items-center justify-center hover:cursor-pointer hover:text-primary">
           <icon-nrk-user-loggedin class="text-2xl" />
         </div>
       </div>

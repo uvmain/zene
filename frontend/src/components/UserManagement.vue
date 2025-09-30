@@ -87,7 +87,7 @@ onMounted(async () => {
       <div>
         <div class="mb-4">
           <button
-            class="bg-blue-500 px-4 py-2 text-white font-bold hover:bg-blue-700"
+            class="z-button"
             @click="openCreateUserDialog"
           >
             Create User
@@ -122,13 +122,13 @@ onMounted(async () => {
                 </td>
                 <td class="whitespace-nowrap px-4 py-4 space-x-2">
                   <button
-                    class="bg-yellow-500 px-3 py-1 text-sm text-white font-semibold hover:bg-yellow-600"
+                    class="bg-yellow-500 px-3 py-1 text-sm font-semibold hover:bg-yellow-600"
                     @click="openEditUserDialog(user)"
                   >
                     Edit
                   </button>
                   <button
-                    class="bg-red-500 px-3 py-1 text-sm text-white font-semibold hover:bg-red-600"
+                    class="bg-red-500 px-3 py-1 text-sm font-semibold hover:bg-red-600"
                     @click="openDeleteUserDialog(user)"
                   >
                     Delete
@@ -168,7 +168,7 @@ onMounted(async () => {
               <button type="button" class="bg-gray-100 px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-200" @click="showCreateUserDialog = false">
                 Cancel
               </button>
-              <button type="submit" class="bg-blue-600 px-4 py-2 text-sm text-white font-medium hover:bg-blue-700">
+              <button type="submit" class="bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700">
                 Create
               </button>
             </div>
@@ -201,7 +201,7 @@ onMounted(async () => {
               <button type="button" class="bg-gray-100 px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-200" @click="showEditUserDialog = false">
                 Cancel
               </button>
-              <button type="submit" class="bg-yellow-600 px-4 py-2 text-sm text-white font-medium hover:bg-yellow-700">
+              <button type="submit" class="bg-yellow-600 px-4 py-2 text-sm font-medium hover:bg-yellow-700">
                 Update
               </button>
             </div>
@@ -222,7 +222,7 @@ onMounted(async () => {
             <button type="button" class="bg-gray-100 px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-200" @click="showDeleteUserDialog = false">
               Cancel
             </button>
-            <button class="bg-red-600 px-4 py-2 text-sm text-white font-medium hover:bg-red-700" @click="handleDeleteUser">
+            <button class="bg-red-600 px-4 py-2 text-sm font-medium hover:bg-red-700" @click="handleDeleteUser">
               Delete
             </button>
           </div>

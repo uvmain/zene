@@ -39,7 +39,7 @@ function navigate() {
         />
       </div>
     </div>
-    <div class="text-nowrap text-xs text-gray-300">
+    <div class="text-nowrap text-sm text-primary">
       {{ artist.name }}
     </div>
   </div>

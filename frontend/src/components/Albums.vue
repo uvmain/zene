@@ -54,19 +54,19 @@ onBeforeMount(async () => {
 <template>
   <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="getAlbums()" @title-click="showOrderOptions = !showOrderOptions" />
-    <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto border-1 border-white border-solid bg-zene-800 text-white shadow-lg">
-      <div class="cursor-pointer px-4 py-2 hover:bg-zene-600" @click="setOrder('recentlyUpdated')">
+    <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto background-2">
+      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('recentlyUpdated')">
         Recently Updated
       </div>
-      <div class="cursor-pointer px-4 py-2 hover:bg-zene-600" @click="setOrder('random')">
+      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('random')">
         Random
       </div>
-      <div class="cursor-pointer px-4 py-2 hover:bg-zene-600" @click="setOrder('alphabetical')">
+      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('alphabetical')">
         Alphabetical
       </div>
     </div>
-    <div class="flex flex-wrap justify-center gap-6 md:justify-start">
-      <div v-for="album in albums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+    <div class="flex flex-wrap justify-center gap-6 overflow-hidden md:justify-start">
+      <div v-for="album in albums" :key="album.id" class="transition duration-200 hover:scale-110">
         <Album :album="album" size="lg" />
       </div>
     </div>
