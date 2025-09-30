@@ -7,7 +7,7 @@
 [![Build](https://github.com/uvmain/zene/actions/workflows/build.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/build.yml)
 
 # Zene
-![Zene screenshot](./docs/assets/zene-home.webp)
+![Zene screenshot](./docs/assets/zene-home-v200.webp)
 
 ## Self hosted Music Server and Web player
 ### Fast and feature packed with smart caching
