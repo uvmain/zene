@@ -19,7 +19,8 @@ import (
 	"zene/core/types"
 )
 
-func RunScan(ctx context.Context) (types.ScanStatus, error) {
+func RunScan() (types.ScanStatus, error) {
+	ctx := context.Background()
 	latestScan, err := database.GetLatestScan(ctx)
 	if err != nil && err != sql.ErrNoRows {
 		logger.Printf("Error getting latest scan: %v", err)

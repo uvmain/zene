@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -123,4 +124,24 @@ func resizeBytesAndSaveAsJPG(imgBytes []byte, outputPath string, pixelSize int) 
 		logger.Printf("Failed to encode image to jpg: %v", err)
 		return
 	}
+}
+
+func getImageFromFile(file multipart.File) (image.Image, error) {
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+	return img, nil
+}
+
+func ResizeMultipartFileAndSaveAsJPG(file multipart.File, filepath string, pixelSize int) error {
+	defer file.Close()
+
+	img, err := getImageFromFile(file)
+	if err != nil {
+		logger.Printf("Failed to decode image: %v", err)
+		return err
+	}
+
+	return ResizeImageAndSaveAsJPG(img, filepath, pixelSize)
 }

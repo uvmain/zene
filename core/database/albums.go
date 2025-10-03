@@ -213,3 +213,28 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 
 	return album, nil
 }
+
+func SelectAlbumIds(ctx context.Context) ([]string, error) {
+	var ids []string
+
+	query := `SELECT distinct musicbrainz_album_id FROM metadata`
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ids, nil
+}

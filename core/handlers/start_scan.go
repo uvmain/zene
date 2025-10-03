@@ -17,7 +17,7 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
 
-	scanStatus, err := scanner.RunScan(r.Context())
+	scanStatus, err := scanner.RunScan()
 	if err != nil {
 		if scanStatus.Scanning {
 			logger.Printf("Error starting scan: %v", scanStatus)

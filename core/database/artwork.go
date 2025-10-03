@@ -26,7 +26,7 @@ func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId 
 	return row, nil
 }
 
-func InsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string, dateModified string) error {
+func UpsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 	query := `INSERT INTO album_art (musicbrainz_album_id, date_modified)
 		VALUES (?, ?)
 		ON CONFLICT(musicbrainz_album_id) DO UPDATE SET date_modified=excluded.date_modified
