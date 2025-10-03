@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 
+	"golang.org/x/sync/singleflight"
+
 	"zene/core/logger"
 	"zene/core/logic"
 	"zene/core/net"
@@ -16,8 +18,9 @@ import (
 )
 
 var (
-	mbCache   = make(map[string]types.MbRelease)
-	mbCacheMu sync.RWMutex
+	mbCache        = make(map[string]types.MbRelease)
+	mbCacheMu      sync.RWMutex
+	mbSingleflight singleflight.Group
 )
 
 func ClearMbCache() {
@@ -36,42 +39,58 @@ func GetMetadataForMusicBrainzAlbumId(musicBrainzAlbumId string) (types.MbReleas
 		return data, nil
 	}
 
-	logger.Printf("Fetching metadata from MB for album ID: %s", musicBrainzAlbumId)
-	url := fmt.Sprintf("http://musicbrainz.org/ws/2/release/%s?fmt=json&inc=recordings", musicBrainzAlbumId)
+	v, err, _ := mbSingleflight.Do(musicBrainzAlbumId, func() (interface{}, error) {
+		// Double-check cache inside singleflight
+		mbCacheMu.RLock()
+		cached, found := mbCache[musicBrainzAlbumId]
+		mbCacheMu.RUnlock()
+		if found {
+			return cached, nil
+		}
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return types.MbRelease{}, fmt.Errorf("HTTP New Request failed: %v", err)
-	}
+		logger.Printf("Fetching metadata from MB for album ID: %s", musicBrainzAlbumId)
+		url := fmt.Sprintf("http://musicbrainz.org/ws/2/release/%s?fmt=json&inc=recordings", musicBrainzAlbumId)
 
-	net.AddUserAgentHeaderToRequest(req)
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return types.MbRelease{}, fmt.Errorf("HTTP New Request failed: %v", err)
+		}
 
-	res, err := client.Do(req)
-	if err != nil {
-		return types.MbRelease{}, fmt.Errorf("HTTP error: %w", err)
-	}
-	defer res.Body.Close()
+		net.AddUserAgentHeaderToRequest(req)
 
-	if res.StatusCode != http.StatusOK {
-		return types.MbRelease{}, fmt.Errorf("unexpected status: %s", res.Status)
-	}
+		res, err := client.Do(req)
+		if err != nil {
+			return types.MbRelease{}, fmt.Errorf("HTTP error: %w", err)
+		}
+		defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
+		if res.StatusCode != http.StatusOK {
+			return types.MbRelease{}, fmt.Errorf("unexpected status: %s", res.Status)
+		}
+
+		body, err := io.ReadAll(res.Body)
+		if err != nil {
+			return types.MbRelease{}, err
+		}
+
+		var mbData types.MbRelease
+		if err := json.Unmarshal(body, &mbData); err != nil {
+			return types.MbRelease{}, err
+		}
+
+		// Store in cache
+		mbCacheMu.Lock()
+		mbCache[musicBrainzAlbumId] = mbData
+		mbCacheMu.Unlock()
+
+		return mbData, nil
+	})
 	if err != nil {
 		return types.MbRelease{}, err
 	}
 
-	if err := json.Unmarshal(body, &data); err != nil {
-		return types.MbRelease{}, err
-	}
-
-	// Store in cache
-	mbCacheMu.Lock()
-	mbCache[musicBrainzAlbumId] = data
-	mbCacheMu.Unlock()
-
-	return data, nil
+	return v.(types.MbRelease), nil
 }
 
 func GetAlbumArtUrl(ctx context.Context, musicBrainzAlbumId string) (string, error) {
