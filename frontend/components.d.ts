@@ -33,7 +33,6 @@ declare module 'vue' {
     IconNrkMediaPlaylist: typeof import('~icons/nrk/media-playlist')['default']
     IconNrkMediaPrevious: typeof import('~icons/nrk/media-previous')['default']
     IconNrkMediaStop: typeof import('~icons/nrk/media-stop')['default']
-    IconNrkMediaTilgjengelighetIkkelengertilgjengelig: typeof import('~icons/nrk/media-tilgjengelighet-ikkelengertilgjengelig')['default']
     IconNrkMediaVolume1: typeof import('~icons/nrk/media-volume1')['default']
     IconNrkMediaVolume2: typeof import('~icons/nrk/media-volume2')['default']
     IconNrkMediaVolume3: typeof import('~icons/nrk/media-volume3')['default']
@@ -43,7 +42,6 @@ declare module 'vue' {
     IconNrkReorder: typeof import('~icons/nrk/reorder')['default']
     IconNrkSearch: typeof import('~icons/nrk/search')['default']
     IconNrkSettings: typeof import('~icons/nrk/settings')['default']
-    IconNrkSleep: typeof import('~icons/nrk/sleep')['default']
     IconNrkUserLoggedin: typeof import('~icons/nrk/user-loggedin')['default']
     LyricsDisplay: typeof import('./src/components/LyricsDisplay.vue')['default']
     NavArt: typeof import('./src/components/NavArt.vue')['default']
@@ -58,7 +56,6 @@ declare module 'vue' {
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']
     UserManagement: typeof import('./src/components/UserManagement.vue')['default']
-    Zbutton: typeof import('./src/components/Zbutton.vue')['default']
     ZButton: typeof import('./src/components/ZButton.vue')['default']
   }
 }

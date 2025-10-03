@@ -213,3 +213,18 @@ func StringToArray(inputString, separator string) []string {
 	}
 	return stringArray
 }
+
+func FilterArray[T any](s []T, f func(T) (bool, error)) ([]T, error) {
+	var result []T
+	for _, val := range s {
+		ok, err := f(val)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			continue
+		}
+		result = append(result, val)
+	}
+	return result, nil
+}

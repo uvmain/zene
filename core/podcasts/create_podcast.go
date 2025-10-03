@@ -143,7 +143,9 @@ func createPodcastEpisodesForFeed(ctx context.Context, feed *gofeed.Feed, podcas
 
 	database.UpdatePodcastChannelLastRefresh(podcastId)
 
-	logger.Printf("Inserted %d new episodes for podcast ID %d, %s", len(podcastEpisodes), podcastId, feed.Title)
+	if len(podcastEpisodes) > 0 {
+		logger.Printf("Inserted %d new episodes for podcast ID %d, %s", len(podcastEpisodes), podcastId, feed.Title)
+	}
 
 	return nil
 }

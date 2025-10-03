@@ -9,7 +9,7 @@ const props = defineProps({
 
 const albums = ref<SubsonicAlbum[]>()
 const showOrderOptions = ref(false)
-const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical'>('currentAlbumOrder', 'recentlyUpdated')
+const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate'>('currentAlbumOrder', 'recentlyUpdated')
 
 const headerTitle = computed(() => {
   switch (currentOrder.value) {
@@ -19,12 +19,14 @@ const headerTitle = computed(() => {
       return 'Albums: Random'
     case 'alphabetical':
       return 'Albums: Alphabetical'
+    case 'releaseDate':
+      return 'Albums: Release Date'
     default:
       return 'Albums'
   }
 })
 
-function setOrder(order: 'recentlyUpdated' | 'random' | 'alphabetical') {
+function setOrder(order: 'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate') {
   currentOrder.value = order
   showOrderOptions.value = false
   getAlbums()
@@ -41,6 +43,9 @@ async function getAlbums() {
       break
     case 'alphabetical':
       type = 'alphabeticalbyname'
+      break
+    case 'releaseDate':
+      type = 'release'
       break
   }
   albums.value = await fetchAlbums(type, props.limit, 0)
@@ -63,6 +68,9 @@ onBeforeMount(async () => {
       </div>
       <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('alphabetical')">
         Alphabetical
+      </div>
+      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('releaseDate')">
+        Release Date
       </div>
     </div>
     <div class="flex flex-wrap justify-center gap-6 overflow-hidden md:justify-start">

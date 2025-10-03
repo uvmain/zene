@@ -159,16 +159,32 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 	}
 
 	// for each file found, either insert or update a metadata row
-	audioFilesToInsert, err := getOutdatedOrMissing(audioFiles, metadataFiles)
-	if len(audioFilesToInsert) > 0 {
-		changesMade = true
-	}
-	if err != nil {
-		return false, fmt.Errorf("getting outdated or missing files: %v", err)
-	}
-	err = upsertMetadataForFiles(ctx, audioFilesToInsert)
-	if err != nil {
-		return false, fmt.Errorf("upserting metadata rows: %v", err)
+	for _, audioFile := range audioFiles {
+		matchingMetadata, err := logic.FilterArray(metadataFiles, func(mf types.File) (bool, error) {
+			return mf.FilePath == audioFile.FilePathAbs, nil
+		})
+		if err != nil {
+			return false, fmt.Errorf("filtering metadata files: %v", err)
+		}
+		if len(matchingMetadata) > 0 {
+			// Update existing metadata..
+			metadataDateModified := matchingMetadata[0].DateModified
+			if logic.GetStringTimeFormatted(metadataDateModified).Before(logic.GetStringTimeFormatted(audioFile.DateModified)) {
+				// if the file's modified date is more recent than in the database
+				err = upsertMetadataForFiles(ctx, []types.File{audioFile})
+				if err != nil {
+					return false, fmt.Errorf("upserting metadata for existing file %s: %v", audioFile.FilePathAbs, err)
+				}
+				changesMade = true
+			} else {
+				// Insert new metadata
+				err = upsertMetadataForFiles(ctx, []types.File{audioFile})
+				if err != nil {
+					return false, fmt.Errorf("upserting metadata for new file %s: %v", audioFile.FilePathAbs, err)
+				}
+				changesMade = true
+			}
+		}
 	}
 
 	// for each metadata row that does not exist in the files list, delete that row
@@ -215,36 +231,6 @@ func getAudioFiles(ctx context.Context, musicDir string) ([]types.File, error) {
 		return []types.File{}, fmt.Errorf("getting slice of audio files from the filesystem: %v", err)
 	}
 	return audioFiles, nil
-}
-
-// takes two slices of types.File
-// returns entries from slice1 where either it does not exist in slice2, or the slice2 date is newer
-func getOutdatedOrMissing(slice1, slice2 []types.File) ([]types.File, error) {
-	slice2Map := make(map[string]string)
-	for _, f := range slice2 {
-		slice2Map[f.FilePathAbs] = f.DateModified
-	}
-
-	var result []types.File
-	for _, file := range slice1 {
-		date2Str, found := slice2Map[file.FilePathAbs]
-		if !found {
-			result = append(result, file)
-			continue
-		}
-
-		date1, err1 := time.Parse(time.RFC3339Nano, file.DateModified)
-		date2, err2 := time.Parse(time.RFC3339Nano, date2Str)
-		if err1 != nil || err2 != nil {
-			return nil, fmt.Errorf("invalid date format: %v, %v", err1, err2)
-		}
-
-		if date1.After(date2) {
-			result = append(result, file)
-		}
-	}
-
-	return result, nil
 }
 
 func upsertMetadataForFiles(ctx context.Context, files []types.File) error {

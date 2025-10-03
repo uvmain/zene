@@ -22,8 +22,8 @@
 - [x] getSimilarSongs2
 - [x] getTopSongs[^5]
 ## Album/song lists
-- [x] getAlbumList
-- [x] getAlbumList2
+- [x] getAlbumList[^8]
+- [x] getAlbumList2[^8]
 - [x] getRandomSongs[^7]
 - [x] getSongsByGenre
 - [x] getNowPlaying
@@ -101,5 +101,6 @@
 [^3]: Scrobble updates local Now Playing and Play Count - it does not integrate with lastfm.
 [^4]: Notes property is not supported.
 [^5]: Top songs are fetched from Deezer, not lastfm.
-[^6]: Additionally allows `coverArt` and multiple `allowedUserId` params to be sent
-[^7]: Additionally allows `seed` and `offset` params to be sent to enable paging through the same random results
+[^6]: Additionally allows `coverArt` and multiple `allowedUserId` params to be sent.
+[^7]: Additionally allows `seed` and `offset` params to be sent to enable paging through the same random results.
+[^8]: Additionally supports a `type` param value of `release`, ordering by release date desc.
