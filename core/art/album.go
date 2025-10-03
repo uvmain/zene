@@ -2,6 +2,7 @@ package art
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,12 +26,8 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 	}
 
 	existingRow, err := database.SelectAlbumArtByMusicBrainzAlbumId(ctx, musicBrainzAlbumId)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		logger.Printf("Error getting album art data from database in ImportArtForAlbum: %v", err)
-	}
-	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
-	if err != nil {
-		logger.Printf("Error parsing existing row time in ImportArtForAlbum: %v", err)
 	}
 
 	directories := []string{}
@@ -66,6 +63,10 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 	if fileExists {
 		// if row exists
 		if rowExists {
+			rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
+			if err != nil {
+				logger.Printf("Error parsing existing row time in ImportArtForAlbum: %v", err)
+			}
 			// if row is newer, do nothing
 			if rowTime.After(fileTime) {
 				return

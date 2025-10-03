@@ -161,6 +161,8 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 		query += " order by r.album asc"
 	case "alphabeticalbyartist":
 		query += " order by r.artist asc"
+	case "release":
+		query += " order by r.release_date desc"
 	default:
 		query += " order BY r.musicbrainz_album_id asc"
 	}

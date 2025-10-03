@@ -2,95 +2,75 @@ package scheduler
 
 import (
 	"context"
+	"path/filepath"
+	"slices"
+	"strings"
+	"zene/core/config"
+	"zene/core/database"
+	"zene/core/io"
+	"zene/core/logger"
 )
 
 func cleanupAlbumArt(ctx context.Context) {
 
-	// dir := config.AlbumArtFolder
+	albumIds, err := database.SelectAlbumArtIds(ctx)
+	if err != nil {
+		logger.Printf("Error selecting album art IDs: %v", err)
+		return
+	}
 
-	// albumIds, err := database.SelectStaleAlbumArtEntries(ctx, maxAge)
-	// if err != nil {
-	// 	logger.Printf("Error selecting stale audio cache entries: %v", err)
-	// }
+	albumArtFiles, err := io.GetFiles(ctx, config.AlbumArtFolder, []string{".jpg"})
+	if err != nil {
+		logger.Printf("Error getting album art files: %v", err)
+		return
+	}
 
-	// for _, key := range staleKeys {
-	// 	fullPath := filepath.Join(dir, key)
-	// 	err := os.Remove(fullPath)
-	// 	if err != nil {
-	// 		logger.Printf("Failed to delete stale cache file %s: %v", fullPath, err)
-	// 		continue
-	// 	}
-	// 	logger.Printf("Deleted stale cache file: %s", key)
+	if len(albumArtFiles) == 0 && len(albumIds) == 0 {
+		return
+	}
 
-	// 	err = database.DeleteAudioCacheEntry(key)
-	// 	if err != nil {
-	// 		logger.Printf("Failed to delete DB entry for %s: %v", key, err)
-	// 	}
-	// }
+	files := make([]string, len(albumArtFiles))
 
-	// // enforce config.AudioCacheMaxMB
-	// files, err := os.ReadDir(dir)
-	// if err != nil {
-	// 	logger.Printf("Failed to read audio cache directory: %v", err)
-	// 	return
-	// }
+	if len(albumArtFiles) > 0 {
+		for i, file := range albumArtFiles {
+			files[i] = filepath.Base(file.FilePath)
+		}
+	}
 
-	// type fileInfo struct {
-	// 	path string
-	// 	size int64
-	// 	mod  time.Time
-	// }
+	// clean up orphaned album_art rows
+	albumArtRowsDeleted := 0
+	for _, albumId := range albumIds {
+		albumIdJpg := albumId + ".jpg"
+		if !slices.Contains(files, albumIdJpg) {
+			err = database.DeleteAlbumArtRow(ctx, albumId)
+			if err != nil {
+				logger.Printf("Error deleting album art for album ID %s: %v", albumId, err)
+			} else {
+				albumArtRowsDeleted++
+			}
+		}
+	}
 
-	// var totalSize int64
-	// var infos []fileInfo
+	if albumArtRowsDeleted > 0 {
+		logger.Printf("Album art cleanup: deleted %d orphaned album_art rows.", albumArtRowsDeleted)
+	}
 
-	// for _, entry := range files {
-	// 	if entry.IsDir() {
-	// 		continue
-	// 	}
-	// 	fullPath := filepath.Join(dir, entry.Name())
-	// 	info, err := entry.Info()
-	// 	if err != nil {
-	// 		logger.Printf("Skipping file %s: %v", entry.Name(), err)
-	// 		continue
-	// 	}
-	// 	totalSize += info.Size()
-	// 	infos = append(infos, fileInfo{
-	// 		path: fullPath,
-	// 		size: info.Size(),
-	// 		mod:  info.ModTime(),
-	// 	})
-	// }
+	// clean up orphaned album art files
+	albumArtFilesDeleted := 0
+	for _, artFile := range files {
+		artfileId := strings.TrimSuffix(artFile, filepath.Ext(artFile))
+		if !slices.Contains(albumIds, artfileId) {
+			logger.Printf("Deleting orphaned album art file: %s", artFile)
+			err = io.DeleteFile(filepath.Join(config.AlbumArtFolder, artFile))
+			if err != nil {
+				logger.Printf("Error deleting orphaned album art file %s: %v", artFile, err)
+			} else {
+				albumArtFilesDeleted++
+			}
+		}
+	}
 
-	// if totalSize <= maxCacheSizeBytes() {
-	// 	return
-	// }
-
-	// logger.Printf("Audio cache is %d bytes, cleaning up based on size...", totalSize)
-
-	// // Sort by mod time (oldest first)
-	// sort.Slice(infos, func(i, j int) bool {
-	// 	return infos[i].mod.Before(infos[j].mod)
-	// })
-
-	// for _, fi := range infos {
-	// 	err := os.Remove(fi.path)
-	// 	if err != nil {
-	// 		logger.Printf("Failed to delete cache file %s: %v", fi.path, err)
-	// 		continue
-	// 	}
-	// 	totalSize -= fi.size
-	// 	logger.Printf("Deleted %s (%d bytes)", filepath.Base(fi.path), fi.size)
-
-	// 	cacheKey := filepath.Base(fi.path)
-	// 	err = database.DeleteAudioCacheEntry(cacheKey)
-	// 	if err != nil {
-	// 		logger.Printf("Failed to delete cache row from audio_cache %s: %v", fi.path, err)
-	// 		continue
-	// 	}
-
-	// 	if totalSize <= maxCacheSizeBytes() {
-	// 		break
-	// 	}
-	// }
+	if albumArtFilesDeleted > 0 {
+		logger.Printf("Album art cleanup: deleted %d orphaned album art files.", albumArtFilesDeleted)
+	}
 }

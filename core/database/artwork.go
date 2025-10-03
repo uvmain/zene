@@ -18,9 +18,7 @@ func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId 
 	query := `SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = ?`
 	var row types.AlbumArtRow
 	err := DB.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&row.MusicbrainzAlbumId, &row.DateModified)
-	if err == sql.ErrNoRows {
-		return types.AlbumArtRow{}, nil
-	} else if err != nil {
+	if err != nil {
 		return types.AlbumArtRow{}, err
 	}
 	return row, nil
@@ -37,6 +35,39 @@ func UpsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 		return fmt.Errorf("inserting album art row: %v", err)
 	}
 	return nil
+}
+
+func DeleteAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
+	query := `DELETE FROM album_art WHERE musicbrainz_album_id = ?`
+	_, err := DB.ExecContext(ctx, query, musicbrainzAlbumId)
+	if err != nil {
+		return fmt.Errorf("deleting album art row: %v", err)
+	}
+	return nil
+}
+
+func SelectAlbumArtIds(ctx context.Context) ([]string, error) {
+	query := `SELECT distinct musicbrainz_album_id FROM album_art`
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("querying album art IDs: %v", err)
+	}
+	defer rows.Close()
+
+	var albumArtIds []string
+	for rows.Next() {
+		var albumArtId string
+		if err := rows.Scan(&albumArtId); err != nil {
+			return nil, fmt.Errorf("scanning album art ID: %v", err)
+		}
+		albumArtIds = append(albumArtIds, albumArtId)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %v", err)
+	}
+
+	return albumArtIds, nil
 }
 
 func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string) ([]string, error) {

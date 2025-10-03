@@ -147,7 +147,8 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 	left join metadata maa on maa.artist = m.album_artist
 	where m.musicbrainz_artist_id = ?
 	and f.user_id = ?
-	group by m.musicbrainz_album_id;`
+	group by m.musicbrainz_album_id
+	order by m.release_date desc;`
 
 	rows, err := DB.Query(query, musicbrainzArtistId, user.Id)
 	if err != nil {
