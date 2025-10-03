@@ -5,6 +5,7 @@ import (
 	"time"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/scanner"
 )
 
 func Initialise(ctx context.Context) {
@@ -14,6 +15,7 @@ func Initialise(ctx context.Context) {
 	startPodcastCleanupRoutine(ctx)
 	startPodcastEpisodeRefreshRoutine(ctx)
 	startAlbumArtCleanupRoutine(ctx)
+	startScanScheduleRoutine(ctx)
 }
 
 func startAudioCacheCleanupRoutine(ctx context.Context) {
@@ -125,6 +127,24 @@ func startAlbumArtCleanupRoutine(ctx context.Context) {
 				return
 			case <-ticker.C:
 				cleanupAlbumArt(ctx)
+			}
+		}
+	}()
+}
+
+func startScanScheduleRoutine(ctx context.Context) {
+	logger.Println("Scheduler: starting scan schedule routine")
+	go func() {
+		ticker := time.NewTicker(45 * time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Println("Scheduler: stopping album art cleanup routine")
+				return
+			case <-ticker.C:
+				scanner.RunScan(ctx)
 			}
 		}
 	}()
