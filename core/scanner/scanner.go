@@ -159,11 +159,16 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 	}
 
 	// for each file found, either insert or update a metadata row
+
+	existingMetadataToUpdate := []types.File{}
+	newMetadataToInsert := []types.File{}
+
 	for _, audioFile := range audioFiles {
 		matchingMetadata, err := logic.FilterArray(metadataFiles, func(mf types.File) (bool, error) {
-			return mf.FilePath == audioFile.FilePathAbs, nil
+			return mf.FilePathAbs == audioFile.FilePathAbs, nil
 		})
 		if err != nil {
+			logger.Printf("Error filtering metadata files for audio file %s: %v", audioFile.FilePathAbs, err)
 			return false, fmt.Errorf("filtering metadata files: %v", err)
 		}
 		if len(matchingMetadata) > 0 {
@@ -171,20 +176,28 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 			metadataDateModified := matchingMetadata[0].DateModified
 			if logic.GetStringTimeFormatted(metadataDateModified).Before(logic.GetStringTimeFormatted(audioFile.DateModified)) {
 				// if the file's modified date is more recent than in the database
-				err = upsertMetadataForFiles(ctx, []types.File{audioFile})
-				if err != nil {
-					return false, fmt.Errorf("upserting metadata for existing file %s: %v", audioFile.FilePathAbs, err)
-				}
-				changesMade = true
-			} else {
-				// Insert new metadata
-				err = upsertMetadataForFiles(ctx, []types.File{audioFile})
-				if err != nil {
-					return false, fmt.Errorf("upserting metadata for new file %s: %v", audioFile.FilePathAbs, err)
-				}
-				changesMade = true
+				existingMetadataToUpdate = append(existingMetadataToUpdate, audioFile)
 			}
+		} else {
+			// Insert new metadata
+			newMetadataToInsert = append(newMetadataToInsert, audioFile)
 		}
+	}
+
+	if len(existingMetadataToUpdate) > 0 {
+		err = upsertMetadataForFiles(ctx, existingMetadataToUpdate)
+		if err != nil {
+			return false, fmt.Errorf("upserting metadata for existing files: %v", err)
+		}
+		changesMade = true
+	}
+
+	if len(newMetadataToInsert) > 0 {
+		err = upsertMetadataForFiles(ctx, newMetadataToInsert)
+		if err != nil {
+			return false, fmt.Errorf("upserting metadata for new files: %v", err)
+		}
+		changesMade = true
 	}
 
 	// for each metadata row that does not exist in the files list, delete that row

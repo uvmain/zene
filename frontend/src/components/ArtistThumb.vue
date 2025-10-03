@@ -17,7 +17,8 @@ const coverArtUrl = computed(() => {
 
 function navigate() {
   closeSearch()
-  router.push(`/artists/${props.artist.musicBrainzId}`)
+  const artistId = props.artist.id ?? props.artist.musicBrainzId
+  router.push(`/artists/${artistId}`)
 }
 </script>
 

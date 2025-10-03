@@ -37,6 +37,10 @@ async function getData() {
     )
 }
 
+watch(musicbrainz_artist_id, async () => {
+  await getData()
+})
+
 onBeforeMount(async () => {
   await getData()
 })
