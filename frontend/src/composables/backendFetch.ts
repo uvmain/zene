@@ -297,7 +297,12 @@ export async function fetchSearchResults(query: string, limit = 50): Promise<Sea
   }
 }
 
-export async function fetchDeezerArtUrl(artistName: string, albumName: string): Promise<string | null> {
+interface AlbumArtOptions {
+  deezer: string | null
+  cover_art_archive: string | null
+}
+
+export async function fetchAlbumArtOptions(artistName: string, albumName: string): Promise<AlbumArtOptions> {
   const options: RequestInit = {}
 
   const formData = new FormData()
@@ -311,11 +316,10 @@ export async function fetchDeezerArtUrl(artistName: string, albumName: string): 
   options.method = 'POST'
   options.body = formData
 
-  const url = '/rest/get-deezer-art'
+  const url = '/rest/getAlbumArts'
 
   const response = await fetch(url, options)
-  const json = await response.json() as { url: string | null }
-  return json.url
+  return await response.json() as AlbumArtOptions
 }
 
 export async function postNewAlbumArt(musicbrainz_song_id: string, image: Blob): Promise<SubsonicResponse> {

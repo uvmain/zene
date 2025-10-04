@@ -63,7 +63,7 @@ func StartServer() *http.Server {
 	apiRouter := NewCaseInsensitiveMux()
 	// all registered API paths should be lowercase
 	apiRouter.Handle("/share/img/{image_id}", http.HandlerFunc(handlers.HandleGetShareImg))
-	apiRouter.Handle("/rest/get-deezer-art", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetDeezerArt)))
+	apiRouter.Handle("/rest/getalbumarts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArts)))
 	apiRouter.Handle("/rest/updatealbumart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAlbumArt)))
 	/* cSpell:disable */
 

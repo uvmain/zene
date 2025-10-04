@@ -4,12 +4,19 @@ import (
 	"encoding/json"
 
 	"net/http"
+	"zene/core/database"
 	"zene/core/deezer"
+	"zene/core/musicbrainz"
 	"zene/core/net"
 	"zene/core/types"
 )
 
-func HandleGetDeezerArt(w http.ResponseWriter, r *http.Request) {
+type AlbumArtsResponse struct {
+	Deezer          string `json:"deezer"`
+	CoverArtArchive string `json:"cover_art_archive"`
+}
+
+func HandleGetAlbumArts(w http.ResponseWriter, r *http.Request) {
 	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
@@ -30,16 +37,27 @@ func HandleGetDeezerArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	album, err := database.GetAlbumByArtistNameAndAlbumName(ctx, artistName, albumName)
+	if err != nil {
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
+		return
+	}
+
 	deezerImageUrl, err := deezer.GetAlbumArtUrlWithArtistNameAndAlbumName(ctx, artistName, albumName)
 	if err != nil {
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album art not found", "")
 		return
 	}
 
+	coverArtArchiveUrl, err := musicbrainz.GetAlbumArtUrl(ctx, album.MusicBrainzId)
+
+	response := AlbumArtsResponse{
+		Deezer:          deezerImageUrl,
+		CoverArtArchive: coverArtArchiveUrl,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(map[string]string{
-		"url": deezerImageUrl,
-	}); err != nil {
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }
