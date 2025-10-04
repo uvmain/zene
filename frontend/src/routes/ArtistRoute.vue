@@ -74,7 +74,7 @@ onBeforeMount(async () => {
     </h2>
     <div class="flex flex-wrap gap-6">
       <div v-for="album in albums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-        <Album :album="album" size="lg" />
+        <Album :album="album" size="sm" />
       </div>
     </div>
   </div>

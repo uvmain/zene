@@ -85,6 +85,15 @@ func HandleUpdateAlbumArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	album, err := database.GetAlbum(ctx, albumId)
+	if err != nil {
+		logger.Printf("Error getting album: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error getting album", "")
+		return
+	}
+
+	logger.Printf("Updated album art for album ID %s: %s", albumId, album.Name)
+
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	net.WriteSubsonicResponse(w, r, response, format)

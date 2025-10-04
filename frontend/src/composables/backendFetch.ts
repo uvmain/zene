@@ -296,3 +296,35 @@ export async function fetchSearchResults(query: string, limit = 50): Promise<Sea
     genres: searchedGenres,
   }
 }
+
+export async function fetchDeezerArtUrl(artistName: string, albumName: string): Promise<string | null> {
+  const options: RequestInit = {}
+
+  const formData = new FormData()
+  formData.append('apiKey', apiKey.value)
+  formData.append('f', 'json')
+  formData.append('v', '1.16.0')
+  formData.append('c', 'zene-frontend')
+  formData.append('artist', artistName)
+  formData.append('album', albumName)
+
+  options.method = 'POST'
+  options.body = formData
+
+  const url = '/rest/get-deezer-art'
+
+  const response = await fetch(url, options)
+  const json = await response.json() as { url: string | null }
+  return json.url
+}
+
+export async function postNewAlbumArt(musicbrainz_song_id: string, image: Blob): Promise<SubsonicResponse> {
+  const formData = new FormData()
+  formData.append('id', musicbrainz_song_id)
+  formData.append('file', image)
+
+  const response = await openSubsonicFetchRequest<SubsonicResponse>('updateAlbumArt', {
+    body: formData,
+  })
+  return response
+}
