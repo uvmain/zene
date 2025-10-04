@@ -20,6 +20,7 @@
 - Album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
 - Artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
 - Similar artists/songs are fetched from https://api.deezer.com and saved locally
+- Admins can update album art via frontend
 
 ### Uses the OpenSubsonic API
 Supports the following OpenSubsonic API extensions:
