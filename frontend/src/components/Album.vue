@@ -17,7 +17,6 @@ const router = useRouter()
 const { closeSearch } = useSearch()
 
 const showChangeArtModal = ref(false)
-const coverArtElementMd = ref<HTMLImageElement | null>(null)
 
 const artistAndDate = computed(() => {
   if (props.album.releaseDate) {
@@ -88,7 +87,6 @@ function actOnUpdatedArt() {
     </div>
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
-        ref="coverArtElementMd"
         :src="coverArtUrlMd"
         class="h-24 w-24 cursor-pointer object-cover md:size-50"
         loading="lazy"
