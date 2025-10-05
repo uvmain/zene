@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import type { LoadingAttribute } from '../types'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useSearch } from '~/composables/useSearch'
 
 const props = defineProps({
   artist: { type: Object as PropType<SubsonicIndexArtist>, required: true },
+  index: { type: Number, default: 0 },
 })
 
 const { closeSearch } = useSearch()
@@ -13,6 +15,10 @@ const router = useRouter()
 
 const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, 200)
+})
+
+const loading = computed<LoadingAttribute>(() => {
+  return props.index < 10 ? 'eager' : 'lazy'
 })
 
 function navigate() {
@@ -28,7 +34,7 @@ function navigate() {
       <img
         class="h-full w-full object-cover"
         :src="coverArtUrl"
-        loading="lazy"
+        :loading="loading"
         width="200"
         height="200"
         @error="onImageError"
