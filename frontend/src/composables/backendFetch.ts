@@ -167,12 +167,20 @@ export async function fetchAlbums(type: string, size = 50, offset = 0, seed?: nu
   return response.albumList.album
 }
 
-export async function fetchRandomTracks(size?: number): Promise<SubsonicSong[]> {
+export async function fetchRandomTracks(size?: number, offset?: number, seed?: number): Promise<SubsonicSong[]> {
   const options: RequestInit = {}
 
   if (size != null && size > 0) {
     const formData = new FormData()
-    formData.append('size', size.toString())
+    if (offset !== undefined && offset > 0) {
+      formData.append('offset', offset.toString())
+    }
+    if (size !== undefined && size > 0) {
+      formData.append('size', size.toString())
+    }
+    if (seed !== undefined && seed > 0) {
+      formData.append('seed', seed.toString())
+    }
     options.body = formData
   }
   const response = await openSubsonicFetchRequest<SubsonicRandomSongsResponse>('getRandomSongs', options)

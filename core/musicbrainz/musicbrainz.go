@@ -140,11 +140,21 @@ func GetAlbumArtUrl(ctx context.Context, musicBrainzAlbumId string) (string, err
 		return "", err
 	}
 
-	return data.Images[0].Image, nil
+	imageUrl := ""
+
+	if data.Images[0].Thumbnails.Large != "" {
+		imageUrl = data.Images[0].Thumbnails.Large
+	} else {
+		imageUrl = data.Images[0].Image
+	}
+
+	imageUrl = strings.Replace(imageUrl, "http://", "https://", 1)
+
+	return imageUrl, nil
 }
 
 func GetArtistArtUrl(ctx context.Context, musicBrainzArtistId string) (string, error) {
-	url := fmt.Sprintf("http://musicbrainz.org/ws/2/artist/%s?inc=url-rels&fmt=json", musicBrainzArtistId)
+	url := fmt.Sprintf("https://musicbrainz.org/ws/2/artist/%s?inc=url-rels&fmt=json", musicBrainzArtistId)
 
 	if err := logic.CheckContext(ctx); err != nil {
 		return "", err

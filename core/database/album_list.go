@@ -117,7 +117,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 			query += " order BY random()"
 		}
 	case "newest": // recently added albums
-		query += " order BY r.date_added desc"
+		query += " order BY m.date_added desc"
 	case "byyear":
 		if yearSortOrder == -1 {
 			query += " order by year desc"
@@ -125,19 +125,19 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 			query += " order by year asc"
 		}
 	case "highest": // highest rated albums
-		query += " order by ur.rating desc, r.musicbrainz_album_id desc"
+		query += " order by ur.rating desc, m.musicbrainz_album_id desc"
 	case "frequent": // most frequently played albums
-		query += " order by play_count desc, r.musicbrainz_album_id desc"
+		query += " order by play_count desc, m.musicbrainz_album_id desc"
 	case "recent": // recently played albums
-		query += " order by last_played desc, r.musicbrainz_album_id desc"
+		query += " order by last_played desc, m.musicbrainz_album_id desc"
 	case "alphabeticalbyname":
-		query += " order by r.album asc"
+		query += " order by m.album asc"
 	case "alphabeticalbyartist":
-		query += " order by r.artist asc"
+		query += " order by m.artist asc"
 	case "release":
-		query += " order by r.release_date desc"
+		query += " order by m.release_date desc"
 	default:
-		query += " order BY r.musicbrainz_album_id asc"
+		query += " order BY m.musicbrainz_album_id asc"
 	}
 
 	query += ` limit ? offset ?`
