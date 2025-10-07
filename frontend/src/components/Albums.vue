@@ -2,10 +2,15 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { useLocalStorage } from '@vueuse/core'
 import { fetchAlbums } from '~/composables/backendFetch'
+import { generateSeed } from '~/composables/logic'
 
 const props = defineProps({
   limit: { type: Number, default: 30 },
 })
+
+const seed = useLocalStorage<number>('albumSeed', 0)
+
+let type: string
 
 const albums = ref<SubsonicAlbum[]>()
 const showOrderOptions = ref(false)
@@ -33,7 +38,6 @@ function setOrder(order: 'recentlyUpdated' | 'random' | 'alphabetical' | 'releas
 }
 
 async function getAlbums() {
-  let type: string
   switch (currentOrder.value) {
     case 'recentlyUpdated':
       type = 'newest'
@@ -48,7 +52,14 @@ async function getAlbums() {
       type = 'release'
       break
   }
-  albums.value = await fetchAlbums(type, props.limit, 0)
+  albums.value = await fetchAlbums(type, props.limit, 0, seed.value)
+}
+
+async function refresh() {
+  if (type === 'random') {
+    seed.value = generateSeed()
+  }
+  await getAlbums()
 }
 
 onBeforeMount(async () => {
@@ -58,7 +69,8 @@ onBeforeMount(async () => {
 
 <template>
   <div class="relative">
-    <RefreshHeader :title="headerTitle" @refreshed="getAlbums()" @title-click="showOrderOptions = !showOrderOptions" />
+    {{ seed }}
+    <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto background-2">
       <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('recentlyUpdated')">
         Recently Updated
