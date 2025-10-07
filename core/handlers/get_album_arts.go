@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"net/http"
+	"zene/core/art"
 	"zene/core/database"
 	"zene/core/deezer"
 	"zene/core/musicbrainz"
@@ -12,8 +13,10 @@ import (
 )
 
 type AlbumArtsResponse struct {
-	Deezer          string `json:"deezer"`
-	CoverArtArchive string `json:"cover_art_archive"`
+	Deezer           string `json:"deezer"`
+	CoverArtArchive  string `json:"cover_art_archive"`
+	LocalFolderArt   string `json:"local_folder_art"`
+	LocalEmbeddedArt string `json:"local_embedded_art"`
 }
 
 func HandleGetAlbumArts(w http.ResponseWriter, r *http.Request) {
@@ -43,17 +46,16 @@ func HandleGetAlbumArts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deezerImageUrl, err := deezer.GetAlbumArtUrlWithArtistNameAndAlbumName(ctx, artistName, albumName)
-	if err != nil {
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album art not found", "")
-		return
-	}
+	deezerImageUrl, _ := deezer.GetAlbumArtUrlWithArtistNameAndAlbumName(ctx, artistName, albumName)
+	coverArtArchiveUrl, _ := musicbrainz.GetAlbumArtUrl(ctx, album.MusicBrainzId)
 
-	coverArtArchiveUrl, err := musicbrainz.GetAlbumArtUrl(ctx, album.MusicBrainzId)
+	localArts, _ := art.GetLocalArtAsBase64(ctx, album.MusicBrainzId)
 
 	response := AlbumArtsResponse{
-		Deezer:          deezerImageUrl,
-		CoverArtArchive: coverArtArchiveUrl,
+		Deezer:           deezerImageUrl,
+		CoverArtArchive:  coverArtArchiveUrl,
+		LocalFolderArt:   localArts.FolderArt,
+		LocalEmbeddedArt: localArts.EmbeddedArt,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

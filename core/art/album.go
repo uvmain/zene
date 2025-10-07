@@ -3,7 +3,9 @@ package art
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -170,4 +172,35 @@ func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size int) ([
 		return nil, time.Now(), fmt.Errorf("error reading image for filepath %s: %s", filePath, err)
 	}
 	return blob, modTime, nil
+}
+
+type LocalArts struct {
+	FolderArt   string `json:"folderArt"`
+	EmbeddedArt string `json:"embeddedArt"`
+}
+
+func GetLocalArtAsBase64(ctx context.Context, musicBrainzAlbumId string) (LocalArts, error) {
+	var localArts LocalArts
+
+	folderArtBlob, _, err := GetArtForAlbum(ctx, musicBrainzAlbumId, 512)
+	if err == nil {
+		contentType := http.DetectContentType(folderArtBlob)
+		localArts.FolderArt = "data:" + contentType + ";base64," + base64.StdEncoding.EncodeToString(folderArtBlob)
+	} else {
+		localArts.FolderArt = ""
+		logger.Printf("No folder art found for album %s: %v", musicBrainzAlbumId, err)
+	}
+
+	tracks, err := database.GetSongsForAlbum(ctx, musicBrainzAlbumId)
+
+	trackArtBlob, err := ffmpeg.GetCoverArtFromTrack(ctx, tracks[0].Path)
+	if err == nil {
+		contentType := http.DetectContentType(trackArtBlob)
+		localArts.EmbeddedArt = "data:" + contentType + ";base64," + base64.StdEncoding.EncodeToString(trackArtBlob)
+	} else {
+		localArts.EmbeddedArt = ""
+		logger.Printf("No embedded art found for album %s: %v", musicBrainzAlbumId, err)
+	}
+
+	return localArts, nil
 }

@@ -7,7 +7,13 @@
 [![Build](https://github.com/uvmain/zene/actions/workflows/build.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/build.yml)
 
 # Zene
-![Zene screenshot](./docs/assets/zene-home-v200.webp)
+<p align="center">
+  <img src="./docs/assets/zene-home-v200.webp" alt="landing-screen" width="1000">
+</p>
+
+<p align="center">
+  <img src="./docs/assets/art-selector.webp" alt="art-selector" width="800">
+</p>
 
 ## Self hosted Music Server and Web player
 ### Fast and feature packed with smart caching
@@ -83,21 +89,3 @@ resolving Caddy cert issues on debian/ubuntu
   ```bash
   certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n "Caddy Local Authority" -i ~/.local/share/caddy/pki/authorities/local/root.crt
   ```
-
-## TODO
-- [x] limit user requests to configured music folder IDs
-- [x] use User.MaxBitRate to limit bitrate // done for /stream, will need to implement it when I do /hls
-- [ ] define an enum for allowed maxBitRate values to use in handlers
-- [ ] enable future database migrations
-- [x] getScanStatus and startScan handlers exist but need implementing
-- [x] HandleGetCoverArt and HandleGetArtistArt needs to handle size int param and resize if requested
-- [x] also use size parameter in unauthenticated HandleGetShareImg handler
-- [ ] Enable last.fm integration for notes/lastFmUrl in getAlbumInfo.view
-- [x] Create scan-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome) // done, it's now 3ms
-- [ ] When a music dir is removed from .env, remove it from the DB
-- [ ] fix mutex and cache check for GetMetadataForMusicBrainzAlbumId
-- [ ] getArtistInfo with includeNotPresent=true should also fetch artist image links from Deezer
-- [ ] getArtistInfo should fetch biography if user sets lastfm creds
-- [ ] add Handler level caching for getTopSongs, GetArtistInfo
-- [ ] fix getArtistInfo not working with feishin
-- [ ] fetch artist art for album artists

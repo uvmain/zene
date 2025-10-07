@@ -311,6 +311,8 @@ export async function fetchSearchResults(query: string, limit = 50): Promise<Sea
 interface AlbumArtOptions {
   deezer: string | null
   cover_art_archive: string | null
+  local_folder_art: string | null
+  local_embedded_art: string | null
 }
 
 export async function fetchAlbumArtOptions(artistName: string, albumName: string): Promise<AlbumArtOptions> {
