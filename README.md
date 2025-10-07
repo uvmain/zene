@@ -5,18 +5,16 @@
 [![Dependency Scanning](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml)
 &nbsp;
 [![Build](https://github.com/uvmain/zene/actions/workflows/build.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/build.yml)
+&nbsp;
+![Docker Image Size](https://img.shields.io/docker/image-size/uvmain/zene)
+&nbsp;
+![Docker Pulls](https://img.shields.io/docker/pulls/uvmain/zene)
 
 # Zene
-<p align="center">
-  <img src="./docs/assets/zene-home-v200.webp" alt="landing-screen" width="1000">
-</p>
-
-<p align="center">
-  <img src="./docs/assets/art-selector.webp" alt="art-selector" width="800">
-</p>
+![Zene screenshot](./docs/assets/zene-home-v200.webp)
 
 ## Self hosted Music Server and Web player
-### Fast and feature packed with smart caching
+### Fast, small and feature packed with smart caching
 - Light and Dark mode
 - All transcoded audio is cached locally and cleaned with smart rules
 - Wide support of If-Modified-Since headers for 304 responses
@@ -28,6 +26,8 @@
 - Similar artists/songs are fetched from https://api.deezer.com and saved locally
 - Admins can update album art via frontend
 
+![art-selector](./docs/assets/art-selector.webp)
+
 ### Uses the OpenSubsonic API
 Supports the following OpenSubsonic API extensions:
 - `apiKeyAuthentication` this project supports password, enc:password, salt & token, and ApiKey auth
@@ -37,7 +37,7 @@ Supports the following OpenSubsonic API extensions:
 - `indexBasedQueue` enables savePlayQueueByIndex and getPlayQueueByIndex endpoints
 - `getPodcastEpisode` enables the getPodcastEpisode endpoint
 
-### Supports the following OpenSubsonic API endpoints:
+### Supports (and extends) the following OpenSubsonic API endpoints:
 
 [Implemented OpenSubsonic API endpoints](./docs/implemented-opensubsonic-endpoints.md)
 
@@ -54,6 +54,31 @@ Supports the following OpenSubsonic API extensions:
 - copy the `docker-compose.yml` file into the same directory, and update the mount points as required
 - `docker compose up -d` to pull the image and run the container in the background
 
+### example
+> .env
+```
+BASE_URL=https://zene.domain.tld
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=supersecretpassword
+ADMIN_EMAIL=admin@localhost
+AUDIO_CACHE_MAX_DAYS=30
+AUDIO_CACHE_MAX_MB=500
+```
+> docker-compose.yml
+```
+services:
+  zene:
+    image: uvmain/zene:latest
+    container_name: zene
+    env_file:
+      - .env
+    volumes:
+      - ./local-data-dir:/data
+      - /mnt/Music:/music:ro
+    ports:
+      - 3020:8080
+```
+
 ### Tech stack
 - `Sqlite` database
 - `Go` backend
@@ -63,7 +88,7 @@ Supports the following OpenSubsonic API extensions:
 
 ## localdev
 ### requirements
-- Go v1.24+
+- Go v1.25+
 - Node 22+
 
 ### install dependencies
