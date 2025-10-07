@@ -46,6 +46,7 @@ declare module 'vue' {
     IconNrkSettings: typeof import('~icons/nrk/settings')['default']
     IconNrkUserLoggedin: typeof import('~icons/nrk/user-loggedin')['default']
     ImageSelector: typeof import('./src/components/ImageSelector.vue')['default']
+    ImageSelectorImage: typeof import('./src/components/ImageSelectorImage.vue')['default']
     LyricsDisplay: typeof import('./src/components/LyricsDisplay.vue')['default']
     NavArt: typeof import('./src/components/NavArt.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']

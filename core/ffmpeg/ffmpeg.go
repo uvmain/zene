@@ -34,21 +34,23 @@ func InitializeFfmpeg(ctx context.Context) {
 }
 
 func GetCoverArtFromTrack(ctx context.Context, audiofilePath string) ([]byte, error) {
+	var stdout, stderr bytes.Buffer
+
 	cmd := exec.CommandContext(ctx, config.FfmpegPath,
 		"-i", audiofilePath,
-		"-f", "image2",
-		"-vcodec", "copy",
 		"-an",
+		"-map", "0:v:0",
+		"-vframes", "1",
+		"-f", "mjpeg", // force JPEG output
 		"pipe:1",
 	)
 
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &out
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("ffmpeg failed in GetCoverArtFromTrack for %s: %v\nOutput: %s", audiofilePath, err, out.String())
+		return nil, fmt.Errorf("ffmpeg failed for %s: %v\nstderr: %s", audiofilePath, err, stderr.String())
 	}
 
-	return out.Bytes(), nil
+	return stdout.Bytes(), nil
 }

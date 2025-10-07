@@ -38,6 +38,7 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 	toYearParam := form["toyear"]
 	genreParam := form["genre"]
 	musicFolderIdParam := form["musicfolderid"]
+	seedParam := form["seed"]
 
 	ctx := r.Context()
 	var err error
@@ -114,6 +115,17 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 		musicFolderIdInt = 0
 	}
 
+	var seedInt int
+	if seedParam != "" {
+		seedInt, err = strconv.Atoi(seedParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "seed parameter must be an integer", "")
+			return
+		}
+	} else {
+		seedInt = 0
+	}
+
 	requestUser, err := database.GetUserByContext(ctx)
 	if err != nil {
 		logger.Printf("Error getting user by context: %v", err)
@@ -129,7 +141,7 @@ func HandleGetAlbumList(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	albums, err := database.GetAlbumList(ctx, typeParam, sizeInt, offsetInt, fromYearInt, toYearInt, genreParam, musicFolderIdInt)
+	albums, err := database.GetAlbumList(ctx, typeParam, sizeInt, offsetInt, fromYearInt, toYearInt, genreParam, musicFolderIdInt, seedInt)
 	if err != nil {
 		logger.Printf("Error querying database in GetAlbumList: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to query database", "")

@@ -42,7 +42,7 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
           <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-primary">
             {{ track.title }}
           </div>
-          <Album :album="trackToAlbum(track)" size="md" />
+          <Album :album="trackToAlbum(track)" size="sm" />
         </div>
       </div>
       <h4>
@@ -54,7 +54,7 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
           :key="album.name"
           class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
         >
-          <Album :album="album" size="md" />
+          <Album :album="album" size="sm" />
         </div>
       </div>
       <h4>

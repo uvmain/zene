@@ -32,3 +32,7 @@ export function onImageError(event: Event) {
 export function parseReleaseDate(releaseDate: ReleaseDate): string {
   return `${(releaseDate.year ?? 1).toString().padStart(4, '0')}`
 }
+
+export function generateSeed() {
+  return Math.floor(Math.random() * 1000000)
+}

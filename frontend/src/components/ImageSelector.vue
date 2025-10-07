@@ -68,19 +68,19 @@ watch(image, () => {
     />
     <label
       for="fileInput"
-      class="block w-28rem cursor-pointer border-1 border-gray-300 rounded-lg border-solid bg-gray-50 p-2 text-center text-sm text-gray-700 hover:bg-gray-200 focus:outline-none"
+      class="block w-28rem cursor-pointer border-1 border-gray-300 border-solid bg-gray-50 p-2 text-center text-sm text-gray-700 hover:bg-gray-200 focus:outline-none"
     >
       Browse
     </label>
     <input
       v-model="imageUrlInput"
       placeholder="Enter image URL"
-      class="mt-2 block w-28rem border-1 border-gray-300 rounded-lg border-solid p-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+      class="mt-2 block w-28rem border-1 border-gray-300 border-solid p-2 focus:outline-none focus:ring-2 focus:ring-primary1"
       @change="onUrlChange"
     />
     <textarea
       placeholder="Paste an image here"
-      class="mt-2 block w-28rem border-1 border-gray-300 rounded-lg border-solid p-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+      class="mt-2 block w-28rem border-1 border-gray-300 border-solid p-2 focus:outline-none focus:ring-2 focus:ring-primary1"
     />
   </div>
 </template>

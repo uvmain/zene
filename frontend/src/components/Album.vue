@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
 import { getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
@@ -9,13 +10,13 @@ const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: true },
   size: { type: String as PropType<AlbumSize>, default: 'sm' },
   showChangeArtButton: { type: Boolean, default: false },
+  index: { type: Number, default: 0 },
 })
 
 const router = useRouter()
 const { closeSearch } = useSearch()
 
 const showChangeArtModal = ref(false)
-const coverArtElementMd = ref<HTMLImageElement | null>(null)
 
 const artistAndDate = computed(() => {
   if (props.album.releaseDate) {
@@ -29,14 +30,18 @@ const artistAndDate = computed(() => {
   }
 })
 
-const updatedTime = ref<Date>(new Date())
+const loading = computed<LoadingAttribute>(() => {
+  return props.index < 10 ? 'eager' : 'lazy'
+})
+
+const updatedTime = ref<Date | null>(new Date())
 
 const coverArtUrlSm = computed(() => {
-  return `${getCoverArtUrl(props.album.id, 120)}&time=${updatedTime.value.getTime()}`
+  return updatedTime.value ? `${getCoverArtUrl(props.album.id, 120)}&time=${updatedTime.value.getTime()}` : `${getCoverArtUrl(props.album.id, 120)}`
 })
 
 const coverArtUrlMd = computed(() => {
-  return `${getCoverArtUrl(props.album.id, 200)}&time=${updatedTime.value.getTime()}`
+  return updatedTime.value ? `${getCoverArtUrl(props.album.id, 200)}&time=${updatedTime.value.getTime()}` : `${getCoverArtUrl(props.album.id, 200)}`
 })
 
 function navigateAlbum() {
@@ -51,7 +56,6 @@ function navigateArtist() {
 
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
-  // Force reload of album art by appending a timestamp
   updatedTime.value = new Date()
 }
 </script>
@@ -63,7 +67,7 @@ function actOnUpdatedArt() {
         class="h-24 w-24 cursor-pointer object-cover md:size-30"
         :src="coverArtUrlSm"
         alt="Album Cover"
-        loading="lazy"
+        :loading="loading"
         width="120"
         height="120"
         @error="onImageError" @click="navigateAlbum()"
@@ -83,7 +87,6 @@ function actOnUpdatedArt() {
     </div>
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
-        ref="coverArtElementMd"
         :src="coverArtUrlMd"
         class="h-24 w-24 cursor-pointer object-cover md:size-50"
         loading="lazy"

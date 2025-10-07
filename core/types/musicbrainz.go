@@ -6,15 +6,15 @@ type MbCoverArtResponse struct {
 }
 
 type MbImage struct {
-	Approved   bool              `json:"approved"`
-	Back       bool              `json:"back"`
-	Comment    string            `json:"comment"`
-	Edit       int               `json:"edit"`
-	Front      bool              `json:"front"`
-	ID         interface{}       `json:"id"`
-	Image      string            `json:"image"`
-	Thumbnails map[string]string `json:"thumbnails"`
-	Types      []string          `json:"types"`
+	Approved   bool         `json:"approved"`
+	Back       bool         `json:"back"`
+	Comment    string       `json:"comment"`
+	Edit       int          `json:"edit"`
+	Front      bool         `json:"front"`
+	ID         interface{}  `json:"id"`
+	Image      string       `json:"image"`
+	Thumbnails MbThumbnails `json:"thumbnails"`
+	Types      []string     `json:"types"`
 }
 
 type MbRelease struct {
@@ -151,4 +151,9 @@ type MbRelation struct {
 type MbRelationURL struct {
 	ID       string `json:"id"`
 	Resource string `json:"resource"`
+}
+
+type MbThumbnails struct {
+	Large string `json:"large"`
+	Small string `json:"small"`
 }

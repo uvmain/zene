@@ -5,12 +5,16 @@
 [![Dependency Scanning](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/dependency-scan.yml)
 &nbsp;
 [![Build](https://github.com/uvmain/zene/actions/workflows/build.yml/badge.svg)](https://github.com/uvmain/zene/actions/workflows/build.yml)
+&nbsp;
+![Docker Image Size](https://img.shields.io/docker/image-size/uvmain/zene)
+&nbsp;
+![Docker Pulls](https://img.shields.io/docker/pulls/uvmain/zene)
 
 # Zene
 ![Zene screenshot](./docs/assets/zene-home-v200.webp)
 
 ## Self hosted Music Server and Web player
-### Fast and feature packed with smart caching
+### Fast, small and feature packed with smart caching
 - Light and Dark mode
 - All transcoded audio is cached locally and cleaned with smart rules
 - Wide support of If-Modified-Since headers for 304 responses
@@ -22,6 +26,8 @@
 - Similar artists/songs are fetched from https://api.deezer.com and saved locally
 - Admins can update album art via frontend
 
+![art-selector](./docs/assets/art-selector.webp)
+
 ### Uses the OpenSubsonic API
 Supports the following OpenSubsonic API extensions:
 - `apiKeyAuthentication` this project supports password, enc:password, salt & token, and ApiKey auth
@@ -31,7 +37,7 @@ Supports the following OpenSubsonic API extensions:
 - `indexBasedQueue` enables savePlayQueueByIndex and getPlayQueueByIndex endpoints
 - `getPodcastEpisode` enables the getPodcastEpisode endpoint
 
-### Supports the following OpenSubsonic API endpoints:
+### Supports (and extends) the following OpenSubsonic API endpoints:
 
 [Implemented OpenSubsonic API endpoints](./docs/implemented-opensubsonic-endpoints.md)
 
@@ -48,6 +54,31 @@ Supports the following OpenSubsonic API extensions:
 - copy the `docker-compose.yml` file into the same directory, and update the mount points as required
 - `docker compose up -d` to pull the image and run the container in the background
 
+### example
+> .env
+```
+BASE_URL=https://zene.domain.tld
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=supersecretpassword
+ADMIN_EMAIL=admin@localhost
+AUDIO_CACHE_MAX_DAYS=30
+AUDIO_CACHE_MAX_MB=500
+```
+> docker-compose.yml
+```
+services:
+  zene:
+    image: uvmain/zene:latest
+    container_name: zene
+    env_file:
+      - .env
+    volumes:
+      - ./local-data-dir:/data
+      - /mnt/Music:/music:ro
+    ports:
+      - 3020:8080
+```
+
 ### Tech stack
 - `Sqlite` database
 - `Go` backend
@@ -57,7 +88,7 @@ Supports the following OpenSubsonic API extensions:
 
 ## localdev
 ### requirements
-- Go v1.24+
+- Go v1.25+
 - Node 22+
 
 ### install dependencies
@@ -83,21 +114,3 @@ resolving Caddy cert issues on debian/ubuntu
   ```bash
   certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n "Caddy Local Authority" -i ~/.local/share/caddy/pki/authorities/local/root.crt
   ```
-
-## TODO
-- [x] limit user requests to configured music folder IDs
-- [x] use User.MaxBitRate to limit bitrate // done for /stream, will need to implement it when I do /hls
-- [ ] define an enum for allowed maxBitRate values to use in handlers
-- [ ] enable future database migrations
-- [x] getScanStatus and startScan handlers exist but need implementing
-- [x] HandleGetCoverArt and HandleGetArtistArt needs to handle size int param and resize if requested
-- [x] also use size parameter in unauthenticated HandleGetShareImg handler
-- [ ] Enable last.fm integration for notes/lastFmUrl in getAlbumInfo.view
-- [x] Create scan-populated table for SelectDistinctGenres query as it is slow (150ms here, 9ms in Navidrome) // done, it's now 3ms
-- [ ] When a music dir is removed from .env, remove it from the DB
-- [ ] fix mutex and cache check for GetMetadataForMusicBrainzAlbumId
-- [ ] getArtistInfo with includeNotPresent=true should also fetch artist image links from Deezer
-- [ ] getArtistInfo should fetch biography if user sets lastfm creds
-- [ ] add Handler level caching for getTopSongs, GetArtistInfo
-- [ ] fix getArtistInfo not working with feishin
-- [ ] fetch artist art for album artists

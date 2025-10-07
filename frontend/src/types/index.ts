@@ -8,4 +8,6 @@ export interface Queue {
   position: number
 }
 
+export type LoadingAttribute = 'lazy' | 'eager'
+
 export interface SearchResult { artists: SubsonicArtist[], albums: SubsonicAlbum[], songs: SubsonicSong[], genres: SubsonicGenre[] }

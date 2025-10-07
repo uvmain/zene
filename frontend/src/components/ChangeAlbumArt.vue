@@ -11,15 +11,19 @@ const emits = defineEmits(['close', 'artUpdated'])
 const loading = ref(true)
 const deezerArtUrl = ref<string | null>(null)
 const coverArtArchiveUrl = ref<string | null>(null)
+const localFolderArtUrl = ref<string | null>(null)
+const localEmbeddedArtUrl = ref<string | null>(null)
 const albumArt = ref<string | null>(null)
 
 async function getAlbumArtUrls() {
   const options = await fetchAlbumArtOptions(props.album.albumArtists[0].name, props.album.name)
   deezerArtUrl.value = options.deezer
   coverArtArchiveUrl.value = options.cover_art_archive
+  localFolderArtUrl.value = options.local_folder_art
+  localEmbeddedArtUrl.value = options.local_embedded_art
 }
 
-async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual') {
+async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'localfolder' | 'localembedded') {
   let artUrl: string | null = null
   switch (source) {
     case 'deezer':
@@ -30,6 +34,12 @@ async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual') {
       break
     case 'manual':
       artUrl = albumArt.value
+      break
+    case 'localfolder':
+      artUrl = localFolderArtUrl.value
+      break
+    case 'localembedded':
+      artUrl = localEmbeddedArtUrl.value
       break
   }
   if (artUrl) {
@@ -50,11 +60,11 @@ onMounted(async () => {
 <template>
   <teleport to="body">
     <div class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-      <div class="relative w-full flex flex-col gap-4 border-1 border-zshade-400 border-solid background-3 p-4 lg:w-60dvw">
-        <div class="flex flex-row items-center gap-4">
-          <button class="z-button" aria-label="Close" @click="$emit('close')">
+      <div class="relative w-full flex flex-col gap-4 border-1 border-zshade-500 border-solid background-3 p-4 lg:w-80dvw">
+        <div class="flex flex-row items-center justify-center gap-4">
+          <ZButton aria-label="Close" @click="$emit('close')">
             X
-          </button>
+          </ZButton>
           <p class="text-lg text-primary font-bold">
             Change Album Art
           </p>
@@ -64,48 +74,41 @@ onMounted(async () => {
           <path fill="currentColor" d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity="0.5" /><path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"><animateTransform attributeName="transform" dur="1s" from="0 12 12" repeatCount="indefinite" to="360 12 12" type="rotate" /></path>
         </svg>
         <div v-else class="flex flex-wrap justify-center gap-4">
-          <div v-if="deezerArtUrl" class="relative size-56">
-            <img
-              class="size-56"
-              :src="deezerArtUrl"
-              alt="Deezer Album Art"
-            />
-            <button
-              class="z-button absolute bottom-2 right-2"
-              aria-label="Choose art"
-              @click="updateArt('deezer')"
-            >
-              Use This Art
-            </button>
-          </div>
-          <div v-if="coverArtArchiveUrl" class="relative size-56">
-            <img
-              class="size-56"
-              :src="coverArtArchiveUrl"
-              alt="Cover Art Archive"
-            />
-            <button
-              class="z-button absolute bottom-2 right-2"
-              aria-label="Choose art"
-              @click="updateArt('coverartarchive')"
-            >
-              Use This Art
-            </button>
-          </div>
-          <div v-if="albumArt" class="relative size-56">
-            <img
-              class="size-56"
-              :src="albumArt"
-              alt="Album Art"
-            />
-            <button
-              class="z-button absolute bottom-2 right-2"
-              aria-label="Choose art"
-              @click="updateArt('manual')"
-            >
-              Use This Art
-            </button>
-          </div>
+          <ImageSelectorImage
+            v-if="deezerArtUrl"
+            :image-url="deezerArtUrl"
+            label="Deezer"
+            type="deezer"
+            @update-art="updateArt"
+          />
+          <ImageSelectorImage
+            v-if="coverArtArchiveUrl"
+            :image-url="coverArtArchiveUrl"
+            label="Cover Art Archive"
+            type="coverartarchive"
+            @update-art="updateArt"
+          />
+          <ImageSelectorImage
+            v-if="localFolderArtUrl"
+            :image-url="localFolderArtUrl"
+            label="Album folder"
+            type="localfolder"
+            @update-art="updateArt"
+          />
+          <ImageSelectorImage
+            v-if="localEmbeddedArtUrl"
+            :image-url="localEmbeddedArtUrl"
+            label="Embedded"
+            type="localembedded"
+            @update-art="updateArt"
+          />
+          <ImageSelectorImage
+            v-if="albumArt"
+            :image-url="albumArt"
+            label="Custom"
+            type="manual"
+            @update-art="updateArt"
+          />
         </div>
         <ImageSelector v-model="albumArt" />
       </div>
