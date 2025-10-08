@@ -98,3 +98,83 @@ func GetArtistNameById(ctx context.Context, musicBrainzArtistId string) (string,
 	}
 	return result, nil
 }
+
+func GetArtistList(ctx context.Context, musicFolderIds []int) ([]types.Artist, error) {
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return []types.Artist{}, err
+	}
+
+	var args []interface{}
+	query := `with album_count AS (
+		select rowid,
+			musicbrainz_artist_id,
+			count(distinct musicbrainz_album_id) as album_count
+		from metadata
+		where artist = album_artist
+		group by musicbrainz_artist_id
+	),
+	gr AS (
+			SELECT metadata_id, AVG(rating) AS avg_rating
+			FROM user_ratings
+			GROUP BY metadata_id
+		)
+	SELECT
+		m.musicbrainz_artist_id,
+		m.artist,
+		MAX(s.created_at) AS date_starred,
+		COALESCE(max(ur.rating), 0) AS user_rating,
+		COALESCE(gr.avg_rating, 0.0) AS average_rating,
+		coalesce(ac.album_count, 0) AS album_count
+	FROM metadata m
+	left join album_count ac on ac.musicbrainz_artist_id = m.musicbrainz_artist_id
+	JOIN user_music_folders mf ON mf.folder_id = m.music_folder_id
+	JOIN users u ON u.id = mf.user_id AND u.id = ?
+	LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = u.id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = u.id
+	LEFT JOIN gr ON m.musicbrainz_artist_id = gr.metadata_id
+	`
+
+	args = append(args, user.Id)
+
+	if len(musicFolderIds) > 0 {
+		query += ` WHERE m.music_folder_id IN (`
+		for i := 0; i < len(musicFolderIds); i++ {
+			if i > 0 {
+				query += `,`
+			}
+			query += `?`
+			args = append(args, musicFolderIds[i])
+		}
+		query += `)`
+	}
+
+	query += ` GROUP BY m.artist`
+
+	rows, err := DB.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("querying GetArtistList: %v", err)
+	}
+	defer rows.Close()
+
+	var artists []types.Artist
+
+	for rows.Next() {
+		var artist types.Artist
+		var starred sql.NullString
+		if err := rows.Scan(&artist.Id, &artist.Name, &starred, &artist.UserRating, &artist.AverageRating, &artist.AlbumCount); err != nil {
+			return nil, fmt.Errorf("scanning artist row: %v", err)
+		}
+		artist.CoverArt = artist.Id
+		artist.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(artist.Id, 600)
+		artist.MusicBrainzId = artist.Id
+		artist.SortName = strings.ToLower(artist.Name)
+
+		if starred.Valid {
+			artist.Starred = starred.String
+		}
+		artists = append(artists, artist)
+	}
+
+	return artists, nil
+}

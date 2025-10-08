@@ -216,7 +216,7 @@ func NormalisedForm(r *http.Request, w http.ResponseWriter) map[string]string {
 
 /*
 ParseDuplicateFormKeys parses duplicate form keys from the request.
-The key string should be passed in lowercase, as it is case-insensitive.
+The key string is case-sensitive.
 */
 func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, []string, error) {
 	// returns []int and []string, parses []int only if intArray is true
