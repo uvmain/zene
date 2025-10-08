@@ -29,7 +29,6 @@ func HandleGetArtistList(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		musicFolderIds = []int{}
 	}
-	logger.Printf("Parsed music folder IDs: %v", musicFolderIds)
 
 	ctx := r.Context()
 
