@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/logic"
@@ -19,6 +20,10 @@ func HandleGetArtistList(w http.ResponseWriter, r *http.Request) {
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
 	ifModifiedSince := form["ifmodifiedsince"]
+	typeParam := strings.ToLower(form["type"])
+	sizeParam := form["size"]
+	offsetParam := form["offset"]
+	seedParam := form["seed"]
 
 	musicFolderIds, _, err := net.ParseDuplicateFormKeys(r, "musicfolderid", true)
 	if err != nil {
@@ -51,7 +56,49 @@ func HandleGetArtistList(w http.ResponseWriter, r *http.Request) {
 		ifModifiedSinceInt = 0
 	}
 
-	artists, err := database.GetArtistList(ctx, musicFolderIds)
+	if typeParam == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "type parameter is required", "")
+		return
+	} else if typeParam != "random" && typeParam != "newest" && typeParam != "highest" && typeParam != "frequent" && typeParam != "recent" &&
+		typeParam != "alphabeticalbyname" && typeParam != "alphabeticalbyartist" && typeParam != "starred" && typeParam != "byyear" && typeParam != "bygenre" && typeParam != "release" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid type parameter", "")
+		return
+	}
+
+	var sizeInt int
+	if sizeParam != "" {
+		sizeInt, err = strconv.Atoi(sizeParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "size parameter must be an integer", "")
+			return
+		}
+	} else {
+		sizeInt = 20
+	}
+
+	var offsetInt int
+	if offsetParam != "" {
+		offsetInt, err = strconv.Atoi(offsetParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "offset parameter must be an integer", "")
+			return
+		}
+	} else {
+		offsetInt = 0
+	}
+
+	var seedInt int
+	if seedParam != "" {
+		seedInt, err = strconv.Atoi(seedParam)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "seed parameter must be an integer", "")
+			return
+		}
+	} else {
+		seedInt = 0
+	}
+
+	artists, err := database.GetArtistList(ctx, musicFolderIds, sizeInt, offsetInt, seedInt, typeParam)
 	if err != nil {
 		logger.Printf("Error querying database in GetIndexes: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to query database", "")

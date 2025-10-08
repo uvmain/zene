@@ -99,7 +99,7 @@ func GetArtistNameById(ctx context.Context, musicBrainzArtistId string) (string,
 	return result, nil
 }
 
-func GetArtistList(ctx context.Context, musicFolderIds []int) ([]types.Artist, error) {
+func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset int, seed int, sortType string) ([]types.Artist, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.Artist{}, err
@@ -150,6 +150,38 @@ func GetArtistList(ctx context.Context, musicFolderIds []int) ([]types.Artist, e
 	}
 
 	query += ` GROUP BY m.artist`
+
+	if sortType == "starred" {
+		query += ` and starred is not null`
+	}
+
+	switch sortType {
+	case "random":
+		if seed != 0 {
+			query += fmt.Sprintf(" order BY (m.rowid * %d) %% 1000000", seed)
+		} else {
+			query += " order BY random()"
+		}
+	case "newest": // recently added albums
+		query += " order BY m.date_added desc"
+	case "highest": // highest rated albums
+		query += " order by ur.rating desc, m.musicbrainz_album_id desc"
+	case "frequent": // most frequently played albums
+		query += " order by play_count desc, m.musicbrainz_album_id desc"
+	case "recent": // recently played albums
+		query += " order by last_played desc, m.musicbrainz_album_id desc"
+	case "alphabeticalbyname":
+		query += " order by m.album asc"
+	case "alphabeticalbyartist":
+		query += " order by m.artist asc"
+	case "release":
+		query += " order by m.release_date desc"
+	default:
+		query += " order BY m.musicbrainz_album_id asc"
+	}
+
+	query += ` limit ? offset ?`
+	args = append(args, limit, offset)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
