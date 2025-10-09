@@ -17,19 +17,19 @@ import (
 	"zene/core/musicbrainz"
 )
 
-func ImportArtForAlbumArtist(ctx context.Context, musicBrainzArtistId string, artistName string) {
+func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistName string) {
 	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)
 	if err != nil {
-		logger.Printf("Error getting artist subdirectories from database in ImportArtForAlbumArtist: %v", err)
+		logger.Printf("Error getting artist subdirectories from database in ImportArtForArtist: %v", err)
 	}
 
 	existingRow, err := database.SelectArtistArtByMusicBrainzArtistId(ctx, musicBrainzArtistId)
 	if err != nil {
-		logger.Printf("Error getting artist art data from database in ImportArtForAlbumArtist: %v", err)
+		logger.Printf("Error getting artist art data from database in ImportArtForArtist: %v", err)
 	}
 	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
 	if err != nil {
-		logger.Printf("Error parsing existing row time in ImportArtForAlbumArtist: %v", err)
+		logger.Printf("Error parsing existing row time in ImportArtForArtist: %v", err)
 	}
 
 	directories := []string{}

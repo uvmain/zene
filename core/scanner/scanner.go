@@ -336,14 +336,14 @@ func getAlbumArtworkForMusicDir(ctx context.Context, musicDir string) error {
 func getArtistArtworkForMusicDir(ctx context.Context, musicDir string) error {
 	logger.Printf("Getting artist artwork for music dir %s", musicDir)
 
-	albumArtists, err := database.SelectAlbumArtistsForMusicDir(ctx, musicDir, "", "", "", "", "", "")
+	albumArtists, err := database.SelectArtistsForMusicDir(ctx, musicDir)
 
 	if err != nil {
 		logger.Printf("Error fetching artists from database: %v", err)
 		return err
 	}
 	for _, artist := range albumArtists {
-		art.ImportArtForAlbumArtist(ctx, artist.MusicBrainzArtistID, artist.Artist)
+		art.ImportArtForArtist(ctx, artist.MusicBrainzArtistID, artist.Artist)
 	}
 
 	return nil
