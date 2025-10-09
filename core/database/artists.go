@@ -99,14 +99,33 @@ func GetArtistNameById(ctx context.Context, musicBrainzArtistId string) (string,
 	return result, nil
 }
 
-func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset int, seed int, sortType string) ([]types.Artist, error) {
+func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset int, sortType string, seed int) ([]types.Artist, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.Artist{}, err
 	}
 
 	var args []interface{}
-	query := `with album_count AS (
+	query := `with artist_plays AS (
+    SELECT m.musicbrainz_artist_id,
+			SUM(pc.play_count) AS play_count,
+			MAX(pc.last_played) AS last_played
+    FROM play_counts pc
+		join metadata m ON m.musicbrainz_track_id = pc.musicbrainz_track_id
+		and pc.user_id = ?
+		`
+	args = append(args, user.Id)
+
+	query += ` GROUP BY m.musicbrainz_artist_id
+	),
+	stars AS (
+		select metadata_id,
+			MAX(created_at) AS date_starred
+		from user_stars
+		where user_id = ?
+		group by metadata_id
+	),
+	album_count AS (
 		select rowid,
 			musicbrainz_artist_id,
 			count(distinct musicbrainz_album_id) as album_count
@@ -122,7 +141,7 @@ func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset 
 	SELECT
 		m.musicbrainz_artist_id,
 		m.artist,
-		MAX(s.created_at) AS date_starred,
+		s.date_starred,
 		COALESCE(max(ur.rating), 0) AS user_rating,
 		COALESCE(gr.avg_rating, 0.0) AS average_rating,
 		coalesce(ac.album_count, 0) AS album_count
@@ -130,12 +149,13 @@ func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset 
 	left join album_count ac on ac.musicbrainz_artist_id = m.musicbrainz_artist_id
 	JOIN user_music_folders mf ON mf.folder_id = m.music_folder_id
 	JOIN users u ON u.id = mf.user_id AND u.id = ?
-	LEFT JOIN user_stars s ON m.musicbrainz_artist_id = s.metadata_id AND s.user_id = u.id
+	LEFT JOIN artist_plays ap ON m.musicbrainz_artist_id = ap.musicbrainz_artist_id
+	LEFT JOIN stars s ON m.musicbrainz_artist_id = s.metadata_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = u.id
 	LEFT JOIN gr ON m.musicbrainz_artist_id = gr.metadata_id
 	`
 
-	args = append(args, user.Id)
+	args = append(args, user.Id, user.Id)
 
 	if len(musicFolderIds) > 0 {
 		query += ` WHERE m.music_folder_id IN (`
@@ -151,10 +171,6 @@ func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset 
 
 	query += ` GROUP BY m.artist`
 
-	if sortType == "starred" {
-		query += ` and starred is not null`
-	}
-
 	switch sortType {
 	case "random":
 		if seed != 0 {
@@ -162,26 +178,27 @@ func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset 
 		} else {
 			query += " order BY random()"
 		}
-	case "newest": // recently added albums
-		query += " order BY m.date_added desc"
-	case "highest": // highest rated albums
-		query += " order by ur.rating desc, m.musicbrainz_album_id desc"
-	case "frequent": // most frequently played albums
-		query += " order by play_count desc, m.musicbrainz_album_id desc"
-	case "recent": // recently played albums
-		query += " order by last_played desc, m.musicbrainz_album_id desc"
-	case "alphabeticalbyname":
-		query += " order by m.album asc"
-	case "alphabeticalbyartist":
+	case "newest": // recently added artists
+		query += " order by m.date_added desc"
+	case "highest": // highest rated artists
+		query += " order by ur.rating desc, m.artist desc"
+	case "frequent": // most frequently played artists
+		query += " order by ap.play_count desc, m.date_added desc"
+	case "recent": // recently played artists
+		query += " order by last_played desc, m.date_added desc"
+	case "alphabetical":
 		query += " order by m.artist asc"
-	case "release":
-		query += " order by m.release_date desc"
+	case "starred":
+		query += ` having date_starred is not null
+			order by date_starred desc, m.artist asc`
 	default:
-		query += " order BY m.musicbrainz_album_id asc"
+		query += " order BY m.artist asc"
 	}
 
-	query += ` limit ? offset ?`
-	args = append(args, limit, offset)
+	if limit > 0 {
+		query += ` limit ? offset ?`
+		args = append(args, limit, offset)
+	}
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
