@@ -64,6 +64,12 @@ export interface SubsonicArtistResponse extends SubsonicResponse {
   artist: SubsonicArtist
 }
 
+export interface SubsonicArtistListResponse extends SubsonicResponse {
+  artistList: {
+    artist: SubsonicArtist[]
+  }
+}
+
 export interface SubsonicArtistsResponse extends SubsonicResponse {
   artists: SubsonicIndexArtists
 }
