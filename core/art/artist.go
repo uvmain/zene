@@ -27,9 +27,12 @@ func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistN
 	if err != nil {
 		logger.Printf("Error getting artist art data from database in ImportArtForArtist: %v", err)
 	}
-	rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
-	if err != nil {
-		logger.Printf("Error parsing existing row time in ImportArtForArtist: %v", err)
+	var rowTime time.Time
+	if existingRow.DateModified != "" {
+		rowTime, err = time.Parse(time.RFC3339Nano, existingRow.DateModified)
+		if err != nil {
+			logger.Printf("Error parsing existing row time in ImportArtForArtist: %v", err)
+		}
 	}
 
 	directories := []string{}
@@ -70,7 +73,7 @@ func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistN
 	// if file exists
 	if fileExists {
 		// if row exists
-		if rowExists {
+		if rowExists && !rowTime.IsZero() {
 			// if row is newer, do nothing
 			if rowTime.After(fileTime) {
 				return
