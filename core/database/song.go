@@ -97,30 +97,43 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 		return []types.SubsonicChild{}, err
 	}
 
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, COALESCE(m.track_number, 0) as track,
+	var args []interface{}
+	query := `with plays AS (
+		SELECT	m.musicbrainz_track_id,
+		SUM(pc.play_count) AS play_count,
+		MAX(pc.last_played) AS last_played,
+		pc.user_id
+    FROM play_counts pc
+		join metadata m ON m.musicbrainz_track_id = pc.musicbrainz_track_id
+		where pc.user_id = ?
+		GROUP BY m.musicbrainz_track_id
+	)
+	select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist, COALESCE(m.track_number, 0) as track,
 		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
 		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
 		m.genre, m.album_artist, maa.musicbrainz_artist_id as album_artist_id, m.bit_depth, m.sample_rate, m.channels,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
-		COALESCE(SUM(pc.play_count), 0) AS play_count,
-		max(pc.last_played) as played,
+		COALESCE(pc.play_count, 0) AS play_count,
+		pc.last_played as played,
 		us.created_at AS starred
 	from user_music_folders u
 	join metadata m on m.music_folder_id = u.folder_id
 	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = u.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.user_id
+	LEFT JOIN plays pc ON pc.musicbrainz_track_id = m.musicbrainz_track_id AND pc.user_id = u.user_id
 	left join metadata maa on maa.artist = m.album_artist
 	where m.musicbrainz_album_id = ?
 	and u.user_id = ?
 	group by m.musicbrainz_track_id
 	order by m.disc_number asc, m.track_number asc;`
 
+	args = append(args, requestUser.Id, musicbrainzAlbumId, requestUser.Id)
+
 	var results []types.SubsonicChild
 
-	rows, err := DB.QueryContext(ctx, query, musicbrainzAlbumId, requestUser.Id)
+	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.SubsonicChild{}, err

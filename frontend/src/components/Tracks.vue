@@ -45,7 +45,7 @@ watch(currentlyPlayingTrack, async (newTrack) => {
 watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
   routeTracks.value?.forEach((track) => {
     if (track.musicBrainzId === newTrack) {
-      track.playcount = (track.playcount ?? 0) + 1
+      track.playCount = (track.playCount ?? 0) + 1
     }
   })
 })
@@ -167,7 +167,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           </td>
 
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
-            {{ track.playcount ?? 0 }}
+            {{ track.playCount ?? 0 }}
           </td>
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
             {{ formatTime(track.duration) }}
