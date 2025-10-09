@@ -36,7 +36,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 			pc.user_id
     FROM play_counts pc
 	join metadata m ON m.musicbrainz_track_id = pc.musicbrainz_track_id
-	and pc.user_id = ?
+	where pc.user_id = ?
 	GROUP BY m.musicbrainz_album_id
 	),
 	album_artist_map AS (

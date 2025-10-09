@@ -117,20 +117,31 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	}
 
 	var album types.AlbumId3
+	var args []interface{}
 
-	query := `select m.musicbrainz_album_id as id,
+	query := `with album_plays AS (
+	SELECT	m.musicbrainz_album_id,
+		SUM(pc.play_count) AS play_count,
+		MAX(pc.last_played) AS last_played,
+		pc.user_id
+    FROM play_counts pc
+		join metadata m ON m.musicbrainz_track_id = pc.musicbrainz_track_id
+		where pc.user_id = ?
+		GROUP BY m.musicbrainz_album_id
+		)
+	select m.musicbrainz_album_id as id,
 		m.album as name,
 		m.artist as artist,
 		m.musicbrainz_album_id as cover_art,
 		count(m.musicbrainz_track_id) as song_count,
 		cast(sum(m.duration) as integer) as duration,
-		COALESCE(SUM(pc.play_count), 0) as play_count,
+		COALESCE(ap.play_count, 0) as play_count,
 		min(m.date_added) as created,
 		m.musicbrainz_artist_id as artist_id,
 		s.created_at as starred,
 		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
-		max(pc.last_played) as played,
+		max(ap.last_played) as played,
 		COALESCE(ur.rating, 0) AS user_rating,
 		m.label as label_string,
 		m.musicbrainz_album_id as musicbrainz_id,
@@ -142,12 +153,15 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 		maa.artist as album_artist_name
 	from user_music_folders f
 	join metadata m on m.music_folder_id = f.folder_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
+	LEFT JOIN album_plays ap ON ap.musicbrainz_album_id = m.musicbrainz_album_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
 	left join metadata maa on maa.artist = m.album_artist
 	where m.musicbrainz_album_id = ?
+	group by m.musicbrainz_album_id 
 	and f.user_id = ?`
+
+	args = append(args, user.Id, musicbrainzAlbumId, user.Id)
 
 	var starred sql.NullString
 	var labelString sql.NullString
@@ -157,7 +171,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	var albumArtistId sql.NullString
 	var albumArtistName sql.NullString
 
-	err = DB.QueryRowContext(ctx, query, musicbrainzAlbumId, user.Id).Scan(
+	err = DB.QueryRowContext(ctx, query, args...).Scan(
 		&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
 		&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
 		&album.Year, &album.Genre, &played, &album.UserRating,

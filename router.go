@@ -65,6 +65,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/share/img/{image_id}", http.HandlerFunc(handlers.HandleGetShareImg))
 	apiRouter.Handle("/rest/getalbumarts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArts)))
 	apiRouter.Handle("/rest/updatealbumart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAlbumArt)))
+	apiRouter.Handle("/rest/getartistlist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistList)))
 	/* cSpell:disable */
 
 	// System

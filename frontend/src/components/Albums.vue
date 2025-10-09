@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { useIntersectionObserver, useLocalStorage } from '@vueuse/core'
+import { useElementVisibility, useLocalStorage } from '@vueuse/core'
 import { fetchAlbums } from '~/composables/backendFetch'
 import { generateSeed } from '~/composables/logic'
 
@@ -14,7 +14,8 @@ const loading = ref(false)
 const seed = useLocalStorage<number>('albumSeed', 0)
 const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
-const intersectionObserver = useTemplateRef<HTMLDivElement>('intersection')
+const observer = useTemplateRef<HTMLDivElement>('observer')
+const observerIsVisible = useElementVisibility(observer)
 
 let type: string
 
@@ -22,12 +23,11 @@ const albums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const showOrderOptions = ref(false)
 const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate'>('currentAlbumOrder', 'recentlyUpdated')
 
-const _ = useIntersectionObserver(
-  intersectionObserver,
-  () => {
+watch(observerIsVisible, (newValue) => {
+  if (newValue && props.scrollable) {
     getAlbums()
-  },
-)
+  }
+})
 
 const headerTitle = computed(() => {
   switch (currentOrder.value) {
@@ -92,6 +92,9 @@ async function getAlbums() {
     canLoadMore.value = false
   }
   loading.value = false
+  if (observerIsVisible.value) {
+    getAlbums()
+  }
 }
 
 async function refresh() {
@@ -131,5 +134,7 @@ onBeforeMount(async () => {
       </div>
     </div>
   </div>
-  <div v-if="canLoadMore && props.scrollable" ref="intersection" class="h-16" />
+  <div v-if="canLoadMore && props.scrollable" ref="observer" class="h-16">
+    Loading more albums...
+  </div>
 </template>

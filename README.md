@@ -48,6 +48,9 @@ Supports the following OpenSubsonic API extensions:
 - `createApiKey` Accepts a `userId` parameter. Only admins can create API keys for other users.
 - `getApiKeys` Accepts a `userId` parameter. Only admins can get API keys for other users.
 - `deleteApiKey` Requires one or more `id` parameter(s). Accepts a `userId` parameter. Only admins can delete API keys for other users.
+- `getAlbumArts` Returns URLs for various album art choices, eg Deezer, CoverArtArchive, Local Folder art, Embedded track art.
+- `updateAlbumArt` Accepts an `id` parameter and a `file` form blob to update album art. Only admins can call this endpoint.
+- `getArtistList` Like getAlbumList, requires `type` param which can be: `starred`, `random`, `newest`, `highest`, `frequent`, `recent` or `alphabetical`. If type=random, accepts an optional `seed` param (integer) to get deterministic results
 
 ## Installation
 - create a `.env` file using `.env.example` as a guide

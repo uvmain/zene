@@ -19,8 +19,12 @@ type SubsonicArtistWrapper struct {
 }
 
 type SubsonicArtistsWrapper struct {
-	Artists         *[]Index `xml:"index,omitempty" json:"index,omitempty"`
+	Artists         *[]Index `xml:"index" json:"index"`
 	IgnoredArticles string   `xml:"ignoredArticles,attr" json:"ignoredArticles"`
+}
+
+type SubsonicArtistListWrapper struct {
+	Artists []Artist `xml:"artist" json:"artist"`
 }
 
 type ArtistInfo struct {

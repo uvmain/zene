@@ -25,7 +25,7 @@ export interface SubsonicSong {
   displayArtist: string
   albumArtists: AlbumArtist[]
   displayAlbumArtist: string
-  playcount?: number
+  playCount?: number
 }
 
 interface Genre2 {

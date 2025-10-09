@@ -2,6 +2,7 @@ import type {
   SubsonicAlbumListResponse,
   SubsonicAlbumResponse,
   SubsonicApiKeyResponse,
+  SubsonicArtistListResponse,
   SubsonicArtistResponse,
   SubsonicArtistsResponse,
   SubsonicGenresResponse,
@@ -209,6 +210,21 @@ export async function fetchArtists(limit = 0): Promise<SubsonicIndexArtist[]> {
     return artistArray.slice(0, limit)
   }
   return artistArray
+}
+
+export async function fetchArtistList(type: string, limit: number, offset: number, seed?: number): Promise<SubsonicArtist[]> {
+  const formData = new FormData()
+  formData.append('type', type)
+  formData.append('size', limit.toString())
+  formData.append('offset', offset.toString())
+  if (seed !== undefined && seed > 0) {
+    formData.append('seed', seed.toString())
+  }
+  const response = await openSubsonicFetchRequest<SubsonicArtistListResponse>('getArtistList', {
+    body: formData,
+  })
+  const artists = response.artistList.artist
+  return artists
 }
 
 export async function fetchArtistTopSongs(musicbrainz_artist_id: string, count = 50): Promise<SubsonicSong[]> {
