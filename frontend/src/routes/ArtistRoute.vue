@@ -13,6 +13,14 @@ const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()
 const albums = ref<SubsonicAlbum[]>()
 
+const albumArtistAlbums = computed(() => {
+  return albums.value?.filter(album => album.artistId !== artist.value?.id) ?? [] as SubsonicAlbum[]
+})
+
+const artistAlbums = computed(() => {
+  return albums.value?.filter(album => album.artistId === artist.value?.id) ?? [] as SubsonicAlbum[]
+})
+
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 
 const artistArtUrl = computed(() => {
@@ -68,12 +76,22 @@ onBeforeMount(async () => {
       </div>
     </div>
   </section>
-  <div>
+  <div v-if="albumArtistAlbums.length > 0">
+    <h2 class="text-lg font-semibold">
+      Appears on albums
+    </h2>
+    <div class="flex flex-wrap gap-6">
+      <div v-for="album in albumArtistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+        <Album :album="album" size="sm" />
+      </div>
+    </div>
+  </div>
+  <div v-if="artistAlbums.length > 0">
     <h2 class="text-lg font-semibold">
       Albums
     </h2>
     <div class="flex flex-wrap gap-6">
-      <div v-for="album in albums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+      <div v-for="album in artistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <Album :album="album" size="sm" />
       </div>
     </div>

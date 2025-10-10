@@ -95,37 +95,53 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 
 	var albums []types.AlbumId3
 	var args []interface{}
-	query := `select m.musicbrainz_album_id as id,
-		m.album as name,
-		m.artist as artist,
-		m.musicbrainz_album_id as cover_art,
-		count(m.musicbrainz_track_id) as song_count,
-		cast(sum(m.duration) as integer) as duration,
-		COALESCE(SUM(pc.play_count), 0) as play_count,
-		min(m.date_added) as created,
-		m.musicbrainz_artist_id as artist_id,
-		s.created_at as starred,
-		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
-		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
-		max(pc.last_played) as played,
-		COALESCE(ur.rating, 0) AS user_rating,
-		m.label as label_string,
-		m.musicbrainz_album_id as musicbrainz_id,
-		m.genre as genre_string,
-		m.artist as display_artist,
-		lower(m.album) as sort_name,
-		m.release_date as release_date_string,
-		maa.musicbrainz_artist_id as album_artist_id,
-		maa.artist as album_artist_name
-	from user_music_folders f
-	join metadata m on m.music_folder_id = f.folder_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
-	left join metadata maa on maa.artist = m.album_artist
-	where f.user_id = ?`
+	query := `with album_plays AS (
+		SELECT	m.musicbrainz_album_id,
+			SUM(pc.play_count) AS play_count,
+			MAX(pc.last_played) AS last_played,
+			pc.user_id
+			FROM play_counts pc
+			join metadata m ON m.musicbrainz_track_id = pc.musicbrainz_track_id
+			where pc.user_id = ?
+			GROUP BY m.musicbrainz_album_id
+			),
+		album_artists as (
+			select musicbrainz_album_id, musicbrainz_artist_id, album_artist
+			from metadata
+			where album_artist = artist
+			group by musicbrainz_album_id
+		)
+		select m.musicbrainz_album_id as id,
+			m.album as name,
+			maa.album_artist as artist,
+			m.musicbrainz_album_id as cover_art,
+			count(m.musicbrainz_track_id) as song_count,
+			cast(sum(m.duration) as integer) as duration,
+			COALESCE(ap.play_count, 0) as play_count,
+			min(m.date_added) as created,
+			m.musicbrainz_artist_id as artist_id,
+			s.created_at as starred,
+			REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
+			substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
+			max(ap.last_played) as played,
+			COALESCE(ur.rating, 0) AS user_rating,
+			m.label as label_string,
+			m.musicbrainz_album_id as musicbrainz_id,
+			m.genre as genre_string,
+			m.artist as display_artist,
+			lower(m.album) as sort_name,
+			m.release_date as release_date_string,
+			maa.musicbrainz_artist_id as album_artist_id,
+			maa.album_artist as album_artist_name
+		from metadata m
+		join user_music_folders f on m.music_folder_id = f.folder_id
+		LEFT JOIN album_plays ap ON ap.musicbrainz_album_id = m.musicbrainz_album_id
+		LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
+		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+		join album_artists maa on maa.musicbrainz_album_id = m.musicbrainz_album_id
+		where f.user_id = ?`
 
-	args = append(args, user.Id)
+	args = append(args, user.Id, user.Id)
 
 	if searchQuery != "" {
 		query += ` and lower(m.album) like lower(?)`
