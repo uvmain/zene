@@ -113,7 +113,7 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 		)
 		select m.musicbrainz_album_id as id,
 			m.album as name,
-			maa.album_artist as artist,
+			coalesce(maa.album_artist, m.album_artist) as artist,
 			m.musicbrainz_album_id as cover_art,
 			count(m.musicbrainz_track_id) as song_count,
 			cast(sum(m.duration) as integer) as duration,
@@ -132,13 +132,13 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 			lower(m.album) as sort_name,
 			m.release_date as release_date_string,
 			maa.musicbrainz_artist_id as album_artist_id,
-			maa.album_artist as album_artist_name
+			coalesce(maa.album_artist, m.album_artist) as album_artist_name
 		from metadata m
 		join user_music_folders f on m.music_folder_id = f.folder_id
 		LEFT JOIN album_plays ap ON ap.musicbrainz_album_id = m.musicbrainz_album_id
 		LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
-		join album_artists maa on maa.musicbrainz_album_id = m.musicbrainz_album_id
+		left join album_artists maa on maa.musicbrainz_album_id = m.musicbrainz_album_id
 		where f.user_id = ?`
 
 	args = append(args, user.Id, user.Id)
