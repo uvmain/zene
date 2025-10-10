@@ -19,6 +19,7 @@ export interface SubsonicAlbum {
   musicBrainzId: string
   genres: Genre[]
   displayArtist: string
+  displayAlbumArtist: string
   sortName: string
   releaseDate: ReleaseDate
   song: SubsonicSong[]

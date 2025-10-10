@@ -19,14 +19,15 @@ const { closeSearch } = useSearch()
 const showChangeArtModal = ref(false)
 
 const artistAndDate = computed(() => {
+  const artist = props.album.displayAlbumArtist ?? props.album.displayArtist ?? props.album.artist ?? 'Unknown Artist'
   if (props.album.releaseDate) {
-    return `${props.album.artist} • ${parseReleaseDate(props.album.releaseDate)}`
+    return `${artist} • ${parseReleaseDate(props.album.releaseDate)}`
   }
   else if (props.album.year) {
-    return `${props.album.artist} • ${props.album.year}`
+    return `${artist} • ${props.album.year}`
   }
   else {
-    return props.album.artist
+    return artist
   }
 })
 

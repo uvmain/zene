@@ -137,7 +137,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 		)
 		select m.musicbrainz_album_id as id,
 			m.album as name,
-			maa.album_artist as artist,
+			coalesce(maa.album_artist, m.album_artist) as artist,
 			m.musicbrainz_album_id as cover_art,
 			count(m.musicbrainz_track_id) as song_count,
 			cast(sum(m.duration) as integer) as duration,
@@ -152,17 +152,17 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 			m.label as label_string,
 			m.musicbrainz_album_id as musicbrainz_id,
 			m.genre as genre_string,
-			m.artist as display_artist,
+			coalesce(maa.album_artist, m.album_artist) as display_artist,
 			lower(m.album) as sort_name,
 			m.release_date as release_date_string,
 			maa.musicbrainz_artist_id as album_artist_id,
-			maa.album_artist as album_artist_name
+			coalesce(maa.album_artist, m.album_artist) as album_artist_name
 		from metadata m
 		join user_music_folders f on m.music_folder_id = f.folder_id
 		LEFT JOIN album_plays ap ON ap.musicbrainz_album_id = m.musicbrainz_album_id
 		LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
 		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
-		join album_artists maa on maa.musicbrainz_album_id = m.musicbrainz_album_id
+		left join album_artists maa on maa.musicbrainz_album_id = m.musicbrainz_album_id
 		where m.musicbrainz_album_id = ?
 		group by m.musicbrainz_album_id 
 		and f.user_id = ?`
@@ -174,11 +174,12 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	var genresString sql.NullString
 	var releaseDateString sql.NullString
 	var played sql.NullString
+	var artist sql.NullString
 	var albumArtistId sql.NullString
 	var albumArtistName sql.NullString
 
 	err = DB.QueryRowContext(ctx, query, args...).Scan(
-		&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
+		&album.Id, &album.Name, &artist, &album.CoverArt, &album.SongCount,
 		&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
 		&album.Year, &album.Genre, &played, &album.UserRating,
 		&labelString, &album.MusicBrainzId, &genresString,
@@ -194,6 +195,10 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 
 	if starred.Valid {
 		album.Starred = starred.String
+	}
+
+	if artist.Valid {
+		album.Artist = artist.String
 	}
 
 	if played.Valid {
@@ -216,9 +221,15 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	}
 
 	album.AlbumArtists = []types.Artist{}
-	if albumArtistId.Valid && albumArtistName.Valid {
-		album.AlbumArtists = append(album.AlbumArtists, types.Artist{Id: albumArtistId.String, Name: albumArtistName.String})
+	albumArtist1 := types.Artist{}
+
+	if albumArtistId.Valid {
+		albumArtist1.Id = albumArtistId.String
 	}
+	if albumArtistName.Valid {
+		albumArtist1.Name = albumArtistName.String
+	}
+	album.AlbumArtists = append(album.AlbumArtists, albumArtist1)
 
 	releaseDateTime, err := anytime.Parse(releaseDateString.String)
 	if err == nil {
