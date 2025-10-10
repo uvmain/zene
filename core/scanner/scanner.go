@@ -343,7 +343,7 @@ func getArtistArtworkForMusicDir(ctx context.Context, musicDir string) error {
 		return err
 	}
 	for _, artist := range albumArtists {
-		art.ImportArtForArtist(ctx, artist.MusicBrainzArtistID, artist.Artist)
+		art.ImportArtForArtist(ctx, artist.MusicBrainzArtistID, artist.Artist, artist.IsAlbumArtist)
 	}
 
 	return nil

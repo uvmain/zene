@@ -17,12 +17,7 @@ import (
 	"zene/core/musicbrainz"
 )
 
-func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistName string) {
-	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)
-	if err != nil {
-		logger.Printf("Error getting artist subdirectories from database in ImportArtForArtist: %v", err)
-	}
-
+func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistName string, isAlbumArtist bool) {
 	existingRow, err := database.SelectArtistArtByMusicBrainzArtistId(ctx, musicBrainzArtistId)
 	if err != nil {
 		logger.Printf("Error getting artist art data from database in ImportArtForArtist: %v", err)
@@ -33,6 +28,11 @@ func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistN
 		if err != nil {
 			logger.Printf("Error parsing existing row time in ImportArtForArtist: %v", err)
 		}
+	}
+
+	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)
+	if err != nil {
+		logger.Printf("Error getting artist subdirectories from database in ImportArtForArtist: %v", err)
 	}
 
 	directories := []string{}
@@ -71,7 +71,7 @@ func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistN
 	rowExists := (existingRow.MusicbrainzArtistId != "")
 
 	// if file exists
-	if fileExists {
+	if fileExists && isAlbumArtist {
 		// if row exists
 		if rowExists && !rowTime.IsZero() {
 			// if row is newer, do nothing

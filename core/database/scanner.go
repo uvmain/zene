@@ -8,10 +8,15 @@ import (
 type getArtistsLine struct {
 	Artist              string
 	MusicBrainzArtistID string
+	IsAlbumArtist       bool
 }
 
 func SelectArtistsForMusicDir(ctx context.Context, musicDir string) ([]getArtistsLine, error) {
-	query := "select distinct m.artist, m.musicbrainz_artist_id FROM metadata m join music_folders mf on m.music_folder_id = mf.id and mf.name = ?"
+	query := `select distinct m.artist,
+		m.musicbrainz_artist_id,
+		CASE WHEN m.artist = m.album_artist THEN true ELSE false end as is_album_artist
+	FROM metadata m
+	join music_folders mf on m.music_folder_id = mf.id and mf.name = ?`
 
 	var results []getArtistsLine
 
@@ -24,7 +29,7 @@ func SelectArtistsForMusicDir(ctx context.Context, musicDir string) ([]getArtist
 
 	for rows.Next() {
 		var result getArtistsLine
-		if err := rows.Scan(&result.Artist, &result.MusicBrainzArtistID); err != nil {
+		if err := rows.Scan(&result.Artist, &result.MusicBrainzArtistID, &result.IsAlbumArtist); err != nil {
 			logger.Printf("Failed to scan row in SelectArtistsForMusicDir: %v", err)
 			return []getArtistsLine{}, err
 		}
