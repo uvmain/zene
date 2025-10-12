@@ -19,7 +19,7 @@ async function refresh() {
 
 <template>
   <div class="flex flex-row items-center justify-center gap-x-2 py-4 md:justify-start">
-    <ZButton @click="emits('titleClick')">
+    <ZButton :primary="true" @click="emits('titleClick')">
       {{ title }}
     </ZButton>
     <icon-nrk-refresh class="cursor-pointer text-sm hover:text-primary2" :class="{ spin: refreshed }" @click="refresh()" />
