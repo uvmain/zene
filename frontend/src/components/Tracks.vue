@@ -154,7 +154,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 class="flex items-center"
                 @click.stop
               >
-                <img class="size-10 object-cover" :src="getCoverArtUrl(track.albumId)" alt="Album Cover" @error="onImageError" />
+                <img class="size-10 object-cover" :src="getCoverArtUrl(track.albumId, 40)" alt="Album Cover" @error="onImageError" />
               </RouterLink>
               <RouterLink
                 class="text-muted no-underline hover:underline hover:underline-white"

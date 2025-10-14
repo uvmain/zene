@@ -59,6 +59,7 @@ function setOrder(order: OrderType) {
 
 function resetArtistsArray() {
   canLoadMore.value = true
+  loading.value = false
   currentOffset.value = props.offset
   artists.value = [] as SubsonicArtist[]
 }
@@ -90,7 +91,7 @@ async function refresh() {
     seed.value = generateSeed()
   }
   resetArtistsArray()
-  await getArtists()
+  getArtists()
 }
 
 onBeforeMount(async () => {

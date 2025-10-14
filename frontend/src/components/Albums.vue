@@ -57,6 +57,7 @@ function setOrder(order: 'recentlyUpdated' | 'random' | 'alphabetical' | 'releas
 
 function resetAlbumsArray() {
   canLoadMore.value = true
+  loading.value = false
   currentOffset.value = props.offset
   albums.value = [] as SubsonicAlbum[]
 }

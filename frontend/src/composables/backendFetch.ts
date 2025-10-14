@@ -27,6 +27,8 @@ import { useDebug } from '~/composables/useDebug'
 const { debugLog } = useDebug()
 const apiKey = useLocalStorage('apiKey', '')
 
+const concurrencyMap = new Map<string, Promise<any>>()
+
 export async function fetchNewApiKeyWithTokenAndSalt(username: string, token: string, salt: string): Promise<string> {
   try {
     const formData = new FormData()
@@ -85,50 +87,65 @@ export async function fetchApiKeysWithTokenAndSalt(username: string, token: stri
 }
 
 export async function openSubsonicFetchRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const formData = new FormData()
-  if (apiKey.value !== null && apiKey.value.length > 0) {
-    formData.append('apiKey', apiKey.value)
-    formData.append('f', 'json')
-    formData.append('v', '1.16.0')
-    formData.append('c', 'zene-frontend')
-  }
-  else {
-    const router = useRouter()
-    await router.push('/login')
+  const concurrencyKey = path + JSON.stringify(options)
+  if (concurrencyMap.has(concurrencyKey)) {
+    return concurrencyMap.get(concurrencyKey) as Promise<T>
   }
 
-  // append formdata to existing body
-  if (options.body instanceof FormData) {
-    formData.forEach((value, key) => {
-      (options.body as FormData).append(key, value)
-    })
-  }
-  else {
-    options.body = formData
-  }
-
-  options.method = options.method ?? 'POST'
-
-  const url = `/rest/${path}`
-
-  const response = await fetch(url, options)
-
-  try {
-    const jsonData = await response.json() as SubsonicResponseWrapper
-    if (jsonData['subsonic-response']?.status === 'error' && [40, 44].includes(jsonData['subsonic-response']?.error?.code ?? 0)) {
-      // user is not authenticated
-      apiKey.value = ''
+  const promise = async <T>(path: string, options: RequestInit): Promise<T> => {
+    const formData = new FormData()
+    if (apiKey.value !== null && apiKey.value.length > 0) {
+      formData.append('apiKey', apiKey.value)
+      formData.append('f', 'json')
+      formData.append('v', '1.16.0')
+      formData.append('c', 'zene-frontend')
+    }
+    else {
       const router = useRouter()
       await router.push('/login')
     }
-    else {
-      return jsonData['subsonic-response'] as T
+
+    // append formdata to existing body
+    if (options.body instanceof FormData) {
+      formData.forEach((value, key) => {
+        (options.body as FormData).append(key, value)
+      })
     }
+    else {
+      options.body = formData
+    }
+
+    options.method = options.method ?? 'POST'
+
+    const url = `/rest/${path}`
+
+    const response = await fetch(url, options)
+
+    try {
+      const jsonData = await response.json() as SubsonicResponseWrapper
+      if (jsonData['subsonic-response']?.status === 'error' && [40, 44].includes(jsonData['subsonic-response']?.error?.code ?? 0)) {
+      // user is not authenticated
+        apiKey.value = ''
+        const router = useRouter()
+        await router.push('/login')
+      }
+      else {
+        return jsonData['subsonic-response'] as T
+      }
+    }
+    catch (error) {
+      console.error('Error fetching data:', error)
+    }
+    return {} as T
   }
-  catch (error) {
-    console.error('Error fetching data:', error)
-  }
-  return {} as T
+
+  const promiseInstance = promise(path, options)
+  concurrencyMap.set(concurrencyKey, promiseInstance)
+  void promiseInstance.finally(() => {
+    concurrencyMap.delete(concurrencyKey)
+  })
+
+  return promiseInstance as Promise<T>
 }
 
 export function getStreamUrl(path: string, params: URLSearchParams = {} as URLSearchParams): string {

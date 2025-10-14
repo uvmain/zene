@@ -11,15 +11,8 @@ const { routeTracks } = useRouteTracks()
 
 const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()
-const albums = ref<SubsonicAlbum[]>()
-
-const albumArtistAlbums = computed(() => {
-  return albums.value?.filter(album => album.artistId !== artist.value?.id) ?? [] as SubsonicAlbum[]
-})
-
-const artistAlbums = computed(() => {
-  return albums.value?.filter(album => album.artistId === artist.value?.id) ?? [] as SubsonicAlbum[]
-})
+const albumArtistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
+const artistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 
@@ -38,7 +31,9 @@ async function getData() {
     .then(
       (results) => {
         artist.value = results[0] as SubsonicArtist
-        albums.value = results[1] as SubsonicAlbum[]
+        const albums = results[1] as SubsonicAlbum[]
+        albumArtistAlbums.value = albums.filter(album => album.albumArtists[0].name !== artist.value?.name) ?? []
+        artistAlbums.value = albums.filter(album => album.albumArtists[0].name === artist.value?.name) ?? []
         tracks.value = results[2] as SubsonicSong[]
         routeTracks.value = tracks.value
       },
@@ -60,38 +55,36 @@ onBeforeMount(async () => {
       class="corner-cut-large h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${artistArtUrl})` }"
     >
-      <div class="h-full w-full flex items-center justify-center gap-6 align-middle backdrop-blur-lg">
-        <div class="w-full flex items-center justify-center gap-6 background-grad-2 p-4 align-middle">
-          <div class="size-60">
-            <img
-              class="h-full w-full object-cover"
-              :src="artistArtUrl"
-              @error="onImageError"
-            />
-          </div>
-          <div class="text-7xl text-primary font-bold">
-            {{ artist.name }}
-          </div>
+      <div class="h-full w-full flex items-center justify-center gap-6 background-grad-2 align-middle backdrop-blur-lg">
+        <div class="size-60">
+          <img
+            class="h-full w-full object-cover"
+            :src="artistArtUrl"
+            @error="onImageError"
+          />
+        </div>
+        <div class="text-7xl text-primary font-bold">
+          {{ artist.name }}
         </div>
       </div>
     </div>
   </section>
-  <div v-if="albumArtistAlbums.length > 0">
-    <h2 class="text-lg font-semibold">
-      Appears on albums
-    </h2>
-    <div class="flex flex-wrap gap-6">
-      <div v-for="album in albumArtistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-        <Album :album="album" size="sm" />
-      </div>
-    </div>
-  </div>
-  <div v-if="artistAlbums.length > 0">
+  <div v-if="artistAlbums.length > 0" class="mt-6">
     <h2 class="text-lg font-semibold">
       Albums
     </h2>
     <div class="flex flex-wrap gap-6">
       <div v-for="album in artistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+        <Album :album="album" size="sm" />
+      </div>
+    </div>
+  </div>
+  <div v-if="albumArtistAlbums.length > 0" class="mt-6">
+    <h2 class="text-lg font-semibold">
+      Appears on albums
+    </h2>
+    <div class="flex flex-wrap gap-6">
+      <div v-for="album in albumArtistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
         <Album :album="album" size="sm" />
       </div>
     </div>

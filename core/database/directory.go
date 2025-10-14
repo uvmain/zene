@@ -128,29 +128,50 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 
 	children := []types.SubsonicChild{}
 
-	query := `select m.musicbrainz_album_id as id, m.musicbrainz_artist_id as parent,
+	query := `with album_plays AS (
+		SELECT	m.musicbrainz_album_id,
+			SUM(pc.play_count) AS play_count,
+			MAX(pc.last_played) AS last_played,
+			pc.user_id
+		FROM play_counts pc
+		join metadata m ON m.musicbrainz_track_id = pc.musicbrainz_track_id
+		where pc.user_id = ?
+		GROUP BY m.musicbrainz_album_id
+	),
+	album_artists as (
+		select musicbrainz_album_id, musicbrainz_artist_id, album_artist
+		from metadata
+		where album_artist = artist
+		group by musicbrainz_album_id
+	),
+	album_song_counts as (
+		select count(musicbrainz_track_id) as track_count, musicbrainz_album_id
+		from metadata
+		group by musicbrainz_album_id
+	)
+	select m.musicbrainz_album_id as id, m.musicbrainz_artist_id as parent,
 		m.album, m.artist, REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_album_id as cover_art,
 		sum(m.duration) as duration, min(m.date_added) as created, m.label as label,
 		m.album_artist, m.genre as genres, m.musicbrainz_artist_id as musicbrainz_artist,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
-		COALESCE(SUM(pc.play_count), 0) AS play_count,
-		COUNT(m.musicbrainz_track_id) AS song_count,
+		COALESCE(pc.play_count, 0) AS play_count,
+		sc.track_count AS song_count,
 		maa.musicbrainz_artist_id
 	from metadata m
 	join user_music_folders f on f.folder_id = m.music_folder_id
-	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
+	LEFT JOIN user_stars s ON s.metadata_id = m.musicbrainz_album_id AND s.user_id = f.user_id
 	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-	left join metadata maa on maa.artist = m.album_artist
-	where m.musicbrainz_artist_id = ?
-	and f.user_id = ?
+	LEFT JOIN album_plays pc ON pc.musicbrainz_album_id = m.musicbrainz_album_id
+	left join album_artists maa on maa.album_artist = m.album_artist
+	join album_song_counts sc on sc.musicbrainz_album_id = m.musicbrainz_album_id
+	where m.musicbrainz_artist_id = ? and f.user_id = ?
 	group by m.musicbrainz_album_id
 	order by m.release_date desc;`
 
-	rows, err := DB.Query(query, musicbrainzArtistId, user.Id)
+	rows, err := DB.Query(query, user.Id, musicbrainzArtistId, user.Id)
 	if err != nil {
 		return nil, err
 	}

@@ -36,11 +36,11 @@ const toggleDark = useToggle(isDark)
         </div>
       </div>
       <div id="user-and-settings" class="flex gap-4 text-muted">
-        <div class="items-center justify-center hover:cursor-pointer hover:text-primary" @click="toggleDark()">
+        <div class="icon" @click="toggleDark()">
           <icon-fluent-dark-theme-24-regular class="text-2xl" />
         </div>
-        <SettingsDropDown class="items-center justify-center hover:cursor-pointer hover:text-primary" />
-        <div class="items-center justify-center hover:cursor-pointer hover:text-primary">
+        <SettingsDropDown class="icon" />
+        <div class="icon">
           <icon-nrk-user-loggedin class="text-2xl" />
         </div>
       </div>
@@ -48,3 +48,9 @@ const toggleDark = useToggle(isDark)
     <SearchResults />
   </header>
 </template>
+
+<style scoped>
+.icon {
+  @apply items-center justify-center hover:cursor-pointer hover:text-primary opacity-70 hover:opacity-100;
+}
+</style>
