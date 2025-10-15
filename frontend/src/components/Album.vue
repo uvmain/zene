@@ -63,7 +63,7 @@ function actOnUpdatedArt() {
 
 <template>
   <div>
-    <div v-if="size === 'sm'" class="group h-32 w-24 md:h-40 md:w-30">
+    <div v-if="size === 'sm'" class="group">
       <img
         class="h-24 w-24 cursor-pointer object-cover md:size-30"
         :src="coverArtUrlSm"

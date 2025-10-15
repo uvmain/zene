@@ -27,7 +27,7 @@ function handleLinkClick() {
     class="navlink"
     :class="{
       'translate-x--8': currentRoute !== routeProp,
-      'hover:translate-x--6': currentRoute !== routeProp,
+      'hover:translate-x--6': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
       'translate-x-0': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
     }"
     @click="handleLinkClick"

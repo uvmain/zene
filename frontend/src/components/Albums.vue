@@ -129,7 +129,7 @@ onBeforeMount(async () => {
         Release Date
       </div>
     </div>
-    <div v-if="albums.length > 0" class="flex flex-wrap justify-center gap-6 overflow-hidden md:justify-start">
+    <div v-if="albums.length > 0" class="flex flex-wrap gap-6">
       <div v-for="(album, index) in albums" :key="album.id" class="transition duration-200 hover:scale-110">
         <Album :album="album" :index="index" size="sm" />
       </div>
