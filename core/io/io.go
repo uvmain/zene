@@ -38,7 +38,7 @@ func CreateDir(directoryPath string) {
 
 func GetChangedTime(path string) (time.Time, error) {
 	// check for invalid Windows filename characters
-	if strings.ContainsAny(path, "?*<>|\"") {
+	if strings.ContainsAny(path, "?*<>|\"") && os.PathSeparator == '\\' {
 		// fall back to os.Stat for paths with invalid characters
 		info, err := os.Stat(path)
 		if err != nil {
