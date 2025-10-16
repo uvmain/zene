@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"time"
 	"zene/core/config"
@@ -22,84 +21,79 @@ import (
 )
 
 func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName string, artistName string) {
-	trackMetadataRows, err := database.SelectTracksByAlbumId(ctx, musicBrainzAlbumId)
-	if err != nil {
-		logger.Printf("Error getting track data from database in ImportArtForAlbum: %v", err)
-	}
-
-	existingRow, err := database.SelectAlbumArtByMusicBrainzAlbumId(ctx, musicBrainzAlbumId)
+	currentStatus, err := database.SelectAlbumArtByMusicBrainzAlbumId(ctx, musicBrainzAlbumId)
 	if err != nil && err != sql.ErrNoRows {
 		logger.Printf("Error getting album art data from database in ImportArtForAlbum: %v", err)
 	}
 
-	directories := []string{}
-
-	for _, trackMetadata := range trackMetadataRows {
-		directory := filepath.Dir(trackMetadata.FilePath)
-		if !slices.Contains(directories, directory) {
-			directories = append(directories, directory)
-		}
-	}
-	directories = slices.Compact(directories)
+	directory := filepath.Dir(currentStatus.FilePath)
 
 	var foundFile string
 	var fileTime time.Time
 
-	for _, directory := range directories {
-		folderFilePath := filepath.Join(directory, "folder.jpg")
-		albumFileName := strings.Join([]string{albumName, "jpg"}, ".")
-		albumFilePath := filepath.Join(directory, albumFileName)
-		if io.FileExists(folderFilePath) {
-			foundFile = folderFilePath
-			break
-		} else if io.FileExists(albumFilePath) {
-			foundFile = albumFilePath
-			break
+	folderFilePath := filepath.Join(directory, "folder.jpg")
+	albumFileName := strings.Join([]string{albumName, "jpg"}, ".")
+	albumFilePath := filepath.Join(directory, albumFileName)
+
+	if io.FileExists(folderFilePath) {
+		foundFile = folderFilePath
+	} else if io.FileExists(albumFilePath) {
+		foundFile = albumFilePath
+	}
+
+	artFileExists := (foundFile != "")
+	if artFileExists {
+		fileTime, err = io.GetChangedTime(foundFile)
+		if err != nil {
+			logger.Printf("Error getting file changed time in ImportArtForAlbum: %s %v", foundFile, err)
+			artFileExists = false
 		}
 	}
 
-	fileExists := (foundFile != "")
-	rowExists := (existingRow.MusicbrainzAlbumId != "")
+	audioFileChangedTime, err := io.GetChangedTime(currentStatus.FilePath)
+	if err != nil {
+		logger.Printf("Error getting audio file changed time in ImportArtForAlbum: %v", err)
+	}
 
-	// if file exists
-	if fileExists {
-		// if row exists
-		if rowExists {
-			rowTime, err := time.Parse(time.RFC3339Nano, existingRow.DateModified)
-			if err != nil {
-				logger.Printf("Error parsing existing row time in ImportArtForAlbum: %v", err)
-			}
-			// if row is newer, do nothing
-			if rowTime.After(fileTime) {
-				return
-			} else {
-				// if row is older, getArtFromFolder()
-				logger.Printf("Scan: local album art for %s is newer, re-importing", albumName)
-				getArtFromFolder(ctx, musicBrainzAlbumId, foundFile)
-			}
-		} else {
-			// file hasn't been imported yet
-			logger.Printf("Scan: Found new album art for %s, importing", albumName)
-			getArtFromFolder(ctx, musicBrainzAlbumId, foundFile)
+	artRowExists := (currentStatus.DateModified != "")
+
+	if artRowExists {
+		rowTime, err := time.Parse(time.RFC3339Nano, currentStatus.DateModified)
+		if err != nil {
+			logger.Printf("Error parsing existing row time in ImportArtForAlbum: %v", err)
 		}
-	} else {
-		// we've already downloaded an image
-		if rowExists {
+		// if currentStatus.dateModified is after audioFileChangedTime and fileTime, and the albumArt actually exists, break out of function
+		if rowTime.After(audioFileChangedTime) && rowTime.After(fileTime) && io.FileExists(filepath.Join(config.AlbumArtFolder, musicBrainzAlbumId+".jpg")) {
 			return
 		} else {
-			// get art from tags if available
-			art, err := ffmpeg.GetCoverArtFromTrack(ctx, trackMetadataRows[0].FilePath)
-			if err != nil && len(art) > 0 {
-				// save art from tags
-				logger.Printf("Scan: Found album artwork in tags for %s, importing", albumName)
-				getArtFromBytes(ctx, musicBrainzAlbumId, art)
-			} else {
-				// no local image, fallback to downloading from internet
-				logger.Printf("Scan: No album artwork found for %s, downloading", albumName)
-				getAlbumArtFromInternet(ctx, musicBrainzAlbumId, albumName, artistName)
+			// re-import art
+			logger.Printf("Scan: Album art for %s is outdated, re-importing", albumName)
+			_ = io.DeleteFile(filepath.Join(config.AlbumArtFolder, musicBrainzAlbumId+".jpg"))
+			if fileTime.After(rowTime) {
+				getArtFromFolder(ctx, musicBrainzAlbumId, foundFile)
+			} else if audioFileChangedTime.After(rowTime) {
+				err = getEmbeddedArtFromTrack(ctx, musicBrainzAlbumId, currentStatus.FilePath)
 			}
 		}
+		return
 	}
+
+	// if currentStatus.DateModified == "", we haven't imported any art yet
+	if artFileExists {
+		logger.Printf("Scan: Found local album art for %s, importing", albumName)
+		getArtFromFolder(ctx, musicBrainzAlbumId, foundFile)
+		return
+	}
+
+	// get embedded art if available
+	err = getEmbeddedArtFromTrack(ctx, musicBrainzAlbumId, currentStatus.FilePath)
+	if err == nil {
+		logger.Printf("Scan: Found embedded album art for %s, importing", albumName)
+		return
+	}
+
+	// no local image, fallback to downloading from internet
+	getAlbumArtFromInternet(ctx, musicBrainzAlbumId, albumName, artistName)
 }
 
 func getArtFromBytes(ctx context.Context, musicBrainzAlbumId string, artBytes []byte) {
@@ -116,6 +110,16 @@ func getArtFromFolder(ctx context.Context, musicBrainzAlbumId string, imagePath 
 	if err != nil {
 		logger.Printf("Database: Error inserting album art row: %v", err)
 	}
+}
+
+func getEmbeddedArtFromTrack(ctx context.Context, musicBrainzAlbumId string, audioFilePath string) error {
+	embeddedArt, err := ffmpeg.GetCoverArtFromTrack(ctx, audioFilePath)
+	if err != nil {
+		return fmt.Errorf("Error getting cover art from track in ImportArtForAlbum: %v", err)
+	} else {
+		getArtFromBytes(ctx, musicBrainzAlbumId, embeddedArt)
+	}
+	return nil
 }
 
 func getAlbumArtFromInternet(ctx context.Context, musicBrainzAlbumId string, albumName string, artistName string) {
@@ -181,17 +185,31 @@ type LocalArts struct {
 
 func GetLocalArtAsBase64(ctx context.Context, musicBrainzAlbumId string) (LocalArts, error) {
 	var localArts LocalArts
+	tracks, err := database.GetSongsForAlbum(ctx, musicBrainzAlbumId)
+	directory := filepath.Dir(tracks[0].Path)
 
-	folderArtBlob, _, err := GetArtForAlbum(ctx, musicBrainzAlbumId, 512)
-	if err == nil {
-		contentType := http.DetectContentType(folderArtBlob)
-		localArts.FolderArt = "data:" + contentType + ";base64," + base64.StdEncoding.EncodeToString(folderArtBlob)
-	} else {
-		localArts.FolderArt = ""
-		logger.Printf("No folder art found for album %s: %v", musicBrainzAlbumId, err)
+	var foundFile string
+
+	folderFilePath := filepath.Join(directory, "folder.jpg")
+	albumFileName := strings.Join([]string{tracks[0].Album, "jpg"}, ".")
+	albumFilePath := filepath.Join(directory, albumFileName)
+
+	if io.FileExists(folderFilePath) {
+		foundFile = folderFilePath
+	} else if io.FileExists(albumFilePath) {
+		foundFile = albumFilePath
 	}
 
-	tracks, err := database.GetSongsForAlbum(ctx, musicBrainzAlbumId)
+	if foundFile != "" {
+		folderArtBytes, err := getBytesFromFilePath(foundFile)
+		if err == nil {
+			contentType := http.DetectContentType(folderArtBytes)
+			localArts.FolderArt = "data:" + contentType + ";base64," + base64.StdEncoding.EncodeToString(folderArtBytes)
+		} else {
+			localArts.FolderArt = ""
+			logger.Printf("No folder art found for album %s: %v", musicBrainzAlbumId, err)
+		}
+	}
 
 	trackArtBlob, err := ffmpeg.GetCoverArtFromTrack(ctx, tracks[0].Path)
 	if err == nil {

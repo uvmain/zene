@@ -18,6 +18,6 @@ function navigateToGenre() {
   <ZButton
     @click="navigateToGenre()"
   >
-    {{ genre }}
+    <span class="text-nowrap">{{ genre }}</span>
   </ZButton>
 </template>
