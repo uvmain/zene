@@ -15,11 +15,20 @@ func migrateArt(ctx context.Context) {
 }
 
 func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId string) (types.AlbumArtRow, error) {
-	query := `SELECT musicbrainz_album_id, date_modified FROM album_art WHERE musicbrainz_album_id = ?`
+	query := `SELECT aa.date_modified, m.file_path
+		FROM metadata m
+		left join album_art aa on aa.musicbrainz_album_id = m.musicbrainz_album_id
+		WHERE m.musicbrainz_album_id = ?
+		limit 1;`
+
 	var row types.AlbumArtRow
-	err := DB.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&row.MusicbrainzAlbumId, &row.DateModified)
+	var dateModified sql.NullString
+	err := DB.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&dateModified, &row.FilePath)
 	if err != nil {
 		return types.AlbumArtRow{}, err
+	}
+	if dateModified.Valid {
+		row.DateModified = dateModified.String
 	}
 	return row, nil
 }

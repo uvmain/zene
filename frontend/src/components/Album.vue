@@ -89,7 +89,7 @@ function actOnUpdatedArt() {
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlMd"
-        class="h-24 w-24 cursor-pointer object-cover md:size-50"
+        class="size-24 cursor-pointer object-cover md:size-52"
         loading="lazy"
         width="200"
         height="200"
@@ -103,7 +103,7 @@ function actOnUpdatedArt() {
         <div class="cursor-pointer text-sm md:text-xl" @click="navigateArtist()">
           {{ artistAndDate }}
         </div>
-        <div v-if="album.genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+        <div v-if="album.genres?.length > 0" class="flex flex-nowrap justify-center gap-2 md:justify-start">
           <GenreBottle v-for="genre in album.genres.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
         </div>
         <div class="flex justify-center md:justify-start">

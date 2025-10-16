@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -29,6 +30,15 @@ func getImageFromFilePath(filePath string) (image.Image, error) {
 		img, err = png.Decode(f)
 	}
 	return img, err
+}
+
+func getBytesFromFilePath(filePath string) ([]byte, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return io.ReadAll(f)
 }
 
 func GetImageFromInternet(imageUrl string) (image.Image, error) {
@@ -56,7 +66,7 @@ func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) 
 
 	img, err := getImageFromFilePath(imagePath)
 	if err != nil {
-		logger.Printf("Failed to decode image: %v", err)
+		logger.Printf("Failed to decode image in resizeFileAndSaveAsJPG: %v", err)
 		return
 	}
 
@@ -106,7 +116,7 @@ func resizeBytesAndSaveAsJPG(imgBytes []byte, outputPath string, pixelSize int) 
 
 	img, _, err := image.Decode(bytes.NewReader(imgBytes))
 	if err != nil {
-		logger.Printf("Failed to decode image: %v", err)
+		logger.Printf("Failed to decode image in resizeBytesAndSaveAsJPG: %v", err)
 		return
 	}
 
@@ -139,7 +149,7 @@ func ResizeMultipartFileAndSaveAsJPG(file multipart.File, filepath string, pixel
 
 	img, err := getImageFromFile(file)
 	if err != nil {
-		logger.Printf("Failed to decode image: %v", err)
+		logger.Printf("Failed to decode image in ResizeMultipartFileAndSaveAsJPG: %v", err)
 		return err
 	}
 

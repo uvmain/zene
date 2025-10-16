@@ -37,9 +37,24 @@ func CreateDir(directoryPath string) {
 }
 
 func GetChangedTime(path string) (time.Time, error) {
+	// check for invalid Windows filename characters
+	if strings.ContainsAny(path, "?*<>|\"") && os.PathSeparator == '\\' {
+		// fall back to os.Stat for paths with invalid characters
+		info, err := os.Stat(path)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("retrieving file times for %s: %v", path, err)
+		}
+		return info.ModTime(), nil
+	}
+
 	t, err := times.Stat(path)
 	if err != nil {
-		return time.Time{}, fmt.Errorf("retrieving file times for %s: %v", path, err)
+		// if times.Stat fails, fall back to os.Stat
+		info, err := os.Stat(path)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("retrieving file times for %s: %v", path, err)
+		}
+		return info.ModTime(), nil
 	}
 
 	modTime := t.ModTime()

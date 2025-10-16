@@ -11,10 +11,10 @@ import (
 func Initialise(ctx context.Context) {
 	startAudioCacheCleanupRoutine(ctx)
 	startNowPlayingCleanupRoutine(ctx)
+	startAlbumArtCleanupRoutine(ctx)
 	startOrphanedPlaylistEntriesCleanupRoutine(ctx)
 	startPodcastCleanupRoutine(ctx)
 	startPodcastEpisodeRefreshRoutine(ctx)
-	startAlbumArtCleanupRoutine(ctx)
 	startScanScheduleRoutine(ctx)
 }
 
@@ -134,6 +134,7 @@ func startAlbumArtCleanupRoutine(ctx context.Context) {
 
 func startScanScheduleRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting scan schedule routine")
+	scanner.RunScan(ctx)
 	go func() {
 		ticker := time.NewTicker(45 * time.Minute)
 		defer ticker.Stop()

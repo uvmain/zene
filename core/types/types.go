@@ -92,9 +92,8 @@ type MetadataWithPlaycounts struct {
 }
 
 type AlbumArtRow struct {
-	MusicbrainzAlbumId string `json:"musicbrainz_album_id"`
-	DateAdded          string `json:"date_added"`
-	DateModified       string `json:"date_modified"`
+	DateModified string `json:"date_modified"`
+	FilePath     string `json:"file_path"`
 }
 
 type ArtistArtRow struct {
