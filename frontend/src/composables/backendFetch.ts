@@ -87,36 +87,41 @@ export async function fetchApiKeysWithTokenAndSalt(username: string, token: stri
 }
 
 export async function openSubsonicFetchRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const concurrencyKey = path + JSON.stringify(options)
+  const formDataEntries = [] as [string, string][]
+  (options?.body as FormData)?.forEach((value: FormDataEntryValue, key: string) => {
+    formDataEntries.push([key, value.toString()])
+  })
+
+  const concurrencyKey = `${path}|${options.method}|${JSON.stringify(formDataEntries)}|${JSON.stringify(options.body)}`
   if (concurrencyMap.has(concurrencyKey)) {
     return concurrencyMap.get(concurrencyKey) as Promise<T>
   }
 
+  const formData = new FormData()
+  if (apiKey.value !== null && apiKey.value.length > 0) {
+    formData.append('apiKey', apiKey.value)
+    formData.append('f', 'json')
+    formData.append('v', '1.16.0')
+    formData.append('c', 'zene-frontend')
+  }
+  else {
+    const router = useRouter()
+    await router.push('/login')
+  }
+
+  // append formdata to existing body
+  if (options.body instanceof FormData) {
+    formData.forEach((value, key) => {
+      (options.body as FormData).append(key, value)
+    })
+  }
+  else {
+    options.body = formData
+  }
+
+  options.method = options.method ?? 'POST'
+
   const promise = async <T>(path: string, options: RequestInit): Promise<T> => {
-    const formData = new FormData()
-    if (apiKey.value !== null && apiKey.value.length > 0) {
-      formData.append('apiKey', apiKey.value)
-      formData.append('f', 'json')
-      formData.append('v', '1.16.0')
-      formData.append('c', 'zene-frontend')
-    }
-    else {
-      const router = useRouter()
-      await router.push('/login')
-    }
-
-    // append formdata to existing body
-    if (options.body instanceof FormData) {
-      formData.forEach((value, key) => {
-        (options.body as FormData).append(key, value)
-      })
-    }
-    else {
-      options.body = formData
-    }
-
-    options.method = options.method ?? 'POST'
-
     const url = `/rest/${path}`
 
     const response = await fetch(url, options)
