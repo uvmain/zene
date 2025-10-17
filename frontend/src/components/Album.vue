@@ -103,8 +103,8 @@ function actOnUpdatedArt() {
         <div class="cursor-pointer text-sm md:text-xl" @click="navigateArtist()">
           {{ artistAndDate }}
         </div>
-        <div v-if="album.genres?.length > 0" class="flex flex-nowrap justify-center gap-2 md:justify-start">
-          <GenreBottle v-for="genre in album.genres.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
+        <div v-if="album.genres?.length > 0" class="flex justify-center gap-2 overflow-hidden md:flex-nowrap md:justify-start">
+          <GenreBottle v-for="genre in album.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
         </div>
         <div class="flex justify-center md:justify-start">
           <PlayButton :album="album" />
