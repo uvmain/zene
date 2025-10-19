@@ -46,7 +46,7 @@ function navigate() {
         />
       </div>
     </div>
-    <div class="text-nowrap text-sm text-primary">
+    <div class="truncate text-nowrap text-sm text-primary">
       {{ artist.name }}
     </div>
   </div>

@@ -45,7 +45,6 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 	if artFileExists {
 		fileTime, err = io.GetChangedTime(foundFile)
 		if err != nil {
-			logger.Printf("Error getting file changed time in ImportArtForAlbum: %s %v", foundFile, err)
 			artFileExists = false
 		}
 	}

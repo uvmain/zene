@@ -60,9 +60,17 @@ func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistN
 		artistFilePath := filepath.Join(directory, artistFileName)
 		if io.FileExists(folderFilePath) {
 			foundFile = folderFilePath
+			info, err := os.Stat(folderFilePath)
+			if err == nil {
+				fileTime = info.ModTime()
+			}
 			break
 		} else if io.FileExists(artistFilePath) {
 			foundFile = artistFilePath
+			info, err := os.Stat(artistFilePath)
+			if err == nil {
+				fileTime = info.ModTime()
+			}
 			break
 		}
 	}
@@ -71,7 +79,7 @@ func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistN
 	rowExists := (existingRow.MusicbrainzArtistId != "")
 
 	// if file exists
-	if fileExists && isAlbumArtist {
+	if fileExists {
 		// if row exists
 		if rowExists && !rowTime.IsZero() {
 			// if row is newer, do nothing
