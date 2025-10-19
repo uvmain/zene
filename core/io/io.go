@@ -17,7 +17,12 @@ import (
 )
 
 func FileExists(absoluteFilePath string) bool {
-	if _, err := os.Stat(absoluteFilePath); os.IsNotExist(err) {
+	cleanPath, err := PathWithoutTraversal(absoluteFilePath)
+	if err != nil {
+		logger.Printf("error checking file existence - path traversal detected: %s", absoluteFilePath)
+		return false
+	}
+	if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
 		return false
 	}
 	return true
@@ -136,7 +141,11 @@ func GetFiles(ctx context.Context, directoryPath string, extensions []string) ([
 }
 
 func DeleteFile(filePath string) error {
-	filePathAbs, _ := filepath.Abs(filePath)
+	cleanPath, err := PathWithoutTraversal(filePath)
+	if err != nil {
+		return fmt.Errorf("deleting file - path traversal detected: %s", filePath)
+	}
+	filePathAbs, _ := filepath.Abs(cleanPath)
 
 	if _, err := os.Stat(filePathAbs); os.IsNotExist(err) {
 		return fmt.Errorf("deleting file - file does not exist: %s:  %s", filePathAbs, err)
@@ -172,14 +181,37 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 		return err
 	}
 
+	absTargetDir, err := filepath.Abs(targetDirectory)
+	if err != nil {
+		return fmt.Errorf("resolving target directory: %v", err)
+	}
+
 	for _, file := range zipReader.File {
 		if strings.Contains(file.Name, fileNameFilter) {
+
+			targetPath := filepath.Join(absTargetDir, filepath.Clean(file.Name))
+			absTargetPath, err := filepath.Abs(targetPath)
+			if err != nil {
+				return fmt.Errorf("resolving target file path: %v", err)
+			}
+
+			// Ensure the target path is within the target directory
+			if !strings.HasPrefix(absTargetPath, absTargetDir+string(filepath.Separator)) && absTargetPath != absTargetDir {
+				return fmt.Errorf("zip slip detected: %s is outside target directory", file.Name)
+			}
+
 			fileReadCloser, err := file.Open()
 			if err != nil {
 				return err
 			}
 
-			outFile, err := os.Create(file.Name)
+			// Create any necessary subdirectories
+			if err := os.MkdirAll(filepath.Dir(absTargetPath), 0755); err != nil {
+				fileReadCloser.Close()
+				return fmt.Errorf("creating directory for %s: %v", file.Name, err)
+			}
+
+			outFile, err := os.Create(absTargetPath)
 			if err != nil {
 				fileReadCloser.Close()
 				return err
@@ -192,39 +224,9 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 				return err
 			}
 
-			targetPath := filepath.Join(targetDirectory, file.Name)
-			err = os.Rename(file.Name, targetPath)
-			if err != nil {
-				if linkErr, ok := err.(*os.LinkError); ok && linkErr.Err.Error() == "invalid cross-device link" {
-					// fallback to copy and delete
-					src, err := os.Open(file.Name)
-					if err != nil {
-						return err
-					}
-					defer src.Close()
-					dst, err := os.Create(targetPath)
-					if err != nil {
-						return err
-					}
-					defer dst.Close()
-					if _, err := io.Copy(dst, src); err != nil {
-						return err
-					}
-					if err := os.Remove(file.Name); err != nil {
-						return err
-					}
-					logger.Printf("extracted %s to %s (copy/delete fallback)", file.Name, targetPath)
-					if err := os.Chmod(targetPath, 0755); err != nil {
-						return fmt.Errorf("setting executable permissions on %s: %v", targetPath, err)
-					}
-				} else {
-					return fmt.Errorf("moving %s to %s: %v", file.Name, targetPath, err)
-				}
-			} else {
-				logger.Printf("extracted %s to %s", file.Name, targetPath)
-				if err := os.Chmod(targetPath, 0755); err != nil {
-					return fmt.Errorf("setting executable permissions on %s: %v", targetPath, err)
-				}
+			logger.Printf("extracted %s to %s", file.Name, absTargetPath)
+			if err := os.Chmod(absTargetPath, 0755); err != nil {
+				return fmt.Errorf("setting executable permissions on %s: %v", absTargetPath, err)
 			}
 		}
 	}
@@ -232,4 +234,12 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 	zipReader.Close()
 	Cleanup(srcFile)
 	return nil
+}
+
+func PathWithoutTraversal(inputPath string) (string, error) {
+	if strings.Contains(inputPath, "..") {
+		return "", fmt.Errorf("path traversal detected")
+	}
+	cleanPath := filepath.Clean(inputPath)
+	return cleanPath, nil
 }

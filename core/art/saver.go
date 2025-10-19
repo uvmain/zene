@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	z_io "zene/core/io"
 	"zene/core/logger"
 
 	"github.com/nfnt/resize"
@@ -60,8 +61,13 @@ func GetImageFromInternet(imageUrl string) (image.Image, error) {
 }
 
 func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) {
-	if filepath.Ext(outputPath) != ".jpg" {
-		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
+	cleanOutputPath, err := z_io.PathWithoutTraversal(outputPath)
+	if err != nil {
+		logger.Printf("error deleting file - path traversal detected: %s", outputPath)
+		return
+	}
+	if filepath.Ext(cleanOutputPath) != ".jpg" {
+		cleanOutputPath = strings.TrimSuffix(cleanOutputPath, filepath.Ext(cleanOutputPath)) + ".jpg"
 	}
 
 	img, err := getImageFromFilePath(imagePath)
@@ -72,7 +78,7 @@ func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) 
 
 	resizedImg := resize.Thumbnail(uint(pixelSize), uint(pixelSize), img, resize.Lanczos3)
 
-	outFile, err := os.Create(outputPath)
+	outFile, err := os.Create(cleanOutputPath)
 	if err != nil {
 		logger.Printf("Failed to create output file: %v", err)
 		return
