@@ -79,9 +79,9 @@ func GetBookmarks(ctx context.Context) ([]types.Bookmark, error) {
 	join users u on u.id = b.user_id
 	join user_music_folders uf on uf.user_id = b.user_id
 	join metadata m on m.music_folder_id = uf.folder_id and b.musicbrainz_track_id = m.musicbrainz_track_id
-	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = u.id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.id
-	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = u.id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = u.id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_track_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
 	left join metadata maa on maa.artist = m.album_artist
 	where b.user_id = ?

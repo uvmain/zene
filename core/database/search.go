@@ -137,7 +137,7 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 		join user_music_folders f on m.music_folder_id = f.folder_id
 		LEFT JOIN album_plays ap ON ap.musicbrainz_album_id = m.musicbrainz_album_id
 		LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+		LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
 		left join album_artists maa on maa.musicbrainz_album_id = m.musicbrainz_album_id
 		where f.user_id = ?`
 
@@ -269,9 +269,9 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 		maa.musicbrainz_artist_id as album_artist_id
 	from user_music_folders u
 	join metadata m on m.music_folder_id = u.folder_id
-	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = u.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.user_id
-	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = u.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = u.user_id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_track_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.user_id
 	JOIN metadata maa ON maa.musicbrainz_album_id = m.musicbrainz_album_id
 	where u.user_id = ?`

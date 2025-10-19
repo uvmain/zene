@@ -80,8 +80,8 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 			us.created_at
 		FROM metadata m
 		JOIN user_music_folders f ON f.folder_id = m.music_folder_id
-		LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
-		LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
+		LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = f.user_id
+		LEFT JOIN user_ratings gr ON m.musicbrainz_track_id = gr.metadata_id
 		LEFT JOIN starred us ON us.metadata_id = m.musicbrainz_track_id
 		LEFT JOIN album_artist_map maa ON maa.artist = m.album_artist
 		left join track_plays tp on tp.musicbrainz_track_id = m.musicbrainz_track_id

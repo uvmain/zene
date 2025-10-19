@@ -161,7 +161,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 		join user_music_folders f on m.music_folder_id = f.folder_id
 		LEFT JOIN album_plays ap ON ap.musicbrainz_album_id = m.musicbrainz_album_id
 		LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-		LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+		LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
 		left join album_artists maa on maa.musicbrainz_album_id = m.musicbrainz_album_id
 		where m.musicbrainz_album_id = ?
 		group by m.musicbrainz_album_id 
