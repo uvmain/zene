@@ -44,41 +44,62 @@ func GetSimilarSongs(ctx context.Context, count int, musicbrainzId string) ([]ty
 
 	var args []interface{}
 
-	query = `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist,
-		COALESCE(m.track_number, 0) as track,
-		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
-		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
-		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
-		COALESCE(ur.rating, 0) AS user_rating,
-		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
-		COALESCE(SUM(pc.play_count), 0) AS play_count,
-		max(pc.last_played) as played,
-		us.created_at AS starred,
-		maa.musicbrainz_artist_id as album_artist_id
-	from user_music_folders u
-	join metadata m on m.music_folder_id = u.folder_id
-	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = u.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.user_id
-	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.user_id
-	left join metadata maa on maa.artist = m.album_artist
-	where u.user_id = ?`
-
-	args = append(args, requestUser.Id)
-
-	query += ` and (
-		m.musicbrainz_artist_id = ?
-		or m.musicbrainz_artist_id in (
-			select similar_artist_id
-			from similar_artists
-			where artist_id = ?
+	query = `with track_plays AS (
+    SELECT musicbrainz_track_id,
+			SUM(play_count) AS play_count,
+			MAX(last_played) AS last_played
+			FROM play_counts
+		where user_id = ?
+		group by musicbrainz_track_id
+	),
+	starred as (
+		select metadata_id,
+			created_at
+		from user_stars
+		where user_id = ?
+	),
+	album_artist_map AS (
+		SELECT artist,
+			MIN(musicbrainz_artist_id) AS musicbrainz_artist_id
+		FROM metadata
+		WHERE musicbrainz_artist_id IS NOT NULL
+		GROUP BY artist
+	),
+	gr AS (
+		SELECT metadata_id, AVG(rating) AS avg_rating
+		FROM user_ratings
+		GROUP BY metadata_id
+	)
+	select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist,
+			COALESCE(m.track_number, 0) as track,
+			REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
+			m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
+			m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
+			COALESCE(ur.rating, 0) AS user_rating,
+			COALESCE(gr.avg_rating, 0.0) AS average_rating,
+			COALESCE(pc.play_count, 0) AS play_count,
+			pc.last_played as played,
+			us.created_at AS starred,
+			maa.musicbrainz_artist_id as album_artist_id
+		from user_music_folders u
+		join metadata m on m.music_folder_id = u.folder_id
+		LEFT JOIN starred us ON us.metadata_id = m.musicbrainz_track_id
+		LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = u.user_id
+		LEFT JOIN gr ON gr.metadata_id = m.musicbrainz_track_id
+		LEFT JOIN track_plays pc ON pc.musicbrainz_track_id = m.musicbrainz_track_id
+		left join album_artist_map maa on maa.artist = m.album_artist
+		where u.user_id = ?
+		and (
+			m.musicbrainz_artist_id = ?
+			or m.musicbrainz_artist_id in (
+				select similar_artist_id
+				from similar_artists
+				where artist_id = ?
+				)
 			)
-		)
-	group by m.musicbrainz_track_id`
-	args = append(args, artistId, artistId)
+		order by random()`
 
-	randomInt := logic.GenerateRandomInt(1, 10000000)
-	query += fmt.Sprintf(" order BY ((m.rowid * %d) %% 1000000)", randomInt)
+	args = append(args, requestUser.Id, requestUser.Id, requestUser.Id, artistId, artistId)
 
 	query += ` limit ?`
 	args = append(args, count)

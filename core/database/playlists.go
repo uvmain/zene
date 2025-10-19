@@ -401,9 +401,9 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 	join users u on u.id = p.user_id
 	join user_music_folders uf on uf.user_id = u.id
 	join metadata m on m.music_folder_id = uf.folder_id and m.musicbrainz_track_id = pe.musicbrainz_track_id
-	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = uf.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = u.id
-	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = uf.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = u.id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_track_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
 	left join metadata maa on maa.artist = m.album_artist
 	where p.id = ?

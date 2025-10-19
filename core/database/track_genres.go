@@ -18,6 +18,7 @@ func migrateTrackGenres(ctx context.Context) {
 	createTable(ctx, schema)
 	createIndex(ctx, "idx_track_genres_file_path", "track_genres", []string{"file_path"}, false)
 	createIndex(ctx, "idx_track_genres_genre", "track_genres", []string{"genre"}, false)
+	createIndex(ctx, "idx_track_genres_lower_genre", "track_genres", []string{"lower(genre)"}, false)
 	createIndex(ctx, "idx_track_genres_genre_file_path", "track_genres", []string{"genre", "file_path"}, false)
 	createIndex(ctx, "idx_track_genres_genre_file_path", "track_genres", []string{"genre", "file_path"}, false)
 

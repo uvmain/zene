@@ -69,9 +69,9 @@ func GetNowPlaying(ctx context.Context) ([]types.SubsonicNowPlayingEntry, error)
 	from now_playing np
 	join users u on np.user_id = u.id
 	join metadata m on m.musicbrainz_track_id = np.track_id
-	LEFT JOIN user_stars us ON m.musicbrainz_album_id = us.metadata_id AND us.user_id = np.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = np.user_id
-	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = np.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = np.user_id
+	LEFT JOIN user_ratings gr ON m.musicbrainz_track_id = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = np.user_id
 	group by m.musicbrainz_track_id;`
 

@@ -114,7 +114,7 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 	join metadata m on m.music_folder_id = f.folder_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
 	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id = ur.metadata_id AND ur.user_id = f.user_id
+	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
 	left join metadata maa on maa.artist = m.album_artist
 	where f.user_id = ?
 	and s.created_at is not null`
