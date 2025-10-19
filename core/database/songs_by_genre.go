@@ -18,36 +18,71 @@ func GetSongsByGenre(ctx context.Context, genre string, count int, offset int, m
 	}
 
 	var args []interface{}
-	query := `select m.musicbrainz_track_id as id, m.musicbrainz_album_id as album_id, m.title, m.album, m.artist, COALESCE(m.track_number, 0) as track,
-		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
-		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
+	query := `with track_plays AS (
+    SELECT musicbrainz_track_id,
+			SUM(play_count) AS play_count,
+			MAX(last_played) AS last_played
+    FROM play_counts
+		where user_id = ?
+		group by musicbrainz_track_id
+	),
+	starred as (
+		select metadata_id,
+			created_at
+		from user_stars
+		where user_id = ?
+	),
+	album_artist_map AS (
+		SELECT artist,
+			MIN(musicbrainz_artist_id) AS musicbrainz_artist_id
+		FROM metadata
+		WHERE musicbrainz_artist_id IS NOT NULL
+		GROUP BY artist
+	),
+	gr AS (
+		SELECT metadata_id, AVG(rating) AS avg_rating
+		FROM user_ratings
+		GROUP BY metadata_id
+	)
+	select m.musicbrainz_track_id as id,
+		m.musicbrainz_album_id as album_id,
+		m.title, m.album,
+		m.artist,
+		COALESCE(m.track_number, 0) as track,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
+		substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
+		m.musicbrainz_track_id as cover_art,
+		m.size,
+		m.duration,
+		m.bitrate,
+		m.file_path as path,
+		m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
 		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
 		COALESCE(ur.rating, 0) AS user_rating,
-		COALESCE(AVG(gr.rating), 0.0) AS average_rating,
-		COALESCE(SUM(pc.play_count), 0) AS play_count,
-		max(pc.last_played) as played,
-		us.created_at AS starred,
+		COALESCE(gr.avg_rating, 0.0) AS average_rating,
+		COALESCE(pc.play_count, 0) AS play_count,
+		pc.last_played as played,
+		s.created_at AS starred,
 		maa.musicbrainz_artist_id
-	from metadata m
-	join user_music_folders f on f.folder_id = m.music_folder_id
-	join track_genres g on m.file_path = g.file_path
-	LEFT JOIN user_stars s ON m.musicbrainz_album_id = s.metadata_id AND s.user_id = f.user_id
-	LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
-	LEFT JOIN user_ratings gr ON m.musicbrainz_album_id = gr.metadata_id
-	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-	LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
-	left join metadata maa on maa.artist = m.album_artist
-	where f.user_id = ?
-	and lower(g.genre) = lower(?)`
+		from metadata m
+		join user_music_folders f on f.folder_id = m.music_folder_id
+		join track_genres g on g.file_path = m.file_path
+		LEFT JOIN starred s ON s.metadata_id = m.musicbrainz_track_id
+		LEFT JOIN user_ratings ur ON ur.metadata_id = m.musicbrainz_track_id AND ur.user_id = f.user_id
+		LEFT JOIN gr ON gr.metadata_id = m.musicbrainz_track_id
+		LEFT JOIN track_plays pc ON pc.musicbrainz_track_id = m.musicbrainz_track_id
+		left join album_artist_map maa on maa.artist = m.album_artist
+		where f.user_id = ?
+		and lower(g.genre) = lower(?)`
 
-	args = append(args, requestUser.Id, genre)
+	args = append(args, requestUser.Id, requestUser.Id, requestUser.Id, genre)
 
 	if musicFolderInt != 0 {
 		query += ` and m.music_folder_id = ?`
 		args = append(args, musicFolderInt)
 	}
 
-	query += ` group by m.musicbrainz_track_id order by m.musicbrainz_track_id limit ? offset ?`
+	query += ` order by m.musicbrainz_track_id limit ? offset ?`
 	args = append(args, count, offset)
 
 	rows, err := DB.QueryContext(ctx, query, args...)

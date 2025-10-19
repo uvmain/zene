@@ -10,7 +10,7 @@ import (
 )
 
 func migrateVersions(ctx context.Context) {
-	schema := `CREATE TABLE IF NOT EXISTS versions (
+	schema := `CREATE TABLE versions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		server_version TEXT NOT NULL,
 		database_version TEXT NOT NULL,

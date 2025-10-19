@@ -44,6 +44,7 @@ func migrateUsers(ctx context.Context) {
 		UNIQUE(user_id,folder_id)
 	);`
 	createTable(ctx, schema)
+	createIndex(ctx, "idx_user_music_folders_user", "user_music_folders", []string{"user_id"}, false)
 
 	schema = `CREATE VIEW users_with_folders AS
 		SELECT u.id AS user_id, u.username, u.email, u.password, u.scrobbling_enabled, u.ldap_authenticated, u.admin_role, u.settings_role,

@@ -20,9 +20,33 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 	var args []interface{}
 
 	query := `WITH rand AS (
-		SELECT rowid
-		FROM metadata
-		ORDER BY (rowid * ?) % 1000000
+		SELECT m.rowid
+		FROM metadata m
+		join track_genres g
+		where g.file_path = m.file_path`
+
+	if genre != "" {
+		query += ` and lower(g.genre) = lower(?)`
+		args = append(args, genre)
+	}
+
+	if musicFolderInt != 0 {
+		query += ` and m.music_folder_id = ?`
+		args = append(args, musicFolderInt)
+	}
+
+	if fromYear != "" {
+		query += ` and CAST(REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') AS INTEGER) >= ?`
+		args = append(args, fromYear)
+	}
+
+	if toYear != "" {
+		query += ` and CAST(REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') AS INTEGER) <= ?`
+		args = append(args, toYear)
+	}
+
+	query += ` group by m.musicbrainz_track_id
+		ORDER BY (m.rowid * ?) % 1000000
 	  limit ? offset ?
 	),`
 
@@ -65,8 +89,8 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		join user_music_folders f on f.folder_id = m.music_folder_id
 		join users u on f.user_id = u.id
 		left join track_genres g on m.file_path = g.file_path
-		LEFT JOIN user_ratings ur ON m.musicbrainz_album_id = ur.metadata_id AND ur.user_id = f.user_id
-		LEFT JOIN gr ON m.musicbrainz_album_id = gr.metadata_id
+		LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = f.user_id
+		LEFT JOIN gr ON m.musicbrainz_track_id = gr.metadata_id
 		LEFT JOIN pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND f.user_id = pc.user_id
 		LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
 		left join metadata maa on maa.artist = m.album_artist
@@ -114,33 +138,13 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 	from rand
 	join base_tracks bt on bt.row_id = rand.rowid
 	join users u on bt.user_id = u.id
-	LEFT JOIN user_ratings ur ON bt.musicbrainz_album_id = ur.metadata_id AND ur.user_id = bt.user_id
-	LEFT JOIN gr ON bt.musicbrainz_album_id = gr.metadata_id
+	LEFT JOIN user_ratings ur ON bt.musicbrainz_track_id = ur.metadata_id AND ur.user_id = bt.user_id
+	LEFT JOIN gr ON bt.musicbrainz_track_id = gr.metadata_id
 	LEFT JOIN pc ON bt.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
 	where u.id = ?
 	`
 
 	args = append(args, requestUser.Id)
-
-	if genre != "" {
-		query += ` and lower(g.genre) = lower(?)`
-		args = append(args, genre)
-	}
-
-	if musicFolderInt != 0 {
-		query += ` and m.music_folder_id = ?`
-		args = append(args, musicFolderInt)
-	}
-
-	if fromYear != "" {
-		query += ` and year >= ?`
-		args = append(args, fromYear)
-	}
-
-	if toYear != "" {
-		query += ` and year <= ?`
-		args = append(args, toYear)
-	}
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
