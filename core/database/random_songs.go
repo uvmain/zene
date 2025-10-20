@@ -19,14 +19,58 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 
 	var args []interface{}
 
-	query := `WITH rand AS (
-		SELECT m.rowid
-		FROM metadata m
-		join track_genres g
-		where g.file_path = m.file_path`
+	query := `with track_plays AS (
+		SELECT musicbrainz_track_id, SUM(play_count) AS play_count, MAX(last_played) AS last_played
+		FROM play_counts
+		where user_id = ?
+		group by musicbrainz_track_id
+	),
+	starred as (
+		select metadata_id, created_at
+		from user_stars
+		where user_id = ?
+	),
+	album_artist_map AS (
+		SELECT artist,  MIN(musicbrainz_artist_id) AS musicbrainz_artist_id
+		FROM metadata
+		WHERE musicbrainz_artist_id IS NOT NULL
+		GROUP BY artist
+	),
+	gr AS (
+		SELECT metadata_id, AVG(rating) AS avg_rating
+		FROM user_ratings
+		GROUP BY metadata_id
+	),
+	ur as (
+		SELECT metadata_id, rating
+		FROM user_ratings
+		where user_id = ?
+		GROUP BY metadata_id
+	)
+	select m.musicbrainz_track_id as id, m.musicbrainz_album_id as parent, m.title, m.album, m.artist,
+		COALESCE(m.track_number, 0) as track,
+		REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year, substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_track_id as cover_art,
+		m.size, m.duration, m.bitrate, m.file_path as path, m.date_added as created, m.disc_number, m.musicbrainz_artist_id as artist_id,
+		m.genre, m.album_artist, m.bit_depth, m.sample_rate, m.channels,
+		COALESCE(ur.rating, 0) AS user_rating,
+		COALESCE(gr.avg_rating, 0.0) AS average_rating,
+		COALESCE(pc.play_count, 0) AS play_count,
+		pc.last_played as played,
+		us.created_at AS starred,
+		maa.musicbrainz_artist_id as album_artist_id
+	from user_music_folders u
+	join metadata m on m.music_folder_id = u.folder_id
+	LEFT JOIN starred us ON us.metadata_id = m.musicbrainz_track_id
+	LEFT JOIN ur ON ur.metadata_id = m.musicbrainz_track_id
+	LEFT JOIN gr ON gr.metadata_id = m.musicbrainz_track_id
+	LEFT JOIN track_plays pc ON pc.musicbrainz_track_id = m.musicbrainz_track_id
+	left join album_artist_map maa on maa.artist = m.album_artist
+	where u.user_id = ?`
+
+	args = append(args, requestUser.Id, requestUser.Id, requestUser.Id, requestUser.Id)
 
 	if genre != "" {
-		query += ` and lower(g.genre) = lower(?)`
+		query += ` and (lower(m.genre) = lower(?) or lower(m.genre) like lower('%;?') or lower(m.genre) like lower('?;%') or lower(m.genre) like lower('%;?;%'))`
 		args = append(args, genre)
 	}
 
@@ -45,106 +89,16 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		args = append(args, toYear)
 	}
 
+	if seed == 0 {
+		seed = logic.GenerateRandomInt(1, 10000000)
+	}
+
 	query += ` group by m.musicbrainz_track_id
 		ORDER BY (m.rowid * ?) % 1000000
 	  limit ? offset ?
 	),`
 
-	if seed == 0 {
-		seed = logic.GenerateRandomInt(1, 10000000)
-	}
-
 	args = append(args, seed, count, offset)
-
-	query += `
-	base_tracks as (
-		select m.musicbrainz_track_id as musicbrainz_track_id ,
-			m.musicbrainz_album_id as musicbrainz_album_id,
-			m.title as title,
-			m.album as album,
-			m.artist as artist,
-			m.track_number as track_number,
-			REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
-			substr(m.genre,1,(instr(m.genre,';')-1)) as genre,
-			m.musicbrainz_track_id as cover_art,
-			m.size as size,
-			m.duration as duration,
-			m.bitrate as bit_rate,
-			m.file_path as file_path,
-			m.date_added as date_created,
-			m.disc_number as disc_number,
-			m.musicbrainz_artist_id as musicbrainz_artist_id,
-			m.genre as genre_string,
-			m.album_artist as album_artist,
-			maa.musicbrainz_artist_id as album_artist_id,
-			m.bit_depth as bit_depth,
-			m.sample_rate as sample_rate,
-			m.channels as channel_count,
-			us.created_at AS starred_date,
-			m.label,
-			u.id as user_id,
-			m.rowid as row_id
-		from rand
-		join metadata m on rand.rowid = m.rowid
-		join user_music_folders f on f.folder_id = m.music_folder_id
-		join users u on f.user_id = u.id
-		left join track_genres g on m.file_path = g.file_path
-		LEFT JOIN user_ratings ur ON m.musicbrainz_track_id = ur.metadata_id AND ur.user_id = f.user_id
-		LEFT JOIN gr ON m.musicbrainz_track_id = gr.metadata_id
-		LEFT JOIN pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND f.user_id = pc.user_id
-		LEFT JOIN user_stars us ON m.musicbrainz_track_id = us.metadata_id AND us.user_id = f.user_id
-		left join metadata maa on maa.artist = m.album_artist
-		group by m.musicbrainz_track_id
-	),
-	gr as (
-		SELECT metadata_id,
-			AVG(rating) AS avg_rating
-		FROM user_ratings
-		GROUP BY metadata_id
-	),
-	pc AS (
-		SELECT musicbrainz_track_id, user_id, SUM(play_count) AS play_count, MAX(last_played) AS played
-		FROM play_counts 
-		GROUP BY musicbrainz_track_id, user_id
-	)
-	select bt.musicbrainz_track_id,
-		bt.musicbrainz_album_id,
-		bt.title,
-		bt.album,
-		bt.artist,
-		coalesce(bt.track_number,0) as track_number,
-		bt.year,
-		bt.genre,
-		bt.cover_art,
-		bt.size,
-		bt.duration,
-		bt.bit_rate,
-		bt.file_path,
-		bt.date_created,
-		bt.disc_number,
-		bt.musicbrainz_artist_id,
-		bt.genre_string,
-		bt.album_artist,
-		bt.album_artist_id,
-		bt.bit_depth,
-		bt.sample_rate,
-		bt.channel_count,
-		COALESCE(ur.rating, 0) AS user_rating,
-		COALESCE(gr.avg_rating, 0) AS average_rating,
-		coalesce(pc.play_count, 0) as play_count,
-		pc.played as last_played,
-		bt.starred_date as starred_date,
-		bt.label
-	from rand
-	join base_tracks bt on bt.row_id = rand.rowid
-	join users u on bt.user_id = u.id
-	LEFT JOIN user_ratings ur ON bt.musicbrainz_track_id = ur.metadata_id AND ur.user_id = bt.user_id
-	LEFT JOIN gr ON bt.musicbrainz_track_id = gr.metadata_id
-	LEFT JOIN pc ON bt.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = u.id
-	where u.id = ?
-	`
-
-	args = append(args, requestUser.Id)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {
