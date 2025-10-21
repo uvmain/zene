@@ -57,7 +57,8 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		COALESCE(pc.play_count, 0) AS play_count,
 		pc.last_played as played,
 		us.created_at AS starred,
-		maa.musicbrainz_artist_id as album_artist_id
+		maa.musicbrainz_artist_id as album_artist_id,
+		m.label
 	from user_music_folders u
 	join metadata m on m.music_folder_id = u.folder_id
 	LEFT JOIN starred us ON us.metadata_id = m.musicbrainz_track_id
@@ -95,8 +96,7 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 
 	query += ` group by m.musicbrainz_track_id
 		ORDER BY (m.rowid * ?) % 1000000
-	  limit ? offset ?
-	),`
+	  limit ? offset ?;`
 
 	args = append(args, seed, count, offset)
 
@@ -130,9 +130,9 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 		if err := rows.Scan(&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist,
 			&result.Track, &result.Year, &result.Genre, &result.CoverArt, &result.Size,
 			&durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber,
-			&result.ArtistId, &genreString, &albumArtistName, &albumArtistId, &result.BitDepth, &result.SamplingRate,
+			&result.ArtistId, &genreString, &albumArtistName, &result.BitDepth, &result.SamplingRate,
 			&result.ChannelCount, &result.UserRating, &result.AverageRating, &result.PlayCount,
-			&played, &starred, &labels); err != nil {
+			&played, &starred, &albumArtistId, &labels); err != nil {
 			logger.Printf("Failed to scan row in GetSongsByGenre: %v", err)
 			return []types.SubsonicChild{}, err
 		}
