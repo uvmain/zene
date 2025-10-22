@@ -63,12 +63,12 @@ func GetTopSongs(ctx context.Context, artistName string, limit int) ([]types.Top
 
 	var topSongs []types.TopSongRow
 
-	for i, track := range data.Data {
+	for _, track := range data.Data {
 		topSongs = append(topSongs, types.TopSongRow{
 			ArtistName: track.Artist.Name,
 			AlbumName:  track.Album.Title,
 			TrackName:  track.Title,
-			SortOrder:  i + 1,
+			SortOrder:  track.Rank,
 		})
 	}
 

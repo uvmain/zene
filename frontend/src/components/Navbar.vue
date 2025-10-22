@@ -32,7 +32,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
 
     <div class="flex flex-col space-y-6">
       <div class="flex items-center gap-x-2 px-2">
-        <img class="size-12" src="/logo.webp" alt="Logo" />
+        <img class="size-12 opacity-90" src="/zene2.webp" alt="Logo" />
         <div class="text-2xl text-muted font-bold">
           Zene
         </div>

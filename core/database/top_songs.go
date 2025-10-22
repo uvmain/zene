@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"regexp"
 	"strings"
 	"zene/core/logger"
 	"zene/core/types"
@@ -88,7 +89,7 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 		left join top_songs ts on ts.musicbrainz_track_id = m.musicbrainz_track_id
 		WHERE f.user_id = ? and lower(m.artist) = lower(?)
 		GROUP BY m.musicbrainz_track_id
-		order by coalesce(ts.sort_order, 9999) asc, us.created_at desc, play_count desc, release_date desc
+		order by coalesce(ts.sort_order, 1) desc, us.created_at desc, play_count desc, release_date desc
 		limit ?`
 	args = append(args, user.Id, user.Id, user.Id, strings.ToLower(artistName), limit)
 
@@ -174,27 +175,20 @@ func InsertTopSongs(ctx context.Context, topSongs []types.TopSongRow) error {
 		}
 	}()
 
-	query := `INSERT INTO top_songs (musicbrainz_album_id, musicbrainz_track_id, musicbrainz_artist_id, sort_order)
-		SELECT musicbrainz_album_id, musicbrainz_track_id, musicbrainz_artist_id, ?
-		FROM metadata
-		WHERE lower(title) = lower(?)
-			AND lower(artist) = lower(?)
-			AND lower(album) = lower(?)
-		ON CONFLICT(musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id) DO NOTHING`
-
-	stmt, err := tx.PrepareContext(ctx, query)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
 	for _, song := range topSongs {
-		_, err = stmt.ExecContext(ctx,
-			song.SortOrder,
-			song.TrackName,
-			song.ArtistName,
-			song.AlbumName,
-		)
+		// Deezer sometimes only has special editions or re-releases of an album, eg "Superunknown (Super Deluxe)"
+		// so we remove any parenthesis suffixes when matching album names
+		cleanAlbumName := regexp.MustCompile(`([ ]\(.*\))?$`).ReplaceAllString(song.AlbumName, "")
+		query := `INSERT INTO top_songs (musicbrainz_album_id, musicbrainz_track_id, musicbrainz_artist_id, sort_order)
+			SELECT musicbrainz_album_id, musicbrainz_track_id, musicbrainz_artist_id, ?
+			FROM metadata
+			WHERE lower(title) = ?
+				AND lower(artist) = ?
+				AND lower(album) = ?
+			LIMIT 1
+			ON CONFLICT(musicbrainz_artist_id, musicbrainz_album_id, musicbrainz_track_id) DO NOTHING`
+
+		_, err = tx.ExecContext(ctx, query, song.SortOrder, strings.ToLower(song.TrackName), strings.ToLower(song.ArtistName), strings.ToLower(cleanAlbumName))
 		if err != nil {
 			logger.Printf("Failed to insert top song: %v", err)
 			return err
