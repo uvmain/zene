@@ -46,6 +46,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
         <NavLink route-name="Playlists" route-prop="/playlists" />
         <NavLink route-name="Radio" route-prop="/radio" />
         <NavLink route-name="Podcasts" route-prop="/podcasts" />
+        <NavLink route-name="Queue" route-prop="/queue" />
       </nav>
     </div>
     <NavArt class="mt-auto" />

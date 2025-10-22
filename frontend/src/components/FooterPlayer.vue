@@ -216,7 +216,7 @@ async function handlePreviousTrack() {
 }
 
 async function handleGetRandomTracks() {
-  await getRandomTracks()
+  await getRandomTracks(500)
   router.push('/queue')
 }
 
@@ -715,13 +715,13 @@ onUnmounted(() => {
           <!-- Buttons -->
           <div class="mt-2 flex flex-row items-center justify-center gap-x-2 md:mt-2 md:gap-x-4 sm:gap-x-2">
             <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="stopPlayback()">
-              <icon-nrk-media-stop class="text-lg text-muted md:text-xl sm:text-lg" />
+              <icon-nrk-media-stop class="footer-icon" />
             </button>
             <button id="shuffle" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-nrk-reorder class="text-lg text-muted md:text-xl sm:text-lg" />
+              <icon-nrk-reorder class="footer-icon" />
             </button>
             <button id="back" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
-              <icon-nrk-media-previous class="text-lg text-muted md:text-xl sm:text-lg" />
+              <icon-nrk-media-previous class="footer-icon" />
             </button>
             <ZButton
               id="play-pause"
@@ -729,21 +729,21 @@ onUnmounted(() => {
               :size12="true"
               @click="togglePlayback()"
             >
-              <icon-nrk-media-play v-if="!isPlaying" class="text-2xl md:text-3xl" />
-              <icon-nrk-media-pause v-else class="text-2xl md:text-3xl" />
+              <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
+              <icon-nrk-media-pause v-else class="footer-icon" />
             </ZButton>
             <button id="forward" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
-              <icon-nrk-media-next class="text-lg text-muted md:text-xl sm:text-lg" />
+              <icon-nrk-media-next class="footer-icon" />
             </button>
             <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-nrk-media-jumpto class="text-lg text-muted md:text-xl sm:text-lg" />
+              <icon-nrk-media-jumpto class="footer-icon" />
             </button>
             <button
               id="shuffle"
               class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
               @click="handleGetRandomTracks()"
             >
-              <icon-nrk-dice-3-active class="text-lg text-muted md:text-xl sm:text-lg" />
+              <icon-nrk-dice-3-active class="footer-icon" />
             </button>
           </div>
         </div>
@@ -762,7 +762,7 @@ onUnmounted(() => {
           class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
           @click="showLyrics = !showLyrics"
         >
-          <icon-nrk-mening class="text-lg text-muted md:text-xl sm:text-lg" />
+          <icon-nrk-mening class="footer-icon" />
         </button>
 
         <!-- Playlist button -->
@@ -771,7 +771,7 @@ onUnmounted(() => {
             to="/queue"
             class="block flex gap-x-1 px-3 py-2 text-muted no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
           >
-            <icon-nrk-media-playlist class="text-xl sm:text-xl" />
+            <icon-nrk-media-playlist class="footer-icon" />
           </RouterLink>
         </div>
 
@@ -795,3 +795,9 @@ onUnmounted(() => {
     </div>
   </footer>
 </template>
+
+<style scoped>
+.footer-icon {
+  @apply scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 md:text-xl sm:text-lg hover:text-primary1;
+}
+</style>

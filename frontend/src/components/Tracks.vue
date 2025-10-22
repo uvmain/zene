@@ -94,6 +94,10 @@ watch(currentlyPlayingTrack, async (newTrack) => {
   currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 })
 
+watch(() => props.tracks, (newTracks) => {
+  routeTracks.value = newTracks
+}, { immediate: true })
+
 watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
   routeTracks.value?.forEach((track) => {
     if (track.musicBrainzId === newTrack) {
@@ -206,7 +210,13 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 class="flex items-center"
                 @click.stop
               >
-                <img class="size-10 object-cover" :src="getCoverArtUrl(track.albumId, 40)" alt="Album Cover" @error="onImageError" />
+                <img
+                  class="size-10 object-cover"
+                  :src="getCoverArtUrl(track.albumId, 40)"
+                  alt="Album Cover"
+                  :loading="index < 20 ? 'eager' : 'lazy'"
+                  @error="onImageError"
+                />
               </RouterLink>
               <RouterLink
                 class="text-muted no-underline hover:underline hover:underline-white"
