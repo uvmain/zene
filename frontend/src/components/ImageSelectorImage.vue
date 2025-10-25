@@ -22,7 +22,7 @@ defineEmits(['updateArt'])
     >
       Use This Art
     </ZButton>
-    <div class="mt-2 text-primary">
+    <div class="mt-2 text-muted">
       {{ label }}
     </div>
   </div>

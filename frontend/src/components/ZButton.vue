@@ -16,7 +16,7 @@ defineEmits(['click'])
     }"
   >
     <button
-      class="z-button m-1px"
+      class="group/button z-button m-1px"
       :class="{
         'size-12': size12,
       }"

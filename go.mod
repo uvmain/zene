@@ -3,7 +3,6 @@ module zene
 go 1.25.1
 
 require (
-	github.com/HugoSmits86/nativewebp v1.2.0
 	github.com/djherbis/times v1.6.0
 	github.com/go-swiss/compress v0.0.0-20231015173048-c7b565746931
 	github.com/google/uuid v1.6.0

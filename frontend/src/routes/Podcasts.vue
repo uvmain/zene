@@ -31,12 +31,12 @@ async function createNewPodcast() {
     return
   }
   showSuccess.value = true
-  getPodcasts()
   setTimeout(() => {
     showModal.value = false
     showSuccess.value = false
     isSubmitting.value = false
-  }, 1000)
+  }, 500)
+  await getPodcasts()
 }
 
 async function getPodcasts() {
@@ -88,7 +88,7 @@ onBeforeMount(getPodcasts)
               class="line-clamp-5 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
               v-html="podcast.description.replaceAll(/\n/g, '<br>')"
             />
-            <div v-if="podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
               <GenreBottle v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
             </div>
           </div>
@@ -126,7 +126,7 @@ onBeforeMount(getPodcasts)
               <span v-else-if="showSuccess">
                 <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-primary1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
               </span>
-              <span v-else>Add Radio Station</span>
+              <span v-else>Add Podcast</span>
             </button>
             <div v-if="submitError" class="mt-2 text-sm text-red-600">
               {{ submitError }}

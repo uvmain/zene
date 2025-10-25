@@ -725,6 +725,7 @@ onUnmounted(() => {
             </button>
             <ZButton
               id="play-pause"
+              class="group/button"
               :primary="true"
               :size12="true"
               @click="togglePlayback()"
@@ -795,9 +796,3 @@ onUnmounted(() => {
     </div>
   </footer>
 </template>
-
-<style scoped>
-.footer-icon {
-  @apply scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 md:text-xl sm:text-lg hover:text-primary1;
-}
-</style>

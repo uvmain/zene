@@ -21,7 +21,7 @@ let type: string
 
 const albums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const showOrderOptions = ref(false)
-const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate'>('currentAlbumOrder', 'recentlyUpdated')
+const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate' | 'recentlyPlayed'>('currentAlbumOrder', 'recentlyUpdated')
 
 watch(observerIsVisible, (newValue) => {
   if (newValue && props.scrollable) {
@@ -39,12 +39,14 @@ const headerTitle = computed(() => {
       return 'Albums: Alphabetical'
     case 'releaseDate':
       return 'Albums: Release Date'
+    case 'recentlyPlayed':
+      return 'Albums: Recently Played'
     default:
       return 'Albums'
   }
 })
 
-function setOrder(order: 'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate') {
+function setOrder(order: 'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate' | 'recentlyPlayed') {
   if (currentOrder.value === order) {
     showOrderOptions.value = false
     return
@@ -83,6 +85,9 @@ async function getAlbums() {
     case 'releaseDate':
       type = 'release'
       break
+    case 'recentlyPlayed':
+      type = 'recent'
+      break
   }
   const albumsResponse = await fetchAlbums(type, props.limit, currentOffset.value, seed.value)
   if (albumsResponse.length > 0) {
@@ -118,6 +123,9 @@ onBeforeMount(async () => {
     <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto background-2">
       <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('recentlyUpdated')">
         Recently Updated
+      </div>
+      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('recentlyPlayed')">
+        Recently Played
       </div>
       <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('random')">
         Random
