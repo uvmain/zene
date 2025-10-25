@@ -19,10 +19,7 @@ const limit = ref<number>(100)
 const offset = ref<number>(0)
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
-
-const artistArtUrl = computed(() => {
-  return getCoverArtUrl(musicbrainz_artist_id.value)
-})
+const artistArtUrl = computed(() => getCoverArtUrl(musicbrainz_artist_id.value))
 
 async function getData() {
   const promisesArray = [
@@ -65,15 +62,19 @@ async function getTopSongs() {
   isLoading.value = false
 }
 
-watch(musicbrainz_artist_id, async () => {
-  await getData()
-})
-
-onBeforeMount(async () => {
+function resetRefs() {
   tracks.value = []
   routeTracks.value = []
   offset.value = 0
   canLoadMore.value = true
+}
+
+watch(musicbrainz_artist_id, async () => {
+  resetRefs()
+  await getData()
+})
+
+onBeforeMount(async () => {
   await getData()
 })
 </script>

@@ -9,7 +9,7 @@ import { useRouteTracks } from '~/composables/useRouteTracks'
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
-  observerEnabled: { type: Boolean, default: true },
+  observerEnabled: { type: Boolean, default: false },
 })
 
 const emits = defineEmits(['observerVisible'])
@@ -249,7 +249,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
         </tr>
       </tbody>
     </table>
-    <div v-if="observerEnabled" ref="observer" class="h-16">
+    <div v-if="observerEnabled" ref="observer" class="mb-6 text-center text-muted">
       Loading more songs...
     </div>
   </div>

@@ -1,28 +1,37 @@
 <script setup lang="ts">
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { useLocalStorage } from '@vueuse/core'
 import { fetchRandomTracks } from '~/composables/backendFetch'
+import { generateSeed } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const { routeTracks, clearRouteTracks } = useRouteTracks()
+const seed = useLocalStorage<number>('randomTracksSeed', 0)
 
-const error = ref<string | null>(null)
+const tracks = ref<SubsonicSong[]>()
+const canLoadMore = ref<boolean>(true)
+const limit = ref<number>(100)
+const offset = ref<number>(0)
 
-async function loadTracks() {
-  routeTracks.value = await fetchRandomTracks(100)
+async function getData() {
+  const randomTracks = await fetchRandomTracks(limit.value, offset.value, seed.value)
+  tracks.value = tracks.value?.concat(randomTracks) ?? randomTracks
+  routeTracks.value = tracks.value
+  offset.value += randomTracks.length
+
+  if (randomTracks.length < limit.value) {
+    canLoadMore.value = false
+  }
 }
 
 onMounted(async () => {
-  try {
-    await loadTracks()
-  }
-  catch (err) {
-    error.value = 'Failed to fetch tracks.'
-    console.error(err)
-  }
+  seed.value = generateSeed()
+  await getData()
 })
 
 onUnmounted(() => clearRouteTracks())
 </script>
 
 <template>
-  <Tracks :tracks="routeTracks" :show-album="true" />
+  <Tracks v-if="tracks" :tracks="tracks" :show-album="true" :observer-enabled="canLoadMore" @observer-visible="getData" />
 </template>

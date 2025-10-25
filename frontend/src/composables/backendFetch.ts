@@ -190,16 +190,16 @@ export async function fetchAlbums(type: string, size = 50, offset = 0, seed?: nu
   return response.albumList.album
 }
 
-export async function fetchRandomTracks(size?: number, offset?: number, seed?: number): Promise<SubsonicSong[]> {
+export async function fetchRandomTracks(limit?: number, offset?: number, seed?: number): Promise<SubsonicSong[]> {
   const options: RequestInit = {}
 
-  if (size != null && size > 0) {
+  if (limit != null && limit > 0) {
     const formData = new FormData()
     if (offset !== undefined && offset > 0) {
       formData.append('offset', offset.toString())
     }
-    if (size !== undefined && size > 0) {
-      formData.append('size', size.toString())
+    if (limit !== undefined && limit > 0) {
+      formData.append('size', limit.toString())
     }
     if (seed !== undefined && seed > 0) {
       formData.append('seed', seed.toString())
@@ -306,10 +306,10 @@ export async function fetchAlbumsForArtist(artistId: string): Promise<SubsonicAl
   return albums
 }
 
-export async function fetchSongsByGenre(genre: string, count: number, offset: number): Promise<SubsonicSong[]> {
+export async function fetchSongsByGenre(genre: string, limit: number, offset: number): Promise<SubsonicSong[]> {
   const formData = new FormData()
   formData.append('genre', genre)
-  formData.append('count', count.toString())
+  formData.append('count', limit.toString())
   formData.append('offset', offset.toString())
   const response = await openSubsonicFetchRequest<SubsonicSongsByGenreResponse>('getSongsByGenre', {
     body: formData,

@@ -4,7 +4,15 @@ import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const { currentQueue } = usePlaybackQueue()
 
-const tracks = computed(() => currentQueue?.value?.tracks ?? [] as SubsonicSong[])
+const tracks = ref<SubsonicSong[]>([])
+
+watch(currentQueue, async () => {
+  tracks.value = currentQueue?.value?.tracks ?? [] as SubsonicSong[]
+})
+
+onMounted(() => {
+  tracks.value = currentQueue?.value?.tracks ?? [] as SubsonicSong[]
+})
 </script>
 
 <template>
@@ -12,6 +20,6 @@ const tracks = computed(() => currentQueue?.value?.tracks ?? [] as SubsonicSong[
     <h2 class="px-2 text-lg font-semibold">
       Queue
     </h2>
-    <Tracks :tracks="tracks" :show-album="true" />
+    <Tracks v-if="tracks.length" :tracks="tracks" :show-album="true" />
   </div>
 </template>
