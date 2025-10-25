@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
+import { useElementVisibility } from '@vueuse/core'
 import { formatTime, getCoverArtUrl, onImageError } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
@@ -8,7 +9,10 @@ import { useRouteTracks } from '~/composables/useRouteTracks'
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
+  observerEnabled: { type: Boolean, default: true },
 })
+
+const emits = defineEmits(['observerVisible'])
 
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrack } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
@@ -16,6 +20,14 @@ const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
+const observer = useTemplateRef<HTMLDivElement>('observer')
+const observerIsVisible = useElementVisibility(observer)
+
+watch(observerIsVisible, (newValue) => {
+  if (newValue && props.observerEnabled) {
+    emits('observerVisible')
+  }
+})
 
 function isTrackPlaying(trackId: string): boolean {
   return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.id === trackId) ?? false
@@ -237,6 +249,9 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
         </tr>
       </tbody>
     </table>
+    <div v-if="observerEnabled" ref="observer" class="h-16">
+      Loading more songs...
+    </div>
   </div>
 </template>
 

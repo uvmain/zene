@@ -2,7 +2,6 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useElementVisibility } from '@vueuse/core'
 import { fetchAlbumsForArtist, fetchArtist, fetchArtistTopSongs } from '~/composables/backendFetch'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
@@ -14,12 +13,10 @@ const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()
 const albumArtistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const artistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
-const observer = useTemplateRef<HTMLDivElement>('observer')
-const observerIsVisible = useElementVisibility(observer)
-const canLoadMore = ref(true)
-const isLoading = ref(false)
-const limit = ref(100)
-const offset = ref(0)
+const canLoadMore = ref<boolean>(true)
+const isLoading = ref<boolean>(false)
+const limit = ref<number>(100)
+const offset = ref<number>(0)
 
 const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
 
@@ -59,6 +56,7 @@ async function getTopSongs() {
     tracks.value = tracks.value?.concat(newSongs) ?? newSongs
     routeTracks.value = tracks.value
     offset.value += newSongs.length
+
     if (newSongs.length < limit.value) {
       canLoadMore.value = false
     }
@@ -69,12 +67,6 @@ async function getTopSongs() {
 
 watch(musicbrainz_artist_id, async () => {
   await getData()
-})
-
-watch(observerIsVisible, (newValue) => {
-  if (newValue && canLoadMore.value) {
-    getTopSongs()
-  }
 })
 
 onBeforeMount(async () => {
@@ -127,11 +119,6 @@ onBeforeMount(async () => {
         </div>
       </div>
     </div>
-    <Tracks v-if="tracks" :tracks="tracks" :show-album="true" />
-    <div v-if="canLoadMore" ref="observer" class="h-16">
-      Loading more songs...
-    </div>
-    <div>
-    </div>
+    <Tracks v-if="tracks" :tracks="tracks" :show-album="true" :observer-enabled="canLoadMore" @observer-visible="getTopSongs" />
   </div>
 </template>
