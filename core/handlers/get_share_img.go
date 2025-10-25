@@ -37,7 +37,7 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 	mediaArtType, err := database.GetMediaCoverType(ctx, imageId)
 	if err != nil {
 		errorString := "error getting media type from id parameter"
-		logger.Printf("%s: %v", errorString, err)
+		logger.Printf("%s %s in HandleGetShareImg: %v", errorString, imageId, err)
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, errorString, "")
 		return
 	}
