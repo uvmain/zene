@@ -23,7 +23,7 @@ func migrateTopSongs(ctx context.Context) {
 	createIndex(ctx, "idx_top_songs_artist", "top_songs", []string{"musicbrainz_artist_id", "sort_order"}, false)
 }
 
-func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit int) ([]types.SubsonicChild, error) {
+func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit int, offset int) ([]types.SubsonicChild, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {
 		return []types.SubsonicChild{}, err
@@ -90,8 +90,8 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 		WHERE f.user_id = ? and lower(m.artist) = lower(?)
 		GROUP BY m.musicbrainz_track_id
 		order by coalesce(ts.sort_order, 1) desc, us.created_at desc, play_count desc, release_date desc
-		limit ?`
-	args = append(args, user.Id, user.Id, user.Id, strings.ToLower(artistName), limit)
+		limit ? offset ?`
+	args = append(args, user.Id, user.Id, user.Id, strings.ToLower(artistName), limit, offset)
 
 	rows, err := DB.QueryContext(ctx, query, args...)
 	if err != nil {

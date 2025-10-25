@@ -249,10 +249,13 @@ export async function fetchArtistList(type: string, limit: number, offset: numbe
   return artists
 }
 
-export async function fetchArtistTopSongs(musicbrainz_artist_id: string, count = 50): Promise<SubsonicSong[]> {
+export async function fetchArtistTopSongs(musicbrainz_artist_id: string, limit = 50, offset = 0): Promise<SubsonicSong[]> {
   const formData = new FormData()
   formData.append('id', musicbrainz_artist_id)
-  formData.append('count', count.toString())
+  formData.append('count', limit.toString())
+  if (offset > 0) {
+    formData.append('offset', offset.toString())
+  }
   const response = await openSubsonicFetchRequest<SubsonicTopSongsResponse>('getTopSongs', {
     body: formData,
   })
