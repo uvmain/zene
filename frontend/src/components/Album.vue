@@ -35,7 +35,7 @@ const loading = computed<LoadingAttribute>(() => {
   return props.index < 10 ? 'eager' : 'lazy'
 })
 
-const updatedTime = ref<Date | null>(new Date())
+const updatedTime = ref<Date | null>(null)
 
 const coverArtUrlSm = computed(() => {
   return updatedTime.value ? `${getCoverArtUrl(props.album.id, 120)}&time=${updatedTime.value.getTime()}` : `${getCoverArtUrl(props.album.id, 120)}`

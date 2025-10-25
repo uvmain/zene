@@ -32,8 +32,8 @@ function handleLinkClick() {
     }"
     @click="handleLinkClick"
   >
-    <icon-nrk-chevron-right
-      class="size-8 translate-y--1 text-primary1 opacity-0 transition-all duration-300"
+    <icon-nrk-media-ffw
+      class="size-8 text-primary1 opacity-0 transition-all duration-300"
       :class="{
         'opacity-100': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
       }"
@@ -44,6 +44,6 @@ function handleLinkClick() {
 
 <style scoped>
 .navlink {
-  @apply block flex gap-x-1 py-2 text-muted font-semibold no-underline transition-all duration-100 uppercase;
+  @apply block flex gap-x-1 py-2 text-muted font-semibold no-underline transition-all duration-100 uppercase flex items-center;
 }
 </style>

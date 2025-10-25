@@ -14,7 +14,7 @@ const { closeSearch } = useSearch()
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.artist.coverArt, 200)
+  return getCoverArtUrl(props.artist.coverArt, 120)
 })
 
 const loading = computed<LoadingAttribute>(() => {

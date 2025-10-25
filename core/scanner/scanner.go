@@ -79,7 +79,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 	}, nil
 }
 
-func scanMusicDirs(ctx context.Context, scanId int) error {
+func scanMusicDirs(ctx context.Context, scanId int) {
 	scanUpdate := database.ScanRow{
 		Count:         0,
 		FolderCount:   0,
@@ -88,7 +88,8 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 
 	if ctx.Err() != nil {
 		database.UpdateScanProgress(ctx, scanId, scanUpdate)
-		return fmt.Errorf("scan was cancelled, context error: %v", ctx.Err())
+		logger.Printf("scan was cancelled, context error in scanMusicDirs: %v", ctx.Err())
+		return
 	}
 
 	start := time.Now()
@@ -100,7 +101,8 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 	for _, musicDir := range config.MusicDirs {
 		changesMade, err = scanMusicDir(ctx, musicDir)
 		if err != nil {
-			return fmt.Errorf("scanning music directory %s: %v", musicDir, err)
+			logger.Printf("Error scanning music directory %s in scanMusicDirs: %v", musicDir, err)
+			return
 		}
 	}
 
@@ -109,23 +111,27 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 
 		err := database.RepopulateGenreCountsTable(ctx)
 		if err != nil {
-			return fmt.Errorf("repopulating genre counts table: %v", err)
+			logger.Printf("Error repopulating genre counts table in scanMusicDirs: %v", err)
+			return
 		}
 
 		err = PopulateSimilarArtistsTable(ctx)
 		if err != nil {
-			return fmt.Errorf("populating similar artists table: %v", err)
+			logger.Printf("Error populating similar artists table scanMusicDirs: %v", err)
+			return
 		}
 
-		err = PopulateTopSongsTable(ctx)
+		err = RepopulateTopSongsTable(ctx)
 		if err != nil {
-			return fmt.Errorf("populating top songs table: %v", err)
+			logger.Printf("Error repopulating top songs table in scanMusicDirs: %v", err)
+			return
 		}
 	}
 
 	fileAndFolderCount, err := database.GetFileAndFolderCounts(ctx)
 	if err != nil {
-		return fmt.Errorf("getting file and folder counts: %v", err)
+		logger.Printf("Error getting file and folder counts in scanMusicDirs: %v", err)
+		return
 	}
 
 	scanUpdate = database.ScanRow{
@@ -135,8 +141,6 @@ func scanMusicDirs(ctx context.Context, scanId int) error {
 	}
 
 	database.UpdateScanProgress(ctx, scanId, scanUpdate)
-
-	return nil
 }
 
 func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {

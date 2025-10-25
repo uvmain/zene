@@ -71,7 +71,7 @@ onBeforeMount(getPlaylists)
       </div>
       <div class="flex flex-wrap justify-center gap-6 md:justify-start">
         <div
-          v-for="playlist in playlists"
+          v-for="(playlist, index) in playlists"
           :key="playlist.id" class="mx-auto max-w-60dvw flex flex-col items-center justify-center gap-4 transition duration-150 hover:scale-101"
           @click="navigateToPlaylist(`${playlist.id}`)"
         >
@@ -79,7 +79,7 @@ onBeforeMount(getPlaylists)
             :src="playlist.coverArt"
             alt="Playlist Cover"
             class="size-40 object-cover"
-            loading="lazy"
+            :loading="index < 20 ? 'eager' : 'lazy'"
             width="200"
             height="200"
             @error="onImageError"

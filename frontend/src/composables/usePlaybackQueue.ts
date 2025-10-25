@@ -57,8 +57,8 @@ export function usePlaybackQueue() {
     }
   }
 
-  const getRandomTracks = async (): Promise<SubsonicSong[]> => {
-    const randomTracks = await fetchRandomTracks()
+  const getRandomTracks = async (size: number = 10): Promise<SubsonicSong[]> => {
+    const randomTracks = await fetchRandomTracks(size)
     setCurrentQueue(randomTracks)
     return randomTracks
   }

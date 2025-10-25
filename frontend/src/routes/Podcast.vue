@@ -107,12 +107,13 @@ onBeforeMount(getPodcast)
       <div v-if="podcast.lastRefresh === ''" class="mx-auto">
         Episodes are being refreshed...
       </div>
-      <div v-for="episode in podcast.episode" :key="episode.id">
+      <div v-for="(episode, index) in podcast.episode" :key="episode.id">
         <div class="mx-auto max-w-60dvw flex flex-row justify-start gap-4 align-top transition duration-150 hover:scale-101">
           <div class="grid items-end justify-items-end">
             <img
               :src="episode.coverArt"
               alt="Podcast Cover"
+              :loading="index < 20 ? 'eager' : 'lazy'"
               class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
             />
             <div class="hover:text-zene-200 z-2 col-span-full row-span-full m-2 size-12">

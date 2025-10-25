@@ -36,7 +36,7 @@ async function getRandomAlbums(limit: number) {
 }
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(albumArray.value[index.value].coverArt, 600)
+  return getCoverArtUrl(albumArray.value[index.value].coverArt, 210)
 })
 
 function handleDiceClick() {

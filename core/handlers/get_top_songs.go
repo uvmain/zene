@@ -20,6 +20,7 @@ func HandleGetTopSongs(w http.ResponseWriter, r *http.Request) {
 	artistName := form["artist"]
 	artistId := form["id"]
 	count := form["count"]
+	offset := form["offset"]
 
 	ctx := r.Context()
 
@@ -52,9 +53,18 @@ func HandleGetTopSongs(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	offsetInt := 0
+	if offset != "" {
+		offsetInt, err = strconv.Atoi(offset)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "offset parameter must be an integer", "")
+			return
+		}
+	}
+
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	artistTopSongs, err := database.SelectTopSongsForArtistName(ctx, artistName, countLimit)
+	artistTopSongs, err := database.SelectTopSongsForArtistName(ctx, artistName, countLimit, offsetInt)
 	if err != nil {
 		logger.Printf("failed to get top songs from database: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "failed to get top songs", "")

@@ -70,13 +70,14 @@ onBeforeMount(getPodcasts)
       </div>
       <div class="flex flex-wrap justify-center gap-6 md:justify-start">
         <div
-          v-for="podcast in podcasts"
+          v-for="(podcast, index) in podcasts"
           :key="podcast.id" class="mx-auto max-w-60dvw flex flex-row cursor-pointer gap-4 align-top transition duration-150 hover:scale-101"
           @click="navigateToPodcast(podcast.id)"
         >
           <img
             :src="podcast.coverArt"
             alt="Podcast Cover"
+            :loading="index < 20 ? 'eager' : 'lazy'"
             class="size-50 object-cover"
           />
           <div class="my-auto flex flex-col gap-4">

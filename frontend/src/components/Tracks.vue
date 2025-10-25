@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
+import { useElementVisibility } from '@vueuse/core'
 import { formatTime, getCoverArtUrl, onImageError } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
@@ -8,7 +9,10 @@ import { useRouteTracks } from '~/composables/useRouteTracks'
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
+  observerEnabled: { type: Boolean, default: false },
 })
+
+const emits = defineEmits(['observerVisible'])
 
 const { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrack } = usePlaybackQueue()
 const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
@@ -16,6 +20,14 @@ const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
+const observer = useTemplateRef<HTMLDivElement>('observer')
+const observerIsVisible = useElementVisibility(observer)
+
+watch(observerIsVisible, (newValue) => {
+  if (newValue && props.observerEnabled) {
+    emits('observerVisible')
+  }
+})
 
 function isTrackPlaying(trackId: string): boolean {
   return (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.id === trackId) ?? false
@@ -33,6 +45,58 @@ function handlePlay(track: SubsonicSong) {
   }
 }
 
+type SortOptions = 'titleAsc' | 'titleDesc' | 'artistAsc' | 'artistDesc' | 'albumAsc' | 'albumDesc' | 'playCount' | 'durationAsc' | 'durationDesc' | 'trackNumberAsc' | 'trackNumberDesc'
+const currentSortOption = ref<SortOptions>('trackNumberAsc')
+
+function sortTracksBy(sortOption: SortOptions) {
+  switch (sortOption) {
+    case 'titleAsc':
+      routeTracks.value.sort((a, b) => a.title.localeCompare(b.title))
+      currentSortOption.value = 'titleAsc'
+      break
+    case 'titleDesc':
+      routeTracks.value.sort((a, b) => b.title.localeCompare(a.title))
+      currentSortOption.value = 'titleDesc'
+      break
+    case 'artistAsc':
+      routeTracks.value.sort((a, b) => a.artist.localeCompare(b.artist))
+      currentSortOption.value = 'artistAsc'
+      break
+    case 'artistDesc':
+      routeTracks.value.sort((a, b) => b.artist.localeCompare(a.artist))
+      currentSortOption.value = 'artistDesc'
+      break
+    case 'albumAsc':
+      routeTracks.value.sort((a, b) => a.album.localeCompare(b.album))
+      currentSortOption.value = 'albumAsc'
+      break
+    case 'albumDesc':
+      routeTracks.value.sort((a, b) => b.album.localeCompare(a.album))
+      currentSortOption.value = 'albumDesc'
+      break
+    case 'playCount':
+      routeTracks.value.sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0))
+      currentSortOption.value = 'playCount'
+      break
+    case 'durationAsc':
+      routeTracks.value.sort((a, b) => a.duration - b.duration)
+      currentSortOption.value = 'durationAsc'
+      break
+    case 'durationDesc':
+      routeTracks.value.sort((a, b) => b.duration - a.duration)
+      currentSortOption.value = 'durationDesc'
+      break
+    case 'trackNumberAsc':
+      routeTracks.value.sort((a, b) => a.track - b.track)
+      currentSortOption.value = 'trackNumberAsc'
+      break
+    case 'trackNumberDesc':
+      routeTracks.value.sort((a, b) => b.track - a.track)
+      currentSortOption.value = 'trackNumberDesc'
+      break
+  }
+}
+
 watch(currentlyPlayingTrack, async (newTrack) => {
   if (!newTrack)
     return
@@ -41,6 +105,10 @@ watch(currentlyPlayingTrack, async (newTrack) => {
   currentRow.value = rowRefs.value[index]
   currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 })
+
+watch(() => props.tracks, (newTracks) => {
+  routeTracks.value = newTracks
+}, { immediate: true })
 
 watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
   routeTracks.value?.forEach((track) => {
@@ -56,22 +124,22 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
     <table class="h-full w-full table-auto text-left">
       <thead>
         <tr class="text-lg text-muted">
-          <th class="w-15 text-center">
+          <th class="w-15 cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
             #
           </th>
-          <th class="px-2">
+          <th class="cursor-pointer px-2" @click="currentSortOption === 'titleAsc' ? sortTracksBy('titleDesc') : sortTracksBy('titleAsc')">
             Title
           </th>
-          <th v-if="showAlbum" class="w-16 text-center">
+          <th v-if="showAlbum" class="w-16 cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
             Track
           </th>
-          <th v-if="showAlbum" class="px-2">
+          <th v-if="showAlbum" class="cursor-pointer px-2" @click="currentSortOption === 'albumAsc' ? sortTracksBy('albumDesc') : sortTracksBy('albumAsc')">
             Album
           </th>
-          <th class="w-16 text-center text-sm">
+          <th class="w-16 cursor-pointer text-center text-sm" @click="sortTracksBy('playCount')">
             Play Count
           </th>
-          <th class="w-16 text-center">
+          <th class="w-16 cursor-pointer text-center" @click="currentSortOption === 'durationAsc' ? sortTracksBy('durationDesc') : sortTracksBy('durationAsc')">
             <icon-nrk-clock class="inline" />
           </th>
         </tr>
@@ -90,13 +158,13 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
       </thead>
       <tbody>
         <tr
-          v-for="(track, index) in tracks"
+          v-for="(track, index) in routeTracks"
           :key="track.path"
           :ref="el => rowRefs[index] = el"
           class="group cursor-pointer transition-colors duration-200 ease-out"
           :class="{
             'hover:bg-primary2/40': !isTrackPlaying(track.id),
-            'background-3': !isTrackPlaying(track.id) && index % 2 === 0,
+            'background-3 bg-opacity-50': !isTrackPlaying(track.id) && index % 2 === 0,
             'bg-primary1/40': isTrackPlaying(track.id),
           }"
           @click="handlePlay(track)"
@@ -111,7 +179,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 </div>
                 <div>{{ track.track }}</div>
               </div>
-              <span v-else>{{ index }}</span>
+              <span v-else>{{ index + 1 }}</span>
             </div>
             <icon-nrk-media-play
               class="absolute m-auto translate-x-[-1rem] text-xl opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
@@ -154,7 +222,13 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 class="flex items-center"
                 @click.stop
               >
-                <img class="size-10 object-cover" :src="getCoverArtUrl(track.albumId, 40)" alt="Album Cover" @error="onImageError" />
+                <img
+                  class="size-10 object-cover"
+                  :src="getCoverArtUrl(track.albumId, 40)"
+                  alt="Album Cover"
+                  :loading="index < 20 ? 'eager' : 'lazy'"
+                  @error="onImageError"
+                />
               </RouterLink>
               <RouterLink
                 class="text-muted no-underline hover:underline hover:underline-white"
@@ -175,6 +249,9 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
         </tr>
       </tbody>
     </table>
+    <div v-if="observerEnabled" ref="observer" class="mb-6 text-center text-muted">
+      Loading more songs...
+    </div>
   </div>
 </template>
 

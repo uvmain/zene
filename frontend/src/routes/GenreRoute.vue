@@ -7,16 +7,40 @@ const route = useRoute()
 const { routeTracks } = useRouteTracks()
 
 const tracks = ref<SubsonicSong[]>()
+const canLoadMore = ref<boolean>(true)
+const limit = ref<number>(100)
+const offset = ref<number>(0)
 
 const genre = computed(() => `${route.params.genre}`)
 
+function resetRefs() {
+  tracks.value = []
+  routeTracks.value = []
+  offset.value = 0
+  canLoadMore.value = true
+}
+
+async function getData() {
+  const genreTracks = await fetchSongsByGenre(genre.value, limit.value, offset.value)
+  tracks.value = tracks.value?.concat(genreTracks) ?? genreTracks
+  routeTracks.value = tracks.value
+  offset.value += genreTracks.length
+
+  if (genreTracks.length < limit.value) {
+    canLoadMore.value = false
+  }
+}
+
+watch(genre, async () => {
+  resetRefs()
+  await getData()
+})
+
 onMounted(async () => {
-  const genreTracks = await fetchSongsByGenre(genre.value, 30, 0)
-  routeTracks.value = genreTracks
-  tracks.value = genreTracks
+  await getData()
 })
 </script>
 
 <template>
-  <Tracks v-if="tracks" :tracks="tracks" :show-album="true" />
+  <Tracks v-if="tracks" :tracks="tracks" :show-album="true" :observer-enabled="canLoadMore" @observer-visible="getData" />
 </template>
