@@ -81,6 +81,34 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		codec = "libmp3lame"
 		muxer = "mp3"
 		contentType = "audio/mpeg"
+	case "opus":
+		codec = "libopus"
+		muxer = "opus"
+		contentType = "audio/opus"
+	case "flac":
+		codec = "flac"
+		muxer = "flac"
+		contentType = "audio/flac"
+	case "vorbis":
+		codec = "libvorbis"
+		muxer = "ogg"
+		contentType = "audio/vorbis"
+	case "wav":
+		codec = "pcm_s16le"
+		muxer = "wav"
+		contentType = "audio/wav"
+	case "alac":
+		codec = "alac"
+		muxer = "mp4"
+		contentType = "audio/alac"
+	case "wma":
+		codec = "wmav2"
+		muxer = "asf"
+		contentType = "audio/x-ms-wma"
+	case "aac_latm":
+		codec = "aac"
+		muxer = "latm"
+		contentType = "audio/aac"
 	default:
 		return fmt.Errorf("unsupported format: %s", format)
 	}
