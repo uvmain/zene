@@ -186,6 +186,22 @@ func RefreshAllPodcasts(ctx context.Context) error {
 	return nil
 }
 
+func RefreshPodcastById(ctx context.Context, id string) error {
+	existingPodcastId, err := strconv.Atoi(id)
+	if err != nil {
+		logger.Printf("Error converting existing podcast ID to int: %v", err)
+		return fmt.Errorf("converting existing podcast ID to int: %v", err)
+	}
+
+	existingPodcast, err := database.GetPodcastChannelById(ctx, existingPodcastId)
+	if err != nil {
+		logger.Printf("Error fetching podcast by ID: %v", err)
+		return fmt.Errorf("fetching podcast by ID: %v", err)
+	}
+
+	return RefreshPodcast(existingPodcast)
+}
+
 func RefreshPodcast(podcast types.PodcastChannel) error {
 	ctx := context.Background()
 

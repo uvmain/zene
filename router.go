@@ -130,6 +130,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/getpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcasts)))
 	apiRouter.Handle("/rest/getnewestpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetNewestPodcasts)))
 	apiRouter.Handle("/rest/getpodcastepisode", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcastEpisode)))
+	apiRouter.Handle("/rest/refreshpodcast", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleRefreshPodcast)))
 	apiRouter.Handle("/rest/refreshpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleRefreshPodcasts)))
 	apiRouter.Handle("/rest/createpodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreatePodcastChannel)))
 	apiRouter.Handle("/rest/deletepodcastchannel", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePodcastChannel)))

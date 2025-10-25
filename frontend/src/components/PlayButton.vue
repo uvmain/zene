@@ -17,11 +17,12 @@ const { play } = usePlaybackQueue()
   <div class="flex items-center align-middle">
     <ZButton
       :primary="true"
+      class="group/button"
       :size12="true"
       @click="play(artist, album, track)"
     >
       <icon-nrk-media-play
-        class="text-xl text-primary"
+        class="footer-icon"
       />
     </ZButton>
   </div>

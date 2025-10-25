@@ -24,10 +24,10 @@ function handleLinkClick() {
 <template>
   <RouterLink
     :to="routeProp"
-    class="navlink"
+    class="navlink group/navlink"
     :class="{
       'translate-x--8': currentRoute !== routeProp,
-      'hover:translate-x--6': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
+      'hover:translate-x-0': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
       'translate-x-0': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
     }"
     @click="handleLinkClick"
@@ -36,6 +36,7 @@ function handleLinkClick() {
       class="size-8 text-primary1 opacity-0 transition-all duration-300"
       :class="{
         'opacity-100': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
+        'group-hover/navlink:opacity-50': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
       }"
     />
     {{ routeName }}

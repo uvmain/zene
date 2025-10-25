@@ -17,8 +17,11 @@ onMounted(() => {
 
 <template>
   <div>
-    <h2 class="px-2 text-lg font-semibold">
+    <h2 v-if="tracks.length" class="px-2 text-lg font-semibold">
       Queue
+    </h2>
+    <h2 v-else class="px-2 text-lg font-semibold">
+      No tracks in queue..
     </h2>
     <Tracks v-if="tracks.length" :tracks="tracks" :show-album="true" />
   </div>

@@ -264,7 +264,8 @@ func GetPodcasts(ctx context.Context, podcastId int, includeEpisodes bool) ([]ty
 				return nil, fmt.Errorf("getting podcast episodes by channel id: %v", err)
 			}
 			channel.Episodes = episodes
-		} else {
+		}
+		if channel.Episodes == nil {
 			channel.Episodes = []types.PodcastEpisode{}
 		}
 
@@ -727,4 +728,37 @@ func GetPodcastsUserless(ctx context.Context, podcastId string) ([]types.Podcast
 	}
 
 	return channelArray, nil
+}
+
+func GetPodcastChannelById(ctx context.Context, channelId int) (types.PodcastChannel, error) {
+	var channel types.PodcastChannel
+	var errorMessage sql.NullString
+	var lastRefreshed sql.NullString
+	query := `select p.id, p.title, p.url, p.description, p.cover_art, p.original_image_url,
+		p.last_refresh, p.status, p.created_at, p.error_message
+	from podcast_channels p
+	where p.id = $1;`
+	err := DB.QueryRowContext(ctx, query, channelId).Scan(
+		&channel.Id,
+		&channel.Title,
+		&channel.Url,
+		&channel.Description,
+		&channel.CoverArt,
+		&channel.OriginalImageUrl,
+		&lastRefreshed,
+		&channel.Status,
+		&channel.CreatedAt,
+		&errorMessage,
+	)
+	if err != nil {
+		return channel, fmt.Errorf("querying podcast channel by ID: %v", err)
+	}
+
+	if lastRefreshed.Valid {
+		channel.LastRefresh = lastRefreshed.String
+	}
+	if errorMessage.Valid {
+		channel.ErrorMessage = errorMessage.String
+	}
+	return channel, nil
 }
