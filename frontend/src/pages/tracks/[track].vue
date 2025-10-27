@@ -9,7 +9,7 @@ const track = ref<SubsonicSong>()
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-const musicbrainzTrackId = computed(() => route.params.musicbrainz_track_id as string)
+const musicbrainzTrackId = computed(() => route.params.track as string)
 
 const coverArtUrl = computed(() => {
   return track.value ? getCoverArtUrl(track.value?.musicBrainzId) : ''

@@ -1,7 +1,7 @@
 import type { RouterScrollBehavior } from 'vue-router'
 import { ViteSSG } from 'vite-ssg'
+import { routes } from 'vue-router/auto-routes'
 import App from './App.vue'
-import { routes } from './routes/routes'
 import 'virtual:uno.css'
 
 const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => {

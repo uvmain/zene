@@ -9,9 +9,7 @@ const showModal = ref(false)
 const isSubmitting = ref(false)
 const submitError = ref('')
 const showSuccess = ref(false)
-
 const newPodcastUrl = ref('')
-
 const podcasts = ref<SubsonicPodcastChannel[]>([])
 
 async function createNewPodcast() {

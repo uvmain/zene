@@ -13,29 +13,30 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@vueuse/core": "^13.0.0",
+    "@vueuse/core": "^14.0.0",
     "blueimp-md5": "^2.19.0",
     "dayjs": "^1.11.13",
     "vue": "^3.4.29",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^5.0.0",
+    "@antfu/eslint-config": "^6.1.0",
     "@iconify-json/fluent": "^1.2.32",
     "@iconify-json/nrk": "^1.2.7",
     "@types/blueimp-md5": "^2.18.2",
     "@types/node": "^24.0.1",
     "@unocss/eslint-plugin": "^66.2.0",
     "@vitejs/plugin-vue": "^6.0.0",
-    "@vue/tsconfig": "^0.7.0",
+    "@vue/tsconfig": "^0.8.1",
     "cspell": "^9.0.2",
     "eslint": "^9.10.0",
     "typescript": "^5.9.2",
     "unocss": "^66.2.0",
-    "unplugin-auto-import": "^19.0.0",
+    "unplugin-auto-import": "^20.2.0",
     "unplugin-fonts": "^1.4.0",
     "unplugin-icons": "^22.0.0",
-    "unplugin-vue-components": "^28.0.0",
+    "unplugin-vue-components": "^30.0.0",
+    "unplugin-vue-router": "^0.16.0",
     "vite": "^7.0.2",
     "vite-ssg": "^28.0.0"
   }
