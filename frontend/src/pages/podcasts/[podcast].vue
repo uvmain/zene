@@ -9,7 +9,7 @@ const router = useRouter()
 const showDeleteChannelModal = ref(false)
 const showRefreshEpisodesModal = ref(false)
 
-watch(() => route.params.podcast_id, async () => {
+watch(() => route.params.podcast, async () => {
   getPodcast()
 })
 
@@ -18,7 +18,7 @@ const podcast = ref<SubsonicPodcastChannel>()
 async function getPodcast() {
   const formData = new FormData()
   formData.append('includeEpisodes', true.toString())
-  formData.append('id', route.params.podcast_id.toString())
+  formData.append('id', route.params.podcast.toString())
   const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getPodcasts', {
     body: formData,
   })

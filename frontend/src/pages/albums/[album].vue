@@ -9,16 +9,16 @@ const { routeTracks, clearRouteTracks } = useRouteTracks()
 
 const album = ref<SubsonicAlbum>()
 const tracks = ref<SubsonicSong[]>()
-const musicbrainz_album_id = computed(() => `${route.params.musicbrainz_album_id}`)
+const musicbrainzAlbumId = computed(() => `${route.params.album}`)
 
 async function getAlbum() {
-  const response = await fetchAlbum(musicbrainz_album_id.value)
+  const response = await fetchAlbum(musicbrainzAlbumId.value)
   album.value = response
   tracks.value = response.song
   routeTracks.value = response.song
 }
 
-watch(() => route.params.musicbrainz_album_id, async () => {
+watch(() => route.params.album, async () => {
   getAlbum()
 })
 

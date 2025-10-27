@@ -18,13 +18,13 @@ const isLoading = ref<boolean>(false)
 const limit = ref<number>(100)
 const offset = ref<number>(0)
 
-const musicbrainz_artist_id = computed(() => `${route.params.musicbrainz_artist_id}`)
-const artistArtUrl = computed(() => getCoverArtUrl(musicbrainz_artist_id.value))
+const musicbrainzArtistId = computed(() => `${route.params.artist}`)
+const artistArtUrl = computed(() => getCoverArtUrl(musicbrainzArtistId.value))
 
 async function getData() {
   const promisesArray = [
-    fetchArtist(musicbrainz_artist_id.value),
-    fetchAlbumsForArtist(musicbrainz_artist_id.value),
+    fetchArtist(musicbrainzArtistId.value),
+    fetchAlbumsForArtist(musicbrainzArtistId.value),
     getTopSongs(),
   ]
 
@@ -44,7 +44,7 @@ async function getTopSongs() {
     return
   isLoading.value = true
 
-  const newSongs = await fetchArtistTopSongs(musicbrainz_artist_id.value, limit.value, offset.value)
+  const newSongs = await fetchArtistTopSongs(musicbrainzArtistId.value, limit.value, offset.value)
 
   if (newSongs.length === 0) {
     canLoadMore.value = false
@@ -69,7 +69,7 @@ function resetRefs() {
   canLoadMore.value = true
 }
 
-watch(musicbrainz_artist_id, async () => {
+watch(musicbrainzArtistId, async () => {
   resetRefs()
   await getData()
 })
@@ -87,12 +87,15 @@ onBeforeMount(async () => {
         :style="{ backgroundImage: `url(${artistArtUrl})` }"
       >
         <div class="h-full w-full flex items-center gap-6 background-grad-2 align-middle backdrop-blur-lg">
-          <div class="size-60">
+          <div class="flex flex-row">
             <img
-              class="h-full w-full object-cover"
+              class="object-cover"
               :src="artistArtUrl"
+              width="400"
+              height="400"
               @error="onImageError"
             />
+            <div class="h-400px w-2 bg-zshade-100 dark:bg-zshade-800" />
           </div>
           <div class="text-7xl text-primary font-bold">
             {{ artist.name }}

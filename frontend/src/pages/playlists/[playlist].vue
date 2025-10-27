@@ -5,13 +5,13 @@ import { openSubsonicFetchRequest } from '~/composables/backendFetch'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 
 const route = useRoute()
-const playlist_id = computed(() => `${route.params.playlist_id}`)
+const playlistId = computed(() => `${route.params.playlist}`)
 
 const playlist = ref<SubsonicPlaylist>()
 
 async function getPlaylist() {
   const formData = new FormData()
-  formData.append('id', playlist_id.value)
+  formData.append('id', playlistId.value)
   const response = await openSubsonicFetchRequest<SubsonicPlaylistResponse>('getPlaylist', {
     body: formData,
   })
