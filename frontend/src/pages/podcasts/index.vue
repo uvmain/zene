@@ -77,6 +77,8 @@ onBeforeMount(getPodcasts)
             alt="Podcast Cover"
             :loading="index < 20 ? 'eager' : 'lazy'"
             class="size-50 object-cover"
+            width="200"
+            height="200"
           />
           <div class="my-auto flex flex-col gap-4">
             <div class="text-2xl font-bold">

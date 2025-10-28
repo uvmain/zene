@@ -14,6 +14,10 @@ const error = ref('')
 
 const apiKey = useLocalStorage('apiKey', '')
 
+const signInDisabled = computed(() => {
+  return username.value.length < 1 || password.value.length < 1 || loading.value
+})
+
 async function login() {
   error.value = ''
   loading.value = true
@@ -44,32 +48,46 @@ async function login() {
 </script>
 
 <template>
-  <div class="login">
-    <h1>Login to Zene</h1>
-    <form @submit.prevent="login">
-      <label>
-        Username
-        <input v-model="username" autocomplete="username" />
-      </label>
-      <label>
-        Password
-        <input v-model="password" type="password" autocomplete="current-password" />
-      </label>
-      <button :disabled="loading">
-        {{ loading ? 'Signing in…' : 'Sign in' }}
-      </button>
-      <p v-if="error" class="error">
-        {{ error }}
-      </p>
-    </form>
+  <div class="my-auto flex flex-col items-center justify-center gap-6 background-1 p-4 lg:flex-row lg:gap-12">
+    <img
+      class="size-full max-w-400px opacity-90"
+      src="/minidisk.svg"
+      alt="Logo"
+      width="200"
+      height="200"
+    />
+    <div class="text-muted">
+      <h1>Login to Zene</h1>
+      <form class="grid w-400px gap-2" @submit.prevent="login">
+        <label for="username">
+          Username
+        </label>
+        <input
+          id="username"
+          v-model="username"
+          type="text"
+          class="border-1 border-primary2 rounded background-2 py-2 pl-10 font-semibold focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg focus:outline-none"
+          autocomplete="username"
+          required
+        />
+        <label for="password">
+          Password
+        </label>
+        <input
+          id="password"
+          v-model="password"
+          type="password"
+          class="border-1 border-primary2 rounded background-2 py-2 pl-10 font-semibold opacity-100 focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg focus:outline-none"
+          autocomplete="current-password"
+          required
+        />
+        <ZButton class="mx-auto mt-4" :disabled="signInDisabled">
+          {{ loading ? 'Signing in…' : 'Sign in' }}
+        </ZButton>
+        <p v-if="error" class="text-red-700">
+          {{ error }}
+        </p>
+      </form>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.login { max-width: 420px; margin: 6rem auto; padding: 2rem; border: 1px solid #e1e1e1; border-radius: 12px; background-color: #7e0a361c; }
-form { display: grid; gap: 1rem; }
-label { display: grid; gap: 0.25rem; font-weight: 600; }
-input { padding: 0.5rem 0.75rem; border: 1px solid #ccc; border-radius: 8px; }
-button { padding: 0.6rem 0.9rem; border-radius: 8px; border: none; background:#42b883; color: white; font-weight: 700; cursor: pointer; }
-.error { color: #c62828; }
-</style>

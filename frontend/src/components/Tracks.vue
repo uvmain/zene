@@ -227,6 +227,8 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                   :src="getCoverArtUrl(track.albumId, 40)"
                   alt="Album Cover"
                   :loading="index < 20 ? 'eager' : 'lazy'"
+                  width="40"
+                  height="40"
                   @error="onImageError"
                 />
               </RouterLink>

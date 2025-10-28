@@ -13,13 +13,14 @@ const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()
 const albumArtistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const artistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
+const artistGenres = ref<string[]>([])
 const canLoadMore = ref<boolean>(true)
 const isLoading = ref<boolean>(false)
 const limit = ref<number>(100)
 const offset = ref<number>(0)
 
 const musicbrainzArtistId = computed(() => `${route.params.artist}`)
-const artistArtUrl = computed(() => getCoverArtUrl(musicbrainzArtistId.value))
+const artistArtUrl = computed(() => getCoverArtUrl(musicbrainzArtistId.value, 240))
 
 async function getData() {
   const promisesArray = [
@@ -35,6 +36,8 @@ async function getData() {
         const albums = results[1] as SubsonicAlbum[]
         albumArtistAlbums.value = albums.filter(album => album.albumArtists[0].name !== artist.value?.name) ?? []
         artistAlbums.value = albums.filter(album => album.albumArtists[0].name === artist.value?.name) ?? []
+        const albumGenres = albums.flatMap(album => album.genres).filter(genre => genre.name !== '').map(genre => genre.name) ?? []
+        artistGenres.value = Array.from(new Set(albumGenres)).slice(0, 12)
       },
     )
 }
@@ -65,6 +68,8 @@ async function getTopSongs() {
 function resetRefs() {
   tracks.value = []
   routeTracks.value = []
+  artistGenres.value = []
+  isLoading.value = false
   offset.value = 0
   canLoadMore.value = true
 }
@@ -81,7 +86,7 @@ onBeforeMount(async () => {
 
 <template>
   <div class="flex flex-col gap-6">
-    <div v-if="artist" class="h-80">
+    <div v-if="artist" class="h-60">
       <div
         class="corner-cut-large h-full w-full bg-cover bg-center"
         :style="{ backgroundImage: `url(${artistArtUrl})` }"
@@ -91,14 +96,19 @@ onBeforeMount(async () => {
             <img
               class="object-cover"
               :src="artistArtUrl"
-              width="400"
-              height="400"
+              width="240"
+              height="240"
               @error="onImageError"
             />
-            <div class="h-400px w-2 bg-zshade-100 dark:bg-zshade-800" />
+            <div id="verticalRule" class="w-2 bg-zshade-100 dark:bg-zshade-400" />
           </div>
-          <div class="text-7xl text-primary font-bold">
-            {{ artist.name }}
+          <div class="flex flex-col gap-6">
+            <div class="text-7xl text-primary font-bold">
+              {{ artist.name }}
+            </div>
+            <div v-if="artistGenres.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+              <GenreBottle v-for="genre in artistGenres" :key="genre" :genre="genre" />
+            </div>
           </div>
         </div>
       </div>
