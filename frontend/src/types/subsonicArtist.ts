@@ -32,6 +32,23 @@ export interface SubsonicArtist {
   averageRating: number
 }
 
+export interface SubsonicArtistInfo {
+  musicBrainzId: string
+  smallImageUrl: string
+  mediumImageUrl: string
+  largeImageUrl: string
+  similarArtists: {
+    id: string
+    name: string
+    coverArt: string
+    artistImageUrl: string
+    albumCount: number
+    sortName: string
+    userRating: number
+    averageRating: number
+  }[]
+}
+
 interface Album {
   id: string
   parent: string

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchAlbumsForArtist, fetchArtist, fetchArtistTopSongs } from '~/composables/backendFetch'
+import { fetchAlbumsForArtist, fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/composables/backendFetch'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
@@ -13,6 +13,7 @@ const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()
 const albumArtistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const artistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
+const similarArtists = ref<SubsonicArtist[]>([])
 const artistGenres = ref<string[]>([])
 const canLoadMore = ref<boolean>(true)
 const isLoading = ref<boolean>(false)
@@ -26,6 +27,7 @@ async function getData() {
   const promisesArray = [
     fetchArtist(musicbrainzArtistId.value),
     fetchAlbumsForArtist(musicbrainzArtistId.value),
+    fetchArtistInfo(musicbrainzArtistId.value, 10),
     getTopSongs(),
   ]
 
@@ -34,10 +36,18 @@ async function getData() {
       (results) => {
         artist.value = results[0] as SubsonicArtist
         const albums = results[1] as SubsonicAlbum[]
+        const info = results[2] as SubsonicArtistInfo
         albumArtistAlbums.value = albums.filter(album => album.albumArtists[0].name !== artist.value?.name) ?? []
         artistAlbums.value = albums.filter(album => album.albumArtists[0].name === artist.value?.name) ?? []
         const albumGenres = albums.flatMap(album => album.genres).filter(genre => genre.name !== '').map(genre => genre.name) ?? []
         artistGenres.value = Array.from(new Set(albumGenres)).slice(0, 12)
+        similarArtists.value = info.similarArtists.map((artist) => {
+          return {
+            ...artist,
+            musicBrainzId: artist.id,
+            album: [],
+          } as SubsonicArtist
+        }) ?? []
       },
     )
 }
@@ -130,6 +140,16 @@ onBeforeMount(async () => {
       <div class="flex flex-wrap gap-6">
         <div v-for="album in albumArtistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
           <Album :album="album" size="sm" />
+        </div>
+      </div>
+    </div>
+    <div v-if="similarArtists.length > 0">
+      <div class="text-lg font-semibold">
+        Similar Artists
+      </div>
+      <div class="flex flex-wrap gap-6">
+        <div v-for="similarArtist in similarArtists" :key="similarArtist.musicBrainzId" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+          <ArtistThumb :artist="similarArtist" />
         </div>
       </div>
     </div>

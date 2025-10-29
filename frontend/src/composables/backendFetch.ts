@@ -2,6 +2,7 @@ import type {
   SubsonicAlbumListResponse,
   SubsonicAlbumResponse,
   SubsonicApiKeyResponse,
+  SubsonicArtistInfoResponse,
   SubsonicArtistListResponse,
   SubsonicArtistResponse,
   SubsonicArtistsResponse,
@@ -17,7 +18,7 @@ import type {
 } from '../types/subsonic'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
 import type { SearchResult } from '~/types'
-import type { SubsonicArtist, SubsonicIndexArtist } from '~/types/subsonicArtist'
+import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicSong } from '~/types/subsonicSong'
@@ -217,6 +218,16 @@ export async function fetchArtist(musicbrainz_artist_id: string): Promise<Subson
     body: formData,
   })
   return response.artist
+}
+
+export async function fetchArtistInfo(musicbrainz_artist_id: string, limit = 20): Promise<SubsonicArtistInfo> {
+  const formData = new FormData()
+  formData.append('id', musicbrainz_artist_id)
+  formData.append('count', limit.toString())
+  const response = await openSubsonicFetchRequest<SubsonicArtistInfoResponse>('getArtistInfo', {
+    body: formData,
+  })
+  return response.artistInfo
 }
 
 export async function fetchArtists(limit = 0): Promise<SubsonicIndexArtist[]> {

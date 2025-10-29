@@ -43,7 +43,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	}
 
 	result.CoverArt = result.Id
-	result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id, 600)
+	result.ArtistImageUrl = logic.GetUnauthenticatedImageUrl(result.Id, 0)
 	result.MusicBrainzId = result.Id
 	result.SortName = strings.ToLower(result.Name)
 

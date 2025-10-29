@@ -8,6 +8,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
   offset: { type: Number, default: 0 },
   scrollable: { type: Boolean, default: false },
+  sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
 type OrderType = 'newest' | 'random' | 'alphabetical' | 'starred' | 'recent'
@@ -21,7 +22,7 @@ const observer = useTemplateRef<HTMLDivElement>('observer')
 const observerIsVisible = useElementVisibility(observer)
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
 const showOrderOptions = ref(false)
-const currentOrder = useLocalStorage<OrderType>('currentArtistOrder', 'newest')
+const currentOrder = useLocalStorage<OrderType>(props.sortKey, 'newest')
 
 watch(observerIsVisible, (newValue) => {
   if (newValue && props.scrollable) {
@@ -32,7 +33,7 @@ watch(observerIsVisible, (newValue) => {
 const headerTitle = computed(() => {
   switch (currentOrder.value) {
     case 'newest':
-      return 'Artists: Recently Added'
+      return 'Artists: Recently Updated'
     case 'random':
       return 'Artists: Random'
     case 'alphabetical':
@@ -105,7 +106,10 @@ onBeforeMount(async () => {
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto background-2">
       <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('newest')">
-        Recently Added
+        Recently Updated
+      </div>
+      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('recent')">
+        Recently Played
       </div>
       <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('random')">
         Random
@@ -115,9 +119,6 @@ onBeforeMount(async () => {
       </div>
       <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('starred')">
         Starred
-      </div>
-      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('recent')">
-        Recently Played
       </div>
     </div>
     <div class="flex flex-wrap justify-center gap-6 md:justify-start">

@@ -6,7 +6,7 @@ const { currentlyPlayingTrack } = usePlaybackQueue()
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.albumId, 400) : '/default-square.png'
+  return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.albumId, 200) : '/default-square.png'
 })
 </script>
 
@@ -33,8 +33,6 @@ const coverArtUrl = computed(() => {
     <img
       :src="coverArtUrl"
       class="w-full cursor-pointer object-cover"
-      width="400"
-      height="400"
       @error="onImageError"
       @click="() => router.push(`/albums/${currentlyPlayingTrack?.albumId}`)"
     />
