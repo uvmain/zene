@@ -3,7 +3,7 @@ defineProps({
   title: { type: String, required: true },
 })
 
-const emits = defineEmits(['refreshed', 'titleClick'])
+const emits = defineEmits(['refreshed', 'titleClick', 'close'])
 
 const refreshed = ref(false)
 

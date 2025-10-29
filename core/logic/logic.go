@@ -200,7 +200,11 @@ func GetDefaultRoleValue(roleName string) bool {
 }
 
 func GetUnauthenticatedImageUrl(musicbrainzId string, size int) string {
-	return fmt.Sprintf("%s/share/img/%s?size=%d", config.BaseUrl, musicbrainzId, size)
+	url := fmt.Sprintf("%s/share/img/%s", config.BaseUrl, musicbrainzId)
+	if size > 0 {
+		url = fmt.Sprintf("%s?size=%d", url, size)
+	}
+	return url
 }
 
 func StringToArray(inputString, separator string) []string {

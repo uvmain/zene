@@ -112,12 +112,12 @@ function actOnUpdatedArt() {
       </div>
       <!-- Change Album Art section -->
       <div v-if="showChangeArtButton">
-        <button
-          class="z-button absolute right-2 top-2 opacity-0 group-hover:opacity-100"
+        <ZButton
+          class="absolute right-2 top-2 opacity-0 group-hover:opacity-100"
           @click="showChangeArtModal = true"
         >
           Change Album Art
-        </button>
+        </ZButton>
         <ChangeAlbumArt
           v-if="showChangeArtModal"
           :album="album"

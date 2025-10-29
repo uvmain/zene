@@ -14,6 +14,8 @@ defineEmits(['updateArt'])
       class="size-56"
       :src="imageUrl"
       :alt="label"
+      width="224"
+      height="224"
     />
     <ZButton
       class="absolute bottom-10 right-2"

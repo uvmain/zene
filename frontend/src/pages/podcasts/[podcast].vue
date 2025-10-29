@@ -105,6 +105,9 @@ onBeforeMount(async () => {
             :src="podcast.coverArt"
             alt="Podcast Cover"
             class="size-70 object-cover"
+            width="280"
+            height="280"
+            loading="eager"
           />
           <div class="my-auto flex flex-col gap-4">
             <div class="mb-4 text-2xl font-bold">
@@ -135,17 +138,19 @@ onBeforeMount(async () => {
               alt="Podcast Cover"
               :loading="index < 20 ? 'eager' : 'lazy'"
               class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
+              width="192"
+              height="192"
             />
             <ZButton :size12="true" class="z-2 col-span-full row-span-full m-2">
-              <icon-nrk-progress v-if="episode.status === 'downloading'" class="footer-icon size-8" />
+              <icon-nrk-progress v-if="episode.status === 'downloading'" class="size-8 footer-icon" />
               <icon-nrk-media-play
                 v-else-if="episode.status === 'completed'"
-                class="footer-icon size-8"
+                class="size-8 footer-icon"
                 @click="playEpisodeInNewTab(episode.id)"
               />
               <icon-nrk-download
                 v-else
-                class="footer-icon size-8"
+                class="size-8 footer-icon"
                 @click="downloadEpisode(episode.id)"
               />
             </ZButton>

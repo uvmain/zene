@@ -8,6 +8,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
   offset: { type: Number, default: 0 },
   scrollable: { type: Boolean, default: false },
+  sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
 const loading = ref(false)
@@ -21,7 +22,7 @@ let type: string
 
 const albums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const showOrderOptions = ref(false)
-const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate' | 'recentlyPlayed'>('currentAlbumOrder', 'recentlyUpdated')
+const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate' | 'recentlyPlayed'>(props.sortKey, 'recentlyUpdated')
 
 watch(observerIsVisible, (newValue) => {
   if (newValue && props.scrollable) {

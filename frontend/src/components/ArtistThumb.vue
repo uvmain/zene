@@ -32,7 +32,7 @@ function navigate() {
   <div class="w-30 flex flex-col cursor-pointer gap-2" @click="navigate()">
     <div class="group size-30">
       <img
-        class="h-full w-full object-cover"
+        class="size-30 object-cover"
         :src="coverArtUrl"
         :loading="loading"
         width="200"
