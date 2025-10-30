@@ -1,22 +1,24 @@
 package deezer
 
 type DeezerArtistResponse struct {
-	Data []struct {
-		ID            int    `json:"id"`
-		Name          string `json:"name"`
-		Link          string `json:"link"`
-		Picture       string `json:"picture"`
-		PictureSmall  string `json:"picture_small"`
-		PictureMedium string `json:"picture_medium"`
-		PictureBig    string `json:"picture_big"`
-		PictureXl     string `json:"picture_xl"`
-		NbAlbum       int    `json:"nb_album"`
-		NbFan         int    `json:"nb_fan"`
-		Radio         bool   `json:"radio"`
-		Tracklist     string `json:"tracklist"`
-		Type          string `json:"type"`
-	} `json:"data"`
-	Total int `json:"total"`
+	Data  []DeezerArtistData `json:"data"`
+	Total int                `json:"total"`
+}
+
+type DeezerArtistData struct {
+	ID            int    `json:"id"`
+	Name          string `json:"name"`
+	Link          string `json:"link"`
+	Picture       string `json:"picture"`
+	PictureSmall  string `json:"picture_small"`
+	PictureMedium string `json:"picture_medium"`
+	PictureBig    string `json:"picture_big"`
+	PictureXl     string `json:"picture_xl"`
+	NbAlbum       int    `json:"nb_album"`
+	NbFan         int    `json:"nb_fan"`
+	Radio         bool   `json:"radio"`
+	Tracklist     string `json:"tracklist"`
+	Type          string `json:"type"`
 }
 
 type DeezerAlbumResponse struct {

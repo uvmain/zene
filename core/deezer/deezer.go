@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"zene/core/logic"
 	"zene/core/net"
@@ -55,19 +56,26 @@ func GetArtistArtUrlWithArtistName(ctx context.Context, artistName string) (stri
 		return "", fmt.Errorf("no Deezer picture found for artist: %s", artistName)
 	}
 
-	dataArray := data.Data[0]
+	// search data.Data for where the name matches artistName (case insensitive)
+	var dataItem DeezerArtistData
+	for _, item := range data.Data {
+		if strings.EqualFold(item.Name, artistName) {
+			dataItem = item
+			break
+		}
+	}
 
 	imageUrl := ""
-	if dataArray.PictureXl != "" {
-		imageUrl = dataArray.PictureXl
-	} else if dataArray.PictureBig != "" {
-		imageUrl = dataArray.PictureBig
-	} else if dataArray.PictureMedium != "" {
-		imageUrl = dataArray.PictureMedium
-	} else if dataArray.PictureSmall != "" {
-		imageUrl = dataArray.PictureSmall
-	} else if dataArray.Picture != "" {
-		imageUrl = dataArray.Picture
+	if dataItem.PictureXl != "" {
+		imageUrl = dataItem.PictureXl
+	} else if dataItem.PictureBig != "" {
+		imageUrl = dataItem.PictureBig
+	} else if dataItem.PictureMedium != "" {
+		imageUrl = dataItem.PictureMedium
+	} else if dataItem.PictureSmall != "" {
+		imageUrl = dataItem.PictureSmall
+	} else if dataItem.Picture != "" {
+		imageUrl = dataItem.Picture
 	}
 
 	if imageUrl == "" {
