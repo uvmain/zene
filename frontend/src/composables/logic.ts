@@ -13,7 +13,7 @@ export function formatDate(dateString: string): string {
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-export function formatTime(time: number): string {
+export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)
   const seconds = Math.floor(time % 60)
   return `${minutes}:${seconds.toString().padStart(2, '0')}`

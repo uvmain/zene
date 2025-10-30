@@ -55,6 +55,7 @@ declare module 'vue' {
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     NavLink: typeof import('./src/components/NavLink.vue')['default']
     PlayButton: typeof import('./src/components/PlayButton.vue')['default']
+    PlayerProgressBar: typeof import('./src/components/PlayerProgressBar.vue')['default']
     RefreshHeader: typeof import('./src/components/RefreshHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
