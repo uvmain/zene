@@ -17,7 +17,7 @@ const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
 const observer = useTemplateRef<HTMLDivElement>('observer')
 const observerIsVisible = useElementVisibility(observer)
-const albums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
+const albums = ref<SubsonicAlbum[]>([])
 const showOrderOptions = ref(false)
 
 const allowedOrders = ['recentlyUpdated', 'random', 'alphabetical', 'releaseDate', 'recentlyPlayed'] as const
@@ -121,7 +121,6 @@ async function refresh() {
 }
 
 onBeforeMount(async () => {
-  resetAlbumsArray()
   await getAlbums()
 })
 </script>

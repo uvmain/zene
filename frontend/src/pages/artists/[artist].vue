@@ -37,6 +37,7 @@ async function getData() {
         const info = results[1] as SubsonicArtistInfo
         const albums = artist.value.album ?? []
         artistAlbums.value = albums.filter(album => album.albumArtists[0].name === artist.value?.name) ?? []
+        albumArtistAlbums.value = albums.filter(album => album.albumArtists[0].name !== artist.value?.name) ?? []
         const albumGenres = albums.flatMap(album => album.genres).filter(genre => genre.name !== '').map(genre => genre.name) ?? []
         artistGenres.value = Array.from(new Set(albumGenres)).slice(0, 12)
         similarArtists.value = info.similarArtists.map((artist) => {
@@ -127,7 +128,7 @@ onBeforeMount(async () => {
       </div>
       <div class="flex flex-wrap gap-6">
         <div v-for="album in artistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-          <Album :album="album" size="sm" />
+          <Album :album="album" size="sm" :show-artist="false" />
         </div>
       </div>
     </div>

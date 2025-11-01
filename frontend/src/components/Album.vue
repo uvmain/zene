@@ -11,6 +11,7 @@ const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: true },
   size: { type: String as PropType<AlbumSize>, default: 'sm' },
   showChangeArtButton: { type: Boolean, default: false },
+  showArtist: { type: Boolean, default: true },
   index: { type: Number, default: 0 },
 })
 
@@ -30,6 +31,19 @@ const artistAndDate = computed(() => {
   }
   else {
     return artist
+  }
+})
+
+const albumAndDate = computed(() => {
+  const album = props.album.title || props.album.name || 'Unknown Album'
+  if (props.album.releaseDate) {
+    return `${album} • ${parseReleaseDate(props.album.releaseDate)}`
+  }
+  else if (props.album.year) {
+    return `${album} • ${props.album.year}`
+  }
+  else {
+    return album
   }
 })
 
@@ -79,11 +93,14 @@ function actOnUpdatedArt() {
           class="absolute bottom-2 right-1 z-10 opacity-0 transition-all duration-300 group-hover:opacity-100"
         />
       </div>
-      <div class="w-24 truncate text-nowrap text-xs text-primary md:w-30 md:text-sm">
-        {{ album.name }}
+      <div v-if="showArtist" class="w-24 truncate text-nowrap text-xs text-primary md:w-30 md:text-sm">
+        {{ album.title || album.name }}
       </div>
-      <div class="w-24 cursor-pointer truncate text-nowrap text-xs md:w-30" @click="navigateArtist()">
+      <div v-if="showArtist" class="w-24 cursor-pointer truncate text-nowrap text-xs md:w-30" @click="navigateArtist()">
         {{ artistAndDate }}
+      </div>
+      <div v-if="!showArtist" class="w-24 cursor-pointer truncate text-nowrap text-xs md:w-30 md:text-sm" @click="navigateArtist()">
+        {{ albumAndDate }}
       </div>
     </div>
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
