@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { useSessionStorage } from '@vueuse/core'
 import { getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
@@ -17,9 +16,9 @@ const props = defineProps({
 
 const router = useRouter()
 const { closeSearch } = useSearch()
-const updatedArt = useSessionStorage<string[]>('updatedArt', [])
 
 const showChangeArtModal = ref(false)
+const artUpdatedTime = ref<string | undefined>(undefined)
 
 const artistAndDate = computed(() => {
   const artist = props.album.displayAlbumArtist ?? props.album.displayArtist ?? props.album.artist ?? 'Unknown Artist'
@@ -52,11 +51,11 @@ const loading = computed<LoadingAttribute>(() => {
 })
 
 const coverArtUrlSm = computed(() => {
-  return getCoverArtUrl(props.album.id, 120)
+  return getCoverArtUrl(props.album.id, 120, artUpdatedTime.value)
 })
 
 const coverArtUrlMd = computed(() => {
-  return getCoverArtUrl(props.album.id, 200)
+  return getCoverArtUrl(props.album.id, 200, artUpdatedTime.value)
 })
 
 function navigateAlbum() {
@@ -71,7 +70,10 @@ function navigateArtist() {
 
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
-  updatedArt.value.push(props.album.id)
+  // cache
+  fetch(getCoverArtUrl(props.album.id, 120), { method: 'POST', credentials: 'include' })
+  fetch(getCoverArtUrl(props.album.id, 200), { method: 'POST', credentials: 'include' })
+  artUpdatedTime.value = Date.now().toString()
 }
 </script>
 

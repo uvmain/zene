@@ -181,7 +181,7 @@ export async function fetchAlbums(type: string, size = 50, offset = 0, seed?: nu
   formData.append('type', type)
   formData.append('size', size.toString())
   formData.append('offset', offset.toString())
-  if (seed !== undefined && seed > 0) {
+  if (type === 'random' && seed !== undefined && seed > 0) {
     formData.append('seed', seed.toString())
   }
   const response = await openSubsonicFetchRequest<SubsonicAlbumListResponse>('getAlbumList', {
