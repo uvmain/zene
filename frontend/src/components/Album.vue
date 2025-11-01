@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
+import { useSessionStorage } from '@vueuse/core'
 import { getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
@@ -15,6 +16,7 @@ const props = defineProps({
 
 const router = useRouter()
 const { closeSearch } = useSearch()
+const updatedArt = useSessionStorage<string[]>('updatedArt', [])
 
 const showChangeArtModal = ref(false)
 
@@ -35,14 +37,12 @@ const loading = computed<LoadingAttribute>(() => {
   return props.index < 10 ? 'eager' : 'lazy'
 })
 
-const updatedTime = ref<Date | null>(null)
-
 const coverArtUrlSm = computed(() => {
-  return updatedTime.value ? `${getCoverArtUrl(props.album.id, 120)}&time=${updatedTime.value.getTime()}` : `${getCoverArtUrl(props.album.id, 120)}`
+  return getCoverArtUrl(props.album.id, 120)
 })
 
 const coverArtUrlMd = computed(() => {
-  return updatedTime.value ? `${getCoverArtUrl(props.album.id, 200)}&time=${updatedTime.value.getTime()}` : `${getCoverArtUrl(props.album.id, 200)}`
+  return getCoverArtUrl(props.album.id, 200)
 })
 
 function navigateAlbum() {
@@ -57,7 +57,7 @@ function navigateArtist() {
 
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
-  updatedTime.value = new Date()
+  updatedArt.value.push(props.album.id)
 }
 </script>
 

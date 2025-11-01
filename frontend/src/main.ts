@@ -1,8 +1,11 @@
 import type { RouterScrollBehavior } from 'vue-router'
+import { useLocalStorage } from '@vueuse/core'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
 import App from './App.vue'
 import 'virtual:uno.css'
+
+const apiKey = useLocalStorage('apiKey', '')
 
 const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => {
   if (to.hash) {
@@ -24,5 +27,13 @@ export const createApp = ViteSSG(
     routes,
     scrollBehavior,
     base: import.meta.env.BASE_URL,
+  },
+  ({ router }) => {
+    router.beforeEach(async (to) => {
+      if ((apiKey.value == null || apiKey.value.length === 0) && to.path !== '/login') {
+        return { path: '/login', replace: true }
+      }
+      return true
+    })
   },
 )

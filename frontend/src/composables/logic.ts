@@ -1,5 +1,8 @@
 import type { ReleaseDate } from '../types/subsonicAlbum'
+import { useSessionStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
+
+const updatedArt = useSessionStorage<string[]>('updatedArt', [])
 
 export function niceDate(dateString: string): string {
   const date = dayjs(dateString)
@@ -20,6 +23,10 @@ export function formatTimeFromSeconds(time: number): string {
 }
 
 export function getCoverArtUrl(musicbrainzId: string, size = 400): string {
+  if (updatedArt.value.includes(musicbrainzId)) {
+    const timestamp = Date.now()
+    return `/share/img/${musicbrainzId}?size=${size}&t=${timestamp}`
+  }
   return `/share/img/${musicbrainzId}?size=${size}`
 }
 
