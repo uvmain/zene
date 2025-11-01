@@ -17,12 +17,20 @@ const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
 const observer = useTemplateRef<HTMLDivElement>('observer')
 const observerIsVisible = useElementVisibility(observer)
-
-let type: string
-
 const albums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const showOrderOptions = ref(false)
-const currentOrder = useLocalStorage<'recentlyUpdated' | 'random' | 'alphabetical' | 'releaseDate' | 'recentlyPlayed'>(props.sortKey, 'recentlyUpdated')
+
+const allowedOrders = ['recentlyUpdated', 'random', 'alphabetical', 'releaseDate', 'recentlyPlayed'] as const
+type AlbumOrder = typeof allowedOrders[number]
+const currentOrder = useLocalStorage<AlbumOrder>(props.sortKey, 'recentlyUpdated')
+
+let fetchType: string
+
+watchEffect(() => {
+  if (!allowedOrders.includes(currentOrder.value as AlbumOrder)) {
+    currentOrder.value = 'recentlyUpdated'
+  }
+})
 
 watch(observerIsVisible, (newValue) => {
   if (newValue && props.scrollable) {
@@ -75,22 +83,22 @@ async function getAlbums() {
   }
   switch (currentOrder.value) {
     case 'recentlyUpdated':
-      type = 'newest'
+      fetchType = 'newest'
       break
     case 'random':
-      type = 'random'
+      fetchType = 'random'
       break
     case 'alphabetical':
-      type = 'alphabeticalbyname'
+      fetchType = 'alphabeticalbyname'
       break
     case 'releaseDate':
-      type = 'release'
+      fetchType = 'release'
       break
     case 'recentlyPlayed':
-      type = 'recent'
+      fetchType = 'recent'
       break
   }
-  const albumsResponse = await fetchAlbums(type, props.limit, currentOffset.value, seed.value)
+  const albumsResponse = await fetchAlbums(fetchType, props.limit, currentOffset.value, seed.value)
   if (albumsResponse.length > 0) {
     currentOffset.value += albumsResponse.length
     albums.value?.push(...albumsResponse)
@@ -105,7 +113,7 @@ async function getAlbums() {
 }
 
 async function refresh() {
-  if (type === 'random') {
+  if (fetchType === 'random') {
     seed.value = generateSeed()
   }
   resetAlbumsArray()

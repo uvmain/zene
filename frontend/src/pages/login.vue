@@ -10,12 +10,20 @@ const token = ref('')
 const salt = ref('')
 const password = ref('')
 const loading = ref(false)
-const error = ref('')
+const error = ref<string | null>(null)
 
 const apiKey = useLocalStorage('apiKey', '')
 
 const signInDisabled = computed(() => {
   return username.value.length < 1 || password.value.length < 1 || loading.value
+})
+
+watch(username, () => {
+  error.value = null
+})
+
+watch(password, () => {
+  error.value = null
 })
 
 async function login() {
@@ -26,6 +34,9 @@ async function login() {
     token.value = md5(password.value + salt.value)
 
     const data = await fetchApiKeysWithTokenAndSalt(username.value, token.value, salt.value)
+    if (!data || !data.apiKeys) {
+      throw new Error('Login failed')
+    }
 
     if (data.apiKeys.apiKey.length === 0) {
       const newApiKey = await fetchNewApiKeyWithTokenAndSalt(username.value, token.value, salt.value)
@@ -84,10 +95,12 @@ async function login() {
         <ZButton class="mx-auto mt-4" :disabled="signInDisabled">
           {{ loading ? 'Signing in…' : 'Sign in' }}
         </ZButton>
-        <p v-if="error" class="text-red-700">
+      </form>
+      <div v-if="error" class="corner-cut my-4 flex justify-center background-2 p-2">
+        <p class="mt-4 text-red-500">
           {{ error }}
         </p>
-      </form>
+      </div>
     </div>
   </div>
 </template>

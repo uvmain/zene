@@ -88,6 +88,11 @@ export async function fetchApiKeysWithTokenAndSalt(username: string, token: stri
 }
 
 export async function openSubsonicFetchRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  if (apiKey.value == null || apiKey.value.length === 0) {
+    const router = useRouter()
+    await router.push('/login')
+  }
+
   const formDataEntries = [] as [string, string][]
   (options?.body as FormData)?.forEach((value: FormDataEntryValue, key: string) => {
     formDataEntries.push([key, value.toString()])
@@ -99,16 +104,10 @@ export async function openSubsonicFetchRequest<T>(path: string, options: Request
   }
 
   const formData = new FormData()
-  if (apiKey.value !== null && apiKey.value.length > 0) {
-    formData.append('apiKey', apiKey.value)
-    formData.append('f', 'json')
-    formData.append('v', '1.16.0')
-    formData.append('c', 'zene-frontend')
-  }
-  else {
-    const router = useRouter()
-    await router.push('/login')
-  }
+  formData.append('apiKey', apiKey.value)
+  formData.append('f', 'json')
+  formData.append('v', '1.16.0')
+  formData.append('c', 'zene-frontend')
 
   // append formdata to existing body
   if (options.body instanceof FormData) {

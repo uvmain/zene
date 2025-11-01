@@ -22,7 +22,10 @@ const observer = useTemplateRef<HTMLDivElement>('observer')
 const observerIsVisible = useElementVisibility(observer)
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
 const showOrderOptions = ref(false)
-const currentOrder = useLocalStorage<OrderType>(props.sortKey, 'newest')
+
+const _allowedOrders = ['newest', 'random', 'alphabetical', 'starred', 'recent'] as const
+type AllowedOrder = typeof _allowedOrders[number]
+const currentOrder = useLocalStorage<AllowedOrder>(props.sortKey, 'newest')
 
 watch(observerIsVisible, (newValue) => {
   if (newValue && props.scrollable) {
