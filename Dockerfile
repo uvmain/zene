@@ -2,14 +2,10 @@ FROM node:22-alpine AS frontend-build
 
 WORKDIR /frontend
 
-RUN apk add --no-cache git openssh
-
 COPY ./frontend .
 
 RUN npm install
 RUN npm run build
-
-RUN git describe --tags --always > /frontend/dist/version.txt
 
 FROM golang:1.25.3 AS backend-build
 
