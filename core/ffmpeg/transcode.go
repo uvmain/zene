@@ -11,6 +11,8 @@ import (
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/logger"
+
+	"github.com/google/uuid"
 )
 
 func cleanupIncompleteCache(cachePath string, cacheKey string) {
@@ -141,12 +143,29 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	var mw io.Writer = w
 	var cacheFile *os.File
-	if useCache {
-		cacheFile, err = os.Create(cachePath)
-		if err != nil {
-			return fmt.Errorf("creating cache file: %w", err)
+	var tempCachePath string
+	cacheFileCreated := false
+	defer func() {
+		// clean up temp file if it exists and we didn't finish successfully
+		if useCache && cacheFileCreated {
+			if _, err := os.Stat(tempCachePath); err == nil {
+				os.Remove(tempCachePath)
+			}
 		}
-		defer cacheFile.Close()
+	}()
+
+	if useCache {
+		// write to a temp file first, only move to cachePath on success
+		randomId, err := uuid.NewRandom()
+		if err != nil {
+			return fmt.Errorf("generating random ID: %w", err)
+		}
+		tempCachePath = filepath.Join(config.AudioCacheFolder, randomId.String())
+		cacheFile, err = os.Create(tempCachePath)
+		if err != nil {
+			return fmt.Errorf("creating temp cache file: %w", err)
+		}
+		cacheFileCreated = true
 		mw = io.MultiWriter(w, cacheFile)
 	}
 
@@ -154,30 +173,36 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	waitErr := cmd.Wait()
 
 	if err != nil {
-		if useCache {
+		if useCache && cacheFileCreated {
 			cacheFile.Close()
-			cleanupIncompleteCache(cachePath, cacheKey)
+			cleanupIncompleteCache(tempCachePath, cacheKey)
 		}
 		return fmt.Errorf("copy failed: %w", err)
 	}
 
 	if waitErr != nil {
-		if useCache {
+		if useCache && cacheFileCreated {
 			cacheFile.Close()
-			cleanupIncompleteCache(cachePath, cacheKey)
+			cleanupIncompleteCache(tempCachePath, cacheKey)
 		}
 		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
 	}
 
-	if useCache {
+	if useCache && cacheFileCreated {
+		cacheFile.Close()
+		// move temp file to final cache path
+		if err := os.Rename(tempCachePath, cachePath); err != nil {
+			cleanupIncompleteCache(tempCachePath, cacheKey)
+			return fmt.Errorf("failed to move temp cache file to final location: %w", err)
+		}
+		// tempCachePath is now gone, so don't try to clean it up in defer
+		cacheFileCreated = false
 		logger.Printf("Transcoding %s complete, cached at %s", filePathAbs, cachePath)
 		if err = database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
-			cacheFile.Close()
 			cleanupIncompleteCache(cachePath, cacheKey)
 			logger.Printf("Error upserting audiocache entry for: %s", cacheKey)
 			return err
 		}
-		cacheFile.Close()
 	} else {
 		logger.Printf("Transcoding %s complete (offset stream, not cached)", filePathAbs)
 	}
