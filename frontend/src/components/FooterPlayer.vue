@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { onKeyStroke, useLocalStorage } from '@vueuse/core'
-import { formatTime, getCoverArtUrl } from '~/composables/logic'
+import { getCoverArtUrl } from '~/composables/logic'
 import { useDebug } from '~/composables/useDebug'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
@@ -165,18 +165,15 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
   }
 })
 
-function seek(event: Event) {
-  const target = event.target as HTMLInputElement
-  const seekTime = Number.parseFloat(target.value)
-
+function seek(seekSeconds: number) {
   if (isCasting.value && castPlayer.value && castPlayerController.value) {
     // Seek cast playback
-    castPlayer.value.currentTime = seekTime
+    castPlayer.value.currentTime = seekSeconds
     castPlayerController.value.seek()
   }
   else if (audioRef.value) {
     // Seek local playback
-    audioRef.value.currentTime = seekTime
+    audioRef.value.currentTime = seekSeconds
   }
 }
 
@@ -695,22 +692,11 @@ onUnmounted(() => {
       >
         <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
         <div class="">
-          <!-- Progress Bar -->
-          <div v-if="audioRef" class="max-w-xs w-full flex flex-row items-center gap-2 lg:max-w-200 md:max-w-lg sm:max-w-md md:gap-2">
-            <span id="currentTime" class="w-10 text-right text-sm text-muted md:w-12 sm:w-10 sm:text-sm">
-              {{ formatTime(currentTime) }}
-            </span>
-            <input
-              type="range"
-              class="h-2 w-full cursor-pointer background-2 accent-primary1 md:h-1"
-              :max="currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0"
-              :value="currentTime"
-              @input="seek"
-            />
-            <span id="duration" class="w-10 text-sm text-muted md:w-12 sm:w-10 sm:text-sm">
-              {{ formatTime(currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0) }}
-            </span>
-          </div>
+          <PlayerProgressBar
+            :current-time-in-seconds="currentTime"
+            :currently-playing-track="currentlyPlayingTrack"
+            @seek="seek"
+          />
 
           <!-- Buttons -->
           <div class="mt-2 flex flex-row items-center justify-center gap-x-2 md:mt-2 md:gap-x-4 sm:gap-x-2">

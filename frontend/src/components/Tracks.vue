@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { useElementVisibility } from '@vueuse/core'
-import { formatTime, getCoverArtUrl, onImageError } from '~/composables/logic'
+import { formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
@@ -246,7 +246,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             {{ track.playCount ?? 0 }}
           </td>
           <td class="w-15 cursor-pointer text-center" @click="handlePlay(track)">
-            {{ formatTime(track.duration) }}
+            {{ formatTimeFromSeconds(track.duration) }}
           </td>
         </tr>
       </tbody>

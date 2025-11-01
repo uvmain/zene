@@ -2,7 +2,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchAlbumsForArtist, fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/composables/backendFetch'
+import { fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/composables/backendFetch'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
@@ -26,7 +26,6 @@ const artistArtUrl = computed(() => getCoverArtUrl(musicbrainzArtistId.value, 24
 async function getData() {
   const promisesArray = [
     fetchArtist(musicbrainzArtistId.value),
-    fetchAlbumsForArtist(musicbrainzArtistId.value),
     fetchArtistInfo(musicbrainzArtistId.value, 10),
     getTopSongs(),
   ]
@@ -35,9 +34,8 @@ async function getData() {
     .then(
       (results) => {
         artist.value = results[0] as SubsonicArtist
-        const albums = results[1] as SubsonicAlbum[]
-        const info = results[2] as SubsonicArtistInfo
-        albumArtistAlbums.value = albums.filter(album => album.albumArtists[0].name !== artist.value?.name) ?? []
+        const info = results[1] as SubsonicArtistInfo
+        const albums = artist.value.album ?? []
         artistAlbums.value = albums.filter(album => album.albumArtists[0].name === artist.value?.name) ?? []
         const albumGenres = albums.flatMap(album => album.genres).filter(genre => genre.name !== '').map(genre => genre.name) ?? []
         artistGenres.value = Array.from(new Set(albumGenres)).slice(0, 12)

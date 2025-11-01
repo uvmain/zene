@@ -80,7 +80,7 @@ func SelectAlbumArtIds(ctx context.Context) ([]string, error) {
 }
 
 func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string) ([]string, error) {
-	query := `SELECT DISTINCT file_path FROM metadata WHERE musicbrainz_artist_id = ?`
+	query := `SELECT DISTINCT file_path FROM metadata WHERE musicbrainz_artist_id = ? and album_artist = artist`
 	rows, err := DB.QueryContext(ctx, query, musicbrainzArtistId)
 	if err != nil {
 		return nil, fmt.Errorf("querying artist subdirectories: %v", err)

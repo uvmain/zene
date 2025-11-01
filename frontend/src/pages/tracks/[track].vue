@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchSong } from '~/composables/backendFetch'
-import { formatTime, getCoverArtUrl, onImageError } from '~/composables/logic'
+import { formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/composables/logic'
 
 const route = useRoute()
 
@@ -68,7 +68,7 @@ onMounted(async () => {
           Album: {{ track.album }}
         </RouterLink>
         <p class="mb-1 text-muted">
-          Duration: {{ formatTime(track.duration) }}
+          Duration: {{ formatTimeFromSeconds(track.duration) }}
         </p>
         <p v-if="track" class="mb-4 text-muted">
           Released: {{ track.year }}
