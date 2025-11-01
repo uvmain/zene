@@ -11,7 +11,7 @@ RUN npm run build
 
 RUN git describe --tags --always > /frontend/dist/version.txt
 
-FROM golang:1.25.1 AS backend-build
+FROM golang:1.25.3 AS backend-build
 
 WORKDIR /app
 
