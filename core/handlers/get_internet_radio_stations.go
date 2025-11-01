@@ -28,6 +28,10 @@ func HandleGetInternetRadioStations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if radioStations == nil {
+		radioStations = []types.InternetRadio{}
+	}
+
 	response.SubsonicResponse.InternetRadioStations = &types.InternetRadioStations{
 		InternetRadio: radioStations,
 	}
