@@ -7,6 +7,7 @@ import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 import { useSettings } from '~/composables/useSettings'
+import PlayerMediaControls from './PlayerMediaControls.vue'
 
 const { debugLog } = useDebug()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue, setCurrentlyPlayingTrack } = usePlaybackQueue()
@@ -177,9 +178,8 @@ function seek(seekSeconds: number) {
   }
 }
 
-function volumeInput(event: Event) {
-  const target = event.target as HTMLInputElement
-  const volume = Number.parseFloat(target.value)
+function volumeInput(volumeString: string) {
+  const volume = Number.parseFloat(volumeString)
 
   if (isCasting.value && castPlayer.value && castPlayerController.value) {
     // Control cast device volume
@@ -683,101 +683,45 @@ onUnmounted(() => {
   <footer
     class="sticky bottom-0 mt-auto w-full border-0 border-t-1 border-zshade-400 border-zshade-600 border-solid background-2"
   >
-    <div v-if="showLyrics && currentlyPlayingTrack">
-      <LyricsDisplay :track="currentlyPlayingTrack" :current-seconds="currentTime" @close="showLyrics = false" />
-    </div>
     <div class="flex flex-col items-center px-2 md:flex-row space-y-2 md:px-4 md:space-x-2 md:space-y-0">
       <div
         class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 md:py-2 md:space-y-2"
       >
         <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
-        <div class="">
+        <div>
           <PlayerProgressBar
             :current-time-in-seconds="currentTime"
             :currently-playing-track="currentlyPlayingTrack"
             @seek="seek"
           />
 
-          <!-- Buttons -->
-          <div class="mt-2 flex flex-row items-center justify-center gap-x-2 md:mt-2 md:gap-x-4 sm:gap-x-2">
-            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="stopPlayback()">
-              <icon-nrk-media-stop class="footer-icon" />
-            </button>
-            <button id="shuffle" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-nrk-reorder class="footer-icon" />
-            </button>
-            <button id="back" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handlePreviousTrack()">
-              <icon-nrk-media-previous class="footer-icon" />
-            </button>
-            <ZButton
-              id="play-pause"
-              class="group/button"
-              :primary="true"
-              :size12="true"
-              @click="togglePlayback()"
-            >
-              <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
-              <icon-nrk-media-pause v-else class="footer-icon" />
-            </ZButton>
-            <button id="forward" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="handleNextTrack()">
-              <icon-nrk-media-next class="footer-icon" />
-            </button>
-            <button id="repeat" class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10" @click="togglePlayback()">
-              <icon-nrk-media-jumpto class="footer-icon" />
-            </button>
-            <button
-              id="shuffle"
-              class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
-              @click="handleGetRandomTracks()"
-            >
-              <icon-nrk-dice-3-active class="footer-icon" />
-            </button>
-          </div>
+          <PlayerMediaControls
+            :is-playing="isPlaying"
+            @stop-playback="stopPlayback()"
+            @toggle-playback="togglePlayback()"
+            @next-track="handleNextTrack()"
+            @previous-track="handlePreviousTrack()"
+            @get-random-tracks="handleGetRandomTracks()"
+          />
         </div>
       </div>
 
-      <!-- Cast button, Playlist button, and Volume controls in a row -->
       <div class="flex flex-row items-center gap-x-3 md:gap-x-4">
-        <!-- Cast button -->
-        <div class="inline-block size-22px flex cursor-pointer items-center sm:size-24px">
-          <google-cast-launcher />
-        </div>
-
-        <!-- Lyrics button -->
-        <button
-          id="lyrics"
-          class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10"
-          @click="showLyrics = !showLyrics"
-        >
-          <icon-nrk-mening class="footer-icon" />
-        </button>
-
-        <!-- Playlist button -->
-        <div>
-          <RouterLink
-            to="/queue"
-            class="block flex gap-x-1 px-3 py-2 text-muted no-underline transition-all duration-200 sm:gap-x-2 sm:px-3 sm:py-2"
-          >
-            <icon-nrk-media-playlist class="footer-icon" />
-          </RouterLink>
-        </div>
-
-        <!-- Volume controls -->
-        <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 md:gap-2">
-          <div @click="toggleMute()">
-            <icon-nrk-media-volume-3 v-if="audioRef.volume > 0.66" class="text-sm text-muted sm:text-sm" />
-            <icon-nrk-media-volume-2 v-else-if="audioRef.volume > 0.33" class="text-sm text-muted sm:text-sm" />
-            <icon-nrk-media-volume-1 v-else class="text-sm text-muted sm:text-sm" />
-          </div>
-          <input
-            type="range"
-            class="h-2 w-20 cursor-pointer background-1 accent-primary2 md:w-30 sm:w-24 active:accent-primary1"
-            max="1"
-            step="0.01"
-            :value="currentVolume"
-            @input="volumeInput"
-          />
-        </div>
+        <PlayerCastButton />
+        <PlayerLyricsButton
+          :track="currentlyPlayingTrack"
+          :is-active="showLyrics"
+          :current-time="currentTime"
+          :currently-playing-track="currentlyPlayingTrack"
+          @toggle-lyrics="showLyrics = !showLyrics"
+        />
+        <PlayerPlaylistButton />
+        <PlayerVolumeSlider
+          :audio-ref="audioRef"
+          :model-value="currentVolume"
+          @toggle-mute="toggleMute()"
+          @update:model-value="volumeInput"
+        />
       </div>
     </div>
   </footer>

@@ -32,15 +32,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="lyricsRef.length > 0" class="left-0 top-0 isolate z-200 max-h-80vh flex items-center justify-center overflow-y-scroll bg-black/80 p-4 backdrop-blur-2xl">
-    <div>
-      <div class="">
-        <button class="bg-zgray-400/20 hover:bg-zgray-400/30 ml-2 mt-2 p-1" @click="$emit('close')">
-          Close
-        </button>
-      </div>
+  <teleport v-if="lyricsRef.length > 0" to="body">
+    <div class="fixed inset-0 z-50 flex justify-center overflow-y-scroll bg-white/20 p-4 backdrop-blur-lg dark:bg-black/20">
       <div>
-        <div v-if="lyricsRef" class="flex flex-col gap-2 text-center">
+        <ZButton class="absolute right-4 top-4" @click="$emit('close')">
+          Close
+        </ZButton>
+        <div v-if="lyricsRef" class="flex flex-col gap-2 text-center text-muted">
           <div
             v-for="(line, index) in lyricsRef" :key="index"
             :class="{
@@ -59,5 +57,5 @@ onMounted(async () => {
         </p>
       </div>
     </div>
-  </div>
+  </teleport>
 </template>
