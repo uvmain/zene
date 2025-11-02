@@ -1,5 +1,10 @@
 import type { ReleaseDate } from '../types/subsonicAlbum'
+import { useLocalStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
+import { useSettings } from '~/composables/useSettings'
+
+const apiKey = useLocalStorage('apiKey', '')
+const { streamQuality } = useSettings()
 
 export function niceDate(dateString: string): string {
   const date = dayjs(dateString)
@@ -24,6 +29,11 @@ export function getCoverArtUrl(musicbrainzId: string, size = 400, timeUpdated?: 
     return `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
   }
   return `/share/img/${musicbrainzId}?size=${size}`
+}
+
+export function getAuthenticatedTrackUrl(musicbrainz_track_id: string): string {
+  const queryParamString = `apiKey=${apiKey.value}&c=zene-frontend&v=1.6.0&maxBitRate=${streamQuality.value}&id=${musicbrainz_track_id}&format=aac`
+  return `/rest/stream.view?${queryParamString}`
 }
 
 export function onImageError(event: Event) {

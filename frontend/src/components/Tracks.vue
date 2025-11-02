@@ -10,6 +10,7 @@ const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
   observerEnabled: { type: Boolean, default: false },
+  autoScrolling: { type: Boolean, default: true },
 })
 
 const emits = defineEmits(['observerVisible'])
@@ -103,7 +104,9 @@ watch(currentlyPlayingTrack, async (newTrack) => {
   await nextTick()
   const index = props.tracks.findIndex(track => track.musicBrainzId === newTrack.musicBrainzId)
   currentRow.value = rowRefs.value[index]
-  currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  if (props.autoScrolling && currentRow.value) {
+    currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
 })
 
 watch(() => props.tracks, (newTracks) => {
@@ -120,8 +123,8 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
 </script>
 
 <template>
-  <div class="corner-cut-large background-2 p-4">
-    <table class="h-full w-full table-auto text-left">
+  <div class="corner-cut-large background-2">
+    <table class="h-full w-full p-4 text-left">
       <thead>
         <tr class="text-lg text-muted">
           <th class="w-15 cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
@@ -251,10 +254,8 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
         </tr>
       </tbody>
     </table>
-    <div v-if="observerEnabled" ref="observer" class="mb-6 text-center text-muted">
-      Loading more songs...
-    </div>
   </div>
+  <Loading v-if="observerEnabled" ref="observer" class="mb-6 text-center text-muted" />
 </template>
 
 <style scoped>

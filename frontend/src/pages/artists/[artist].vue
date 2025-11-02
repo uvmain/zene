@@ -152,6 +152,13 @@ onBeforeMount(async () => {
         </div>
       </div>
     </div>
-    <Tracks v-if="tracks" :tracks="tracks" :show-album="true" :observer-enabled="canLoadMore" @observer-visible="getTopSongs" />
+    <Tracks
+      v-if="tracks"
+      :auto-scrolling="false"
+      :tracks="tracks"
+      :show-album="true"
+      :observer-enabled="canLoadMore"
+      @observer-visible="getTopSongs"
+    />
   </div>
 </template>
