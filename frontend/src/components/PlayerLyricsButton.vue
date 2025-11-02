@@ -1,12 +1,38 @@
 <script setup lang="ts">
+import type { StructuredLyricLine } from '../types/subsonicLyrics'
 import type { SubsonicSong } from '~/types/subsonicSong'
+import { fetchLyrics } from '../composables/backendFetch'
 
-defineProps({
+const props = defineProps({
   currentlyPlayingTrack: { type: Object as PropType<SubsonicSong | null>, default: null },
   currentTime: { type: Number, default: 0 },
 })
 
 const showLyrics = ref(false)
+
+const lyricsRef = ref<StructuredLyricLine[]>([])
+
+async function getLyrics() {
+  if (props.currentlyPlayingTrack?.musicBrainzId === undefined) {
+    lyricsRef.value = []
+    return
+  }
+  const lyrics = await fetchLyrics(props.currentlyPlayingTrack.musicBrainzId)
+  lyricsRef.value = lyrics.line.map(line => ({
+    start: line.start ? line.start / 1000 : 0, // convert milliseconds to seconds, default to 0
+    value: line.value,
+  }))
+}
+
+watch(() => props.currentlyPlayingTrack?.musicBrainzId, async (newTrack, oldTrack) => {
+  if (newTrack !== oldTrack) {
+    await getLyrics()
+  }
+})
+
+onMounted(async () => {
+  await getLyrics()
+})
 </script>
 
 <template>
@@ -20,7 +46,7 @@ const showLyrics = ref(false)
     </button>
     <LyricsModal
       v-if="showLyrics && currentlyPlayingTrack"
-      :track="currentlyPlayingTrack"
+      :lyrics="lyricsRef"
       :current-seconds="currentTime"
       @close="showLyrics = false"
     />
