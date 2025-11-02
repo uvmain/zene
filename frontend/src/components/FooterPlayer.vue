@@ -163,7 +163,7 @@ async function handleGetRandomTracks() {
       </div>
 
       <div class="flex flex-row items-center gap-x-3 md:gap-x-4">
-        <PlayerCastButton />
+        <!-- <PlayerCastButton /> -->
         <PlayerLyricsButton
           :current-time="currentTime"
           :currently-playing-track="currentlyPlayingTrack"

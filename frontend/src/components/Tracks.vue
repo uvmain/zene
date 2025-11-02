@@ -10,6 +10,7 @@ const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
   observerEnabled: { type: Boolean, default: false },
+  autoScrolling: { type: Boolean, default: true },
 })
 
 const emits = defineEmits(['observerVisible'])
@@ -103,7 +104,9 @@ watch(currentlyPlayingTrack, async (newTrack) => {
   await nextTick()
   const index = props.tracks.findIndex(track => track.musicBrainzId === newTrack.musicBrainzId)
   currentRow.value = rowRefs.value[index]
-  currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  if (props.autoScrolling && currentRow.value) {
+    currentRow.value.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
 })
 
 watch(() => props.tracks, (newTracks) => {
