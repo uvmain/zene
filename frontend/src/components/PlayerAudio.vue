@@ -16,6 +16,13 @@ watch(
     if (!audio || newTrack === oldTrack) {
       return
     }
+    if (!newTrack) {
+      audio.pause()
+      audio.removeAttribute('src')
+      audio.load()
+      audio.currentTime = 0
+      return
+    }
     if (audio) {
       audio.addEventListener(
         'canplaythrough',
@@ -24,6 +31,8 @@ watch(
         },
         { once: true },
       )
+      audio.pause()
+      audio.load()
     }
   },
 )
