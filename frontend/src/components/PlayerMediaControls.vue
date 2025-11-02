@@ -1,8 +1,31 @@
 <script setup lang="ts">
+import { onKeyStroke } from '@vueuse/core'
+
 defineProps({
   isPlaying: { type: Boolean, default: false },
 })
+
 const emits = defineEmits(['togglePlayback', 'stopPlayback', 'nextTrack', 'previousTrack', 'getRandomTracks'])
+
+onKeyStroke('MediaPlayPause', (e) => {
+  e.preventDefault()
+  emits('togglePlayback')
+})
+
+onKeyStroke('MediaTrackPrevious', (e) => {
+  e.preventDefault()
+  emits('previousTrack')
+})
+
+onKeyStroke('MediaTrackNext', (e) => {
+  e.preventDefault()
+  emits('nextTrack')
+})
+
+onKeyStroke('MediaStop', (e) => {
+  e.preventDefault()
+  emits('stopPlayback')
+})
 </script>
 
 <template>

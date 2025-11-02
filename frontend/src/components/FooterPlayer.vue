@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { onKeyStroke, useLocalStorage } from '@vueuse/core'
+import { useLocalStorage } from '@vueuse/core'
 import { getCoverArtUrl } from '~/composables/logic'
 import { useDebug } from '~/composables/useDebug'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 import { useSettings } from '~/composables/useSettings'
-import PlayerMediaControls from './PlayerMediaControls.vue'
+import PlayerAudio from './PlayerAudio.vue'
 
 const { debugLog } = useDebug()
 const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue, setCurrentlyPlayingTrack } = usePlaybackQueue()
@@ -17,7 +17,7 @@ const { postPlaycount } = usePlaycounts()
 const router = useRouter()
 const apiKey = useLocalStorage('apiKey', '')
 
-const audioRef = ref<HTMLAudioElement | null>(null)
+const audioPlayer = useTemplateRef('playerAudio')
 const isPlaying = ref(false)
 const playcountPosted = ref(false)
 const currentTime = ref(0)
@@ -45,7 +45,7 @@ const trackArtUrl = computed(() => {
 })
 
 async function togglePlayback() {
-  if (!audioRef.value) {
+  if (!audioPlayer.value?.audioRef) {
     console.error('Audio element not found')
     return
   }
@@ -76,10 +76,10 @@ async function togglePlayback() {
   else {
     // Control local playback
     if (isPlaying.value) {
-      audioRef.value.pause()
+      audioPlayer.value?.audioRef.pause()
     }
     else {
-      audioRef.value.play()
+      audioPlayer.value?.audioRef.play()
     }
   }
 
@@ -100,16 +100,16 @@ function toggleMute() {
     // Control cast device mute
     castPlayerController.value.muteOrUnmute()
   }
-  else if (audioRef.value) {
+  else if (audioPlayer.value?.audioRef) {
     // Control local audio mute
     debugLog('Changing volume')
-    if (audioRef.value.volume !== 0) {
-      previousVolume.value = audioRef.value.volume
-      audioRef.value.volume = 0
+    if (audioPlayer.value.audioRef.volume !== 0) {
+      previousVolume.value = audioPlayer.value.audioRef.volume
+      audioPlayer.value.audioRef.volume = 0
       currentVolume.value = 0
     }
     else {
-      audioRef.value.volume = previousVolume.value
+      audioPlayer.value.audioRef.volume = previousVolume.value
       currentVolume.value = previousVolume.value
     }
   }
@@ -120,23 +120,23 @@ async function stopPlayback() {
     // Stop cast playback
     castPlayerController.value.stop()
   }
-  else if (audioRef.value) {
+  else if (audioPlayer.value?.audioRef) {
     // Stop local playback
-    if (audioRef.value.currentTime < 1) {
+    if (audioPlayer.value.audioRef.currentTime < 1) {
       resetCurrentlyPlayingTrack()
       clearQueue()
     }
-    audioRef.value.pause()
-    audioRef.value.load()
+    audioPlayer.value.audioRef.pause()
+    audioPlayer.value.audioRef.load()
   }
 
   isPlaying.value = false
 }
 
 function updateIsPlaying() {
-  if (!audioRef.value)
+  if (!audioPlayer.value?.audioRef)
     return
-  isPlaying.value = !audioRef.value.paused
+  isPlaying.value = !audioPlayer.value.audioRef.paused
 }
 
 function updateProgress() {
@@ -144,8 +144,8 @@ function updateProgress() {
   if (isCasting.value && castPlayer.value) {
     currentTime.value = castPlayer.value.currentTime
   }
-  else if (audioRef.value) {
-    currentTime.value = audioRef.value.currentTime
+  else if (audioPlayer.value?.audioRef) {
+    currentTime.value = audioPlayer.value.audioRef.currentTime
   }
   else {
     return
@@ -172,9 +172,9 @@ function seek(seekSeconds: number) {
     castPlayer.value.currentTime = seekSeconds
     castPlayerController.value.seek()
   }
-  else if (audioRef.value) {
+  else if (audioPlayer.value?.audioRef) {
     // Seek local playback
-    audioRef.value.currentTime = seekSeconds
+    audioPlayer.value.audioRef.currentTime = seekSeconds
   }
 }
 
@@ -186,20 +186,25 @@ function volumeInput(volumeString: string) {
     castPlayer.value.volumeLevel = volume
     castPlayerController.value.setVolumeLevel()
   }
-  else if (audioRef.value) {
+  else if (audioPlayer.value?.audioRef) {
     // Control local volume
-    audioRef.value.volume = volume
+    audioPlayer.value.audioRef.volume = volume
   }
 
   currentVolume.value = volume
 }
 
 async function handleNextTrack() {
-  await getNextTrack()
+  if (currentQueue.value && currentQueue.value.tracks.length > 0) {
+    await getNextTrack()
 
-  // If casting, load the new track to the cast device
-  if (isCasting.value && currentlyPlayingTrack.value) {
-    await castAudio()
+    // If casting, load the new track to the cast device
+    if (isCasting.value && currentlyPlayingTrack.value) {
+      await castAudio()
+    }
+  }
+  else {
+    isPlaying.value = false
   }
 }
 
@@ -217,41 +222,14 @@ async function handleGetRandomTracks() {
   router.push('/queue')
 }
 
-onKeyStroke('MediaPlayPause', (e) => {
-  e.preventDefault()
-  togglePlayback()
-})
-
-onKeyStroke('MediaTrackPrevious', (e) => {
-  e.preventDefault()
-  handlePreviousTrack()
-})
-
-onKeyStroke('MediaTrackNext', (e) => {
-  e.preventDefault()
-  handleNextTrack()
-})
-
-onKeyStroke('MediaStop', (e) => {
-  e.preventDefault()
-  stopPlayback()
-})
-
 watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
-  const audio = audioRef.value
+  const audio = audioPlayer.value?.audioRef
   if (!audio) {
     return
   }
   if (newTrack && newTrack.musicBrainzId !== oldTrack?.musicBrainzId) {
     audio.pause()
     audio.load()
-    audio.addEventListener(
-      'canplaythrough',
-      () => {
-        audio?.play()
-      },
-      { once: true },
-    )
   }
   else if (!newTrack) {
     audio.pause()
@@ -277,9 +255,9 @@ async function castAudio() {
   }
 
   // Capture current local playback state and position before switching to cast
-  const wasPlayingLocally = audioRef.value && !audioRef.value.paused
-  if (wasPlayingLocally && audioRef.value) {
-    savedLocalPosition.value = audioRef.value.currentTime
+  const wasPlayingLocally = audioPlayer.value?.audioRef && !audioPlayer.value.audioRef.paused
+  if (wasPlayingLocally && audioPlayer.value?.audioRef) {
+    savedLocalPosition.value = audioPlayer.value?.audioRef?.currentTime
     debugLog(`Captured local position: ${savedLocalPosition.value}s`)
   }
   else {
@@ -320,8 +298,8 @@ async function castAudio() {
     isCasting.value = true
 
     // Pause local audio when casting starts
-    if (audioRef.value) {
-      audioRef.value.pause()
+    if (audioPlayer.value?.audioRef) {
+      audioPlayer.value.audioRef.pause()
     }
 
     // Update cast state
@@ -403,7 +381,7 @@ function updateCastState() {
     cleanupCastPlayer()
 
     // Resume local playback if we were playing before and have a track
-    if (isTransitioningFromCast.value && wasPlayingBeforeTransition && currentlyPlayingTrack.value && audioRef.value) {
+    if (isTransitioningFromCast.value && wasPlayingBeforeTransition && currentlyPlayingTrack.value && audioPlayer.value) {
       resumeLocalPlayback()
     }
 
@@ -435,7 +413,7 @@ function setupCastPlayer() {
 }
 
 function resumeLocalPlayback() {
-  if (!audioRef.value || !currentlyPlayingTrack.value) {
+  if (!audioPlayer.value?.audioRef || !currentlyPlayingTrack.value) {
     debugLog('Cannot resume local playback: missing audio element or track')
     return
   }
@@ -443,11 +421,11 @@ function resumeLocalPlayback() {
   debugLog(`Resuming local playback from position: ${savedLocalPosition.value}s`)
 
   // Set the position and play
-  audioRef.value.currentTime = savedLocalPosition.value
+  audioPlayer.value.audioRef.currentTime = savedLocalPosition.value
   currentTime.value = savedLocalPosition.value
 
   // Use a promise to handle the play() call properly
-  audioRef.value.play().then(() => {
+  audioPlayer.value.audioRef.play().then(() => {
     debugLog('Local playback resumed successfully')
     updateIsPlaying()
   }).catch((error) => {
@@ -629,44 +607,7 @@ onMounted(async () => {
   }
 })
 
-onMounted(() => {
-  const audio = audioRef.value
-  if (!audio) {
-    return
-  }
-  audio.addEventListener('play', updateIsPlaying)
-  audio.addEventListener('pause', updateIsPlaying)
-  audio.addEventListener('timeupdate', updateProgress)
-  audio.addEventListener('ended', () => {
-    if (currentQueue.value && currentQueue.value.tracks.length > 0) {
-      handleNextTrack()
-    }
-    else {
-      isPlaying.value = false
-    }
-  })
-})
-
 onUnmounted(() => {
-  const audio = audioRef.value
-  if (audio) {
-    audio.removeEventListener('play', updateIsPlaying)
-    audio.removeEventListener('pause', updateIsPlaying)
-    audio.removeEventListener('timeupdate', updateProgress)
-    audio.removeEventListener('ended', () => {
-      if (currentQueue.value && currentQueue.value.tracks.length > 0) {
-        handleNextTrack()
-      }
-      else {
-        isPlaying.value = false
-      }
-    })
-
-    audio.pause()
-    audio.removeAttribute('src')
-    audio.load()
-  }
-
   // Clean up cast resources
   cleanupCastPlayer()
 
@@ -687,7 +628,14 @@ onUnmounted(() => {
       <div
         class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 md:py-2 md:space-y-2"
       >
-        <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
+        <PlayerAudio
+          ref="playerAudio"
+          :track-url="trackUrl"
+          @play="updateIsPlaying()"
+          @pause="updateIsPlaying()"
+          @time-update="updateProgress"
+          @ended="handleNextTrack()"
+        />
         <div>
           <PlayerProgressBar
             :current-time-in-seconds="currentTime"
@@ -717,7 +665,7 @@ onUnmounted(() => {
         />
         <PlayerPlaylistButton />
         <PlayerVolumeSlider
-          :audio-ref="audioRef"
+          :audio-ref="audioPlayer?.audioRef"
           :model-value="currentVolume"
           @toggle-mute="toggleMute()"
           @update:model-value="volumeInput"
