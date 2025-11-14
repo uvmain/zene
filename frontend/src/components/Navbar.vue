@@ -43,7 +43,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
           Zene
         </div>
       </div>
-      <nav class="flex flex-col gap-y-1 px-2 lg:text-xl">
+      <nav class="flex flex-col gap-y-4 px-2 lg:text-xl">
         <NavLink route-name="Home" route-prop="/" />
         <NavLink route-name="Albums" route-prop="/albums" />
         <NavLink route-name="Tracks" route-prop="/tracks" />

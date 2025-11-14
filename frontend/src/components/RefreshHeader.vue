@@ -18,7 +18,7 @@ async function refresh() {
 </script>
 
 <template>
-  <div class="flex flex-row items-center justify-center gap-x-2 py-4 md:justify-start">
+  <div class="flex flex-row items-center justify-center gap-x-2 py-6 md:justify-start">
     <ZButton :primary="true" @click="emits('titleClick')">
       {{ title }}
     </ZButton>

@@ -64,6 +64,7 @@ declare module 'vue' {
     PlayerProgressBar: typeof import('./src/components/PlayerProgressBar.vue')['default']
     PlayerVolumeSlider: typeof import('./src/components/PlayerVolumeSlider.vue')['default']
     RefreshHeader: typeof import('./src/components/RefreshHeader.vue')['default']
+    RefreshOptions: typeof import('./src/components/RefreshOptions.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchResults: typeof import('./src/components/SearchResults.vue')['default']

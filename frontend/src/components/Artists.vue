@@ -27,6 +27,14 @@ const _allowedOrders = ['newest', 'random', 'alphabetical', 'starred', 'recent']
 type AllowedOrder = typeof _allowedOrders[number]
 const currentOrder = useLocalStorage<AllowedOrder>(props.sortKey, 'newest')
 
+const sortOptions = [
+  { label: 'Recently Updated', emitName: 'newest' },
+  { label: 'Recently Played', emitName: 'recent' },
+  { label: 'Random', emitName: 'random' },
+  { label: 'Alphabetical', emitName: 'alphabetical' },
+  { label: 'Starred', emitName: 'starred' },
+]
+
 watch(observerIsVisible, (newValue) => {
   if (newValue && props.scrollable) {
     getArtists()
@@ -107,27 +115,16 @@ onBeforeMount(async () => {
 <template>
   <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
-    <div v-if="showOrderOptions" class="corner-cut absolute left-0 top-0 z-10 w-auto background-2">
-      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('newest')">
-        Recently Updated
-      </div>
-      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('recent')">
-        Recently Played
-      </div>
-      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('random')">
-        Random
-      </div>
-      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('alphabetical')">
-        Alphabetical
-      </div>
-      <div class="cursor-pointer px-4 py-2 hover:background-3" @click="setOrder('starred')">
-        Starred
-      </div>
-    </div>
-    <div class="flex flex-wrap justify-center gap-6 md:justify-start">
-      <div v-for="(artist, index) in artists" :key="artist.musicBrainzId" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-        <ArtistThumb :artist="artist" :index="index" class="h-40 cursor-pointer" @click="() => router.push(`/artists/${artist.musicBrainzId}`)" />
-      </div>
+    <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
+    <div class="auto-grid-6">
+      <ArtistThumb
+        v-for="(artist, index) in artists"
+        :key="artist.musicBrainzId"
+        :artist="artist"
+        :index="index"
+        class="transition duration-200 hover:scale-105"
+        @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
+      />
     </div>
     <div v-if="canLoadMore && props.scrollable" ref="observer" class="h-16">
       Loading more artists...

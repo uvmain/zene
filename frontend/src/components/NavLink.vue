@@ -45,6 +45,6 @@ function handleLinkClick() {
 
 <style scoped>
 .navlink {
-  @apply block flex gap-x-1 py-2 text-muted font-semibold no-underline transition-all duration-100 uppercase flex items-center;
+  @apply block flex  text-muted font-semibold no-underline transition-all duration-100 uppercase flex items-center;
 }
 </style>
