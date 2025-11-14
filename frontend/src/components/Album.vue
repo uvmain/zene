@@ -92,17 +92,17 @@ function actOnUpdatedArt() {
       <div class="relative">
         <PlayButton
           :album="album"
-          class="absolute bottom-2 right-10 z-10 opacity-0 transition-all duration-300 group-hover:right-6 group-hover:opacity-100"
+          class="absolute bottom-2 right-4 z-10 opacity-0 transition-all duration-300 group-hover:right-1 group-hover:opacity-100"
         />
       </div>
       <div class="max-w-150px">
-        <div v-if="showArtist" class="truncate text-nowrap text-xs text-primary md:text-sm">
+        <div v-if="showArtist" class="truncate text-nowrap text-sm text-primary md:text-base">
           {{ album.title || album.name }}
         </div>
-        <div v-if="showArtist" class="cursor-pointer truncate text-nowrap text-xs" @click="navigateArtist()">
+        <div v-if="showArtist" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
           {{ artistAndDate }}
         </div>
-        <div v-if="!showArtist" class="cursor-pointer truncate text-nowrap text-xs md:text-sm" @click="navigateArtist()">
+        <div v-if="!showArtist" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
           {{ albumAndDate }}
         </div>
       </div>

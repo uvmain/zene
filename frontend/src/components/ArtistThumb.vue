@@ -29,23 +29,27 @@ function navigate() {
 </script>
 
 <template>
-  <div class="group" @click="navigate()">
-    <img
-      class="aspect-square w-full cursor-pointer object-cover"
-      :src="coverArtUrl"
-      :loading="loading"
-      width="150"
-      height="150"
-      @error="onImageError"
-    />
-    <div class="relative">
-      <PlayButton
-        :artist="artist"
-        class="absolute bottom-2 right-10 z-10 opacity-0 transition-all duration-300 group-hover:right-6 group-hover:opacity-100"
+  <div>
+    <div class="group" @click="navigate()">
+      <img
+        class="aspect-square h-full w-full cursor-pointer object-cover"
+        :src="coverArtUrl"
+        :loading="loading"
+        width="150"
+        height="150"
+        @error="onImageError"
       />
+      <div class="relative">
+        <PlayButton
+          :artist="artist"
+          class="absolute bottom-2 right-4 z-10 opacity-0 transition-all duration-300 group-hover:right-1 group-hover:opacity-100"
+        />
+      </div>
     </div>
-    <div class="max-w-150px truncate text-nowrap text-sm text-primary">
-      {{ artist.name }}
+    <div class="max-w-150px">
+      <div class="truncate text-nowrap text-sm text-primary md:text-base">
+        {{ artist.name }}
+      </div>
     </div>
   </div>
 </template>

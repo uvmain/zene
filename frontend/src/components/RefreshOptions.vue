@@ -1,7 +1,7 @@
 <script setup lang="ts">
 interface Option {
   label: string
-  emitName: string
+  emitValue: string
 }
 
 defineProps({
@@ -17,7 +17,7 @@ const emits = defineEmits(['setOrder'])
       v-for="option in options"
       :key="option.label"
       class="cursor-pointer px-4 py-2 hover:background-3"
-      @click="emits('setOrder', option.emitName)"
+      @click="emits('setOrder', option.emitValue)"
     >
       {{ option.label }}
     </div>

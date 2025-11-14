@@ -28,11 +28,11 @@ type AllowedOrder = typeof _allowedOrders[number]
 const currentOrder = useLocalStorage<AllowedOrder>(props.sortKey, 'newest')
 
 const sortOptions = [
-  { label: 'Recently Updated', emitName: 'newest' },
-  { label: 'Recently Played', emitName: 'recent' },
-  { label: 'Random', emitName: 'random' },
-  { label: 'Alphabetical', emitName: 'alphabetical' },
-  { label: 'Starred', emitName: 'starred' },
+  { label: 'Recently Updated', emitValue: 'newest' },
+  { label: 'Recently Played', emitValue: 'recent' },
+  { label: 'Random', emitValue: 'random' },
+  { label: 'Alphabetical', emitValue: 'alphabetical' },
+  { label: 'Starred', emitValue: 'starred' },
 ]
 
 watch(observerIsVisible, (newValue) => {
@@ -116,7 +116,7 @@ onBeforeMount(async () => {
   <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
-    <div class="auto-grid-6">
+    <div v-if="artists.length > 0" class="auto-grid-6">
       <ArtistThumb
         v-for="(artist, index) in artists"
         :key="artist.musicBrainzId"

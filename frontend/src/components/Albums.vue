@@ -25,11 +25,11 @@ type AlbumOrder = typeof allowedOrders[number]
 const currentOrder = useLocalStorage<AlbumOrder>(props.sortKey, 'recentlyUpdated')
 
 const sortOptions = [
-  { label: 'Recently Updated', emitName: 'recentlyUpdated' },
-  { label: 'Recently Played', emitName: 'recentlyPlayed' },
-  { label: 'Random', emitName: 'random' },
-  { label: 'Alphabetical', emitName: 'alphabetical' },
-  { label: 'Release Date', emitName: 'releaseDate' },
+  { label: 'Recently Updated', emitValue: 'recentlyUpdated' },
+  { label: 'Recently Played', emitValue: 'recentlyPlayed' },
+  { label: 'Random', emitValue: 'random' },
+  { label: 'Alphabetical', emitValue: 'alphabetical' },
+  { label: 'Release Date', emitValue: 'releaseDate' },
 ]
 
 let fetchType: string
@@ -134,7 +134,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div v-if="albums.length > 0" class="auto-grid-6">
