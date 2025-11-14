@@ -29,24 +29,22 @@ function navigate() {
 </script>
 
 <template>
-  <div class="w-30 flex flex-col cursor-pointer gap-2" @click="navigate()">
-    <div class="group size-30">
-      <img
-        class="size-30 object-cover"
-        :src="coverArtUrl"
-        :loading="loading"
-        width="200"
-        height="200"
-        @error="onImageError"
+  <div class="group" @click="navigate()">
+    <img
+      class="aspect-square w-full cursor-pointer object-cover"
+      :src="coverArtUrl"
+      :loading="loading"
+      width="150"
+      height="150"
+      @error="onImageError"
+    />
+    <div class="relative">
+      <PlayButton
+        :artist="artist"
+        class="absolute bottom-2 right-10 z-10 opacity-0 transition-all duration-300 group-hover:right-6 group-hover:opacity-100"
       />
-      <div class="relative">
-        <PlayButton
-          :artist="artist"
-          class="invisible absolute bottom-2 right-1 z-10 group-hover:visible"
-        />
-      </div>
     </div>
-    <div class="truncate text-nowrap text-sm text-primary">
+    <div class="max-w-150px truncate text-nowrap text-sm text-primary">
       {{ artist.name }}
     </div>
   </div>

@@ -51,7 +51,7 @@ const loading = computed<LoadingAttribute>(() => {
 })
 
 const coverArtUrlSm = computed(() => {
-  return getCoverArtUrl(props.album.id, 120, artUpdatedTime.value)
+  return getCoverArtUrl(props.album.id, 150, artUpdatedTime.value)
 })
 
 const coverArtUrlMd = computed(() => {
@@ -70,7 +70,7 @@ function navigateArtist() {
 
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
-  // cache
+  // cache bust
   fetch(getCoverArtUrl(props.album.id, 120), { method: 'POST', credentials: 'include' })
   fetch(getCoverArtUrl(props.album.id, 200), { method: 'POST', credentials: 'include' })
   artUpdatedTime.value = Date.now().toString()
@@ -81,28 +81,30 @@ function actOnUpdatedArt() {
   <div>
     <div v-if="size === 'sm'" class="group">
       <img
-        class="h-24 w-24 cursor-pointer object-cover md:size-30"
+        class="aspect-square h-full w-full cursor-pointer object-cover"
         :src="coverArtUrlSm"
         alt="Album Cover"
         :loading="loading"
-        width="120"
-        height="120"
+        width="150"
+        height="150"
         @error="onImageError" @click="navigateAlbum()"
       />
       <div class="relative">
         <PlayButton
           :album="album"
-          class="absolute bottom-2 right-1 z-10 opacity-0 transition-all duration-300 group-hover:opacity-100"
+          class="absolute bottom-2 right-10 z-10 opacity-0 transition-all duration-300 group-hover:right-6 group-hover:opacity-100"
         />
       </div>
-      <div v-if="showArtist" class="w-24 truncate text-nowrap text-xs text-primary md:w-30 md:text-sm">
-        {{ album.title || album.name }}
-      </div>
-      <div v-if="showArtist" class="w-24 cursor-pointer truncate text-nowrap text-xs md:w-30" @click="navigateArtist()">
-        {{ artistAndDate }}
-      </div>
-      <div v-if="!showArtist" class="w-24 cursor-pointer truncate text-nowrap text-xs md:w-30 md:text-sm" @click="navigateArtist()">
-        {{ albumAndDate }}
+      <div class="max-w-150px">
+        <div v-if="showArtist" class="truncate text-nowrap text-xs text-primary md:text-sm">
+          {{ album.title || album.name }}
+        </div>
+        <div v-if="showArtist" class="cursor-pointer truncate text-nowrap text-xs" @click="navigateArtist()">
+          {{ artistAndDate }}
+        </div>
+        <div v-if="!showArtist" class="cursor-pointer truncate text-nowrap text-xs md:text-sm" @click="navigateArtist()">
+          {{ albumAndDate }}
+        </div>
       </div>
     </div>
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
@@ -115,7 +117,7 @@ function actOnUpdatedArt() {
         @error="onImageError"
         @click="navigateAlbum()"
       >
-      <div class="flex flex-col gap-2 text-center md:gap-5 md:text-left">
+      <div class="flex flex-col gap-2 text-center md:gap-4 md:text-left">
         <div class="cursor-pointer text-lg font-bold md:text-4xl" @click="navigateAlbum()">
           {{ album.name }}
         </div>

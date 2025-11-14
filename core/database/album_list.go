@@ -50,7 +50,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	SELECT
     m.musicbrainz_album_id AS id,
     m.album AS name,
-    m.artist,
+    coalesce(maa.artist, m.artist),
     m.musicbrainz_album_id AS cover_art,
     a.song_count,
     a.duration,
@@ -65,7 +65,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
     m.label AS label_string,
     m.musicbrainz_album_id AS musicbrainz_id,
     m.genre AS genre_string,
-    m.artist AS display_artist,
+    coalesce(maa.artist, m.artist) AS display_artist,
     LOWER(m.album) AS sort_name,
     m.release_date AS release_date_string,
     m.album_artist,
