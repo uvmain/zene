@@ -12,7 +12,7 @@ const emits = defineEmits(['setOrder'])
 </script>
 
 <template>
-  <div class="corner-cut absolute left-0 top-0 z-10 w-auto background-2">
+  <div class="absolute left-0 top-0 z-10 w-auto background-2">
     <div
       v-for="option in options"
       :key="option.label"

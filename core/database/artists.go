@@ -16,7 +16,6 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	}
 	query := `SELECT m.musicbrainz_artist_id as id,
 		m.artist as name,
-		coalesce(count(distinct m.musicbrainz_album_id), 0) as album_count,
 		s.created_at as starred,
 		COALESCE(ur.rating, 0) AS user_rating,
 		COALESCE(AVG(gr.rating),0.0) AS average_rating
@@ -34,7 +33,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 	var starred sql.NullString
 
 	err = DB.QueryRowContext(ctx, query, user.Id, musicbrainzArtistId).Scan(
-		&result.Id, &result.Name, &result.AlbumCount, &starred, &result.UserRating, &result.AverageRating,
+		&result.Id, &result.Name, &starred, &result.UserRating, &result.AverageRating,
 	)
 	if err == sql.ErrNoRows {
 		return types.Artist{}, nil
@@ -58,6 +57,8 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 
 	result.Album = []types.SubsonicChild{}
 	result.Album = append(result.Album, albums...)
+
+	result.AlbumCount = len(albums)
 
 	return result, nil
 }

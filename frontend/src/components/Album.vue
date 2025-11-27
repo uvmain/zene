@@ -14,6 +14,8 @@ const props = defineProps({
   index: { type: Number, default: 0 },
 })
 
+const artist = ref<string>(props.album.displayAlbumArtist ?? props.album.artist ?? props.album.displayArtist ?? 'Unknown Artist')
+
 const router = useRouter()
 const { closeSearch } = useSearch()
 
@@ -21,12 +23,11 @@ const showChangeArtModal = ref(false)
 const artUpdatedTime = ref<string | undefined>(undefined)
 
 const artistAndDate = computed(() => {
-  const artist = props.album.displayAlbumArtist ?? props.album.displayArtist ?? props.album.artist ?? 'Unknown Artist'
   if (props.album.releaseDate) {
-    return `${artist} • ${parseReleaseDate(props.album.releaseDate)}`
+    return `${artist.value} • ${parseReleaseDate(props.album.releaseDate)}`
   }
   else if (props.album.year) {
-    return `${artist} • ${props.album.year}`
+    return `${artist.value} • ${props.album.year}`
   }
   else {
     return artist
@@ -81,7 +82,7 @@ function actOnUpdatedArt() {
   <div>
     <div v-if="size === 'sm'" class="group">
       <img
-        class="aspect-square h-full w-full cursor-pointer object-cover"
+        class="border-muted aspect-square h-full w-full cursor-pointer object-cover"
         :src="coverArtUrlSm"
         alt="Album Cover"
         :loading="loading"
@@ -110,7 +111,7 @@ function actOnUpdatedArt() {
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlMd"
-        class="size-24 cursor-pointer object-cover md:size-52"
+        class="border-muted size-24 cursor-pointer object-cover md:size-52"
         loading="lazy"
         width="200"
         height="200"

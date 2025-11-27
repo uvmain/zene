@@ -32,7 +32,7 @@ function navigate() {
   <div>
     <div class="group" @click="navigate()">
       <img
-        class="aspect-square h-full w-full cursor-pointer object-cover"
+        class="size-150px cursor-pointer rounded-full object-cover"
         :src="coverArtUrl"
         :loading="loading"
         width="150"
@@ -47,7 +47,7 @@ function navigate() {
       </div>
     </div>
     <div class="max-w-150px">
-      <div class="truncate text-nowrap text-sm text-primary md:text-base">
+      <div class="truncate text-center text-nowrap text-sm text-primary md:text-base">
         {{ artist.name }}
       </div>
     </div>

@@ -18,14 +18,6 @@ const signInDisabled = computed(() => {
   return username.value.length < 1 || password.value.length < 1 || loading.value
 })
 
-watch(username, () => {
-  error.value = null
-})
-
-watch(password, () => {
-  error.value = null
-})
-
 async function login() {
   error.value = ''
   loading.value = true
@@ -80,6 +72,7 @@ async function login() {
           class="border-1 border-primary2 rounded background-2 py-2 pl-10 font-semibold focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg focus:outline-none"
           autocomplete="username"
           required
+          @input="error = null"
         />
         <label for="password">
           Password
@@ -91,6 +84,7 @@ async function login() {
           class="border-1 border-primary2 rounded background-2 py-2 pl-10 font-semibold opacity-100 focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg focus:outline-none"
           autocomplete="current-password"
           required
+          @input="error = null"
         />
         <ZButton class="mx-auto mt-4" :disabled="signInDisabled">
           {{ loading ? 'Signing in…' : 'Sign in' }}
