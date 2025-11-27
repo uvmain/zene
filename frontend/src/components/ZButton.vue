@@ -9,24 +9,17 @@ defineEmits(['click'])
 </script>
 
 <template>
-  <div
-    class="corner-cut inline-flex items-center align-middle hover:bg-primary1"
+  <button
+    class="z-button inline-flex items-center align-middle"
     :disabled="disabled"
     :class="{
+      'size-12': size12,
       'cursor-not-allowed opacity-50': disabled,
-      'bg-primary2': primary,
-      'bg-zshade-600 dark:bg-zshade-400': !primary,
+      'border-primary2': primary,
+      'border-zshade-600 dark:border-zshade-400': !primary,
     }"
+    @click="$emit('click')"
   >
-    <button
-      class="group/button z-button m-1px"
-      :class="{
-        'size-12': size12,
-      }"
-      :disabled="disabled"
-      @click="$emit('click')"
-    >
-      <slot />
-    </button>
-  </div>
+    <slot />
+  </button>
 </template>

@@ -90,7 +90,7 @@ func GetArtistDirectory(ctx context.Context, musicbrainzArtistId string) (types.
 	LEFT JOIN user_ratings ur ON m.musicbrainz_artist_id  = ur.metadata_id AND ur.user_id = f.user_id
 	LEFT JOIN user_ratings gr ON m.musicbrainz_artist_id  = gr.metadata_id
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = f.user_id
-	WHERE f.user_id = ? and m.musicbrainz_artist_id = ?
+	WHERE f.user_id = ? and m.musicbrainz_artist_id = ? 
 	GROUP BY m.musicbrainz_artist_id, s.created_at, ur.rating;`
 
 	var starred sql.NullString
@@ -150,7 +150,7 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 		group by musicbrainz_album_id
 	)
 	select m.musicbrainz_album_id as id, m.musicbrainz_artist_id as parent,
-		m.album, m.artist, REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
+		m.album, coalesce(maa.album_artist, m.artist) as artist, REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 		substr(m.genre,1,(instr(m.genre,';')-1)) as genre, m.musicbrainz_album_id as cover_art,
 		sum(m.duration) as duration, min(m.date_added) as created, m.label as label,
 		m.album_artist, m.genre as genres, m.musicbrainz_artist_id as musicbrainz_artist,
@@ -167,11 +167,11 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 	LEFT JOIN album_plays pc ON pc.musicbrainz_album_id = m.musicbrainz_album_id
 	left join album_artists maa on maa.album_artist = m.album_artist
 	join album_song_counts sc on sc.musicbrainz_album_id = m.musicbrainz_album_id
-	where m.musicbrainz_artist_id = ? and f.user_id = ?
+	where (m.musicbrainz_artist_id = ? or maa.musicbrainz_artist_id == ?) and f.user_id = ?
 	group by m.musicbrainz_album_id
 	order by m.release_date desc;`
 
-	rows, err := DB.Query(query, user.Id, musicbrainzArtistId, user.Id)
+	rows, err := DB.Query(query, user.Id, musicbrainzArtistId, musicbrainzArtistId, user.Id)
 	if err != nil {
 		return nil, err
 	}

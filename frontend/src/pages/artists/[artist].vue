@@ -100,10 +100,10 @@ onBeforeMount(async () => {
         class="corner-cut-large h-full w-full bg-cover bg-center"
         :style="{ backgroundImage: `url(${artistArtUrl})` }"
       >
-        <div class="h-full w-full flex items-center gap-6 background-grad-2 align-middle backdrop-blur-lg">
+        <div class="corner-cut-large h-full w-full flex items-center gap-6 background-grad-2 align-middle backdrop-blur-lg">
           <div class="flex flex-row">
             <img
-              class="object-cover"
+              class="corner-cut-large object-cover"
               :src="artistArtUrl"
               width="240"
               height="240"

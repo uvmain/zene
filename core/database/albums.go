@@ -130,10 +130,11 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 			GROUP BY m.musicbrainz_album_id
 			),
 		album_artists as (
-			select musicbrainz_album_id, musicbrainz_artist_id, album_artist
-			from metadata
-			where album_artist = artist and musicbrainz_album_id = ?
-			group by musicbrainz_album_id
+			select  m2.musicbrainz_album_id, m1.musicbrainz_artist_id, m1.album_artist, m2.album
+			from metadata m1
+			join metadata m2 on m1.album_artist = m2.album_artist and m1.album_artist = m1.artist
+			where m2.musicbrainz_album_id = ?
+			group by m2.musicbrainz_album_id
 		)
 		select m.musicbrainz_album_id as id,
 			m.album as name,
@@ -143,7 +144,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 			cast(sum(m.duration) as integer) as duration,
 			COALESCE(ap.play_count, 0) as play_count,
 			min(m.date_added) as created,
-			m.musicbrainz_artist_id as artist_id,
+			coalesce(maa.musicbrainz_artist_id, m.musicbrainz_artist_id) as artist_id,
 			s.created_at as starred,
 			REPLACE(PRINTF('%4s', substr(m.release_date,1,4)), ' ', '0') as year,
 			substr(m.genre,1,(instr(m.genre,';')-1)) as genre,

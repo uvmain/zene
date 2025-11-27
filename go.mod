@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mmcdole/gofeed v1.3.0
-	github.com/ncruces/go-sqlite3 v0.30.1
+	github.com/ncruces/go-sqlite3 v0.30.2
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.11.1
 	github.com/timematic/anytime v0.0.0-20250424004116-93a49dc8f85f
@@ -17,7 +17,7 @@ require (
 )
 
 require (
-	github.com/PuerkitoBio/goquery v1.10.3 // indirect
+	github.com/PuerkitoBio/goquery v1.11.0 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
