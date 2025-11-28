@@ -138,7 +138,14 @@ onBeforeMount(async () => {
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div v-if="albums.length > 0" class="auto-grid-6">
-      <Album v-for="(album, index) in albums" :key="album.id" :album="album" :index="index" size="sm" class="transition duration-200 hover:scale-105" />
+      <Album
+        v-for="(album, index) in albums" :key="album.id"
+        :album="album"
+        :index="index"
+        size="sm"
+        class="transition duration-200 hover:scale-105"
+        :show-date="false"
+      />
     </div>
     <div v-if="canLoadMore && props.scrollable" ref="observer" class="h-16px">
       Loading more albums...

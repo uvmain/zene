@@ -11,6 +11,7 @@ const props = defineProps({
   size: { type: String as PropType<AlbumSize>, default: 'sm' },
   showChangeArtButton: { type: Boolean, default: false },
   showArtist: { type: Boolean, default: true },
+  showDate: { type: Boolean, default: true },
   index: { type: Number, default: 0 },
 })
 
@@ -98,11 +99,17 @@ function actOnUpdatedArt() {
         <div v-if="showArtist" class="truncate text-nowrap text-sm text-primary md:text-base">
           {{ album.title || album.name }}
         </div>
-        <div v-if="showArtist" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
+        <div v-if="showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
           {{ artistAndDate }}
         </div>
-        <div v-if="!showArtist" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
+        <div v-else-if="showArtist && !showDate" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
+          {{ artist }}
+        </div>
+        <div v-if="!showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
           {{ albumAndDate }}
+        </div>
+        <div v-else-if="!showArtist && !showDate" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
+          {{ album.title }}
         </div>
       </div>
     </div>
@@ -116,7 +123,7 @@ function actOnUpdatedArt() {
         @error="onImageError"
         @click="navigateAlbum()"
       >
-      <div class="flex flex-col gap-2 text-center md:gap-4 md:text-left">
+      <div class="h-24 flex flex-col justify-between text-center md:h-52 md:gap-4 md:text-left">
         <div class="cursor-pointer text-lg font-bold md:text-4xl" @click="navigateAlbum()">
           {{ album.name }}
         </div>
