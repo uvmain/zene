@@ -64,7 +64,7 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
         <div
           v-for="artist in searchResults?.artists"
           :key="artist.id"
-          class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
+          class="flex flex-none flex-col gap-y-1 overflow-hidden"
         >
           <ArtistThumb :artist="artist" />
         </div>
