@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
+import { cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
 type AlbumSize = 'sm' | 'md' | 'lg'
@@ -52,11 +52,11 @@ const loading = computed<LoadingAttribute>(() => {
 })
 
 const coverArtUrlSm = computed(() => {
-  return getCoverArtUrl(props.album.id, 150, artUpdatedTime.value)
+  return getCoverArtUrl(`${props.album.id}`, 150, artUpdatedTime.value)
 })
 
 const coverArtUrlMd = computed(() => {
-  return getCoverArtUrl(props.album.id, 200, artUpdatedTime.value)
+  return getCoverArtUrl(`${props.album.id}`, 200, artUpdatedTime.value)
 })
 
 function navigateAlbum() {
@@ -71,9 +71,7 @@ function navigateArtist() {
 
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
-  // cache bust
-  fetch(getCoverArtUrl(props.album.id, 120), { method: 'POST', credentials: 'include' })
-  fetch(getCoverArtUrl(props.album.id, 200), { method: 'POST', credentials: 'include' })
+  cacheBustAlbumArt(`${props.album.id}`)
   artUpdatedTime.value = Date.now().toString()
 }
 </script>
@@ -82,7 +80,7 @@ function actOnUpdatedArt() {
   <div>
     <div v-if="size === 'sm'" class="group">
       <img
-        class="border-muted aspect-square h-full w-full cursor-pointer object-cover"
+        class="aspect-square h-full w-full cursor-pointer border-muted object-cover"
         :src="coverArtUrlSm"
         alt="Album Cover"
         :loading="loading"
@@ -111,7 +109,7 @@ function actOnUpdatedArt() {
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlMd"
-        class="border-muted size-24 cursor-pointer object-cover md:size-52"
+        class="size-24 cursor-pointer border-muted object-cover md:size-52"
         loading="lazy"
         width="200"
         height="200"
