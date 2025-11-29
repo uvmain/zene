@@ -81,7 +81,7 @@ function actOnUpdatedArt() {
   <div>
     <div v-if="size === 'sm'" class="group">
       <img
-        class="aspect-square size-150px cursor-pointer border-muted object-cover"
+        class="aspect-square h-full w-full cursor-pointer border-muted object-cover"
         :src="coverArtUrlSm"
         alt="Album Cover"
         :loading="loading"

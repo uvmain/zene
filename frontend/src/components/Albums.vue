@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { useElementVisibility, useLocalStorage } from '@vueuse/core'
+import { useElementSize, useElementVisibility, useLocalStorage } from '@vueuse/core'
 import { fetchAlbums } from '~/composables/backendFetch'
 import { generateSeed } from '~/composables/logic'
 
@@ -17,6 +17,7 @@ const seed = useLocalStorage<number>('albumSeed', 0)
 const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
 const observer = useTemplateRef('observer')
+const firstAlbumElement = ref<HTMLElement | null>(null)
 const observerIsVisible = useElementVisibility(observer)
 const albums = ref<SubsonicAlbum[]>([])
 const showOrderOptions = ref(false)
@@ -32,6 +33,15 @@ const sortOptions = [
   { label: 'Alphabetical', emitValue: 'alphabetical' },
   { label: 'Release Date', emitValue: 'releaseDate' },
 ]
+
+const { height: firstAlbumHeight } = useElementSize(firstAlbumElement)
+
+const heightStyle = computed(() => {
+  if (props.twoRowsOnly && firstAlbumHeight.value > 0) {
+    return `max-height: calc(${(firstAlbumHeight.value * 2) + 24}px);`
+  }
+  return ''
+})
 
 let fetchType: string
 
@@ -141,10 +151,11 @@ onBeforeMount(async () => {
     <div
       v-if="albums.length > 0"
       class="auto-grid-6 overflow-hidden"
-      :style="twoRowsOnly ? `height: calc(${(198 * 2) + 24}px);` : ''"
+      :style="heightStyle"
     >
       <Album
         v-for="(album, index) in albums" :key="album.id"
+        :ref="index === 0 ? (el => firstAlbumElement = el as HTMLElement) : undefined"
         :album="album"
         :index="index"
         size="sm"
