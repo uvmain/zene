@@ -8,6 +8,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
   offset: { type: Number, default: 0 },
   scrollable: { type: Boolean, default: false },
+  twoRowsOnly: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
@@ -15,7 +16,7 @@ const loading = ref(false)
 const seed = useLocalStorage<number>('albumSeed', 0)
 const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
-const observer = useTemplateRef<HTMLDivElement>('observer')
+const observer = useTemplateRef('observer')
 const observerIsVisible = useElementVisibility(observer)
 const albums = ref<SubsonicAlbum[]>([])
 const showOrderOptions = ref(false)
@@ -137,7 +138,11 @@ onBeforeMount(async () => {
   <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
-    <div v-if="albums.length > 0" class="auto-grid-6">
+    <div
+      v-if="albums.length > 0"
+      class="auto-grid-6 overflow-hidden"
+      :style="twoRowsOnly ? `height: calc(${(198 * 2) + 24}px);` : ''"
+    >
       <Album
         v-for="(album, index) in albums" :key="album.id"
         :album="album"
