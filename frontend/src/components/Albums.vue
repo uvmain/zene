@@ -150,7 +150,7 @@ onBeforeMount(async () => {
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
       v-if="albums.length > 0"
-      class="auto-grid-6 overflow-hidden"
+      class="auto-grid-6 overflow-hidden pr-1"
       :style="heightStyle"
     >
       <Album
@@ -159,7 +159,7 @@ onBeforeMount(async () => {
         :album="album"
         :index="index"
         size="sm"
-        class="transition duration-200 hover:scale-105"
+        class="transition duration-200 hover:scale-100 md:scale-95"
         :show-date="false"
       />
     </div>

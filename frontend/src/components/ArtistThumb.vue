@@ -32,7 +32,7 @@ function navigate() {
   <div>
     <div class="group grid cursor-pointer" @click="navigate()">
       <img
-        class="z-1 col-span-full row-span-full size-150px rounded-full object-cover"
+        class="z-1 col-span-full row-span-full rounded-full object-cover"
         :src="coverArtUrl"
         :loading="loading"
         width="150"
@@ -41,7 +41,7 @@ function navigate() {
       />
       <PlayButton
         :artist="artist"
-        class="z-2 col-span-full row-span-full mx-auto translate-x--2 opacity-0 duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+        class="z-2 col-span-full row-span-full m-auto translate-x--2 opacity-0 duration-300 group-hover:translate-x-0 group-hover:opacity-100"
       />
     </div>
     <div class="max-w-150px">
