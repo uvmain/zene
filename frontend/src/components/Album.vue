@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { useServerSentEventsForAlbumArt } from '~/composables/backendFetch'
 import { cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
@@ -16,7 +15,9 @@ const props = defineProps({
   index: { type: Number, default: 0 },
 })
 
-const artist = ref<string>(props.album.displayAlbumArtist ?? props.album.artist ?? props.album.displayArtist ?? 'Unknown Artist')
+const artist = computed(() => {
+  return props.album.displayAlbumArtist ?? props.album.artist ?? props.album.displayArtist ?? 'Unknown Artist'
+})
 
 const router = useRouter()
 const { closeSearch } = useSearch()
@@ -32,7 +33,7 @@ const artistAndDate = computed(() => {
     return `${artist.value} • ${props.album.year}`
   }
   else {
-    return artist
+    return artist.value
   }
 })
 
