@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
+import { useServerSentEventsForAlbumArt } from '~/composables/backendFetch'
 import { cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 

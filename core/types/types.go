@@ -133,3 +133,8 @@ type TopSongRow struct {
 	TrackName  string
 	SortOrder  int
 }
+
+type SseMessage struct {
+	Source string      `json:"source"`
+	Data   interface{} `json:"data"`
+}

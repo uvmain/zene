@@ -247,3 +247,7 @@ func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, 
 	}
 	return intSlice, stringSlice, nil
 }
+
+func WriteServerSentEvent(w http.ResponseWriter, event string, data string) {
+	fmt.Fprintf(w, "%s: %s\n\n", event, data)
+}
