@@ -4,7 +4,7 @@ import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { useSearch } from '../composables/useSearch'
 
-const { searchInput, getSearchResults } = useSearch()
+const { searchInput, getSearchResults, closeSearch } = useSearch()
 
 const searchResults = ref<SearchResult | null>(null)
 
@@ -27,9 +27,14 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
 <template>
   <div v-if="searchInput.length >= 3" class="corner-cut-large mt-2 background-2 bg-gradient-to-br">
     <div class="flex flex-col gap-2 p-4">
-      <h3>
-        Search results for "{{ searchInput }}":
-      </h3>
+      <div class="flex justify-between">
+        <h3>
+          Search results for "{{ searchInput }}":
+        </h3>
+        <ZButton size="sm" class="my-auto" @click="closeSearch()">
+          Close
+        </ZButton>
+      </div>
       <h4>
         Tracks: {{ searchResults?.songs?.length ?? 0 }}
       </h4>
@@ -64,7 +69,7 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
         <div
           v-for="artist in searchResults?.artists"
           :key="artist.id"
-          class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
+          class="flex flex-none flex-col gap-y-1 overflow-hidden"
         >
           <ArtistThumb :artist="artist" />
         </div>

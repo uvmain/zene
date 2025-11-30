@@ -123,17 +123,17 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div v-if="artistAlbums.length > 0">
-      <div class="text-lg font-semibold">
+      <div class="mb-2 text-lg font-semibold">
         Albums
       </div>
       <div class="flex flex-wrap gap-6">
         <div v-for="album in artistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-          <Album :album="album" size="sm" :show-artist="false" />
+          <Album :album="album" size="sm" :show-artist="false" :show-date="false" />
         </div>
       </div>
     </div>
     <div v-if="albumArtistAlbums.length > 0">
-      <div class="text-lg font-semibold">
+      <div class="mb-2 text-lg font-semibold">
         Appears on albums
       </div>
       <div class="flex flex-wrap gap-6">
@@ -143,7 +143,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div v-if="similarArtists.length > 0">
-      <div class="text-lg font-semibold">
+      <div class="mb-2 text-lg font-semibold">
         Similar Artists
       </div>
       <div class="flex flex-wrap gap-6">

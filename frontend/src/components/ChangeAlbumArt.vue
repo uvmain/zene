@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { fetchAlbumArtOptions, postNewAlbumArt } from '~/composables/backendFetch'
+import { postNewAlbumArt, useServerSentEventsForAlbumArt } from '~/composables/backendFetch'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: true },
@@ -15,13 +15,13 @@ const localFolderArtUrl = ref<string | null>(null)
 const localEmbeddedArtUrl = ref<string | null>(null)
 const albumArt = ref<string | null>(null)
 
-async function getAlbumArtUrls() {
-  const options = await fetchAlbumArtOptions(props.album.albumArtists[0].name, props.album.name)
-  deezerArtUrl.value = options.deezer
-  coverArtArchiveUrl.value = options.cover_art_archive
-  localFolderArtUrl.value = options.local_folder_art
-  localEmbeddedArtUrl.value = options.local_embedded_art
-}
+// async function getAlbumArtUrls() {
+//   const options = await fetchAlbumArtOptions(props.album.albumArtists[0].name, props.album.name)
+//   deezerArtUrl.value = options.deezer
+//   coverArtArchiveUrl.value = options.cover_art_archive
+//   localFolderArtUrl.value = options.local_folder_art
+//   localEmbeddedArtUrl.value = options.local_embedded_art
+// }
 
 async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'localfolder' | 'localembedded') {
   let artUrl: string | null = null
@@ -51,9 +51,26 @@ async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'loca
   }
 }
 
-onMounted(async () => {
-  await getAlbumArtUrls()
+function onMessageReceived(data: any) {
   loading.value = false
+  if (data.source === 'Deezer') {
+    deezerArtUrl.value = data.data
+  }
+  else if (data.source === 'CoverArtArchive') {
+    coverArtArchiveUrl.value = data.data
+  }
+  else if (data.source === 'LocalArt') {
+    localFolderArtUrl.value = data.data.folderArt
+    localEmbeddedArtUrl.value = data.data.embeddedArt
+  }
+}
+
+function onErrorReceived(error: any) {
+  console.error('SSE Error Received:', error)
+}
+
+onMounted(() => {
+  useServerSentEventsForAlbumArt(props.album.albumArtists[0].name, props.album.name, onMessageReceived, onErrorReceived)
 })
 </script>
 
@@ -70,7 +87,7 @@ onMounted(async () => {
           </p>
           <div />
         </div>
-        <Loading v-if="loading" />
+        <Loading v-if="loading" class="h-56" />
         <div v-else class="flex flex-wrap justify-center gap-4">
           <ImageSelectorImage
             v-if="deezerArtUrl"

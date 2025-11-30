@@ -8,6 +8,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
   offset: { type: Number, default: 0 },
   scrollable: { type: Boolean, default: false },
+  twoRowsOnly: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
@@ -116,13 +117,17 @@ onBeforeMount(async () => {
   <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
-    <div v-if="artists.length > 0" class="auto-grid-6">
+    <div
+      v-if="artists.length > 0"
+      class="auto-grid-6 overflow-hidden"
+      :style="twoRowsOnly ? `max-height: calc(${174 * 2 + 24}px);` : ''"
+    >
       <ArtistThumb
         v-for="(artist, index) in artists"
         :key="artist.musicBrainzId"
         :artist="artist"
         :index="index"
-        class="transition duration-200 hover:scale-105"
+        class="transition duration-200 hover:scale-100 md:scale-95"
         @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
       />
     </div>

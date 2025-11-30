@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
+import { cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
 type AlbumSize = 'sm' | 'md' | 'lg'
@@ -11,10 +11,13 @@ const props = defineProps({
   size: { type: String as PropType<AlbumSize>, default: 'sm' },
   showChangeArtButton: { type: Boolean, default: false },
   showArtist: { type: Boolean, default: true },
+  showDate: { type: Boolean, default: true },
   index: { type: Number, default: 0 },
 })
 
-const artist = ref<string>(props.album.displayAlbumArtist ?? props.album.artist ?? props.album.displayArtist ?? 'Unknown Artist')
+const artist = computed(() => {
+  return props.album.displayAlbumArtist ?? props.album.artist ?? props.album.displayArtist ?? 'Unknown Artist'
+})
 
 const router = useRouter()
 const { closeSearch } = useSearch()
@@ -30,7 +33,7 @@ const artistAndDate = computed(() => {
     return `${artist.value} • ${props.album.year}`
   }
   else {
-    return artist
+    return artist.value
   }
 })
 
@@ -52,11 +55,11 @@ const loading = computed<LoadingAttribute>(() => {
 })
 
 const coverArtUrlSm = computed(() => {
-  return getCoverArtUrl(props.album.id, 150, artUpdatedTime.value)
+  return getCoverArtUrl(`${props.album.id}`, 150, artUpdatedTime.value)
 })
 
 const coverArtUrlMd = computed(() => {
-  return getCoverArtUrl(props.album.id, 200, artUpdatedTime.value)
+  return getCoverArtUrl(`${props.album.id}`, 200, artUpdatedTime.value)
 })
 
 function navigateAlbum() {
@@ -71,9 +74,7 @@ function navigateArtist() {
 
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
-  // cache bust
-  fetch(getCoverArtUrl(props.album.id, 120), { method: 'POST', credentials: 'include' })
-  fetch(getCoverArtUrl(props.album.id, 200), { method: 'POST', credentials: 'include' })
+  cacheBustAlbumArt(`${props.album.id}`)
   artUpdatedTime.value = Date.now().toString()
 }
 </script>
@@ -82,7 +83,7 @@ function actOnUpdatedArt() {
   <div>
     <div v-if="size === 'sm'" class="group">
       <img
-        class="border-muted aspect-square h-full w-full cursor-pointer object-cover"
+        class="aspect-square h-full w-full cursor-pointer border-muted"
         :src="coverArtUrlSm"
         alt="Album Cover"
         :loading="loading"
@@ -100,25 +101,31 @@ function actOnUpdatedArt() {
         <div v-if="showArtist" class="truncate text-nowrap text-sm text-primary md:text-base">
           {{ album.title || album.name }}
         </div>
-        <div v-if="showArtist" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
+        <div v-if="showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
           {{ artistAndDate }}
         </div>
-        <div v-if="!showArtist" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
+        <div v-else-if="showArtist && !showDate" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
+          {{ artist }}
+        </div>
+        <div v-if="!showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
           {{ albumAndDate }}
+        </div>
+        <div v-else-if="!showArtist && !showDate" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
+          {{ album.title }}
         </div>
       </div>
     </div>
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlMd"
-        class="border-muted size-24 cursor-pointer object-cover md:size-52"
+        class="aspect-square size-24 cursor-pointer border-muted md:size-52"
         loading="lazy"
         width="200"
         height="200"
         @error="onImageError"
         @click="navigateAlbum()"
       >
-      <div class="flex flex-col gap-2 text-center md:gap-4 md:text-left">
+      <div class="h-24 flex flex-col justify-between text-center md:h-52 md:gap-4 md:text-left">
         <div class="cursor-pointer text-lg font-bold md:text-4xl" @click="navigateAlbum()">
           {{ album.name }}
         </div>

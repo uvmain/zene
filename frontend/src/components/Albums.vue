@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { useElementVisibility, useLocalStorage } from '@vueuse/core'
+import { useElementSize, useElementVisibility, useLocalStorage } from '@vueuse/core'
 import { fetchAlbums } from '~/composables/backendFetch'
 import { generateSeed } from '~/composables/logic'
 
@@ -8,6 +8,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
   offset: { type: Number, default: 0 },
   scrollable: { type: Boolean, default: false },
+  twoRowsOnly: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
@@ -15,7 +16,8 @@ const loading = ref(false)
 const seed = useLocalStorage<number>('albumSeed', 0)
 const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
-const observer = useTemplateRef<HTMLDivElement>('observer')
+const observer = useTemplateRef('observer')
+const firstAlbumElement = ref<HTMLElement | null>(null)
 const observerIsVisible = useElementVisibility(observer)
 const albums = ref<SubsonicAlbum[]>([])
 const showOrderOptions = ref(false)
@@ -31,6 +33,15 @@ const sortOptions = [
   { label: 'Alphabetical', emitValue: 'alphabetical' },
   { label: 'Release Date', emitValue: 'releaseDate' },
 ]
+
+const { height: firstAlbumHeight } = useElementSize(firstAlbumElement)
+
+const heightStyle = computed(() => {
+  if (props.twoRowsOnly && firstAlbumHeight.value > 0) {
+    return `max-height: calc(${(firstAlbumHeight.value * 2) + 24}px);`
+  }
+  return ''
+})
 
 let fetchType: string
 
@@ -137,8 +148,20 @@ onBeforeMount(async () => {
   <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
-    <div v-if="albums.length > 0" class="auto-grid-6">
-      <Album v-for="(album, index) in albums" :key="album.id" :album="album" :index="index" size="sm" class="transition duration-200 hover:scale-105" />
+    <div
+      v-if="albums.length > 0"
+      class="auto-grid-6 overflow-hidden pr-1"
+      :style="heightStyle"
+    >
+      <Album
+        v-for="(album, index) in albums" :key="album.id"
+        :ref="index === 0 ? (el => firstAlbumElement = el as HTMLElement) : undefined"
+        :album="album"
+        :index="index"
+        size="sm"
+        class="transition duration-200 hover:scale-100 md:scale-95"
+        :show-date="false"
+      />
     </div>
     <div v-if="canLoadMore && props.scrollable" ref="observer" class="h-16px">
       Loading more albums...

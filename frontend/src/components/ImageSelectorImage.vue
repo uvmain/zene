@@ -6,17 +6,21 @@ const props = defineProps({
 })
 
 defineEmits(['updateArt'])
+
+const loaded = ref(false)
 </script>
 
 <template>
   <div class="relative w-56">
     <img
-      class="size-56"
+      class="aspect-square size-56 bg-bluegray"
       :src="imageUrl"
       :alt="label"
       width="224"
       height="224"
+      @load="loaded = true"
     />
+    <Loading v-if="!loaded" class="absolute left-1/2 top-1/2 size-56 translate-x--1/2 translate-y--1/2" />
     <ZButton
       class="absolute bottom-10 right-2"
       aria-label="Choose art"

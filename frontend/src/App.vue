@@ -17,7 +17,7 @@ html, body, #app {
   padding: 0;
   border: 0;
   font-family: 'Jura', sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
   font-weight: 600;
 }
 

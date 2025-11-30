@@ -49,3 +49,12 @@ export function parseReleaseDate(releaseDate: ReleaseDate): string {
 export function generateSeed() {
   return Math.floor(Math.random() * 1000000)
 }
+
+export async function cacheBustAlbumArt(albumId: string) {
+  const promises = []
+  promises.push(fetch(getCoverArtUrl(albumId), { method: 'POST' }))
+  promises.push(fetch(getCoverArtUrl(albumId, 120), { method: 'POST' }))
+  promises.push(fetch(getCoverArtUrl(albumId, 150), { method: 'POST' }))
+  promises.push(fetch(getCoverArtUrl(albumId, 200), { method: 'POST' }))
+  await Promise.all(promises)
+}

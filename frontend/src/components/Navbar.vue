@@ -31,7 +31,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
     </div>
 
     <div class="flex flex-col space-y-6">
-      <div class="flex items-center gap-x-2 px-2">
+      <RouterLink class="flex items-center gap-x-2 px-2" to="/">
         <img
           class="size-12 opacity-90"
           src="/minidisk.svg"
@@ -42,7 +42,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
         <div class="text-2xl text-muted font-bold">
           Zene
         </div>
-      </div>
+      </RouterLink>
       <nav class="flex flex-col gap-y-4 px-2 lg:text-xl">
         <NavLink route-name="Home" route-prop="/" />
         <NavLink route-name="Albums" route-prop="/albums" />
@@ -58,3 +58,9 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
     <NavArt class="mt-auto" />
   </aside>
 </template>
+
+<style scoped>
+:deep(a) {
+  text-decoration: none;
+}
+</style>
