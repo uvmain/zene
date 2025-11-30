@@ -30,21 +30,19 @@ function navigate() {
 
 <template>
   <div>
-    <div class="group" @click="navigate()">
+    <div class="group grid cursor-pointer" @click="navigate()">
       <img
-        class="size-150px cursor-pointer rounded-full object-cover"
+        class="z-1 col-span-full row-span-full size-150px rounded-full object-cover"
         :src="coverArtUrl"
         :loading="loading"
         width="150"
         height="150"
         @error="onImageError"
       />
-      <div class="relative">
-        <PlayButton
-          :artist="artist"
-          class="absolute bottom-2 right-4 z-10 opacity-0 transition-all duration-300 group-hover:right-1 group-hover:opacity-100"
-        />
-      </div>
+      <PlayButton
+        :artist="artist"
+        class="z-2 col-span-full row-span-full mx-auto translate-x--2 opacity-0 duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+      />
     </div>
     <div class="max-w-150px">
       <div class="truncate text-center text-nowrap text-sm text-primary md:text-base">

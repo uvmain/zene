@@ -123,7 +123,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div v-if="artistAlbums.length > 0">
-      <div class="text-lg font-semibold">
+      <div class="mb-2 text-lg font-semibold">
         Albums
       </div>
       <div class="flex flex-wrap gap-6">
@@ -133,7 +133,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div v-if="albumArtistAlbums.length > 0">
-      <div class="text-lg font-semibold">
+      <div class="mb-2 text-lg font-semibold">
         Appears on albums
       </div>
       <div class="flex flex-wrap gap-6">
@@ -143,7 +143,7 @@ onBeforeMount(async () => {
       </div>
     </div>
     <div v-if="similarArtists.length > 0">
-      <div class="text-lg font-semibold">
+      <div class="mb-2 text-lg font-semibold">
         Similar Artists
       </div>
       <div class="flex flex-wrap gap-6">

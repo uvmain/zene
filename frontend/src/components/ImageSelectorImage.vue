@@ -11,7 +11,7 @@ defineEmits(['updateArt'])
 <template>
   <div class="relative w-56">
     <img
-      class="size-56"
+      class="aspect-square size-56"
       :src="imageUrl"
       :alt="label"
       width="224"

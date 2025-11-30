@@ -81,7 +81,7 @@ function actOnUpdatedArt() {
   <div>
     <div v-if="size === 'sm'" class="group">
       <img
-        class="aspect-square h-full w-full cursor-pointer border-muted object-cover"
+        class="aspect-square h-full w-full cursor-pointer border-muted"
         :src="coverArtUrlSm"
         alt="Album Cover"
         :loading="loading"
@@ -116,7 +116,7 @@ function actOnUpdatedArt() {
     <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
       <img
         :src="coverArtUrlMd"
-        class="size-24 cursor-pointer border-muted object-cover md:size-52"
+        class="aspect-square size-24 cursor-pointer border-muted md:size-52"
         loading="lazy"
         width="200"
         height="200"
