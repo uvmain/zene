@@ -91,6 +91,13 @@ function updateProgress() {
       playcountPosted.value = true
     }
   }
+  else if (currentlyPlayingPodcastEpisode.value && !playcountPosted.value) {
+    const halfwayPoint = Number(currentlyPlayingPodcastEpisode.value.duration) / 2
+    if (currentTime.value >= halfwayPoint) {
+      postPlaycount(currentlyPlayingPodcastEpisode.value.streamId)
+      playcountPosted.value = true
+    }
+  }
 }
 
 watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
@@ -154,6 +161,7 @@ async function handleGetRandomTracks() {
           <PlayerProgressBar
             :current-time-in-seconds="currentTime"
             :currently-playing-track="currentlyPlayingTrack"
+            :currently-playing-podcast-episode="currentlyPlayingPodcastEpisode"
             @seek="seek"
           />
 

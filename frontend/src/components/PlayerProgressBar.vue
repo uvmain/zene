@@ -1,17 +1,25 @@
 <script setup lang="ts">
+import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { formatTimeFromSeconds } from '~/composables/logic'
 
 const props = defineProps({
   currentTimeInSeconds: { type: Number, default: 0 },
   currentlyPlayingTrack: { type: Object as PropType<SubsonicSong>, default: () => ({}) },
+  currentlyPlayingPodcastEpisode: { type: Object as PropType<SubsonicPodcastEpisode>, default: () => ({}) },
 })
 
 const emits = defineEmits(['seek'])
 
 const currentTime = computed(() => formatTimeFromSeconds(props.currentTimeInSeconds))
 const duration = computed(() => {
-  return formatTimeFromSeconds(props.currentlyPlayingTrack ? props.currentlyPlayingTrack.duration : 0)
+  if (props.currentlyPlayingPodcastEpisode && props.currentlyPlayingPodcastEpisode.duration) {
+    return formatTimeFromSeconds(Number(props.currentlyPlayingPodcastEpisode.duration))
+  }
+  else if (props.currentlyPlayingTrack && props.currentlyPlayingTrack.duration) {
+    return formatTimeFromSeconds(props.currentlyPlayingTrack.duration)
+  }
+  return '0:00'
 })
 
 function seek(event: Event) {
@@ -22,7 +30,7 @@ function seek(event: Event) {
 </script>
 
 <template>
-  <div v-if="currentlyPlayingTrack.duration" class="max-w-xs w-full flex flex-row items-center gap-2 lg:max-w-200 md:max-w-lg sm:max-w-md md:gap-2">
+  <div v-if="currentlyPlayingTrack.duration || currentlyPlayingPodcastEpisode.duration" class="max-w-xs w-full flex flex-row items-center gap-2 lg:max-w-200 md:max-w-lg sm:max-w-md md:gap-2">
     <span id="currentTime" class="w-10 text-right text-sm text-muted md:w-12 sm:w-10 sm:text-sm">
       {{ currentTime }}
     </span>
