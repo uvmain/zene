@@ -21,7 +21,7 @@ const { playcount_updated_musicbrainz_track_id } = usePlaycounts()
 
 const rowRefs = ref<any[]>([])
 const currentRow = ref()
-const observer = useTemplateRef<HTMLDivElement>('observer')
+const observer = useTemplateRef('observer')
 const observerIsVisible = useElementVisibility(observer)
 
 watch(observerIsVisible, (newValue) => {

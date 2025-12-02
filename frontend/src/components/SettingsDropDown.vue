@@ -7,7 +7,7 @@ const { streamQuality, StreamQualities } = useSettings()
 const { toggleDebug, debugLog, useDebugBool } = useDebug()
 
 const open = ref(false)
-const dropdownRef = useTemplateRef('dropdown-ref')
+const dropdownRef = useTemplateRef('dropdown')
 
 function toggle() {
   open.value = !open.value
@@ -39,7 +39,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="dropdown-ref" class="relative z-20 inline-block text-left">
+  <div ref="dropdown" class="relative z-20 inline-block text-left">
     <icon-nrk-settings class="cursor-pointer text-2xl" @click="toggle" />
 
     <transition name="fade">

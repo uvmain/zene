@@ -2,9 +2,11 @@
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import { getStreamUrl, openSubsonicFetchRequest } from '~/composables/backendFetch'
+import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const route = useRoute()
 const router = useRouter()
+const { setCurrentlyPlayingPodcastEpisode } = usePlaybackQueue()
 
 const showDeleteChannelModal = ref(false)
 const showRefreshEpisodesModal = ref(false)
@@ -39,15 +41,6 @@ async function downloadEpisode(episodeId: string) {
     body: formData,
   })
   podcast.value.episode.find(episode => episode.id === episodeId)!.status = 'downloading'
-}
-
-function playEpisodeInNewTab(episodeId: string) {
-  if (!podcast.value)
-    return
-  const episode = podcast.value.episode.find(ep => ep.id === episodeId)
-  if (!episode || episode.status !== 'completed')
-    return
-  window.open(getStreamUrl('stream', new URLSearchParams({ id: episode.streamId })), '_blank')?.focus()
 }
 
 function confirmDeletePodcast() {
@@ -146,7 +139,7 @@ onBeforeMount(async () => {
               <icon-nrk-media-play
                 v-else-if="episode.status === 'completed'"
                 class="size-8 footer-icon"
-                @click="playEpisodeInNewTab(episode.id)"
+                @click="setCurrentlyPlayingPodcastEpisode(episode)"
               />
               <icon-nrk-download
                 v-else

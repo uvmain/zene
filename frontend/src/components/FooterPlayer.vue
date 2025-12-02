@@ -6,7 +6,7 @@ import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
 const { debugLog } = useDebug()
-const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
+const { clearQueue, currentlyPlayingTrack, currentlyPlayingPodcastEpisode, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount } = usePlaycounts()
 const router = useRouter()
@@ -19,7 +19,13 @@ const previousVolume = ref(1)
 const currentVolume = ref(1)
 
 const trackUrl = computed(() => {
-  return currentlyPlayingTrack.value ? getAuthenticatedTrackUrl(currentlyPlayingTrack.value?.musicBrainzId) : ''
+  if (currentlyPlayingTrack.value) {
+    return getAuthenticatedTrackUrl(currentlyPlayingTrack.value?.musicBrainzId)
+  }
+  else if (currentlyPlayingPodcastEpisode.value) {
+    return getAuthenticatedTrackUrl(currentlyPlayingPodcastEpisode.value?.streamId)
+  }
+  return ''
 })
 
 async function togglePlayback() {
