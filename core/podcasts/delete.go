@@ -33,7 +33,7 @@ func DeletePodcastEpisodeById(ctx context.Context, episodeId int) error {
 
 	if responseError != "" {
 		responseError = responseError[:len(responseError)-2] // remove trailing comma and space
-		return fmt.Errorf(responseError)
+		return fmt.Errorf("%s", responseError)
 	}
 
 	return nil
@@ -73,7 +73,7 @@ func DeletePodcastChannelAndEpisodes(ctx context.Context, channelId int) error {
 
 	if responseError != "" {
 		responseError = responseError[:len(responseError)-2] // remove trailing comma and space
-		return fmt.Errorf(responseError)
+		return fmt.Errorf("%s", responseError)
 	}
 
 	return nil

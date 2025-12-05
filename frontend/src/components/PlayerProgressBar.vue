@@ -12,6 +12,7 @@ const props = defineProps({
 const emits = defineEmits(['seek'])
 
 const currentTime = computed(() => formatTimeFromSeconds(props.currentTimeInSeconds))
+
 const duration = computed(() => {
   if (props.currentlyPlayingPodcastEpisode && props.currentlyPlayingPodcastEpisode.duration) {
     return formatTimeFromSeconds(Number(props.currentlyPlayingPodcastEpisode.duration))
@@ -20,6 +21,16 @@ const duration = computed(() => {
     return formatTimeFromSeconds(props.currentlyPlayingTrack.duration)
   }
   return '0:00'
+})
+
+const inputDuration = computed(() => {
+  if (props.currentlyPlayingPodcastEpisode && props.currentlyPlayingPodcastEpisode.duration) {
+    return Number(props.currentlyPlayingPodcastEpisode.duration)
+  }
+  else if (props.currentlyPlayingTrack && props.currentlyPlayingTrack.duration) {
+    return props.currentlyPlayingTrack.duration
+  }
+  return 0
 })
 
 function seek(event: Event) {
@@ -37,7 +48,7 @@ function seek(event: Event) {
     <input
       type="range"
       class="h-2 w-full cursor-pointer background-2 accent-primary1 md:h-1"
-      :max="currentlyPlayingTrack ? currentlyPlayingTrack.duration : 0"
+      :max="inputDuration"
       :value="currentTimeInSeconds"
       @input="seek($event)"
     />

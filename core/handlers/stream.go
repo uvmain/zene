@@ -95,6 +95,18 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 
 	mediaFilepath, err := database.GetMediaFilePath(ctx, streamId)
 
+	if mediaFilepath == "" || err != nil {
+		// check if the file is a podcast episode
+		if requestUser.PodcastRole {
+			logger.Printf("Checking if streamId %s is a podcast episode", streamId)
+			episode, _ := database.GetPodcastEpisodeByGuid(ctx, streamId)
+			if episode.SourceUrl != "" {
+				http.Redirect(w, r, episode.SourceUrl, http.StatusFound)
+				return
+			}
+		}
+	}
+
 	if err != nil {
 		logger.Printf("Error querying database for media filepath %s: %v", streamId, err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "File not found in database.", "")

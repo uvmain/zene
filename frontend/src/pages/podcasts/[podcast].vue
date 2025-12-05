@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
-import { getStreamUrl, openSubsonicFetchRequest } from '~/composables/backendFetch'
+import { openSubsonicFetchRequest } from '~/composables/backendFetch'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const route = useRoute()
@@ -134,28 +134,30 @@ onBeforeMount(async () => {
               width="192"
               height="192"
             />
-            <ZButton :size12="true" class="z-2 col-span-full row-span-full m-2">
-              <icon-nrk-progress v-if="episode.status === 'downloading'" class="size-8 footer-icon" />
-              <icon-nrk-media-play
-                v-else-if="episode.status === 'completed'"
-                class="size-8 footer-icon"
-                @click="setCurrentlyPlayingPodcastEpisode(episode)"
-              />
-              <icon-nrk-download
-                v-else
-                class="size-8 footer-icon"
-                @click="downloadEpisode(episode.id)"
-              />
-            </ZButton>
           </div>
-          <div class="my-auto">
+          <div class="flex flex-col justify-between gap-4">
             <div class="text-lg font-semibold">
               {{ episode.title }}
             </div>
             <div
-              class="line-clamp-6 max-h-30 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
+              class="line-clamp-4 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
               v-html="episode.description.replaceAll(/\n/g, '<br>')"
             />
+            <div class="flex flex-row gap-2">
+              <ZButton
+                :size12="true"
+                @click="setCurrentlyPlayingPodcastEpisode(episode)"
+              >
+                <icon-nrk-media-play class="size-8 footer-icon" />
+              </ZButton>
+              <ZButton
+                :size12="true"
+                :disabled="episode.status === 'downloading'"
+                @click="downloadEpisode(episode.id)"
+              >
+                <icon-nrk-download class="size-8 footer-icon" />
+              </ZButton>
+            </div>
           </div>
         </div>
       </div>
