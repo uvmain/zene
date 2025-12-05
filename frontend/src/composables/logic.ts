@@ -31,9 +31,22 @@ export function getCoverArtUrl(musicbrainzId: string, size = 400, timeUpdated?: 
   return `/share/img/${musicbrainzId}?size=${size}`
 }
 
-export function getAuthenticatedTrackUrl(musicbrainz_track_id: string): string {
-  const queryParamString = `apiKey=${apiKey.value}&c=zene-frontend&v=1.6.0&maxBitRate=${streamQuality.value}&id=${musicbrainz_track_id}&format=aac`
-  return `/rest/stream.view?${queryParamString}`
+export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = false): string {
+  const queryParams = new URLSearchParams({
+    apiKey: apiKey.value,
+    c: 'zene-frontend',
+    v: '1.6.0',
+    id: musicbrainz_track_id,
+    format: raw ? 'raw' : 'aac',
+  })
+  if (!raw) {
+    queryParams.append('maxBitRate', streamQuality.value.toString())
+  }
+  else {
+    queryParams.append('raw', 'true')
+  }
+  // const queryParamString = `v=1.6.0&maxBitRate=${streamQuality.value}&id=${musicbrainz_track_id}&format=aac`
+  return `/rest/stream.view?${queryParams.toString()}`
 }
 
 export function onImageError(event: Event) {

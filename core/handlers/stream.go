@@ -98,7 +98,6 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	if mediaFilepath == "" || err != nil {
 		// check if the file is a podcast episode
 		if requestUser.PodcastRole {
-			logger.Printf("Checking if streamId %s is a podcast episode", streamId)
 			episode, _ := database.GetPodcastEpisodeByGuid(ctx, streamId)
 			if episode.SourceUrl != "" {
 				http.Redirect(w, r, episode.SourceUrl, http.StatusFound)

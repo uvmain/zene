@@ -23,7 +23,7 @@ const trackUrl = computed(() => {
     return getAuthenticatedTrackUrl(currentlyPlayingTrack.value?.musicBrainzId)
   }
   else if (currentlyPlayingPodcastEpisode.value) {
-    return getAuthenticatedTrackUrl(currentlyPlayingPodcastEpisode.value?.streamId)
+    return getAuthenticatedTrackUrl(currentlyPlayingPodcastEpisode.value?.streamId, true)
   }
   return ''
 })
