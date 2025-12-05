@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
-import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
-import { openSubsonicFetchRequest } from '~/composables/backendFetch'
+import type { SubsonicPodcastChannel, SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
+import { openSubsonicFetchRequest, useServerSentEventsForPodcast } from '~/composables/backendFetch'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
+// import { usePodcastStore } from '~/stores/usePodcastStore'
 
 const route = useRoute()
 const router = useRouter()
 const { setCurrentlyPlayingPodcastEpisode } = usePlaybackQueue()
+// const { getStoredEpisode, setStoredEpisode, deleteStoredEpisode } = usePodcastStore()
 
 const showDeleteChannelModal = ref(false)
 const showRefreshEpisodesModal = ref(false)
@@ -25,22 +27,27 @@ async function getPodcast() {
     body: formData,
   })
   podcast.value = response?.podcasts?.channel[0]
-  podcast.value.coverArt = `/share/img/${podcast.value.coverArt}?size=400`
-
-  for (const ep of podcast.value.episode) {
-    ep.coverArt = `/share/img/${ep.coverArt}?size=400`
-  }
 }
 
-async function downloadEpisode(episodeId: string) {
+function getEpisodeCoverArtUrl(episode: SubsonicPodcastEpisode, size: number) {
+  return `/share/img/${episode.coverArt}?size=${size}`
+}
+
+const channelCoverArt = computed(() => {
+  if (!podcast.value)
+    return ''
+  return `/share/img/${podcast.value.coverArt}?size=400`
+})
+
+async function downloadEpisodeOnServer(episode: SubsonicPodcastEpisode) {
   if (!podcast.value)
     return
   const formData = new FormData()
-  formData.append('id', episodeId)
+  formData.append('id', episode.id)
   openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('downloadPodcastEpisode', {
     body: formData,
   })
-  podcast.value.episode.find(episode => episode.id === episodeId)!.status = 'downloading'
+  podcast.value.episode.find(ep => ep.id === episode.id)!.status = 'downloading'
 }
 
 function confirmDeletePodcast() {
@@ -72,8 +79,17 @@ async function deletePodcastChannel() {
   }
 }
 
+function onMessageReceived(data: any) {
+  podcast.value = data[0]
+}
+
+function onErrorReceived(error: any) {
+  console.error('SSE Error Received:', error)
+}
+
 onBeforeMount(async () => {
   await getPodcast()
+  useServerSentEventsForPodcast(route.params.podcast.toString(), onMessageReceived, onErrorReceived)
 })
 </script>
 
@@ -95,7 +111,7 @@ onBeforeMount(async () => {
             </ZButton>
           </div>
           <img
-            :src="podcast.coverArt"
+            :src="channelCoverArt"
             alt="Podcast Cover"
             class="size-70 object-cover"
             width="280"
@@ -127,7 +143,7 @@ onBeforeMount(async () => {
         <div class="mx-auto max-w-60dvw flex flex-row justify-start gap-4 align-top transition duration-150 hover:scale-101">
           <div class="grid items-end justify-items-end">
             <img
-              :src="episode.coverArt"
+              :src="getEpisodeCoverArtUrl(episode, 192)"
               alt="Podcast Cover"
               :loading="index < 20 ? 'eager' : 'lazy'"
               class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
@@ -151,9 +167,16 @@ onBeforeMount(async () => {
                 <icon-nrk-media-play class="size-8 footer-icon" />
               </ZButton>
               <ZButton
+                v-if="episode.status === 'downloading'"
+                :size12="true"
+              >
+                <Loading />
+              </ZButton>
+              <ZButton
+                v-else-if="episode.status !== 'completed'"
                 :size12="true"
                 :disabled="episode.status === 'downloading'"
-                @click="downloadEpisode(episode.id)"
+                @click="downloadEpisodeOnServer(episode)"
               >
                 <icon-nrk-download class="size-8 footer-icon" />
               </ZButton>

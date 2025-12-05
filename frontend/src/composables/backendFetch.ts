@@ -21,6 +21,7 @@ import type { SearchResult } from '~/types'
 import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
+import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { useLocalStorage } from '@vueuse/core'
 import { useDebug } from '~/composables/useDebug'
@@ -400,4 +401,31 @@ export async function postNewAlbumArt(musicbrainz_song_id: string, image: Blob):
     body: formData,
   })
   return response
+}
+
+export async function useServerSentEventsForPodcast(podcastId: string, onMessage: (data: SubsonicPodcastChannel) => void, onError: (error: any) => void): Promise<EventSource> {
+  const params = new URLSearchParams()
+  params.append('apiKey', apiKey.value)
+  params.append('f', 'json')
+  params.append('v', '1.16.0')
+  params.append('c', 'zene-frontend')
+  params.append('id', podcastId)
+
+  const eventSource = new EventSource(`/rest/getpodcastssse?${params.toString()}`)
+
+  eventSource.addEventListener('message', (event) => {
+    const data = JSON.parse(event.data as string) as SubsonicPodcastChannel
+    onMessage(data)
+  })
+
+  eventSource.addEventListener('done', () => {
+    console.log('SSE completed — closing stream')
+    eventSource.close()
+  })
+
+  eventSource.onerror = (err) => {
+    onError(err)
+  }
+
+  return eventSource
 }

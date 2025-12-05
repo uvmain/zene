@@ -9,6 +9,9 @@ const coverArtUrl = computed(() => {
   if (currentlyPlayingTrack.value) {
     return getCoverArtUrl(currentlyPlayingTrack.value?.albumId, 200)
   }
+  else if (currentlyPlayingPodcastEpisode.value) {
+    return getCoverArtUrl(currentlyPlayingPodcastEpisode.value.coverArt, 200)
+  }
   else {
     return '/default-square.png'
   }
@@ -51,7 +54,7 @@ const coverArtUrl = computed(() => {
         {{ currentlyPlayingPodcastEpisode?.title }}
       </RouterLink>
       <img
-        :src="currentlyPlayingPodcastEpisode.coverArt"
+        :src="coverArtUrl"
         class="w-full cursor-pointer object-cover"
         @error="onImageError"
         @click="() => router.push(`/podcasts/${currentlyPlayingPodcastEpisode?.channelId}`)"
