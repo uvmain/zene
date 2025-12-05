@@ -80,7 +80,17 @@ async function deletePodcastChannel() {
 }
 
 function onMessageReceived(data: any) {
-  podcast.value = data[0]
+  if (!podcast.value) {
+    podcast.value = data[0]
+  }
+  else {
+    data[0].episode.forEach((newEpisode: SubsonicPodcastEpisode) => {
+      const existingEpisode = podcast.value!.episode.find(oldEpisode => oldEpisode.id === newEpisode.id)
+      if (existingEpisode) {
+        existingEpisode.status = newEpisode.status
+      }
+    })
+  }
 }
 
 function onErrorReceived(error: any) {
