@@ -1,6 +1,6 @@
 module zene
 
-go 1.25.3
+go 1.25.5
 
 require (
 	github.com/djherbis/times v1.6.0
