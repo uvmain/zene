@@ -173,6 +173,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	waitErr := cmd.Wait()
 
 	if err != nil {
+		logger.Printf("io.Copy error while streaming %s (trackId=%s, client=%s, UA=%s): %v", filePathAbs, trackId, r.RemoteAddr, r.UserAgent(), err)
 		if useCache && cacheFileCreated {
 			cacheFile.Close()
 			cleanupIncompleteCache(tempCachePath, cacheKey)
@@ -181,6 +182,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	if waitErr != nil {
+		logger.Printf("ffmpeg exited with error while streaming %s (trackId=%s, client=%s, UA=%s): %v", filePathAbs, trackId, r.RemoteAddr, r.UserAgent(), waitErr)
 		if useCache && cacheFileCreated {
 			cacheFile.Close()
 			cleanupIncompleteCache(tempCachePath, cacheKey)
