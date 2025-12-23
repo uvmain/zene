@@ -27,6 +27,21 @@ export async function getStoredEpisode(key: string): Promise<Blob> {
   })
 }
 
+export async function episodeIsStored(key: string): Promise<boolean> {
+  const open = indexedDB.open('data')
+  return new Promise<boolean>((resolve, reject) => {
+    open.onsuccess = () => {
+      db = open.result
+      const transaction = db.transaction(STORE_NAME)
+      const objectStore = transaction.objectStore(STORE_NAME)
+      const request = objectStore.get(key)
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => resolve(request.result !== undefined)
+      transaction.oncomplete = () => db.close()
+    }
+  })
+}
+
 export async function getListOfStoredEpisodes(): Promise<string[]> {
   const open = indexedDB.open('data')
   return new Promise<string[]>((resolve, reject) => {

@@ -148,35 +148,31 @@ onBeforeMount(async () => {
       />
     </div>
     <!-- delete channel modal -->
-    <teleport to="body">
-      <div v-if="showDeleteChannelModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-        <div class="relative max-w-md w-full flex flex-col items-center justify-center gap-4 background-3 p-6 text-center align-middle">
-          <div class="mb-4 text-lg text-muted font-semibold">
-            Are you sure you want to delete this podcast channel?
-          </div>
-          <div class="flex flex-row gap-4">
-            <ZButton class="px-1" aria-label="Close" @click="showDeleteChannelModal = false">
-              Cancel
-            </ZButton>
-            <ZButton class="bg-red-600" @click="confirmDeletePodcast">
-              Delete
-            </ZButton>
-          </div>
-        </div>
-      </div>
-    </teleport>
-    <!-- refresh episodes modal -->
-    <teleport to="body">
-      <div v-if="showRefreshEpisodesModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-        <div class="relative max-w-md w-full flex flex-col items-center justify-center gap-4 background-3 p-6 text-center align-middle">
-          <div class="mb-4 text-lg text-muted font-semibold">
-            Episodes are now being refreshed. Please reload the page later to see updated episodes.
-          </div>
-          <ZButton aria-label="Close" @click="showRefreshEpisodesModal = false">
-            Okay
+    <Modal
+      :show-modal="showDeleteChannelModal"
+      modal-text="Are you sure you want to delete this podcast channel?"
+    >
+      <template #buttons>
+        <div class="flex flex-row gap-4">
+          <ZButton aria-label="Close" @click="showDeleteChannelModal = false">
+            Cancel
+          </ZButton>
+          <ZButton class="bg-red-600" @click="confirmDeletePodcast">
+            Delete
           </ZButton>
         </div>
-      </div>
-    </teleport>
+      </template>
+    </Modal>
+    <!-- refresh episodes modal -->
+    <Modal
+      :show-modal="showRefreshEpisodesModal"
+      modal-text="Episodes are now being refreshed. Please reload the page later to see updated episodes."
+    >
+      <template #buttons>
+        <ZButton aria-label="Close" @click="showRefreshEpisodesModal = false">
+          Okay
+        </ZButton>
+      </template>
+    </Modal>
   </div>
 </template>

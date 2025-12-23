@@ -52,6 +52,7 @@ declare module 'vue' {
     ImageSelectorImage: typeof import('./src/components/ImageSelectorImage.vue')['default']
     Loading: typeof import('./src/components/Loading.vue')['default']
     LyricsModal: typeof import('./src/components/LyricsModal.vue')['default']
+    Modal: typeof import('./src/components/Modal.vue')['default']
     NavArt: typeof import('./src/components/NavArt.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']
     NavLink: typeof import('./src/components/NavLink.vue')['default']

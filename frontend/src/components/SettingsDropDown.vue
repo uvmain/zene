@@ -45,7 +45,7 @@ onBeforeUnmount(() => {
     <transition name="fade">
       <div
         v-if="open"
-        class="-md absolute right-0 mt-2 w-64 origin-top-right bg-white shadow-lg ring-1 ring-black ring-opacity-5 md:w-56"
+        class="absolute right-0 mt-2 w-64 origin-top-right bg-white shadow-lg ring-1 ring-black ring-opacity-5 md:w-56"
       >
         <div class="py-1">
           <div
