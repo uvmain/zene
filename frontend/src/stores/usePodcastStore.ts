@@ -1,41 +1,67 @@
-import * as localforage from 'localforage'
+const STORE_NAME = 'episodes'
 
-export function usePodcastStore() {
-  const setStoredEpisode = async (key: string, episode: Blob): Promise<void> => {
-    try {
-      await localforage.setItem(key, episode)
-    }
-    catch (error) {
-      const err = error as Error
-      console.error(`Error storing podcast episode in IndexedDB: ${err.message}`)
+let db: IDBDatabase
+
+export function createEpisodeStoreIfNotExists() {
+  const open = indexedDB.open('data')
+  open.onupgradeneeded = () => {
+    db = open.result
+    if (!db.objectStoreNames.contains(STORE_NAME)) {
+      db.createObjectStore(STORE_NAME)
     }
   }
+}
 
-  const getStoredEpisode = async (key: string): Promise<Blob | null> => {
-    try {
-      const value = await localforage.getItem(key)
-      return value as Blob | null
+export async function getStoredEpisode(key: string): Promise<Blob> {
+  const open = indexedDB.open('data')
+  return new Promise<Blob>((resolve, reject) => {
+    open.onsuccess = () => {
+      db = open.result
+      const transaction = db.transaction(STORE_NAME)
+      const objectStore = transaction.objectStore(STORE_NAME)
+      const request = objectStore.get(key)
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => resolve(request.result as Blob)
+      transaction.oncomplete = () => db.close()
     }
-    catch (error) {
-      const err = error as Error
-      console.log(err.message)
-      return null
+  })
+}
+
+export async function getListOfStoredEpisodes(): Promise<string[]> {
+  const open = indexedDB.open('data')
+  return new Promise<string[]>((resolve, reject) => {
+    open.onsuccess = () => {
+      db = open.result
+      const transaction = db.transaction(STORE_NAME)
+      const objectStore = transaction.objectStore(STORE_NAME)
+      const request = objectStore.getAllKeys()
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => resolve(request.result as string[])
+      transaction.oncomplete = () => db.close()
     }
+  })
+}
+
+export function setStoredEpisode(key: string, episode: Blob) {
+  const open = indexedDB.open('data')
+  open.onsuccess = () => {
+    db = open.result
+    const transaction = db.transaction(STORE_NAME, 'readwrite')
+    const objectStore = transaction.objectStore(STORE_NAME)
+    const request = objectStore.put(episode, key)
+    request.onerror = () => console.error(request.error)
+    transaction.oncomplete = () => db.close()
   }
+}
 
-  const deleteStoredEpisode = async (key: string): Promise<void> => {
-    try {
-      await localforage.removeItem(key)
-    }
-    catch (error) {
-      const err = error as Error
-      console.error(`Error deleting podcast episode from IndexedDB: ${err.message}`)
-    }
-  }
-
-  return {
-    setStoredEpisode,
-    getStoredEpisode,
-    deleteStoredEpisode,
+export function deleteStoredEpisode(key: string) {
+  const open = indexedDB.open('data')
+  open.onsuccess = () => {
+    db = open.result
+    const transaction = db.transaction(STORE_NAME, 'readwrite')
+    const objectStore = transaction.objectStore(STORE_NAME)
+    const request = objectStore.delete(key)
+    request.onerror = () => console.error(request.error)
+    transaction.oncomplete = () => db.close()
   }
 }

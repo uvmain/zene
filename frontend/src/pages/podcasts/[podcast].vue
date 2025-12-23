@@ -2,13 +2,9 @@
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastChannel, SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import { openSubsonicFetchRequest, useServerSentEventsForPodcast } from '~/composables/backendFetch'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
-// import { usePodcastStore } from '~/stores/usePodcastStore'
 
 const route = useRoute()
 const router = useRouter()
-const { setCurrentlyPlayingPodcastEpisode } = usePlaybackQueue()
-// const { getStoredEpisode, setStoredEpisode, deleteStoredEpisode } = usePodcastStore()
 
 const showDeleteChannelModal = ref(false)
 const showRefreshEpisodesModal = ref(false)
@@ -29,26 +25,11 @@ async function getPodcast() {
   podcast.value = response?.podcasts?.channel[0]
 }
 
-function getEpisodeCoverArtUrl(episode: SubsonicPodcastEpisode, size: number) {
-  return `/share/img/${episode.coverArt}?size=${size}`
-}
-
 const channelCoverArt = computed(() => {
   if (!podcast.value)
     return ''
   return `/share/img/${podcast.value.coverArt}?size=400`
 })
-
-async function downloadEpisodeOnServer(episode: SubsonicPodcastEpisode) {
-  if (!podcast.value)
-    return
-  const formData = new FormData()
-  formData.append('id', episode.id)
-  openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('downloadPodcastEpisode', {
-    body: formData,
-  })
-  podcast.value.episode.find(ep => ep.id === episode.id)!.status = 'downloading'
-}
 
 function confirmDeletePodcast() {
   deletePodcastChannel()
@@ -95,6 +76,15 @@ function onMessageReceived(data: any) {
 
 function onErrorReceived(error: any) {
   console.error('SSE Error Received:', error)
+}
+
+function updateEpisodeStatus(episodeId: string, status: string) {
+  if (!podcast.value)
+    return
+  const episode = podcast.value.episode.find(ep => ep.id === episodeId)
+  if (episode) {
+    episode.status = status
+  }
 }
 
 onBeforeMount(async () => {
@@ -149,51 +139,13 @@ onBeforeMount(async () => {
       <div v-if="podcast.lastRefresh === ''" class="mx-auto">
         Episodes are being refreshed...
       </div>
-      <div v-for="(episode, index) in podcast.episode" :key="episode.id">
-        <div class="mx-auto max-w-60dvw flex flex-row justify-start gap-4 align-top transition duration-150 hover:scale-101">
-          <div class="grid items-end justify-items-end">
-            <img
-              :src="getEpisodeCoverArtUrl(episode, 192)"
-              alt="Podcast Cover"
-              :loading="index < 20 ? 'eager' : 'lazy'"
-              class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
-              width="192"
-              height="192"
-            />
-          </div>
-          <div class="flex flex-col justify-between gap-4">
-            <div class="text-lg font-semibold">
-              {{ episode.title }}
-            </div>
-            <div
-              class="line-clamp-4 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
-              v-html="episode.description.replaceAll(/\n/g, '<br>')"
-            />
-            <div class="flex flex-row gap-2">
-              <ZButton
-                :size12="true"
-                @click="setCurrentlyPlayingPodcastEpisode(episode)"
-              >
-                <icon-nrk-media-play class="size-8 footer-icon" />
-              </ZButton>
-              <ZButton
-                v-if="episode.status === 'downloading'"
-                :size12="true"
-              >
-                <Loading />
-              </ZButton>
-              <ZButton
-                v-else-if="episode.status !== 'completed'"
-                :size12="true"
-                :disabled="episode.status === 'downloading'"
-                @click="downloadEpisodeOnServer(episode)"
-              >
-                <icon-nrk-download class="size-8 footer-icon" />
-              </ZButton>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PodcastEpisode
+        v-for="(episode, index) in podcast.episode"
+        :key="episode.id"
+        :episode="episode"
+        :index="index"
+        @update-episode-status="updateEpisodeStatus"
+      />
     </div>
     <!-- delete channel modal -->
     <teleport to="body">
