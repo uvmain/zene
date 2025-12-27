@@ -429,3 +429,24 @@ export async function useServerSentEventsForPodcast(podcastId: string, onMessage
 
   return eventSource
 }
+
+export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
+  const formData = new FormData()
+  formData.append('apiKey', apiKey.value)
+  formData.append('f', 'json')
+  formData.append('v', '1.16.0')
+  formData.append('c', 'zene-frontend')
+  formData.append('id', mediaId)
+
+  const url = '/rest/download.view'
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to download media from ${url}: ${response.statusText}`)
+  }
+  const blob = await response.blob()
+  return blob
+}
