@@ -43,52 +43,53 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-60dvw flex flex-row justify-start gap-4 align-top transition duration-150 hover:scale-101">
-    <div class="grid items-end justify-items-end">
+  <div class="corner-cut mx-auto max-w-60dvw flex flex-col gap-4 border-1 border-muted border-solid p-4">
+    <div class="flex flex-row justify-start gap-4 align-top transition duration-150 hover:scale-101">
       <img
         :src="episodeArtUrl"
         alt="Podcast Cover"
         :loading="index < 20 ? 'eager' : 'lazy'"
-        class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
+        class="z-1 col-span-full row-span-full my-auto size-40 rounded object-cover"
         width="192"
         height="192"
       />
-    </div>
-    <div class="flex flex-col justify-between gap-4">
-      <div class="text-lg font-semibold">
-        {{ episode.title }}
-      </div>
-      {{ episodeDownloadedLocal }}
-      <div
-        class="line-clamp-4 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
-        v-html="episode.description.replaceAll(/\n/g, '<br>')"
-      />
-      <div class="flex flex-row gap-2">
-        <ZButton
-          :size12="true"
-          hover-text="play episode"
-          @click="setCurrentlyPlayingPodcastEpisode(episode)"
-        >
-          <icon-nrk-media-play class="size-8 footer-icon" />
-        </ZButton>
-        <ZButton
-          :size12="true"
-          :disabled="episode.status === 'downloading'"
-          class="flex flex-col items-center gap-1"
-          :hover-text="episode.status === 'completed' ? 'downloaded to server' : 'download to server'"
-          @click="downloadEpisodeOnServer(episode)"
-        >
-          <Loading v-if="episode.status === 'downloading'" />
-          <icon-nrk-download
-            v-else
-            class="size-8"
-            :class="{
-              'text-orange': episode.status === 'completed' && !episodeDownloadedLocal,
-              'text-green': episode.status === 'completed' && episodeDownloadedLocal,
-            }"
-          />
-        </ZButton>
+      <div class="my-auto flex flex-col gap-4">
+        <div class="text-lg font-semibold">
+          {{ episode.title }}
+        </div>
+        <div>
+          {{ new Date(episode.publishDate).toLocaleString() }}
+        </div>
+        <div class="flex flex-row gap-2">
+          <ZButton
+            :size12="true"
+            hover-text="play episode"
+            @click="setCurrentlyPlayingPodcastEpisode(episode)"
+          >
+            <icon-nrk-media-play class="size-8 footer-icon" />
+          </ZButton>
+          <ZButton
+            :size12="true"
+            class="flex flex-col items-center gap-1"
+            :hover-text="episode.status === 'completed' ? 'downloaded to server' : 'download to server'"
+            @click="downloadEpisodeOnServer(episode)"
+          >
+            <Loading v-if="episode.status === 'downloading'" />
+            <icon-nrk-download
+              v-else
+              class="size-8"
+              :class="{
+                'text-orange': episode.status === 'completed' && !episodeDownloadedLocal,
+                'text-green': episode.status === 'completed' && episodeDownloadedLocal,
+              }"
+            />
+          </ZButton>
+        </div>
       </div>
     </div>
+    <div
+      class="line-clamp-4 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
+      v-html="episode.description.replaceAll(/\n/g, '<br>')"
+    />
   </div>
 </template>

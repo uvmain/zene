@@ -64,6 +64,9 @@ function onMessageReceived(data: any) {
   if (!podcast.value) {
     podcast.value = data[0]
   }
+  else if (podcast.value.episode.length < data[0].episode.length) {
+    podcast.value.episode = data[0].episode
+  }
   else {
     data[0].episode.forEach((newEpisode: SubsonicPodcastEpisode) => {
       const existingEpisode = podcast.value!.episode.find(oldEpisode => oldEpisode.id === newEpisode.id)

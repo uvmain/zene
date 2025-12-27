@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"zene/core/logger"
 )
 
 func getUnendedMetadataWithPlaycountsSql(userId int) string {
@@ -25,7 +24,6 @@ func GetMediaFilePath(ctx context.Context, mediaId string) (string, error) {
 		) limit 1;`
 	err := DB.QueryRowContext(ctx, query, mediaId, mediaId).Scan(&filePath)
 	if err != nil {
-		logger.Printf("GetMediaFilePath query failed: %v", err)
 		return "", err
 	}
 	return filePath, nil
