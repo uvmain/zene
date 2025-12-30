@@ -45,6 +45,7 @@ async function deleteEpisode() {
   if (await episodeIsStored(props.episode.streamId)) {
     await deleteStoredEpisode(props.episode.streamId)
     updateLocalStorageStatus()
+    localDownloadClicked.value = false
   }
   else {
     // delete from server
