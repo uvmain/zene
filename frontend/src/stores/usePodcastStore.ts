@@ -1,3 +1,7 @@
+import { useDebug } from '~/composables/useDebug'
+
+const { debugLog } = useDebug()
+
 const STORE_NAME = 'episodes'
 
 let db: IDBDatabase
@@ -53,7 +57,7 @@ export async function getListOfStoredEpisodes(): Promise<string[]> {
       request.onerror = () => reject(request.error)
       request.onsuccess = () => resolve(request.result as string[])
       transaction.oncomplete = () => db.close()
-      console.log('Fetched list of stored episodes')
+      debugLog('Fetched list of stored episodes')
     }
   })
 }
@@ -67,7 +71,7 @@ export function setStoredEpisode(key: string, episode: Blob) {
     const request = objectStore.put(episode, key)
     request.onerror = () => console.error(request.error)
     transaction.oncomplete = () => db.close()
-    console.log(`Stored episode ${key} locally`)
+    debugLog(`Stored episode ${key} locally`)
   }
 }
 
@@ -80,6 +84,6 @@ export function deleteStoredEpisode(key: string) {
     const request = objectStore.delete(key)
     request.onerror = () => console.error(request.error)
     transaction.oncomplete = () => db.close()
-    console.log(`Deleted episode ${key} from local storage`)
+    debugLog(`Deleted episode ${key} from local storage`)
   }
 }
