@@ -22,27 +22,6 @@ const episodeArtUrl = computed(() => {
   return `/share/img/${props.episode.coverArt}?size=192`
 })
 
-const downloadButtonHoverText = computed(() => {
-  if (props.episode.status === 'completed') {
-    return episodeDownloadedLocal.value ? 'Episode downloaded locally' : 'Download episode from server'
-  }
-  else if (props.episode.status === 'downloading') {
-    return 'Downloading episode to server...'
-  }
-  else {
-    return 'Download episode to server'
-  }
-})
-
-const deleteButtonHoverText = computed(() => {
-  if (episodeDownloadedLocal.value) {
-    return 'Delete episode from local storage'
-  }
-  else {
-    return 'Delete episode from server'
-  }
-})
-
 async function downloadEpisode() {
   if (props.episode.status !== 'completed') {
     // download to server
