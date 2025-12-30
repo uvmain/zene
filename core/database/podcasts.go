@@ -492,6 +492,12 @@ func DeletePodcastEpisodeById(ctx context.Context, episodeId string) error {
 	return nil
 }
 
+func SetPodcastEpisodeStatusToNew(ctx context.Context, episodeId int) error {
+	query := `UPDATE podcast_episodes SET status = 'new' WHERE id = ?;`
+	_, err := DB.ExecContext(ctx, query, episodeId)
+	return err
+}
+
 func GetPodcastEpisodesByChannelId(ctx context.Context, channelId int) ([]types.PodcastEpisode, error) {
 	var episodes []types.PodcastEpisode
 	query := `select pe.id, pe.guid, pe.channel_id, pe.title, pe.description, pe.publish_date,

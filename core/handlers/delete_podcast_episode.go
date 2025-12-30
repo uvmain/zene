@@ -47,7 +47,7 @@ func HandleDeletePodcastEpisode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = podcasts.DeletePodcastEpisodeById(ctx, episodeIdInt)
+	err = podcasts.DeletePodcastEpisodeById(ctx, episodeIdInt, false)
 	if err != nil {
 		logger.Printf("Error deleting podcast episode %d: %v", episodeIdInt, err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to delete podcast episode", "")

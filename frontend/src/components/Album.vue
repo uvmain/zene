@@ -94,7 +94,7 @@ function actOnUpdatedArt() {
       <div class="relative">
         <PlayButton
           :album="album"
-          class="absolute bottom-2 right-4 z-10 opacity-0 transition-all duration-300 group-hover:right-1 group-hover:opacity-100"
+          class="absolute bottom-2 right-1 z-10 opacity-0 transition-all duration-100 group-hover:opacity-100"
         />
       </div>
       <div class="max-w-150px">
@@ -115,34 +115,36 @@ function actOnUpdatedArt() {
         </div>
       </div>
     </div>
-    <div v-else-if="props.size === 'md'" class="group corner-cut-large relative h-full flex flex-col items-center gap-2 background-grad-2 p-3 md:flex-row md:gap-6 md:p-10">
-      <img
-        :src="coverArtUrlMd"
-        class="aspect-square size-24 cursor-pointer border-muted md:size-52"
-        loading="lazy"
-        width="200"
-        height="200"
-        @error="onImageError"
-        @click="navigateAlbum()"
-      >
-      <div class="h-24 flex flex-col justify-between text-center md:h-52 md:gap-4 md:text-left">
-        <div class="cursor-pointer text-lg font-bold md:text-4xl" @click="navigateAlbum()">
-          {{ album.name }}
-        </div>
-        <div class="cursor-pointer text-sm md:text-xl" @click="navigateArtist()">
-          {{ artistAndDate }}
-        </div>
-        <div v-if="album.genres?.length > 0" class="flex justify-center gap-2 overflow-hidden md:flex-nowrap md:justify-start">
-          <GenreBottle v-for="genre in album.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
-        </div>
-        <div class="flex justify-center md:justify-start">
-          <PlayButton :album="album" />
+    <div v-else-if="props.size === 'md'" class="group corner-cut-large relative background-grad-2 p-3 md:p-10">
+      <div class="h-full flex flex-col items-center gap-2 md:flex-row md:gap-6">
+        <img
+          :src="coverArtUrlMd"
+          class="aspect-square size-24 cursor-pointer border-muted md:size-52"
+          loading="lazy"
+          width="200"
+          height="200"
+          @error="onImageError"
+          @click="navigateAlbum()"
+        >
+        <div class="h-24 flex flex-col justify-between text-center md:h-52 md:gap-4 md:text-left">
+          <div class="cursor-pointer text-lg font-bold md:text-4xl" @click="navigateAlbum()">
+            {{ album.name }}
+          </div>
+          <div class="cursor-pointer text-sm md:text-xl" @click="navigateArtist()">
+            {{ artistAndDate }}
+          </div>
+          <div v-if="album.genres?.length > 0" class="flex justify-center gap-2 overflow-hidden md:flex-nowrap md:justify-start">
+            <GenreBottle v-for="genre in album.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
+          </div>
+          <div class="flex justify-center md:justify-start">
+            <PlayButton :album="album" />
+          </div>
         </div>
       </div>
       <!-- Change Album Art section -->
-      <div v-if="showChangeArtButton">
+      <div v-if="showChangeArtButton" class="absolute right-2 top-2">
         <ZButton
-          class="absolute right-2 top-2 opacity-0 group-hover:opacity-100"
+          class="opacity-0 group-hover:opacity-100"
           @click="showChangeArtModal = true"
         >
           Change Album Art

@@ -11,7 +11,7 @@ defineEmits(['click'])
 
 <template>
   <button
-    class="group z-button relative inline-flex items-center align-middle"
+    class="button-anchor group z-button relative inline-flex items-center align-middle"
     :disabled="disabled"
     :class="{
       'size-12': size12,
@@ -22,11 +22,16 @@ defineEmits(['click'])
     @click="$emit('click')"
   >
     <slot />
-    <div
-      v-if="hoverText"
-      class="absolute bottom-13 z-100 rounded background-2 p-4px text-primary opacity-0 transition-all duration-200 group-hover:opacity-100"
-    >
-      {{ hoverText }}
-    </div>
   </button>
 </template>
+
+<style scoped>
+.button-anchor {
+  anchor-name: --button-anchor;
+}
+.tooltip {
+  position-anchor: --button-anchor;
+  top: anchor(top);
+  right: anchor(right);
+}
+</style>

@@ -9,7 +9,7 @@ import (
 	"zene/core/logger"
 )
 
-func DeletePodcastEpisodeById(ctx context.Context, episodeId int) error {
+func DeletePodcastEpisodeById(ctx context.Context, episodeId int, fullDelete bool) error {
 	var responseError string
 	episode, err := database.GetPodcastEpisodeById(ctx, episodeId)
 	if err != nil {
@@ -25,10 +25,18 @@ func DeletePodcastEpisodeById(ctx context.Context, episodeId int) error {
 		}
 	}
 
-	err = database.DeletePodcastEpisodeById(ctx, episode.Id)
-	if err != nil {
-		logger.Printf("Error deleting podcast episode from database: %v", err)
-		responseError += "Error deleting podcast episode from database, "
+	if fullDelete {
+		err = database.DeletePodcastEpisodeById(ctx, episode.Id)
+		if err != nil {
+			logger.Printf("Error deleting podcast episode from database: %v", err)
+			responseError += "Error deleting podcast episode from database, "
+		}
+	} else {
+		err = database.SetPodcastEpisodeStatusToNew(ctx, episodeId)
+		if err != nil {
+			logger.Printf("Error setting podcast episode status to 'new' in database: %v", err)
+			responseError += "Error updating podcast episode status in database, "
+		}
 	}
 
 	if responseError != "" {
@@ -57,7 +65,7 @@ func DeletePodcastChannelAndEpisodes(ctx context.Context, channelId int) error {
 			responseError += fmt.Sprintf("Error converting podcast episode id %s to int, ", episode.Id)
 			continue
 		}
-		err = DeletePodcastEpisodeById(ctx, episodeId)
+		err = DeletePodcastEpisodeById(ctx, episodeId, true)
 		if err != nil {
 			logger.Printf("Error deleting podcast episode: %v", err)
 			responseError += fmt.Sprintf("Error deleting podcast episode %d, ", episodeId)
