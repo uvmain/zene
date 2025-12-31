@@ -15,15 +15,17 @@
 
 ## Self hosted Music Server and Web player
 ### Fast, small and feature packed with smart caching
+- No rocket emojis - just good old optimisation
 - Light and Dark mode
 - All transcoded audio is cached locally and cleaned with smart rules
 - Wide support of If-Modified-Since headers for 304 responses
-- Support for Accept-Encoding headers with brotli and gzip compression
+- Supports brotli and gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
 - Lyrics automatically fetched on demand from https://lrclib.net and saved locally
 - Album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
 - Artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
 - Similar artists/songs are fetched from https://api.deezer.com and saved locally
+- Full podcast support, including downloading and offline playing
 - Admins can update album art via frontend
 
 ![art-selector](./docs/assets/art-selector.webp)
@@ -53,6 +55,11 @@ Supports the following OpenSubsonic API extensions:
 - `updateAlbumArt` Accepts an `id` parameter and a `file` form blob to update album art. Only admins can call this endpoint.
 - `getArtistList` Like getAlbumList, requires `type` param which can be: `starred`, `random`, `newest`, `highest`, `frequent`, `recent` or `alphabetical`. If type=random, accepts an optional `seed` param (integer) to get deterministic results.
 - `refreshPodcast` Like refreshPodcasts, but for a single channel. Requires an `id` parameter.
+
+## Versioning
+This project uses a [calver](https://calver.org/) versioning system like `pip`
+
+`YY.MINOR.MICRO`
 
 ## Installation
 - create a `.env` file using `.env.example` as a guide

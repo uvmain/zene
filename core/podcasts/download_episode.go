@@ -9,6 +9,7 @@ import (
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/ffprobe"
+	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/types"
@@ -21,16 +22,21 @@ func DownloadPodcastEpisode(ctx context.Context, episodeId string) error {
 	}
 
 	episode, err := database.GetPodcastEpisodeById(ctx, episodeIdInt)
+
 	if err != nil {
 		return fmt.Errorf("getting podcast episode by ID: %v", err)
 	}
 	if episode.Id == "0" {
 		return fmt.Errorf("podcast episode not found")
 	}
-	if episode.Status == types.PodcastStatusDownloading {
+
+	targetFilePath := filepath.Join(config.PodcastDirectory, fmt.Sprintf("%s.%s", episode.StreamId, episode.Suffix))
+	fileExists := io.FileExists(targetFilePath)
+
+	if episode.Status == types.PodcastStatusDownloading && fileExists {
 		return fmt.Errorf("podcast episode is already downloading")
 	}
-	if episode.Status == types.PodcastStatusCompleted {
+	if episode.Status == types.PodcastStatusCompleted && fileExists {
 		return fmt.Errorf("podcast episode is already completed")
 	}
 

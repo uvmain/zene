@@ -5,7 +5,7 @@ const props = defineProps({
 
 const emits = defineEmits(['play', 'pause', 'timeUpdate', 'ended'])
 
-const audioRef = ref<HTMLAudioElement | null>(null)
+const audioRef = useTemplateRef('audioRef')
 
 defineExpose({ audioRef })
 

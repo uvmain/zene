@@ -4,7 +4,7 @@ import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtists } from '.
 import type { SubsonicGenres } from './subsonicGenres'
 import type { LyricsList } from './subsonicLyrics'
 import type { SubsonicPlaylist } from './subsonicPlaylists'
-import type { SubsonicPodcastChannel } from './subsonicPodcasts'
+import type { SubsonicPodcastChannel, SubsonicPodcastEpisode } from './subsonicPodcasts'
 import type { SubsonicRadioStation } from './subsonicRadioStations'
 import type { SubsonicSong } from './subsonicSong'
 import type { SubsonicUser } from './subsonicUser'
@@ -118,6 +118,10 @@ export interface SubsonicPodcastChannelsResponse extends SubsonicResponse {
   podcasts: {
     channel: SubsonicPodcastChannel[]
   }
+}
+
+export interface SubsonicPodcastEpisodesResponse extends SubsonicResponse {
+  podcastEpisode: SubsonicPodcastEpisode
 }
 
 export interface SubsonicPlaylistsResponse extends SubsonicResponse {

@@ -2,10 +2,13 @@ import type { RouterScrollBehavior } from 'vue-router'
 import { useLocalStorage } from '@vueuse/core'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
+import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 import 'virtual:uno.css'
 
 const apiKey = useLocalStorage('apiKey', '')
+
+createEpisodeStoreIfNotExists()
 
 const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => {
   if (to.hash) {

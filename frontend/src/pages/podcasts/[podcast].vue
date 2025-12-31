@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
-import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
-import { getStreamUrl, openSubsonicFetchRequest } from '~/composables/backendFetch'
+import type { SubsonicPodcastChannel, SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
+import { openSubsonicFetchRequest, useServerSentEventsForPodcast } from '~/composables/backendFetch'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,32 +23,17 @@ async function getPodcast() {
     body: formData,
   })
   podcast.value = response?.podcasts?.channel[0]
-  podcast.value.coverArt = `/share/img/${podcast.value.coverArt}?size=400`
-
-  for (const ep of podcast.value.episode) {
-    ep.coverArt = `/share/img/${ep.coverArt}?size=400`
-  }
 }
 
-async function downloadEpisode(episodeId: string) {
+const channelCoverArt = computed(() => {
   if (!podcast.value)
-    return
-  const formData = new FormData()
-  formData.append('id', episodeId)
-  openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('downloadPodcastEpisode', {
-    body: formData,
-  })
-  podcast.value.episode.find(episode => episode.id === episodeId)!.status = 'downloading'
-}
+    return ''
+  return `/share/img/${podcast.value.coverArt}?size=400`
+})
 
-function playEpisodeInNewTab(episodeId: string) {
-  if (!podcast.value)
-    return
-  const episode = podcast.value.episode.find(ep => ep.id === episodeId)
-  if (!episode || episode.status !== 'completed')
-    return
-  window.open(getStreamUrl('stream', new URLSearchParams({ id: episode.streamId })), '_blank')?.focus()
-}
+const descriptionLinesCleaned = computed(() => {
+  return podcast.value?.description.split('\n').filter(line => line.trim() !== '').join('<br>')
+})
 
 function confirmDeletePodcast() {
   deletePodcastChannel()
@@ -79,8 +64,43 @@ async function deletePodcastChannel() {
   }
 }
 
+function onMessageReceived(data: any) {
+  if (!podcast.value) {
+    podcast.value = data[0]
+  }
+  else if (podcast.value.episode.length < data[0].episode.length) {
+    podcast.value.episode = data[0].episode
+  }
+  else {
+    data[0].episode.forEach((newEpisode: SubsonicPodcastEpisode) => {
+      const existingEpisode = podcast.value!.episode.find(oldEpisode => oldEpisode.id === newEpisode.id)
+      if (existingEpisode) {
+        existingEpisode.status = newEpisode.status
+      }
+    })
+  }
+}
+
+function onErrorReceived(error: any) {
+  console.error('SSE Error Received:', error)
+}
+
+function updateEpisodeStatus(episodeId: string, status: string) {
+  if (!podcast.value)
+    return
+  const episode = podcast.value.episode.find(ep => ep.id === episodeId)
+  if (episode) {
+    episode.status = status
+  }
+}
+
+function navigateToEpisode(episodeId: string) {
+  router.push(`/podcasts/episodes/${episodeId}`)
+}
+
 onBeforeMount(async () => {
   await getPodcast()
+  useServerSentEventsForPodcast(route.params.podcast.toString(), onMessageReceived, onErrorReceived)
 })
 </script>
 
@@ -89,20 +109,20 @@ onBeforeMount(async () => {
     <div v-if="!podcast" class="text-primary">
       Podcast not found.
     </div>
-    <div v-else class="flex flex-col gap-6">
+    <div v-else class="mx-auto max-w-60dvw flex flex-col cursor-pointer gap-6">
       <!-- header -->
       <div class="pb-4">
-        <div class="group relative mx-auto max-w-60dvw flex flex-row gap-4 align-top">
+        <div class="group relative flex flex-row gap-4 align-top">
           <div class="absolute right-0 flex flex-row gap-2 opacity-0 group-hover:opacity-100">
             <ZButton @click="refreshPodcastEpisodes">
-              Refresh Episodes
+              Refresh episodes
             </ZButton>
             <ZButton @click="showDeleteChannelModal = true">
-              Delete Podcast
+              Delete podcast channel
             </ZButton>
           </div>
           <img
-            :src="podcast.coverArt"
+            :src="channelCoverArt"
             alt="Podcast Cover"
             class="size-70 object-cover"
             width="280"
@@ -110,93 +130,61 @@ onBeforeMount(async () => {
             loading="eager"
           />
           <div class="my-auto flex flex-col gap-4">
-            <div class="mb-4 text-2xl font-bold">
+            <div class="text-4xl font-bold">
               {{ podcast.title }}
             </div>
             <div
               class="line-clamp-6 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
-              v-html="podcast.description.replaceAll(/\n/g, '<br>')"
+              v-html="descriptionLinesCleaned"
             />
             <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
-              <GenreBottle v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
+              <ZInfo v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
             </div>
             <div>
-              Source URL: <a :href="podcast.url" class="text-primary hover:underline" target="_blank">{{ podcast.url }}</a>
+              Source: <a :href="podcast.url" class="text-primary hover:underline" target="_blank">{{ podcast.url }}</a>
             </div>
           </div>
         </div>
       </div>
       <!-- episodes -->
-      <div v-if="podcast.lastRefresh === ''" class="mx-auto">
+      <div v-if="podcast.lastRefresh === ''">
         Episodes are being refreshed...
       </div>
-      <div v-for="(episode, index) in podcast.episode" :key="episode.id">
-        <div class="mx-auto max-w-60dvw flex flex-row justify-start gap-4 align-top transition duration-150 hover:scale-101">
-          <div class="grid items-end justify-items-end">
-            <img
-              :src="episode.coverArt"
-              alt="Podcast Cover"
-              :loading="index < 20 ? 'eager' : 'lazy'"
-              class="z-1 col-span-full row-span-full my-auto h-48 w-48 object-cover"
-              width="192"
-              height="192"
-            />
-            <ZButton :size12="true" class="z-2 col-span-full row-span-full m-2">
-              <icon-nrk-progress v-if="episode.status === 'downloading'" class="size-8 footer-icon" />
-              <icon-nrk-media-play
-                v-else-if="episode.status === 'completed'"
-                class="size-8 footer-icon"
-                @click="playEpisodeInNewTab(episode.id)"
-              />
-              <icon-nrk-download
-                v-else
-                class="size-8 footer-icon"
-                @click="downloadEpisode(episode.id)"
-              />
-            </ZButton>
-          </div>
-          <div class="my-auto">
-            <div class="text-lg font-semibold">
-              {{ episode.title }}
-            </div>
-            <div
-              class="line-clamp-6 max-h-30 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
-              v-html="episode.description.replaceAll(/\n/g, '<br>')"
-            />
-          </div>
-        </div>
-      </div>
+      <PodcastEpisode
+        v-for="(episode, index) in podcast.episode"
+        :key="episode.id"
+        :episode="episode"
+        :index="index"
+        @update-episode-status="updateEpisodeStatus"
+        @click="navigateToEpisode(episode.id)"
+      />
     </div>
     <!-- delete channel modal -->
-    <teleport to="body">
-      <div v-if="showDeleteChannelModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-        <div class="relative max-w-md w-full flex flex-col items-center justify-center gap-4 background-3 p-6 text-center align-middle">
-          <div class="mb-4 text-lg text-muted font-semibold">
-            Are you sure you want to delete this podcast channel?
-          </div>
-          <div class="flex flex-row gap-4">
-            <ZButton class="px-1" aria-label="Close" @click="showDeleteChannelModal = false">
-              Cancel
-            </ZButton>
-            <ZButton class="bg-red-600" @click="confirmDeletePodcast">
-              Delete
-            </ZButton>
-          </div>
-        </div>
-      </div>
-    </teleport>
-    <!-- refresh episodes modal -->
-    <teleport to="body">
-      <div v-if="showRefreshEpisodesModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-        <div class="relative max-w-md w-full flex flex-col items-center justify-center gap-4 background-3 p-6 text-center align-middle">
-          <div class="mb-4 text-lg text-muted font-semibold">
-            Episodes are now being refreshed. Please reload the page later to see updated episodes.
-          </div>
-          <ZButton aria-label="Close" @click="showRefreshEpisodesModal = false">
-            Okay
+    <Modal
+      :show-modal="showDeleteChannelModal"
+      modal-text="Are you sure you want to delete this podcast channel?"
+    >
+      <template #buttons>
+        <div class="flex flex-row gap-4">
+          <ZButton aria-label="Close" @click="showDeleteChannelModal = false">
+            Cancel
+          </ZButton>
+          <ZButton class="bg-red-600" @click="confirmDeletePodcast">
+            Delete
           </ZButton>
         </div>
-      </div>
-    </teleport>
+      </template>
+    </Modal>
+    <!-- refresh episodes modal -->
+    <Modal
+      :show-modal="showRefreshEpisodesModal"
+      modal-text="Episodes are now being refreshed. Please reload the page later to see updated episodes."
+    >
+      <template #buttons>
+        <ZButton aria-label="Close" @click="showRefreshEpisodesModal = false">
+          Okay
+        </ZButton>
+      </template>
+    </Modal>
   </div>
 </template>

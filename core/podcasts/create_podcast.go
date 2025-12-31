@@ -108,7 +108,9 @@ func createPodcastEpisodesForFeed(ctx context.Context, feed *gofeed.Feed, podcas
 		}
 
 		episodeLink := item.Enclosures[0]
-		episodeDuration, err := strconv.Atoi(episodeLink.Length)
+
+		durationString := item.ITunesExt.Duration
+		episodeDuration, err := strconv.Atoi(durationString)
 		if err != nil {
 			logger.Printf("error parsing episode duration: %v", err)
 			episodeDuration = 0

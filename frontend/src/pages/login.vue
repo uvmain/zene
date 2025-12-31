@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
-import md5 from 'blueimp-md5'
+import md5 from 'md5'
 import { fetchApiKeysWithTokenAndSalt, fetchNewApiKeyWithTokenAndSalt } from '~/composables/backendFetch'
 
 const router = useRouter()

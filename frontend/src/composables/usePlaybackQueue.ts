@@ -1,10 +1,12 @@
 import type { Queue } from '~/types'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
+import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from './backendFetch'
 
 const currentlyPlayingTrack = ref<SubsonicSong | undefined>()
+const currentlyPlayingPodcastEpisode = ref<SubsonicPodcastEpisode | undefined>()
 const currentQueue = ref<Queue | undefined>()
 
 export function usePlaybackQueue() {
@@ -18,6 +20,12 @@ export function usePlaybackQueue() {
       currentQueue.value.position = index
     }
     currentlyPlayingTrack.value = track
+  }
+
+  const setCurrentlyPlayingPodcastEpisode = (episode: SubsonicPodcastEpisode) => {
+    currentlyPlayingTrack.value = undefined
+    currentlyPlayingPodcastEpisode.value = episode
+    currentQueue.value = undefined
   }
 
   const setCurrentQueue = (tracks: SubsonicSong[], playFirstTrack: boolean = true) => {
@@ -42,7 +50,7 @@ export function usePlaybackQueue() {
     return randomTrack
   }
 
-  const play = async (artist?: SubsonicIndexArtist, album?: SubsonicAlbum, track?: SubsonicSong) => {
+  const play = async (artist?: SubsonicIndexArtist, album?: SubsonicAlbum, track?: SubsonicSong, podcastEpisode?: SubsonicPodcastEpisode) => {
     if (track) {
       setCurrentlyPlayingTrack(track)
       currentQueue.value = undefined
@@ -54,6 +62,9 @@ export function usePlaybackQueue() {
     else if (artist) {
       const tracks = await fetchArtistTopSongs(artist.id, 100)
       setCurrentQueue(tracks)
+    }
+    else if (podcastEpisode) {
+      setCurrentlyPlayingPodcastEpisode(podcastEpisode)
     }
   }
 
@@ -111,10 +122,12 @@ export function usePlaybackQueue() {
 
   return {
     currentlyPlayingTrack,
+    currentlyPlayingPodcastEpisode,
     currentQueue,
     clearQueue,
     resetCurrentlyPlayingTrack,
     setCurrentlyPlayingTrack,
+    setCurrentlyPlayingPodcastEpisode,
     setCurrentQueue,
     play,
     getNextTrack,

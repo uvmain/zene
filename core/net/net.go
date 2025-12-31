@@ -133,6 +133,8 @@ func WriteSubsonicError(w http.ResponseWriter, r *http.Request, code int, messag
 		response.SubsonicResponse.Error.HelpUrl = helpUrl
 	}
 
+	logger.Printf("Subsonic error for request %s %d: %s", r.URL.Path, code, message)
+
 	WriteSubsonicResponse(w, r, response, format)
 }
 

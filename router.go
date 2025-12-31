@@ -67,6 +67,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/getalbumartssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArtsServerSentEvents)))
 	apiRouter.Handle("/rest/updatealbumart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAlbumArt)))
 	apiRouter.Handle("/rest/getartistlist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistList)))
+	apiRouter.Handle("/rest/getpodcastssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcastsServerSentEvents)))
 	/* cSpell:disable */
 
 	// System

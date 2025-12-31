@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { computedAsync } from '@vueuse/core'
 import { getAuthenticatedTrackUrl } from '~/composables/logic'
 import { useDebug } from '~/composables/useDebug'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
+import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
 const { debugLog } = useDebug()
-const { clearQueue, currentlyPlayingTrack, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
+const { clearQueue, currentlyPlayingTrack, currentlyPlayingPodcastEpisode, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
 const { routeTracks } = useRouteTracks()
 const { postPlaycount } = usePlaycounts()
 const router = useRouter()
@@ -18,8 +20,25 @@ const currentTime = ref(0)
 const previousVolume = ref(1)
 const currentVolume = ref(1)
 
-const trackUrl = computed(() => {
-  return currentlyPlayingTrack.value ? getAuthenticatedTrackUrl(currentlyPlayingTrack.value?.musicBrainzId) : ''
+const trackUrl = computedAsync(async () => {
+  if (currentlyPlayingTrack.value) {
+    return getAuthenticatedTrackUrl(currentlyPlayingTrack.value?.musicBrainzId)
+  }
+  else if (currentlyPlayingPodcastEpisode.value) {
+    const stored = await episodeIsStored(currentlyPlayingPodcastEpisode.value.streamId)
+    if (!stored) {
+      return getAuthenticatedTrackUrl(currentlyPlayingPodcastEpisode.value?.streamId, true)
+    }
+    else {
+      // play from indexedDB
+      const blob = await getStoredEpisode(currentlyPlayingPodcastEpisode.value.streamId)
+      if (blob) {
+        const objectUrl = URL.createObjectURL(blob)
+        return objectUrl
+      }
+    }
+  }
+  return ''
 })
 
 async function togglePlayback() {
@@ -82,6 +101,13 @@ function updateProgress() {
     const halfwayPoint = currentlyPlayingTrack.value.duration / 2
     if (currentTime.value >= halfwayPoint) {
       postPlaycount(currentlyPlayingTrack.value.musicBrainzId)
+      playcountPosted.value = true
+    }
+  }
+  else if (currentlyPlayingPodcastEpisode.value && !playcountPosted.value) {
+    const halfwayPoint = Number(currentlyPlayingPodcastEpisode.value.duration) / 2
+    if (currentTime.value >= halfwayPoint) {
+      postPlaycount(currentlyPlayingPodcastEpisode.value.streamId)
       playcountPosted.value = true
     }
   }
@@ -148,6 +174,7 @@ async function handleGetRandomTracks() {
           <PlayerProgressBar
             :current-time-in-seconds="currentTime"
             :currently-playing-track="currentlyPlayingTrack"
+            :currently-playing-podcast-episode="currentlyPlayingPodcastEpisode"
             @seek="seek"
           />
 
