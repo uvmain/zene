@@ -121,6 +121,13 @@ declare module 'vue-router/auto-routes' {
       { podcast: ParamValue<false> },
       | never
     >,
+    '/podcasts/episodes/[episode]': RouteRecordInfo<
+      '/podcasts/episodes/[episode]',
+      '/podcasts/episodes/:episode',
+      { episode: ParamValue<true> },
+      { episode: ParamValue<false> },
+      | never
+    >,
     '/queue': RouteRecordInfo<
       '/queue',
       '/queue',
@@ -243,6 +250,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/podcasts/[podcast].vue': {
       routes:
         | '/podcasts/[podcast]'
+      views:
+        | never
+    }
+    'src/pages/podcasts/episodes/[episode].vue': {
+      routes:
+        | '/podcasts/episodes/[episode]'
       views:
         | never
     }

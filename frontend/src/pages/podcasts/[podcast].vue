@@ -31,6 +31,10 @@ const channelCoverArt = computed(() => {
   return `/share/img/${podcast.value.coverArt}?size=400`
 })
 
+const descriptionLinesCleaned = computed(() => {
+  return podcast.value?.description.split('\n').filter(line => line.trim() !== '').join('<br>')
+})
+
 function confirmDeletePodcast() {
   deletePodcastChannel()
   showDeleteChannelModal.value = false
@@ -90,6 +94,10 @@ function updateEpisodeStatus(episodeId: string, status: string) {
   }
 }
 
+function navigateToEpisode(episodeId: string) {
+  router.push(`/podcasts/episodes/${episodeId}`)
+}
+
 onBeforeMount(async () => {
   await getPodcast()
   useServerSentEventsForPodcast(route.params.podcast.toString(), onMessageReceived, onErrorReceived)
@@ -101,7 +109,7 @@ onBeforeMount(async () => {
     <div v-if="!podcast" class="text-primary">
       Podcast not found.
     </div>
-    <div v-else class="mx-auto max-w-60dvw flex flex-col gap-6">
+    <div v-else class="mx-auto max-w-60dvw flex flex-col cursor-pointer gap-6">
       <!-- header -->
       <div class="pb-4">
         <div class="group relative flex flex-row gap-4 align-top">
@@ -122,12 +130,12 @@ onBeforeMount(async () => {
             loading="eager"
           />
           <div class="my-auto flex flex-col gap-4">
-            <div class="mb-4 text-2xl font-bold">
+            <div class="text-4xl font-bold">
               {{ podcast.title }}
             </div>
             <div
               class="line-clamp-6 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
-              v-html="podcast.description.replaceAll(/\n/g, '<br>')"
+              v-html="descriptionLinesCleaned"
             />
             <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
               <ZInfo v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
@@ -148,6 +156,7 @@ onBeforeMount(async () => {
         :episode="episode"
         :index="index"
         @update-episode-status="updateEpisodeStatus"
+        @click="navigateToEpisode(episode.id)"
       />
     </div>
     <!-- delete channel modal -->

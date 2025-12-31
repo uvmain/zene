@@ -22,7 +22,7 @@ const coverArtUrl = computed(() => {
   <div>
     <div v-if="currentlyPlayingTrack" class="flex flex-col gap-2">
       <RouterLink
-        class="cursor-pointer text-lg text-primary no-underline hover:underline hover:underline-white"
+        class="line-clamp-4 cursor-pointer overflow-hidden text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
         :to="`/tracks/${currentlyPlayingTrack?.id}`"
       >
         {{ currentlyPlayingTrack?.title }}
@@ -48,7 +48,7 @@ const coverArtUrl = computed(() => {
     </div>
     <div v-else-if="currentlyPlayingPodcastEpisode" class="flex flex-col gap-2">
       <RouterLink
-        class="cursor-pointer text-lg text-primary no-underline hover:underline hover:underline-white"
+        class="line-clamp-4 cursor-pointer overflow-hidden text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
         :to="`/podcasts/${currentlyPlayingPodcastEpisode?.channelId}`"
       >
         {{ currentlyPlayingPodcastEpisode?.title }}

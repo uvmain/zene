@@ -22,6 +22,10 @@ const episodeArtUrl = computed(() => {
   return `/share/img/${props.episode.coverArt}?size=192`
 })
 
+const descriptionLinesCleaned = computed(() => {
+  return props.episode.description.split('\n').filter(line => line.trim() !== '').join('<br>')
+})
+
 async function downloadEpisode() {
   if (props.episode.status !== 'completed') {
     // download to server
@@ -92,7 +96,7 @@ onBeforeMount(async () => {
           width="192"
           height="192"
         />
-        <div class="my-auto flex flex-col gap-4">
+        <div class="my-auto ml-1 flex flex-col gap-4">
           <div class="text-lg">
             {{ episode.title }}
           </div>
@@ -141,7 +145,7 @@ onBeforeMount(async () => {
     </div>
     <div
       class="line-clamp-4 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
-      v-html="episode.description"
+      v-html="descriptionLinesCleaned"
     />
   </div>
 </template>
