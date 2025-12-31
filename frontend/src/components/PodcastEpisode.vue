@@ -93,7 +93,7 @@ onBeforeMount(async () => {
           height="192"
         />
         <div class="my-auto flex flex-col gap-4">
-          <div class="text-lg font-semibold">
+          <div class="text-lg">
             {{ episode.title }}
           </div>
           <div>
@@ -124,14 +124,11 @@ onBeforeMount(async () => {
             >
               <icon-nrk-trash class="size-8" />
             </ZButton>
-            <ZButton
+            <ZInfo
               v-if="episode.status === 'completed'"
-              class="mb-auto h-12 cursor-default opacity-50"
+              :text="episodeStatusButtonText"
             >
-              <span class="text-balance">
-                {{ episodeStatusButtonText }}
-              </span>
-            </ZButton>
+            </ZInfo>
           </div>
         </div>
       </div>

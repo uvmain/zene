@@ -5,7 +5,7 @@ import { openSubsonicFetchRequest } from '~/composables/backendFetch'
 
 const router = useRouter()
 
-const showModal = ref(false)
+const showAddPodcastModal = ref(false)
 const isSubmitting = ref(false)
 const submitError = ref('')
 const showSuccess = ref(false)
@@ -30,7 +30,7 @@ async function createNewPodcast() {
   }
   showSuccess.value = true
   setTimeout(() => {
-    showModal.value = false
+    showAddPodcastModal.value = false
     showSuccess.value = false
     isSubmitting.value = false
   }, 500)
@@ -57,8 +57,8 @@ onBeforeMount(getPodcasts)
 </script>
 
 <template>
-  <div class="p-4 space-y-4">
-    <button class="z-button" @click="showModal = true">
+  <div class="mx-auto max-w-60dvw p-4 space-y-4">
+    <button class="z-button" @click="showAddPodcastModal = true">
       Add New Podcast Channel
     </button>
 
@@ -69,7 +69,7 @@ onBeforeMount(getPodcasts)
       <div class="flex flex-wrap justify-center gap-6 md:justify-start">
         <div
           v-for="(podcast, index) in podcasts"
-          :key="podcast.id" class="mx-auto max-w-60dvw flex flex-row cursor-pointer gap-4 align-top transition duration-150 hover:scale-101"
+          :key="podcast.id" class="corner-cut flex flex-row cursor-pointer gap-4 border-1 border-muted border-solid p-4 align-top transition duration-150 hover:scale-101"
           @click="navigateToPodcast(podcast.id)"
         >
           <img
@@ -96,44 +96,44 @@ onBeforeMount(getPodcasts)
       </div>
     </div>
 
-    <teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-        <div class="relative max-w-md w-full background-3 p-6">
-          <button class="z-button" aria-label="Close" @click="showModal = false">
-            X
-          </button>
-          <h2 class="mb-4 text-xl text-primary font-bold">
-            Add New Podcast
-          </h2>
-          <form class="space-y-4" @submit.prevent="createNewPodcast">
-            <div>
-              <label for="stream-url" class="mb-1 block text-muted font-medium">Stream URL</label>
-              <input
-                id="stream-url"
-                v-model="newPodcastUrl"
-                type="text"
-                class="w-auto border px-3 py-2"
-                placeholder="Enter stream URL"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              class="z-button"
+    <Modal
+      :show-modal="showAddPodcastModal"
+      modal-text="Add New Podcast Channel"
+    >
+      <template #buttons>
+        <form class="space-y-4" @submit.prevent="createNewPodcast">
+          <div>
+            <label for="stream-url" class="mb-1 block text-muted font-medium">Stream URL</label>
+            <input
+              id="stream-url"
+              v-model="newPodcastUrl"
+              type="text"
+              class="w-auto border px-3 py-2"
+              placeholder="Enter stream URL"
+              required
+            />
+          </div>
+          <div class="flex flex-row gap-2">
+            <ZButton aria-label="Close" @click="showAddPodcastModal = false">
+              Cancel
+            </ZButton>
+            <ZButton
+              aria-label="Add Podcast"
               :disabled="isSubmitting || showSuccess"
+              @click="createNewPodcast()"
             >
               <span v-if="isSubmitting && !showSuccess">Adding...</span>
               <span v-else-if="showSuccess">
                 <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-primary1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
               </span>
               <span v-else>Add Podcast</span>
-            </button>
-            <div v-if="submitError" class="mt-2 text-sm text-red-600">
-              {{ submitError }}
-            </div>
-          </form>
-        </div>
-      </div>
-    </teleport>
+            </ZButton>
+          </div>
+          <div v-if="submitError" class="mt-2 text-sm text-red-600">
+            {{ submitError }}
+          </div>
+        </form>
+      </template>
+    </Modal>
   </div>
 </template>

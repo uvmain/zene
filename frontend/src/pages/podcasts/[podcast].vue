@@ -101,16 +101,16 @@ onBeforeMount(async () => {
     <div v-if="!podcast" class="text-primary">
       Podcast not found.
     </div>
-    <div v-else class="flex flex-col gap-6">
+    <div v-else class="mx-auto max-w-60dvw flex flex-col gap-6">
       <!-- header -->
       <div class="pb-4">
-        <div class="group relative mx-auto max-w-60dvw flex flex-row gap-4 align-top">
+        <div class="group relative flex flex-row gap-4 align-top">
           <div class="absolute right-0 flex flex-row gap-2 opacity-0 group-hover:opacity-100">
             <ZButton @click="refreshPodcastEpisodes">
-              Refresh Episodes
+              Refresh episodes
             </ZButton>
             <ZButton @click="showDeleteChannelModal = true">
-              Delete Podcast
+              Delete podcast channel
             </ZButton>
           </div>
           <img
@@ -133,13 +133,13 @@ onBeforeMount(async () => {
               <GenreBottle v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :genre="genre.name" />
             </div>
             <div>
-              Source URL: <a :href="podcast.url" class="text-primary hover:underline" target="_blank">{{ podcast.url }}</a>
+              Source: <a :href="podcast.url" class="text-primary hover:underline" target="_blank">{{ podcast.url }}</a>
             </div>
           </div>
         </div>
       </div>
       <!-- episodes -->
-      <div v-if="podcast.lastRefresh === ''" class="mx-auto">
+      <div v-if="podcast.lastRefresh === ''">
         Episodes are being refreshed...
       </div>
       <PodcastEpisode
