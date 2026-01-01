@@ -37,6 +37,7 @@
         "godotenv",
         "gofeed",
         "Guids",
+        "hsl",
         "IDB",
         "ifmodifiedsince",
         "IFNULL",

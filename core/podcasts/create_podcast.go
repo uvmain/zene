@@ -201,7 +201,8 @@ func RefreshPodcastById(ctx context.Context, id string) error {
 		return fmt.Errorf("fetching podcast by ID: %v", err)
 	}
 
-	return RefreshPodcast(existingPodcast)
+	go RefreshPodcast(existingPodcast)
+	return nil
 }
 
 func RefreshPodcast(podcast types.PodcastChannel) error {

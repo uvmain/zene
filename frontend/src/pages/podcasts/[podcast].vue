@@ -107,7 +107,7 @@ onBeforeMount(async () => {
     </div>
     <div v-else class="mx-auto max-w-60dvw flex flex-col gap-6">
       <!-- header -->
-      <div class="pb-4">
+      <div>
         <div class="group relative flex flex-row gap-4 align-top">
           <div class="absolute right-0 flex flex-row gap-2 opacity-0 group-hover:opacity-100">
             <ZButton @click="refreshPodcastEpisodes">
@@ -144,7 +144,7 @@ onBeforeMount(async () => {
       </div>
       <!-- episodes -->
       <div v-if="podcast.lastRefresh === ''">
-        Episodes are being refreshed...
+        Episodes are being refreshed and will appear shortly...
       </div>
       <PodcastEpisode
         v-for="(episode, index) in podcast.episode"

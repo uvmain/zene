@@ -1,11 +1,4 @@
-import presetWebFonts from '@unocss/preset-web-fonts'
-import { presetWind3 } from '@unocss/preset-wind3'
-
-import {
-  defineConfig,
-  transformerDirectives,
-  transformerVariantGroup,
-} from 'unocss'
+import { defineConfig, presetWebFonts, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   shortcuts: {
@@ -32,6 +25,8 @@ export default defineConfig({
     colors: {
       primary1: 'hsl(32,100%,50%)',
       primary2: 'hsl(32,75%,65%)',
+      secondary1: 'hsl(332.13, 56.95%, 56.27%) ',
+      secondary2: 'hsl(332.13, 56.95%, 66.27%) ',
       zshade: {
         100: 'hsl(37,10%,90%)',
         200: 'hsl(37,10%,80%)',
@@ -43,6 +38,7 @@ export default defineConfig({
         800: 'hsl(37,10%,20%)',
         900: 'hsl(37,10%,10%)',
       },
+      zgreen: 'hsl(105.63, 100%, 27.84%) ',
     },
   },
   presets: [

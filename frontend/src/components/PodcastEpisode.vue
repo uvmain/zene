@@ -122,14 +122,15 @@ onBeforeMount(async () => {
                 v-else
                 class="size-8"
                 :class="{
-                  'text-orange': episode.status === 'completed' && !episodeDownloadedLocal,
-                  'text-green': episode.status === 'completed' && episodeDownloadedLocal,
+                  'text-secondary1': episode.status === 'completed' && !episodeDownloadedLocal,
+                  'text-zgreen': episode.status === 'completed' && episodeDownloadedLocal,
                 }"
               />
             </ZButton>
             <ZButton
               v-if="episode.status === 'completed'"
               :size12="true"
+              :hover-text="episodeDownloadedLocal ? 'Delete local download' : 'Delete server download'"
               @click="deleteEpisode()"
             >
               <icon-nrk-trash class="size-8" />
