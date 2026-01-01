@@ -14,6 +14,7 @@ const props = defineProps({
 const emits = defineEmits(['updateEpisodeStatus'])
 
 const { setCurrentlyPlayingPodcastEpisode } = usePlaybackQueue()
+const router = useRouter()
 
 const episodeDownloadedLocal = ref(false)
 const localDownloadClicked = ref(false)
@@ -62,6 +63,10 @@ async function deleteEpisode() {
   }
 }
 
+function navigateToEpisode(episodeId: string) {
+  router.push(`/podcasts/episodes/${episodeId}`)
+}
+
 const episodeStatusButtonText = computed(() => {
   if (props.episode.status === 'completed') {
     return episodeDownloadedLocal.value ? 'Downloaded locally' : 'Downloaded on server'
@@ -92,12 +97,13 @@ onBeforeMount(async () => {
           :src="episodeArtUrl"
           alt="Podcast Cover"
           :loading="index < 20 ? 'eager' : 'lazy'"
-          class="z-1 col-span-full row-span-full my-auto size-34 rounded object-cover"
+          class="z-1 col-span-full row-span-full my-auto size-34 cursor-pointer rounded object-cover"
           width="192"
           height="192"
+          @click="navigateToEpisode(episode.id)"
         />
         <div class="my-auto ml-1 flex flex-col gap-4">
-          <div class="text-lg">
+          <div class="cursor-pointer text-lg" @click="navigateToEpisode(episode.id)">
             {{ episode.title }}
           </div>
           <div>
