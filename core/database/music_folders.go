@@ -31,7 +31,7 @@ func migrateMusicFolders(ctx context.Context) {
 
 func GetMusicFolders(ctx context.Context) ([]types.MusicFolder, error) {
 	query := `SELECT id, name FROM music_folders`
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("querying music folders: %v", err)
 	}
@@ -60,7 +60,7 @@ func GetMusicFolders(ctx context.Context) ([]types.MusicFolder, error) {
 func GetMusicFolderById(ctx context.Context, id int) (types.MusicFolder, error) {
 	query := `SELECT id, name FROM music_folders where id = ?`
 	var row types.MusicFolder
-	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Name)
+	err := DbRead.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Name)
 	if err == sql.ErrNoRows {
 		return types.MusicFolder{}, fmt.Errorf("music folder with id %d not found", id)
 	} else if err != nil {
@@ -72,7 +72,7 @@ func GetMusicFolderById(ctx context.Context, id int) (types.MusicFolder, error) 
 func InsertMusicFolder(ctx context.Context, name string) error {
 	query := `SELECT COUNT(*) FROM music_folders WHERE name = ?`
 	var count int
-	err := DB.QueryRowContext(ctx, query, name).Scan(&count)
+	err := DbRead.QueryRowContext(ctx, query, name).Scan(&count)
 	if err != nil {
 		return fmt.Errorf("checking if music folder exists: %v", err)
 	}
@@ -82,7 +82,7 @@ func InsertMusicFolder(ctx context.Context, name string) error {
 	}
 
 	query = `INSERT INTO music_folders (name) VALUES (?)`
-	_, err = DB.ExecContext(ctx, query, name)
+	_, err = DbWrite.ExecContext(ctx, query, name)
 	if err != nil {
 		return fmt.Errorf("inserting music folder: %v", err)
 	}

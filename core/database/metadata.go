@@ -61,7 +61,7 @@ func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) err
 	const batchSize = 30
 	numberOfColumns := 26 // TODO: derive this from the metadata struct rather than hardcoding it
 
-	tx, err := DB.BeginTx(ctx, nil)
+	tx, err := DbWrite.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
@@ -141,7 +141,7 @@ func DeleteMetadataRows(ctx context.Context, filepaths []string) error {
 		return nil
 	}
 
-	tx, err := DB.BeginTx(ctx, nil)
+	tx, err := DbWrite.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
@@ -193,7 +193,7 @@ func IsValidMetadataId(ctx context.Context, metadataId string) (bool, isValidMet
 		OR musicbrainz_album_id = ?
 		OR musicbrainz_artist_id = ?
 		limit 1`
-	row := DB.QueryRowContext(ctx, query, metadataId, metadataId, metadataId)
+	row := DbRead.QueryRowContext(ctx, query, metadataId, metadataId, metadataId)
 
 	var response isValidMetadataResponse
 
@@ -231,13 +231,13 @@ func GetFileAndFolderCounts(ctx context.Context) (GetFileAndFolderCountsResponse
 		FROM metadata
 	);`
 
-	row := DB.QueryRowContext(ctx, query)
+	row := DbRead.QueryRowContext(ctx, query)
 	if err := row.Scan(&folderCount); err != nil {
 		return GetFileAndFolderCountsResponse{}, fmt.Errorf("getting folder count: %v", err)
 	}
 
 	query = "select count(*) from metadata"
-	row = DB.QueryRowContext(ctx, query)
+	row = DbRead.QueryRowContext(ctx, query)
 	if err := row.Scan(&fileCount); err != nil {
 		return GetFileAndFolderCountsResponse{}, fmt.Errorf("getting file count: %v", err)
 	}

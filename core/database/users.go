@@ -156,7 +156,7 @@ func GetUserByUsername(ctx context.Context, username string) (types.User, error)
 	var row types.User
 	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
+	err := DbRead.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate, &foldersString)
 	if err == sql.ErrNoRows {
@@ -176,7 +176,7 @@ func GetUserWithoutFoldersByUsername(ctx context.Context, username string) (type
 	query := `SELECT * FROM users where username = ?;`
 	var row types.User
 
-	err := DB.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
+	err := DbRead.QueryRowContext(ctx, query, username).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate)
 	if err == sql.ErrNoRows {
@@ -192,7 +192,7 @@ func GetUserById(ctx context.Context, id int) (types.User, error) {
 	var row types.User
 	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
+	err := DbRead.QueryRowContext(ctx, query, id).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate, &foldersString)
 	if err == sql.ErrNoRows {
@@ -206,7 +206,7 @@ func GetUserById(ctx context.Context, id int) (types.User, error) {
 
 func GetAllUsers(ctx context.Context) ([]types.User, error) {
 	query := `SELECT * FROM users_with_folders order by user_id asc;`
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return []types.User{}, fmt.Errorf("querying all users: %v", err)
 	}
@@ -257,7 +257,7 @@ func UpsertUser(ctx context.Context, user types.User) (int, error) {
 			video_conversion_role = excluded.video_conversion_role,
 			max_bit_rate = excluded.max_bit_rate`
 
-	_, err := DB.ExecContext(ctx, query, user.Username, user.Password, user.Email, user.ScrobblingEnabled,
+	_, err := DbWrite.ExecContext(ctx, query, user.Username, user.Password, user.Email, user.ScrobblingEnabled,
 		user.LdapAuthenticated, user.AdminRole, user.SettingsRole, user.StreamRole, user.JukeboxRole,
 		user.DownloadRole, user.UploadRole, user.PlaylistRole, user.CoverArtRole,
 		user.CommentRole, user.PodcastRole, user.ShareRole, user.VideoConversionRole, user.MaxBitRate)
@@ -271,11 +271,11 @@ func UpsertUser(ctx context.Context, user types.User) (int, error) {
 	}
 
 	query = `DELETE FROM user_music_folders WHERE user_id = ?`
-	DB.ExecContext(ctx, query, upsertedUser.Id)
+	DbWrite.ExecContext(ctx, query, upsertedUser.Id)
 
 	for _, folderId := range user.Folders {
 		query = `INSERT INTO user_music_folders (user_id, folder_id) VALUES (?, ?) ON CONFLICT(user_id, folder_id) DO NOTHING`
-		_, err = DB.ExecContext(ctx, query, upsertedUser.Id, folderId)
+		_, err = DbWrite.ExecContext(ctx, query, upsertedUser.Id, folderId)
 		if err != nil {
 			logger.Printf("Error inserting user music folder %d for user %d: %v", folderId, upsertedUser.Id, err)
 			return 0, fmt.Errorf("inserting user music folder %d: %v", folderId, err)
@@ -294,7 +294,7 @@ func UpsertUser(ctx context.Context, user types.User) (int, error) {
 
 func DeleteUserById(ctx context.Context, id int) error {
 	query := `DELETE FROM users WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, id)
+	_, err := DbWrite.ExecContext(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
@@ -312,7 +312,7 @@ func DeleteUserById(ctx context.Context, id int) error {
 func anyAdminUsersExist(ctx context.Context) (bool, error) {
 	query := `SELECT 1 FROM users where admin_role = true LIMIT 1`
 	var exists int
-	err := DB.QueryRowContext(ctx, query).Scan(&exists)
+	err := DbRead.QueryRowContext(ctx, query).Scan(&exists)
 	if err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
@@ -326,7 +326,7 @@ func GetEncryptedPasswordFromDB(ctx context.Context, username string) (string, i
 	var encryptedPassword string
 	var userId int
 
-	err := DB.QueryRowContext(ctx, query, username).Scan(&encryptedPassword, &userId)
+	err := DbRead.QueryRowContext(ctx, query, username).Scan(&encryptedPassword, &userId)
 	if err == sql.ErrNoRows {
 		return "", 0, fmt.Errorf("user not found")
 	} else if err != nil {

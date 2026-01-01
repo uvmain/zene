@@ -19,7 +19,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 
 	query += " where musicbrainz_album_id = ? order by cast(disc_number AS INTEGER), cast(track_number AS INTEGER);"
 
-	rows, err := DB.QueryContext(ctx, query, musicbrainz_album_id)
+	rows, err := DbRead.QueryContext(ctx, query, musicbrainz_album_id)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.MetadataWithPlaycounts{}, err
@@ -52,7 +52,7 @@ func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]
 func SelectAlbumIdByTrackId(ctx context.Context, musicbrainz_track_id string) (string, error) {
 	var albumId string
 	query := "SELECT musicbrainz_album_id FROM metadata WHERE musicbrainz_track_id = ? limit 1"
-	err := DB.QueryRowContext(ctx, query, musicbrainz_track_id).Scan(&albumId)
+	err := DbRead.QueryRowContext(ctx, query, musicbrainz_track_id).Scan(&albumId)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return "", err
@@ -83,7 +83,7 @@ func SelectAllAlbumsForMusicDir(ctx context.Context, musicDir string, random str
 
 	query += ";"
 
-	rows, err := DB.QueryContext(ctx, query, musicDir)
+	rows, err := DbRead.QueryContext(ctx, query, musicDir)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.AlbumsResponse{}, err
@@ -179,7 +179,7 @@ func GetAlbum(ctx context.Context, musicbrainzAlbumId string) (types.AlbumId3, e
 	var albumArtistId sql.NullString
 	var albumArtistName sql.NullString
 
-	err = DB.QueryRowContext(ctx, query, args...).Scan(
+	err = DbRead.QueryRowContext(ctx, query, args...).Scan(
 		&album.Id, &album.Name, &artist, &album.CoverArt, &album.SongCount,
 		&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
 		&album.Year, &album.Genre, &played, &album.UserRating,
@@ -294,7 +294,7 @@ func GetAlbumByArtistNameAndAlbumName(ctx context.Context, artistName string, al
 	var albumArtistId sql.NullString
 	var albumArtistName sql.NullString
 
-	err = DB.QueryRowContext(ctx, query, strings.ToLower(artistName), strings.ToLower(albumName), user.Id).Scan(
+	err = DbRead.QueryRowContext(ctx, query, strings.ToLower(artistName), strings.ToLower(albumName), user.Id).Scan(
 		&album.Id, &album.Name, &album.Artist, &album.CoverArt, &album.SongCount,
 		&album.Duration, &album.PlayCount, &album.Created, &album.ArtistId, &starred,
 		&album.Year, &album.Genre, &played, &album.UserRating,
@@ -355,7 +355,7 @@ func SelectAlbumIds(ctx context.Context) ([]string, error) {
 	var ids []string
 
 	query := `SELECT distinct musicbrainz_album_id FROM metadata`
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}

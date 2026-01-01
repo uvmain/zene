@@ -27,7 +27,7 @@ func InsertInternetRadio(ctx context.Context, stationName string, streamUrl stri
 
 	query := `INSERT INTO internet_radio (user_id, name, stream_url, homepage_url)
 		VALUES (?, ?, ?, ?)`
-	_, err = DB.ExecContext(ctx, query, user.Id, stationName, streamUrl, homepageUrl)
+	_, err = DbWrite.ExecContext(ctx, query, user.Id, stationName, streamUrl, homepageUrl)
 	if err != nil {
 		return fmt.Errorf("inserting internet radio: %v", err)
 	}
@@ -40,7 +40,7 @@ func GetInternetRadioStations(ctx context.Context) ([]types.InternetRadio, error
 		return []types.InternetRadio{}, fmt.Errorf("getting user from context: %v", err)
 	}
 	query := "SELECT ir.id, ir.name, ir.stream_url, ir.homepage_url FROM internet_radio ir join users u on ir.user_id = u.id WHERE u.id = ? order by ir.id asc;"
-	rows, err := DB.QueryContext(ctx, query, user.Id)
+	rows, err := DbRead.QueryContext(ctx, query, user.Id)
 	if err != nil {
 		return []types.InternetRadio{}, fmt.Errorf("querying internet radio: %v", err)
 	}
@@ -75,7 +75,7 @@ func UpdateInternetRadioStation(ctx context.Context, id string, name string, str
 	query += ` WHERE id = ? AND user_id = ?`
 	args = append(args, id, user.Id)
 
-	_, err = DB.ExecContext(ctx, query, args...)
+	_, err = DbWrite.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("updating internet radio station: %v", err)
 	}
@@ -88,7 +88,7 @@ func DeleteInternetRadioStation(ctx context.Context, id string) error {
 		return fmt.Errorf("getting user from context: %v", err)
 	}
 	query := `DELETE FROM internet_radio WHERE id = ? AND user_id = ?`
-	_, err = DB.ExecContext(ctx, query, id, user.Id)
+	_, err = DbWrite.ExecContext(ctx, query, id, user.Id)
 	if err != nil {
 		return fmt.Errorf("deleting internet radio station: %v", err)
 	}

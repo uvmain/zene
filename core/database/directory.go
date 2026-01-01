@@ -38,7 +38,7 @@ func GetAlbumDirectory(ctx context.Context, musicbrainzAlbumId string) (types.Su
 
 	var starred sql.NullString
 
-	err = DB.QueryRowContext(ctx, query, user.Id, musicbrainzAlbumId).Scan(
+	err = DbRead.QueryRowContext(ctx, query, user.Id, musicbrainzAlbumId).Scan(
 		&directory.Parent, &directory.Name, &starred, &directory.UserRating, &directory.AverageRating, &directory.PlayCount, &directory.SongCount,
 	)
 
@@ -95,7 +95,7 @@ func GetArtistDirectory(ctx context.Context, musicbrainzArtistId string) (types.
 
 	var starred sql.NullString
 
-	err = DB.QueryRowContext(ctx, query, user.Id, musicbrainzArtistId).Scan(
+	err = DbRead.QueryRowContext(ctx, query, user.Id, musicbrainzArtistId).Scan(
 		&directory.Name, &starred, &directory.UserRating, &directory.AverageRating,
 		&directory.PlayCount, &directory.SongCount, &directory.AlbumCount,
 	)
@@ -171,7 +171,7 @@ func GetArtistChildren(ctx context.Context, musicbrainzArtistId string) ([]types
 	group by m.musicbrainz_album_id
 	order by m.release_date desc;`
 
-	rows, err := DB.Query(query, user.Id, musicbrainzArtistId, musicbrainzArtistId, user.Id)
+	rows, err := DbRead.Query(query, user.Id, musicbrainzArtistId, musicbrainzArtistId, user.Id)
 	if err != nil {
 		return nil, err
 	}

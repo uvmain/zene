@@ -21,7 +21,7 @@ func migrateGenreCounts(ctx context.Context) {
 func RepopulateGenreCountsTable(ctx context.Context) error {
 	logger.Printf("Repopulating genre_counts table")
 	// clear the existing genre_counts contents
-	_, err := DB.ExecContext(ctx, "DELETE FROM genre_counts")
+	_, err := DbWrite.ExecContext(ctx, "DELETE FROM genre_counts")
 	if err != nil {
 		return fmt.Errorf("clearing genre_counts table: %v", err)
 	}
@@ -49,7 +49,7 @@ func RepopulateGenreCountsTable(ctx context.Context) error {
 		)
 		group by genre;`
 
-	_, err = DB.ExecContext(ctx, stmt)
+	_, err = DbWrite.ExecContext(ctx, stmt)
 
 	if err != nil {
 		return fmt.Errorf("inserting data into genre_counts table: %v", err)

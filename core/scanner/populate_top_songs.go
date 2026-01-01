@@ -10,7 +10,7 @@ import (
 
 func PopulateTopSongsTable(ctx context.Context) error {
 	logger.Printf("Populating top_songs table")
-	_, err := database.DB.ExecContext(ctx, "delete from top_songs where musicbrainz_artist_id not in (select distinct musicbrainz_artist_id from metadata);")
+	_, err := database.DbWrite.ExecContext(ctx, "delete from top_songs where musicbrainz_artist_id not in (select distinct musicbrainz_artist_id from metadata);")
 	if err != nil {
 		return fmt.Errorf("cleaning top_songs table: %v", err)
 	}
@@ -18,7 +18,7 @@ func PopulateTopSongsTable(ctx context.Context) error {
 	var artistsToCheck []ArtistsToCheck
 	query := "SELECT distinct musicbrainz_artist_id, artist FROM metadata where musicbrainz_artist_id not in (select distinct musicbrainz_artist_id from top_songs);"
 
-	rows, err := database.DB.QueryContext(ctx, query)
+	rows, err := database.DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("querying metadata: %v", err)
 	}
@@ -61,7 +61,7 @@ func RepopulateTopSongsTable(ctx context.Context) error {
 	var artistsToCheck []ArtistsToCheck
 	query := "SELECT distinct musicbrainz_artist_id, artist FROM metadata;"
 
-	rows, err := database.DB.QueryContext(ctx, query)
+	rows, err := database.DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("querying metadata: %v", err)
 	}
@@ -88,7 +88,7 @@ func RepopulateTopSongsTable(ctx context.Context) error {
 			logger.Printf("Found %d top songs for %s, linking existing songs", len(topSongs), artist.ArtistName)
 
 			query := fmt.Sprintf("delete from top_songs where musicbrainz_artist_id = '%s';", artist.MusicBrainzId)
-			_, err = database.DB.ExecContext(ctx, query)
+			_, err = database.DbWrite.ExecContext(ctx, query)
 			if err != nil {
 				return fmt.Errorf("cleaning top_songs for %s in RepopulateTopSongsTable: %v", artist.ArtistName, err)
 			}

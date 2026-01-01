@@ -23,7 +23,7 @@ func InsertChat(ctx context.Context, userId int, message string) error {
 	insertTimestampUnixSeconds := time.Now().UnixMilli()
 	query := `INSERT INTO chats (user_id, message, timestamp)
 		VALUES (?, ?, ?)`
-	_, err := DB.ExecContext(ctx, query, userId, message, insertTimestampUnixSeconds)
+	_, err := DbWrite.ExecContext(ctx, query, userId, message, insertTimestampUnixSeconds)
 	if err != nil {
 		return fmt.Errorf("inserting chat: %v", err)
 	}
@@ -32,7 +32,7 @@ func InsertChat(ctx context.Context, userId int, message string) error {
 
 func GetChats(ctx context.Context, timeSince int) ([]types.Chat, error) {
 	query := "SELECT u.username, c.message, c.timestamp FROM chats c join users u on c.user_id = u.id WHERE c.timestamp > ?"
-	rows, err := DB.QueryContext(ctx, query, timeSince)
+	rows, err := DbRead.QueryContext(ctx, query, timeSince)
 	if err != nil {
 		return []types.Chat{}, fmt.Errorf("querying chats: %v", err)
 	}

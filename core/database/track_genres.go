@@ -25,14 +25,14 @@ func migrateTrackGenres(ctx context.Context) {
 	createTrackGenresTriggers(ctx)
 
 	var count int
-	err = DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM track_genres").Scan(&count)
+	err = DbRead.QueryRowContext(ctx, "SELECT COUNT(*) FROM track_genres").Scan(&count)
 	if err != nil {
 		log.Fatalf("error checking count of track_genres table: %v", err)
 	}
 
 	if count == 0 {
 		var count int
-		err = DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM metadata").Scan(&count)
+		err = DbRead.QueryRowContext(ctx, "SELECT COUNT(*) FROM metadata").Scan(&count)
 		if err != nil {
 			log.Fatalf("error checking count of metadata table: %v", err)
 		}
@@ -124,7 +124,7 @@ func populateTrackGenresFromMetadata(ctx context.Context) error {
 		FROM split_genre
 		WHERE genre <> '';`
 
-	_, err := DB.ExecContext(ctx, stmt)
+	_, err := DbWrite.ExecContext(ctx, stmt)
 
 	if err != nil {
 		return fmt.Errorf("inserting data into track_genres table: %v", err)
@@ -138,7 +138,7 @@ func SelectDistinctGenres(ctx context.Context) ([]types.Genre, error) {
 		from genre_counts
 		order by song_count desc`
 
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DbRead.QueryContext(ctx, query)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.Genre{}, err

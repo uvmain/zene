@@ -13,7 +13,7 @@ import (
 func doesTableExist(ctx context.Context, tableName string) (bool, error) {
 	query := `SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?`
 	var name string
-	err := DB.QueryRowContext(ctx, query, tableName).Scan(&name)
+	err := DbRead.QueryRowContext(ctx, query, tableName).Scan(&name)
 	if err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
@@ -25,7 +25,7 @@ func doesTableExist(ctx context.Context, tableName string) (bool, error) {
 func doesViewExist(ctx context.Context, viewName string) (bool, error) {
 	query := `SELECT name FROM sqlite_master WHERE type = 'view' AND name = ?`
 	var name string
-	err := DB.QueryRowContext(ctx, query, viewName).Scan(&name)
+	err := DbRead.QueryRowContext(ctx, query, viewName).Scan(&name)
 	if err == sql.ErrNoRows {
 		return false, nil
 	} else if err != nil {
@@ -75,7 +75,7 @@ func createTable(ctx context.Context, schema string) {
 	}
 
 	if !tableExists {
-		_, err := DB.ExecContext(ctx, schema)
+		_, err := DbWrite.ExecContext(ctx, schema)
 		if err != nil {
 			log.Fatalf("Database: error creating %s table: %v", tableName, err)
 		}
@@ -96,7 +96,7 @@ func createView(ctx context.Context, schema string) {
 	}
 
 	if !viewExists {
-		_, err := DB.ExecContext(ctx, schema)
+		_, err := DbWrite.ExecContext(ctx, schema)
 		if err != nil {
 			log.Fatalf("Database: error creating %s view: %v", viewName, err)
 		}
@@ -114,10 +114,10 @@ func createTrigger(ctx context.Context, schema string) {
 
 	query := "SELECT name FROM sqlite_master WHERE type='trigger' AND name=?"
 	var name string
-	err = DB.QueryRowContext(ctx, query, triggerName).Scan(&name)
+	err = DbRead.QueryRowContext(ctx, query, triggerName).Scan(&name)
 
 	if err == sql.ErrNoRows {
-		_, err := DB.ExecContext(ctx, schema)
+		_, err := DbWrite.ExecContext(ctx, schema)
 		if err != nil {
 			log.Fatalf("Database: error creating %s trigger: %v", triggerName, err)
 			return
@@ -133,7 +133,7 @@ func createTrigger(ctx context.Context, schema string) {
 func createIndex(ctx context.Context, indexName, indexTable string, indexColumns []string, indexUnique bool) {
 	query := "SELECT name FROM sqlite_master WHERE type='index' AND name=?"
 	var name string
-	err := DB.QueryRowContext(ctx, query, indexName).Scan(&name)
+	err := DbRead.QueryRowContext(ctx, query, indexName).Scan(&name)
 
 	if err == sql.ErrNoRows {
 		var sql string
@@ -143,7 +143,7 @@ func createIndex(ctx context.Context, indexName, indexTable string, indexColumns
 			sql = fmt.Sprintf("CREATE INDEX %q ON %q (%s);", indexName, indexTable, strings.Join(indexColumns, ", "))
 		}
 
-		_, err := DB.ExecContext(ctx, sql)
+		_, err := DbWrite.ExecContext(ctx, sql)
 		if err != nil {
 			log.Fatalf("Database: error creating %s index: %v", indexName, err)
 			return

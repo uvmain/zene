@@ -41,9 +41,9 @@ func GetStarredArtists(ctx context.Context, musicFolderId int) ([]types.Artist, 
 	var rows *sql.Rows
 
 	if musicFolderId != 0 {
-		rows, err = DB.QueryContext(ctx, query, user.Id, musicFolderId)
+		rows, err = DbRead.QueryContext(ctx, query, user.Id, musicFolderId)
 	} else {
-		rows, err = DB.QueryContext(ctx, query, user.Id)
+		rows, err = DbRead.QueryContext(ctx, query, user.Id)
 	}
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
@@ -129,9 +129,9 @@ func GetStarredAlbums(ctx context.Context, musicFolderId int) ([]types.AlbumId3,
 	var rows *sql.Rows
 
 	if musicFolderId != 0 {
-		rows, err = DB.QueryContext(ctx, query, user.Id, musicFolderId)
+		rows, err = DbRead.QueryContext(ctx, query, user.Id, musicFolderId)
 	} else {
-		rows, err = DB.QueryContext(ctx, query, user.Id)
+		rows, err = DbRead.QueryContext(ctx, query, user.Id)
 	}
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
@@ -246,9 +246,9 @@ func GetStarredSongs(ctx context.Context, musicFolderId int) ([]types.SubsonicCh
 	var results []types.SubsonicChild
 
 	if musicFolderId != 0 {
-		rows, err = DB.QueryContext(ctx, query, user.Id, musicFolderId)
+		rows, err = DbRead.QueryContext(ctx, query, user.Id, musicFolderId)
 	} else {
-		rows, err = DB.QueryContext(ctx, query, user.Id)
+		rows, err = DbRead.QueryContext(ctx, query, user.Id)
 	}
 	if err != nil {
 		logger.Printf("Query failed: %v", err)

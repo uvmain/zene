@@ -33,7 +33,7 @@ func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
 
 	createdAt := logic.GetCurrentTimeFormatted()
 
-	_, err = DB.ExecContext(ctx, query, userId, metadataId, createdAt)
+	_, err = DbWrite.ExecContext(ctx, query, userId, metadataId, createdAt)
 	if err != nil {
 		return fmt.Errorf("upserting user star row: %v", err)
 	}
@@ -42,7 +42,7 @@ func UpsertUserStar(ctx context.Context, userId int, metadataId string) error {
 
 func DeleteUserStar(ctx context.Context, userId int, metadataId string) error {
 	query := `DELETE FROM user_stars WHERE user_id = ? AND metadata_id = ?`
-	_, err := DB.ExecContext(ctx, query, userId, metadataId)
+	_, err := DbWrite.ExecContext(ctx, query, userId, metadataId)
 	if err != nil {
 		return fmt.Errorf("deleting user star row: %v", err)
 	}

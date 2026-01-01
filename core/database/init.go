@@ -3,21 +3,21 @@ package database
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 	"zene/core/config"
 	"zene/core/io"
 	"zene/core/logger"
 	"zene/core/version"
 
-	_ "github.com/ncruces/go-sqlite3/driver"
-	_ "github.com/ncruces/go-sqlite3/embed"
+	_ "modernc.org/sqlite"
 )
 
 var dbFile = "sqlite.db"
-var DB *sql.DB
+var DbRead *sql.DB
+var DbWrite *sql.DB
 var err error
 
 func Initialise(ctx context.Context) {
@@ -65,17 +65,8 @@ func checkVersion(ctx context.Context) {
 		}
 	}
 
-	if existingVersion.DatabaseVersion != thisVersion.DatabaseVersion {
-		logger.Printf("Database version change detected, migrating from %v to %v", existingVersion.DatabaseVersion, thisVersion.DatabaseVersion)
-		InsertVersion(ctx, thisVersion)
-	} else if existingVersion.ServerVersion != thisVersion.ServerVersion {
-		logger.Printf("Server version change detected, migrating from %v to %v", existingVersion.ServerVersion, thisVersion.ServerVersion)
-		InsertVersion(ctx, thisVersion)
-	} else if existingVersion.SubsonicApiVersion != thisVersion.SubsonicApiVersion {
-		logger.Printf("Subsonic API version change detected, migrating from %v to %v", existingVersion.SubsonicApiVersion, thisVersion.SubsonicApiVersion)
-		InsertVersion(ctx, thisVersion)
-	} else if existingVersion.OpenSubsonicApiVersion != thisVersion.OpenSubsonicApiVersion {
-		logger.Printf("OpenSubsonic API version change detected, migrating from %v to %v", existingVersion.OpenSubsonicApiVersion, thisVersion.OpenSubsonicApiVersion)
+	if existingVersion.DatabaseVersion != thisVersion.DatabaseVersion || existingVersion.ServerVersion != thisVersion.ServerVersion || existingVersion.SubsonicApiVersion != thisVersion.SubsonicApiVersion || existingVersion.OpenSubsonicApiVersion != thisVersion.OpenSubsonicApiVersion {
+		logger.Printf("Version change detected, inserting new version record: old=%+v new=%+v", existingVersion, thisVersion)
 		InsertVersion(ctx, thisVersion)
 	}
 }
@@ -89,27 +80,59 @@ func openDatabase(ctx context.Context) {
 		logger.Println("Creating new database file")
 	}
 
-	dataSource := fmt.Sprintf("file:%s?_journal_mode=WAL&_foreign_keys=on", dbFilePath)
-	var err error
-	DB, err = sql.Open("sqlite3", dataSource)
+	DbRead, err = sql.Open("sqlite", dbFilePath)
 	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
+		log.Printf("Error opening read database file: %s", err)
+	} else {
+		log.Println("ReadOnly database connection opened")
 	}
-	DB.SetMaxIdleConns(5)
 
-	if err := DB.PingContext(ctx); err != nil {
-		log.Fatalf("Failed to ping database: %v", err)
+	_, err = DbRead.Exec("PRAGMA journal_mode=WAL;")
+	_, err = DbRead.Exec("PRAGMA synchronous=NORMAL;")
+	_, err = DbRead.Exec("PRAGMA busy_timeout=5000;")
+	_, err = DbRead.Exec("PRAGMA temp_store=MEMORY;")
+	_, err = DbRead.Exec("PRAGMA mmap_size=30000000000;")
+
+	DbRead.SetMaxIdleConns(10)
+	DbRead.SetMaxOpenConns(100)
+	DbRead.SetConnMaxLifetime(time.Hour)
+
+	DbWrite, err = sql.Open("sqlite", dbFilePath)
+	if err != nil {
+		log.Printf("Error opening write database file: %s", err)
+	} else {
+		log.Println("Write database connection opened")
+	}
+
+	_, err = DbWrite.Exec("PRAGMA journal_mode=WAL;")
+	_, err = DbWrite.Exec("PRAGMA synchronous=NORMAL;")
+	_, err = DbWrite.Exec("PRAGMA busy_timeout=5000;")
+	_, err = DbWrite.Exec("PRAGMA temp_store=MEMORY;")
+	_, err = DbWrite.Exec("PRAGMA mmap_size=30000000000;")
+
+	DbWrite.SetMaxIdleConns(1)
+	DbWrite.SetMaxOpenConns(1)
+	DbWrite.SetConnMaxLifetime(time.Hour)
+	_, err = DbWrite.Exec("PRAGMA locking_mode=IMMEDIATE;")
+
+	if err := DbRead.PingContext(ctx); err != nil {
+		log.Fatalf("Failed to ping database with read connection: %v", err)
+	}
+
+	if err := DbWrite.PingContext(ctx); err != nil {
+		log.Fatalf("Failed to ping database with write connection: %v", err)
 	}
 }
 
 func CleanShutdown() {
-	if DB != nil {
+	if DbWrite != nil {
 		log.Println("Closing database...")
-		_, err = DB.Exec("PRAGMA wal_checkpoint(FULL);")
+		_, err = DbWrite.Exec("PRAGMA wal_checkpoint(FULL);")
 		if err != nil {
 			log.Printf("Error committing WAL checkpoint on shutdown: %v", err)
 		}
-		DB.Close()
+		DbWrite.Close()
+		DbRead.Close()
 
 		// wait for data to be flushed to disk
 		f, err := os.OpenFile(filepath.Join(config.DatabaseDirectory, dbFile), os.O_RDWR, 0660)

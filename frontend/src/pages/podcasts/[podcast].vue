@@ -94,10 +94,6 @@ function updateEpisodeStatus(episodeId: string, status: string) {
   }
 }
 
-function navigateToEpisode(episodeId: string) {
-  router.push(`/podcasts/episodes/${episodeId}`)
-}
-
 onBeforeMount(async () => {
   await getPodcast()
   useServerSentEventsForPodcast(route.params.podcast.toString(), onMessageReceived, onErrorReceived)
@@ -109,7 +105,7 @@ onBeforeMount(async () => {
     <div v-if="!podcast" class="text-primary">
       Podcast not found.
     </div>
-    <div v-else class="mx-auto max-w-60dvw flex flex-col cursor-pointer gap-6">
+    <div v-else class="mx-auto max-w-60dvw flex flex-col gap-6">
       <!-- header -->
       <div class="pb-4">
         <div class="group relative flex flex-row gap-4 align-top">
@@ -156,7 +152,6 @@ onBeforeMount(async () => {
         :episode="episode"
         :index="index"
         @update-episode-status="updateEpisodeStatus"
-        @click="navigateToEpisode(episode.id)"
       />
     </div>
     <!-- delete channel modal -->

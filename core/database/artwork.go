@@ -23,7 +23,7 @@ func SelectAlbumArtByMusicBrainzAlbumId(ctx context.Context, musicbrainzAlbumId 
 
 	var row types.AlbumArtRow
 	var dateModified sql.NullString
-	err := DB.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&dateModified, &row.FilePath)
+	err := DbRead.QueryRowContext(ctx, query, musicbrainzAlbumId).Scan(&dateModified, &row.FilePath)
 	if err != nil {
 		return types.AlbumArtRow{}, err
 	}
@@ -39,7 +39,7 @@ func UpsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 		ON CONFLICT(musicbrainz_album_id) DO UPDATE SET date_modified=excluded.date_modified
 		WHERE excluded.date_modified>album_art.date_modified`
 
-	_, err := DB.ExecContext(ctx, query, musicbrainzAlbumId, logic.GetCurrentTimeFormatted())
+	_, err := DbWrite.ExecContext(ctx, query, musicbrainzAlbumId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		return fmt.Errorf("inserting album art row: %v", err)
 	}
@@ -48,7 +48,7 @@ func UpsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 
 func DeleteAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 	query := `DELETE FROM album_art WHERE musicbrainz_album_id = ?`
-	_, err := DB.ExecContext(ctx, query, musicbrainzAlbumId)
+	_, err := DbWrite.ExecContext(ctx, query, musicbrainzAlbumId)
 	if err != nil {
 		return fmt.Errorf("deleting album art row: %v", err)
 	}
@@ -57,7 +57,7 @@ func DeleteAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 
 func SelectAlbumArtIds(ctx context.Context) ([]string, error) {
 	query := `SELECT distinct musicbrainz_album_id FROM album_art`
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("querying album art IDs: %v", err)
 	}
@@ -81,7 +81,7 @@ func SelectAlbumArtIds(ctx context.Context) ([]string, error) {
 
 func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string) ([]string, error) {
 	query := `SELECT DISTINCT file_path FROM metadata WHERE musicbrainz_artist_id = ? and album_artist = artist`
-	rows, err := DB.QueryContext(ctx, query, musicbrainzArtistId)
+	rows, err := DbRead.QueryContext(ctx, query, musicbrainzArtistId)
 	if err != nil {
 		return nil, fmt.Errorf("querying artist subdirectories: %v", err)
 	}
@@ -113,7 +113,7 @@ func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string)
 func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId string) (types.ArtistArtRow, error) {
 	query := `SELECT musicbrainz_artist_id, date_modified FROM artist_art WHERE musicbrainz_artist_id = ?`
 	var row types.ArtistArtRow
-	err := DB.QueryRowContext(ctx, query, musicbrainzArtistId).Scan(&row.MusicbrainzArtistId, &row.DateModified)
+	err := DbRead.QueryRowContext(ctx, query, musicbrainzArtistId).Scan(&row.MusicbrainzArtistId, &row.DateModified)
 	if err == sql.ErrNoRows {
 		return types.ArtistArtRow{}, nil
 	} else if err != nil {
@@ -128,7 +128,7 @@ func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateMod
 		ON CONFLICT(musicbrainz_artist_id) DO UPDATE SET date_modified=excluded.date_modified
 		WHERE excluded.date_modified>artist_art.date_modified`
 
-	_, err := DB.ExecContext(ctx, query, musicbrainzArtistId, logic.GetCurrentTimeFormatted())
+	_, err := DbWrite.ExecContext(ctx, query, musicbrainzArtistId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		return fmt.Errorf("inserting artist art row: %v", err)
 	}

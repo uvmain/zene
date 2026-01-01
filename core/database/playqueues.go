@@ -31,7 +31,7 @@ func ClearPlayqueue(ctx context.Context) error {
 
 	query := `DELETE FROM playqueues WHERE user_id = ?;`
 
-	_, err = DB.ExecContext(ctx, query, user.Id)
+	_, err = DbWrite.ExecContext(ctx, query, user.Id)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func UpsertPlayqueue(ctx context.Context, trackIds []string, currentIndex int, p
 			current_index=excluded.current_index
 		WHERE playqueues.user_id=excluded.user_id;`
 
-	_, err = DB.ExecContext(ctx, query, user.Id, changed, changedBy, position, trackIdsString, currentIndex)
+	_, err = DbWrite.ExecContext(ctx, query, user.Id, changed, changedBy, position, trackIdsString, currentIndex)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func GetPlayqueue(ctx context.Context) (types.PlayqueueRowParsed, error) {
 		from playqueues p
 		join users u on u.id = p.user_id`
 
-	row := DB.QueryRowContext(ctx, query+" where p.user_id = ?;", user.Id)
+	row := DbRead.QueryRowContext(ctx, query+" where p.user_id = ?;", user.Id)
 
 	var username, changed, changedBy, trackIds string
 	var position, currentIndex int

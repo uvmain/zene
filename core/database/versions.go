@@ -25,7 +25,7 @@ func InsertVersion(ctx context.Context, version types.Version) error {
 	insertTimestampUnixSeconds := time.Now().Unix()
 	query := `INSERT INTO versions (server_version, database_version, subsonic_api_version, open_subsonic_api_version, timestamp)
 		VALUES (?, ?, ?, ?, ?);`
-	_, err := DB.ExecContext(ctx, query,
+	_, err := DbWrite.ExecContext(ctx, query,
 		version.ServerVersion,
 		version.DatabaseVersion,
 		version.SubsonicApiVersion,
@@ -41,7 +41,7 @@ func GetLatestVersion(ctx context.Context) (types.Version, error) {
 	query := "SELECT server_version, database_version, subsonic_api_version, open_subsonic_api_version, timestamp FROM versions ORDER BY id desc limit 1;"
 
 	var result types.Version
-	err := DB.QueryRowContext(ctx, query).Scan(&result.ServerVersion, &result.DatabaseVersion, &result.SubsonicApiVersion, &result.OpenSubsonicApiVersion, &result.Timestamp)
+	err := DbRead.QueryRowContext(ctx, query).Scan(&result.ServerVersion, &result.DatabaseVersion, &result.SubsonicApiVersion, &result.OpenSubsonicApiVersion, &result.Timestamp)
 	if err == sql.ErrNoRows {
 		return types.Version{}, err
 	} else if err != nil {

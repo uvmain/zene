@@ -20,7 +20,7 @@ func migrateAudioCache(ctx context.Context) {
 func SelectStaleAudioCacheEntries(ctx context.Context, olderThan time.Time) ([]string, error) {
 	query := "SELECT cache_key FROM audio_cache WHERE last_accessed < ?"
 
-	rows, err := DB.QueryContext(ctx, query, olderThan.Format(time.RFC3339Nano))
+	rows, err := DbRead.QueryContext(ctx, query, olderThan.Format(time.RFC3339Nano))
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []string{}, err
@@ -54,7 +54,7 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 	`
 
 	lastAccessed := logic.GetCurrentTimeFormatted()
-	_, err := DB.ExecContext(ctx, stmt, cache_key, lastAccessed, lastAccessed)
+	_, err := DbWrite.ExecContext(ctx, stmt, cache_key, lastAccessed, lastAccessed)
 
 	if err != nil {
 		return fmt.Errorf("upserting audio cache row: %v", err)
@@ -65,7 +65,7 @@ func UpsertAudioCacheEntry(ctx context.Context, cache_key string) error {
 
 func DeleteAudioCacheEntry(cache_key string) error {
 	stmt := "DELETE FROM audio_cache WHERE cache_key = ?"
-	_, err := DB.Exec(stmt, cache_key)
+	_, err := DbWrite.Exec(stmt, cache_key)
 
 	if err != nil {
 		return fmt.Errorf("deleting audio cache row: %v", err)
@@ -77,7 +77,7 @@ func DeleteAudioCacheEntry(cache_key string) error {
 func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, error) {
 	query := "SELECT cache_key, last_accessed FROM audio_cache"
 
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DbRead.QueryContext(ctx, query)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.AudioCacheEntry{}, err

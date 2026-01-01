@@ -27,7 +27,7 @@ func GetSimilarSongs(ctx context.Context, count int, musicbrainzId string) ([]ty
 	}
 
 	if !metadataRow.MusicbrainzArtistId {
-		err := DB.QueryRow(query, musicbrainzId).Scan(&artistId)
+		err := DbRead.QueryRow(query, musicbrainzId).Scan(&artistId)
 		if err == sql.ErrNoRows {
 			return []types.SubsonicChild{}, fmt.Errorf("no artist found for musicbrainz ID: %s", musicbrainzId)
 		} else if err != nil {
@@ -104,7 +104,7 @@ func GetSimilarSongs(ctx context.Context, count int, musicbrainzId string) ([]ty
 	query += ` limit ?`
 	args = append(args, count)
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("getting scans: %v", err)
 	}

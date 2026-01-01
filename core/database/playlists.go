@@ -107,7 +107,7 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 		logger.Printf("Creating new playlist for user %s with name %s", user.Username, playlistName)
 
 		query := `INSERT INTO playlists (name, user_id, created, changed) VALUES (?, ?, ?, ?);`
-		result, err := DB.ExecContext(ctx, query,
+		result, err := DbWrite.ExecContext(ctx, query,
 			playlistName,
 			user.Id,
 			logic.GetCurrentTimeFormatted(),
@@ -156,7 +156,7 @@ func CreatePlaylist(ctx context.Context, playlistName string, playlistId int, so
 func PlaylistExists(ctx context.Context, playlistId int, playlistName string) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM playlists WHERE id = ? OR name = ?);`
-	err := DB.QueryRowContext(ctx, query, playlistId, playlistName).Scan(&exists)
+	err := DbRead.QueryRowContext(ctx, query, playlistId, playlistName).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("checking if playlist exists: %v", err)
 	}
@@ -166,7 +166,7 @@ func PlaylistExists(ctx context.Context, playlistId int, playlistName string) (b
 func GetPlaylistIdByName(ctx context.Context, playlistName string) (int, error) {
 	var playlistId int
 	query := `SELECT id FROM playlists WHERE name = ?;`
-	err := DB.QueryRowContext(ctx, query, playlistName).Scan(&playlistId)
+	err := DbRead.QueryRowContext(ctx, query, playlistName).Scan(&playlistId)
 	if err != nil {
 		return 0, fmt.Errorf("getting playlist id by name: %v", err)
 	}
@@ -175,7 +175,7 @@ func GetPlaylistIdByName(ctx context.Context, playlistName string) (int, error) 
 
 func addPlaylistEntry(ctx context.Context, playlistId int, musicbrainzTrackId string) error {
 	query := `INSERT INTO playlist_entries (playlist_id, musicbrainz_track_id, sort_order) VALUES (?, ?, (select COALESCE(max(sort_order)+1, 1) from playlist_entries where playlist_id = ?));`
-	_, err := DB.ExecContext(ctx, query,
+	_, err := DbWrite.ExecContext(ctx, query,
 		playlistId,
 		musicbrainzTrackId,
 		playlistId)
@@ -187,7 +187,7 @@ func addPlaylistEntry(ctx context.Context, playlistId int, musicbrainzTrackId st
 
 func addPlaylistEntries(ctx context.Context, playlistId int, songIds []string) error {
 	// batch insert using a transaction
-	tx, err := DB.BeginTx(ctx, nil)
+	tx, err := DbWrite.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("starting transaction: %v", err)
 	}
@@ -218,7 +218,7 @@ func removePlaylistEntriesByIndexes(ctx context.Context, playlistId int, songIdI
 			return fmt.Errorf("songIdIndex %d out of range (playlist has %d entries)", songIdIndex, entryCount)
 		}
 		trackId := existingEntries[songIdIndex].Id
-		_, err := DB.ExecContext(ctx, `DELETE FROM playlist_entries WHERE playlist_id = ? AND musicbrainz_track_id = ?`, playlistId, trackId)
+		_, err := DbWrite.ExecContext(ctx, `DELETE FROM playlist_entries WHERE playlist_id = ? AND musicbrainz_track_id = ?`, playlistId, trackId)
 		if err != nil {
 			logger.Printf("Error removing track %s from playlist %d: %v", existingEntries[songIdIndex].Title, playlistId, err)
 			return fmt.Errorf("removing playlist entry: %v", err)
@@ -239,7 +239,7 @@ func updateAllowedUsersForPlaylist(ctx context.Context, playlistId int, allowedU
 	// remove unused user access
 	if len(allowedUserIds) == 0 {
 		// if no allowed users, remove all except the owner
-		_, err := DB.ExecContext(ctx, `DELETE FROM playlist_allowed_users WHERE playlist_id = ? AND user_id != ?`, playlistId, user.Id)
+		_, err := DbWrite.ExecContext(ctx, `DELETE FROM playlist_allowed_users WHERE playlist_id = ? AND user_id != ?`, playlistId, user.Id)
 		if err != nil {
 			return fmt.Errorf("removing all allowed users: %v", err)
 		}
@@ -254,7 +254,7 @@ func updateAllowedUsersForPlaylist(ctx context.Context, playlistId int, allowedU
 		}
 		args = append(args, user.Id)
 		query := "DELETE FROM playlist_allowed_users WHERE playlist_id = ? AND user_id NOT IN (" + strings.Join(placeholders, ",") + ") AND user_id != ?"
-		_, err := DB.ExecContext(ctx, query, args...)
+		_, err := DbWrite.ExecContext(ctx, query, args...)
 		if err != nil {
 			return fmt.Errorf("removing old allowed users: %v", err)
 		}
@@ -262,7 +262,7 @@ func updateAllowedUsersForPlaylist(ctx context.Context, playlistId int, allowedU
 
 	// add new allowed users
 	for _, userId := range allowedUserIds {
-		_, err := DB.ExecContext(ctx, `INSERT OR IGNORE INTO playlist_allowed_users (playlist_id, user_id) VALUES (?, ?)`, playlistId, userId)
+		_, err := DbWrite.ExecContext(ctx, `INSERT OR IGNORE INTO playlist_allowed_users (playlist_id, user_id) VALUES (?, ?)`, playlistId, userId)
 		if err != nil {
 			return fmt.Errorf("adding allowed user to playlist: %v", err)
 		}
@@ -274,7 +274,7 @@ func updateAllowedUsersForPlaylist(ctx context.Context, playlistId int, allowedU
 func RemoveOrphanedPlaylistEntries(ctx context.Context) error {
 	query := `DELETE FROM playlist_entries
 	WHERE musicbrainz_track_id NOT IN (SELECT musicbrainz_track_id FROM metadata);`
-	_, err := DB.ExecContext(ctx, query)
+	_, err := DbWrite.ExecContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("removing orphaned playlist entries: %v", err)
 	}
@@ -307,7 +307,7 @@ func GetPlaylists(ctx context.Context, username string) ([]types.PlaylistRow, er
 	where u.username = ?
 	group by p.id, au.allowed_users;`
 
-	rows, err := DB.QueryContext(ctx, query, username)
+	rows, err := DbRead.QueryContext(ctx, query, username)
 	if err != nil {
 		return nil, fmt.Errorf("querying playlists: %v", err)
 	}
@@ -366,7 +366,7 @@ func GetPlaylist(ctx context.Context, playlistId int) (types.PlaylistRow, error)
 	var result types.PlaylistRow
 	var allowedUsersString string
 
-	err = DB.QueryRowContext(ctx, query, playlistId).Scan(&result.Id, &result.Name, &result.Owner, &result.Public, &result.Created, &result.Changed,
+	err = DbRead.QueryRowContext(ctx, query, playlistId).Scan(&result.Id, &result.Name, &result.Owner, &result.Public, &result.Created, &result.Changed,
 		&result.SongCount, &result.Duration, &result.Comment, &result.CoverArt, &allowedUsersString)
 	if err == sql.ErrNoRows {
 		return types.PlaylistRow{}, nil
@@ -412,7 +412,7 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 
 	var results []types.SubsonicChild
 
-	rows, err := DB.QueryContext(ctx, query, playlistId)
+	rows, err := DbRead.QueryContext(ctx, query, playlistId)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.SubsonicChild{}, err
@@ -478,7 +478,7 @@ func GetPlaylistEntries(ctx context.Context, playlistId int) ([]types.SubsonicCh
 
 func DeletePlaylist(ctx context.Context, playlistId int) error {
 	query := `DELETE FROM playlists WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, playlistId)
+	_, err := DbWrite.ExecContext(ctx, query, playlistId)
 	return err
 }
 
@@ -537,7 +537,7 @@ func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment s
 		query += ` WHERE id = ?`
 		args = append(args, playlistId)
 
-		_, err = DB.ExecContext(ctx, query, args...)
+		_, err = DbWrite.ExecContext(ctx, query, args...)
 		if err != nil {
 			return fmt.Errorf("updating playlist: %v", err)
 		}
@@ -570,6 +570,6 @@ func UpdatePlaylist(ctx context.Context, playlistId int, playlistName, comment s
 func updatePlaylistChangedDate(ctx context.Context, playlistId int) error {
 	currentTime := logic.GetCurrentTimeFormatted()
 	query := `UPDATE playlists SET changed = ? WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, currentTime, playlistId)
+	_, err := DbWrite.ExecContext(ctx, query, currentTime, playlistId)
 	return err
 }

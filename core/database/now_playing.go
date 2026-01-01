@@ -27,7 +27,7 @@ func migrateNowPlaying(ctx context.Context) {
 func UpsertNowPlaying(ctx context.Context, userId int, trackId string, playedAt int, playerId int, playerName string) error {
 	query := `DELETE FROM now_playing where user_id = ? and player_id = ? and player_name = ?`
 
-	_, err := DB.ExecContext(ctx, query, userId, playerId, playerName)
+	_, err := DbWrite.ExecContext(ctx, query, userId, playerId, playerName)
 	if err != nil {
 		return fmt.Errorf("removing existing playing row: %v", err)
 	}
@@ -35,7 +35,7 @@ func UpsertNowPlaying(ctx context.Context, userId int, trackId string, playedAt 
 	query = `INSERT INTO now_playing (user_id, track_id, played_at, player_id, player_name)
 		VALUES (?, ?, ?, ?, ?)`
 
-	_, err = DB.ExecContext(ctx, query, userId, trackId, playedAt, playerId, playerName)
+	_, err = DbWrite.ExecContext(ctx, query, userId, trackId, playedAt, playerId, playerName)
 	if err != nil {
 		return fmt.Errorf("upserting now playing row: %v", err)
 	}
@@ -45,7 +45,7 @@ func UpsertNowPlaying(ctx context.Context, userId int, trackId string, playedAt 
 func CleanupNowPlaying(ctx context.Context) error {
 	query := `DELETE FROM now_playing WHERE played_at < ?`
 	tenMinutesAgo := time.Now().Add(-10 * time.Minute).UnixMilli()
-	_, err := DB.ExecContext(ctx, query, tenMinutesAgo)
+	_, err := DbWrite.ExecContext(ctx, query, tenMinutesAgo)
 	if err != nil {
 		return fmt.Errorf("cleaning up now playing: %v", err)
 	}
@@ -75,7 +75,7 @@ func GetNowPlaying(ctx context.Context) ([]types.SubsonicNowPlayingEntry, error)
 	LEFT JOIN play_counts pc ON m.musicbrainz_track_id = pc.musicbrainz_track_id AND pc.user_id = np.user_id
 	group by m.musicbrainz_track_id;`
 
-	rows, err := DB.Query(query)
+	rows, err := DbRead.Query(query)
 	if err != nil {
 		logger.Printf("Error querying now playing: %v", err)
 		return []types.SubsonicNowPlayingEntry{}, err

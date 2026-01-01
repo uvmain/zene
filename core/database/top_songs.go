@@ -93,7 +93,7 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 		limit ? offset ?`
 	args = append(args, user.Id, user.Id, user.Id, strings.ToLower(artistName), limit, offset)
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.SubsonicChild{}, err
@@ -160,7 +160,7 @@ func SelectTopSongsForArtistName(ctx context.Context, artistName string, limit i
 }
 
 func InsertTopSongs(ctx context.Context, topSongs []types.TopSongRow) error {
-	tx, err := DB.BeginTx(ctx, nil)
+	tx, err := DbWrite.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}

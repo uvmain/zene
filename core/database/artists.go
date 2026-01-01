@@ -32,7 +32,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 
 	var starred sql.NullString
 
-	err = DB.QueryRowContext(ctx, query, user.Id, musicbrainzArtistId).Scan(
+	err = DbRead.QueryRowContext(ctx, query, user.Id, musicbrainzArtistId).Scan(
 		&result.Id, &result.Name, &starred, &result.UserRating, &result.AverageRating,
 	)
 	if err == sql.ErrNoRows {
@@ -66,7 +66,7 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 func GetArtistNameByMusicBrainzArtistId(ctx context.Context, musicBrainzArtistId string) string {
 	var artistName string
 	query := `SELECT artist FROM metadata WHERE musicbrainz_artist_id = ? limit 1`
-	err := DB.QueryRowContext(ctx, query, musicBrainzArtistId).Scan(&artistName)
+	err := DbRead.QueryRowContext(ctx, query, musicBrainzArtistId).Scan(&artistName)
 	if err != nil {
 		return ""
 	}
@@ -81,7 +81,7 @@ func GetArtistIdByName(ctx context.Context, artistName string) (string, error) {
 
 	var result string
 
-	err = DB.QueryRowContext(ctx, query, artistName).Scan(&result)
+	err = DbRead.QueryRowContext(ctx, query, artistName).Scan(&result)
 
 	return result, err
 }
@@ -91,7 +91,7 @@ func GetArtistNameById(ctx context.Context, musicBrainzArtistId string) (string,
 
 	var result string
 
-	err := DB.QueryRowContext(ctx, query, musicBrainzArtistId).Scan(&result)
+	err := DbRead.QueryRowContext(ctx, query, musicBrainzArtistId).Scan(&result)
 	if err == sql.ErrNoRows {
 		return "", nil
 	} else if err != nil {
@@ -201,7 +201,7 @@ func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset 
 		args = append(args, limit, offset)
 	}
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("querying GetArtistList: %v", err)
 	}

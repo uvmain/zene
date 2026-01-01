@@ -74,7 +74,7 @@ func CreatePodcastChannel(ctx context.Context, url string, title string, descrip
 
 	categoriesString := strings.Join(categories, ",")
 
-	result, err := DB.ExecContext(ctx, query, url, title, description, cover_art, original_image_url, lastRefresh, user.Id, createdAt, categoriesString)
+	result, err := DbWrite.ExecContext(ctx, query, url, title, description, cover_art, original_image_url, lastRefresh, user.Id, createdAt, categoriesString)
 	if err != nil {
 		return 0, fmt.Errorf("inserting podcast channel: %v", err)
 	}
@@ -92,7 +92,7 @@ func UpdatePodcastChannel(ctx context.Context, channelId int, url string, title 
 
 	categoriesString := strings.Join(categories, ",")
 
-	result, err := DB.ExecContext(ctx, query, url, title, description, originalImageUrl, coverArt, lastRefresh, categoriesString, channelId)
+	result, err := DbWrite.ExecContext(ctx, query, url, title, description, originalImageUrl, coverArt, lastRefresh, categoriesString, channelId)
 	if err != nil {
 		return fmt.Errorf("updating podcast channel: %v", err)
 	}
@@ -110,7 +110,7 @@ func UpdatePodcastChannel(ctx context.Context, channelId int, url string, title 
 
 func UpdatePodcastChannelStatus(ctx context.Context, channelId int, status string) error {
 	query := `UPDATE podcast_channels SET status = ? WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, status, channelId)
+	_, err := DbWrite.ExecContext(ctx, query, status, channelId)
 	if err != nil {
 		return fmt.Errorf("updating podcast channel status: %v", err)
 	}
@@ -119,7 +119,7 @@ func UpdatePodcastChannelStatus(ctx context.Context, channelId int, status strin
 
 func UpdatePodcastEpisodeStatus(ctx context.Context, episodeId int, status string) error {
 	query := `UPDATE podcast_episodes SET status = ? WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, status, episodeId)
+	_, err := DbWrite.ExecContext(ctx, query, status, episodeId)
 	if err != nil {
 		return fmt.Errorf("updating podcast episode status: %v", err)
 	}
@@ -128,7 +128,7 @@ func UpdatePodcastEpisodeStatus(ctx context.Context, episodeId int, status strin
 
 func AddFileDetailsToEpisode(ctx context.Context, episodeId int, filePath string, size int64, contentType string, duration string, bitRate string) error {
 	query := `UPDATE podcast_episodes SET file_path = ?, size = ?, content_type = ?, duration = ?, bit_rate = ? WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, filePath, size, contentType, duration, bitRate, episodeId)
+	_, err := DbWrite.ExecContext(ctx, query, filePath, size, contentType, duration, bitRate, episodeId)
 	if err != nil {
 		return fmt.Errorf("adding file details to podcast episode: %v", err)
 	}
@@ -147,7 +147,7 @@ func DeletePodcastChannel(ctx context.Context, channelId int) error {
 
 	query := `DELETE FROM podcast_channels WHERE id = ? AND user_id = ?`
 
-	result, err := DB.ExecContext(ctx, query, channelId, user.Id)
+	result, err := DbWrite.ExecContext(ctx, query, channelId, user.Id)
 	if err != nil {
 		return fmt.Errorf("deleting podcast channel: %v", err)
 	}
@@ -174,7 +174,7 @@ func IsValidPodcastCover(ctx context.Context, coverArtId string) (bool, error) {
 				WHERE cover_art = ?
 		)
 		LIMIT 1;`
-	row := DB.QueryRowContext(ctx, query, coverArtId, coverArtId)
+	row := DbRead.QueryRowContext(ctx, query, coverArtId, coverArtId)
 
 	var dbCoverArtId string
 	if err := row.Scan(&dbCoverArtId); err != nil {
@@ -214,7 +214,7 @@ func GetPodcasts(ctx context.Context, podcastId int, includeEpisodes bool) ([]ty
 		args = append(args, podcastId)
 	}
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("querying podcasts: %v", err)
 	}
@@ -325,7 +325,7 @@ func UpsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) 
 	suffix := strings.Split(episode.Suffix, "?")[0] //remove trailing query params
 	suffix = strings.TrimPrefix(suffix, ".")        //remove leading dot
 
-	_, err = DB.ExecContext(ctx, query,
+	_, err = DbWrite.ExecContext(ctx, query,
 		episode.ChannelId,
 		episode.Guid,
 		episode.Title,
@@ -356,7 +356,7 @@ func UpsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) 
 func InsertPodcastEpisodes(episodes []types.PodcastEpisodeRow) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	tx, err := DB.BeginTx(ctx, nil)
+	tx, err := DbWrite.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("beginning transaction: %v", err)
 	}
@@ -379,7 +379,7 @@ func UpdatePodcastChannelLastRefresh(channelId int) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	query := `UPDATE podcast_channels SET last_refresh = ? WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, logic.GetCurrentTimeFormatted(), channelId)
+	_, err := DbWrite.ExecContext(ctx, query, logic.GetCurrentTimeFormatted(), channelId)
 	if err != nil {
 		logger.Printf("Error updating podcast channel last refresh: %v", err)
 		return fmt.Errorf("updating podcast channel last refresh: %v", err)
@@ -395,7 +395,7 @@ func GetPodcastEpisodeById(ctx context.Context, episodeId int) (types.PodcastEpi
 	from podcast_episodes pe
 	join podcast_channels pc on pc.id = pe.channel_id
 	where pe.id = ?`
-	row := DB.QueryRowContext(ctx, query, episodeId)
+	row := DbRead.QueryRowContext(ctx, query, episodeId)
 	var genresString sql.NullString
 
 	if err := row.Scan(
@@ -443,7 +443,7 @@ func GetPodcastEpisodeByGuid(ctx context.Context, episodeGuid string) (types.Pod
 	from podcast_episodes pe
 	join podcast_channels pc on pc.id = pe.channel_id
 	where pe.guid = ?`
-	row := DB.QueryRowContext(ctx, query, episodeGuid)
+	row := DbRead.QueryRowContext(ctx, query, episodeGuid)
 	var genresString sql.NullString
 
 	if err := row.Scan(
@@ -485,7 +485,7 @@ func GetPodcastEpisodeByGuid(ctx context.Context, episodeGuid string) (types.Pod
 
 func DeletePodcastEpisodeById(ctx context.Context, episodeId string) error {
 	query := `DELETE FROM podcast_episodes WHERE id = ?;`
-	_, err := DB.ExecContext(ctx, query, episodeId)
+	_, err := DbWrite.ExecContext(ctx, query, episodeId)
 	if err != nil {
 		return fmt.Errorf("deleting podcast episode by id: %v", err)
 	}
@@ -494,7 +494,7 @@ func DeletePodcastEpisodeById(ctx context.Context, episodeId string) error {
 
 func SetPodcastEpisodeStatusToNew(ctx context.Context, episodeId int) error {
 	query := `UPDATE podcast_episodes SET status = 'new' WHERE id = ?;`
-	_, err := DB.ExecContext(ctx, query, episodeId)
+	_, err := DbWrite.ExecContext(ctx, query, episodeId)
 	return err
 }
 
@@ -507,7 +507,7 @@ func GetPodcastEpisodesByChannelId(ctx context.Context, channelId int) ([]types.
 	join podcast_channels pc on pc.id = pe.channel_id
 	where pc.id = ?
 	order by pe.publish_date desc;`
-	rows, err := DB.QueryContext(ctx, query, channelId)
+	rows, err := DbRead.QueryContext(ctx, query, channelId)
 	if err != nil {
 		return nil, fmt.Errorf("querying podcast episodes by channel id: %v", err)
 	}
@@ -565,7 +565,7 @@ func GetNewestPodcastEpisodes(ctx context.Context, count int) ([]types.PodcastEp
 	join podcast_channels pc on pc.id = pe.channel_id
 	order by pe.publish_date desc
 	limit ?;`
-	rows, err := DB.QueryContext(ctx, query, count)
+	rows, err := DbRead.QueryContext(ctx, query, count)
 	if err != nil {
 		return nil, fmt.Errorf("querying newest podcast episodes: %v", err)
 	}
@@ -622,7 +622,7 @@ func GetPodcastEpisodesUserless(ctx context.Context) ([]types.PodcastEpisode, er
 	from podcast_episodes pe
 	join podcast_channels pc on pc.id = pe.channel_id
 	order by pe.publish_date desc;`
-	rows, err := DB.QueryContext(ctx, query)
+	rows, err := DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("querying podcast episodes in GetPodcastEpisodesUserless: %v", err)
 	}
@@ -690,7 +690,7 @@ func GetPodcastsUserless(ctx context.Context, podcastId string) ([]types.Podcast
 		args = append(args, podcastId)
 	}
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("querying podcasts: %v", err)
 	}
@@ -744,7 +744,7 @@ func GetPodcastChannelById(ctx context.Context, channelId int) (types.PodcastCha
 		p.last_refresh, p.status, p.created_at, p.error_message
 	from podcast_channels p
 	where p.id = $1;`
-	err := DB.QueryRowContext(ctx, query, channelId).Scan(
+	err := DbRead.QueryRowContext(ctx, query, channelId).Scan(
 		&channel.Id,
 		&channel.Title,
 		&channel.Url,

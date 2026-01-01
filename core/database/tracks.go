@@ -16,7 +16,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 	query += " where m.musicbrainz_track_id = ? limit 1;"
 
 	var result types.MetadataWithPlaycounts
-	err := DB.QueryRowContext(ctx, query, musicBrainzTrackId).Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
+	err := DbRead.QueryRowContext(ctx, query, musicBrainzTrackId).Scan(&result.FilePath, &result.DateAdded, &result.DateModified, &result.FileName, &result.Format, &result.Duration,
 		&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
 		&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
 		&result.MusicBrainzTrackID, &result.Label, &result.MusicFolderId, &result.Codec, &result.BitDepth, &result.SampleRate, &result.Channels,
@@ -32,7 +32,7 @@ func SelectTrack(ctx context.Context, musicBrainzTrackId string) (types.Metadata
 func SelectTrackFilesForScanner(ctx context.Context, musicDir string) ([]types.File, error) {
 	query := "SELECT m.file_path, m.file_name, m.date_modified FROM metadata m join music_folders f on m.music_folder_id = f.id where f.name = ?;"
 
-	rows, err := DB.QueryContext(ctx, query, musicDir)
+	rows, err := DbRead.QueryContext(ctx, query, musicDir)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.File{}, err
@@ -61,7 +61,7 @@ func SelectTrackFilesForScanner(ctx context.Context, musicDir string) ([]types.F
 func GetTrackIdByArtistAndTitle(artist string, title string) (string, error) {
 	query := "SELECT musicbrainz_track_id FROM metadata WHERE lower(artist) = lower(?) AND lower(title) = lower(?) LIMIT 1;"
 	var musicBrainzTrackId string
-	err := DB.QueryRow(query, artist, title).Scan(&musicBrainzTrackId)
+	err := DbRead.QueryRow(query, artist, title).Scan(&musicBrainzTrackId)
 	if err == sql.ErrNoRows {
 		return "", fmt.Errorf("no track found for artist '%s' and title '%s'", artist, title)
 	} else if err != nil {

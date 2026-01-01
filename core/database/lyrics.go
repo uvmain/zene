@@ -22,7 +22,7 @@ func UpsertTrackLyrics(ctx context.Context, musicbrainzTrackId string, lyrics ty
 		VALUES (?, ?, ?)
 		ON CONFLICT(musicbrainz_track_id) DO UPDATE SET plain_lyrics=excluded.plain_lyrics, synced_lyrics=excluded.synced_lyrics`
 
-	_, err := DB.ExecContext(ctx, query, musicbrainzTrackId, lyrics.PlainLyrics, lyrics.SyncedLyrics)
+	_, err := DbWrite.ExecContext(ctx, query, musicbrainzTrackId, lyrics.PlainLyrics, lyrics.SyncedLyrics)
 	if err != nil {
 		return fmt.Errorf("upserting track lyrics row: %v", err)
 	}
@@ -32,7 +32,7 @@ func UpsertTrackLyrics(ctx context.Context, musicbrainzTrackId string, lyrics ty
 func GetLyricsForMusicBrainzTrackId(ctx context.Context, musicbrainzTrackId string) (types.LyricsDatabaseRow, error) {
 	query := "SELECT musicbrainz_track_id, plain_lyrics, synced_lyrics FROM track_lyrics WHERE musicbrainz_track_id = ?"
 	var musicbrainzTrackID, plainLyrics, syncedLyrics string
-	err := DB.QueryRowContext(ctx, query, musicbrainzTrackId).Scan(&musicbrainzTrackID, &plainLyrics, &syncedLyrics)
+	err := DbRead.QueryRowContext(ctx, query, musicbrainzTrackId).Scan(&musicbrainzTrackID, &plainLyrics, &syncedLyrics)
 	if err == sql.ErrNoRows {
 		logger.Printf("No lyrics found for %s", musicbrainzTrackId)
 		return types.LyricsDatabaseRow{}, nil

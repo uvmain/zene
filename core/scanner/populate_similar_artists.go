@@ -10,7 +10,7 @@ import (
 
 func PopulateSimilarArtistsTable(ctx context.Context) error {
 	logger.Printf("Populating similar_artists table")
-	_, err := database.DB.ExecContext(ctx, "delete from similar_artists where artist_id not in (select distinct musicbrainz_artist_id from metadata);")
+	_, err := database.DbWrite.ExecContext(ctx, "delete from similar_artists where artist_id not in (select distinct musicbrainz_artist_id from metadata);")
 	if err != nil {
 		return fmt.Errorf("cleaning similar_artists table: %v", err)
 	}
@@ -19,7 +19,7 @@ func PopulateSimilarArtistsTable(ctx context.Context) error {
 	var artistsToCheck []ArtistsToCheck
 	query := "SELECT distinct musicbrainz_artist_id, artist FROM metadata where musicbrainz_artist_id not in (select distinct artist_id from similar_artists);"
 
-	rows, err := database.DB.QueryContext(ctx, query)
+	rows, err := database.DbRead.QueryContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("querying metadata: %v", err)
 	}

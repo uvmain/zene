@@ -29,7 +29,7 @@ func migrateScans(ctx context.Context) {
 
 func GetLatestScan(ctx context.Context) (ScanRow, error) {
 	query := `SELECT id, count, folder_count, started_date, type, completed_date FROM scans ORDER BY id DESC LIMIT 1`
-	row := DB.QueryRowContext(ctx, query)
+	row := DbRead.QueryRowContext(ctx, query)
 
 	var scan ScanRow
 	if err := row.Scan(&scan.Id, &scan.Count, &scan.FolderCount, &scan.StartedDate, &scan.Type, &scan.CompletedDate); err != nil {
@@ -43,7 +43,7 @@ func GetLatestScan(ctx context.Context) (ScanRow, error) {
 
 func GetLatestCompletedScan(ctx context.Context) (ScanRow, error) {
 	query := `SELECT id, count, folder_count, started_date, type, completed_date FROM scans WHERE completed_date IS NOT '' ORDER BY id DESC LIMIT 1`
-	row := DB.QueryRowContext(ctx, query)
+	row := DbRead.QueryRowContext(ctx, query)
 
 	var scan ScanRow
 	if err := row.Scan(&scan.Id, &scan.Count, &scan.FolderCount, &scan.StartedDate, &scan.Type, &scan.CompletedDate); err != nil {
@@ -57,7 +57,7 @@ func GetLatestCompletedScan(ctx context.Context) (ScanRow, error) {
 
 func InsertScan(ctx context.Context, scan ScanRow) (int64, error) {
 	query := `INSERT INTO scans (count, folder_count, started_date, type, completed_date) VALUES (?, ?, ?, ?, ?)`
-	result, err := DB.ExecContext(ctx, query, scan.Count, scan.FolderCount, scan.StartedDate, scan.Type, scan.CompletedDate)
+	result, err := DbWrite.ExecContext(ctx, query, scan.Count, scan.FolderCount, scan.StartedDate, scan.Type, scan.CompletedDate)
 	if err != nil {
 		return 0, fmt.Errorf("inserting scan: %v", err)
 	}
@@ -66,7 +66,7 @@ func InsertScan(ctx context.Context, scan ScanRow) (int64, error) {
 
 func UpdateScanProgress(ctx context.Context, scanId int, scanRow ScanRow) error {
 	query := `UPDATE scans SET count = ?, folder_count = ?, completed_date = ? WHERE id = ?`
-	_, err := DB.ExecContext(ctx, query, scanRow.Count, scanRow.FolderCount, scanRow.CompletedDate, scanId)
+	_, err := DbWrite.ExecContext(ctx, query, scanRow.Count, scanRow.FolderCount, scanRow.CompletedDate, scanId)
 	if err != nil {
 		return fmt.Errorf("updating scan progress: %v", err)
 	}

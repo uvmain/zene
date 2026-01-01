@@ -26,7 +26,7 @@ func ValidateApiKey(ctx context.Context, apiKey string) (types.User, error) {
 	var row types.User
 	var foldersString string
 
-	err := DB.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
+	err := DbRead.QueryRowContext(ctx, query, apiKey).Scan(&row.Id, &row.Username, &row.Email, &row.Password, &row.ScrobblingEnabled, &row.LdapAuthenticated,
 		&row.AdminRole, &row.SettingsRole, &row.StreamRole, &row.JukeboxRole, &row.DownloadRole, &row.UploadRole, &row.PlaylistRole,
 		&row.CoverArtRole, &row.CommentRole, &row.PodcastRole, &row.ShareRole, &row.VideoConversionRole, &row.MaxBitRate, &foldersString)
 	if err == sql.ErrNoRows {
@@ -64,7 +64,7 @@ func GetApiKeys(ctx context.Context, userId int) ([]types.ApiKey, error) {
 
 	query += ` ORDER BY last_used desc, date_created DESC`
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("querying API keys: %v", err)
 	}
@@ -109,7 +109,7 @@ func CreateApiKey(ctx context.Context, userId int) (types.ApiKey, error) {
 
 	dateCreated := logic.GetCurrentTimeFormatted()
 
-	result, err := DB.ExecContext(ctx, query, userId, newApiKey, dateCreated)
+	result, err := DbWrite.ExecContext(ctx, query, userId, newApiKey, dateCreated)
 	if err != nil {
 		return types.ApiKey{}, fmt.Errorf("inserting API key: %v", err)
 	}
@@ -137,7 +137,7 @@ func UpdateApiKeyLastUsed(ctx context.Context, apiKey string) error {
 	query := `UPDATE api_keys SET last_used = ? WHERE api_key = ?  AND user_id = ?`
 	args = append(args, logic.GetCurrentTimeFormatted(), apiKey, user.Id)
 
-	_, err = DB.ExecContext(ctx, query, args...)
+	_, err = DbWrite.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("updating API key last used: %v", err)
 	}
@@ -173,7 +173,7 @@ func DeleteApiKeys(ctx context.Context, apiKeyIds []int, userId int) error {
 		args = append(args, user.Id)
 	}
 
-	_, err = DB.ExecContext(ctx, query, args...)
+	_, err = DbWrite.ExecContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Error deleting API key: %v", err)
 		return fmt.Errorf("deleting API key: %v", err)

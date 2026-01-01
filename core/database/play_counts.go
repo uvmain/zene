@@ -28,7 +28,7 @@ func UpsertPlayCount(ctx context.Context, userId int, musicbrainzTrackId string)
 		ON CONFLICT(user_id, musicbrainz_track_id)
 		DO UPDATE SET play_count = play_count + 1, last_played = excluded.last_played`
 
-	_, err := DB.ExecContext(ctx, query, userId, musicbrainzTrackId, logic.GetCurrentTimeFormatted())
+	_, err := DbWrite.ExecContext(ctx, query, userId, musicbrainzTrackId, logic.GetCurrentTimeFormatted())
 	if err != nil {
 		return fmt.Errorf("upserting playcount: %v", err)
 	}

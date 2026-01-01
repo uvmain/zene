@@ -143,7 +143,7 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	query += ` limit ? offset ?`
 	args = append(args, limit, offset)
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.AlbumId3{}, err

@@ -100,7 +100,7 @@ func GetRandomSongs(ctx context.Context, count int, genre string, fromYear strin
 
 	args = append(args, seed, count, offset)
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("getting scans: %v", err)
 	}

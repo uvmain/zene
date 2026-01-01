@@ -51,7 +51,7 @@ func SearchArtists(ctx context.Context, searchQuery string, limit int, offset in
 
 	var rows *sql.Rows
 
-	rows, err = DB.QueryContext(ctx, query, args...)
+	rows, err = DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.Artist{}, err
@@ -160,7 +160,7 @@ func SearchAlbums(ctx context.Context, searchQuery string, limit int, offset int
 
 	var rows *sql.Rows
 
-	rows, err = DB.QueryContext(ctx, query, args...)
+	rows, err = DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.AlbumId3{}, err
@@ -295,7 +295,7 @@ func SearchSongs(ctx context.Context, searchQuery string, limit int, offset int,
 	var rows *sql.Rows
 	var results []types.SubsonicChild
 
-	rows, err = DB.QueryContext(ctx, query, args...)
+	rows, err = DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.SubsonicChild{}, err

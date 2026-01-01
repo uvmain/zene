@@ -45,7 +45,7 @@ func SelectSimilarArtists(ctx context.Context, musicbrainzArtistId string) ([]ty
 	group by m.musicbrainz_artist_id
 	order by sa.sort_order asc;`
 
-	rows, err := DB.QueryContext(ctx, query, user.Id, musicbrainzArtistId)
+	rows, err := DbRead.QueryContext(ctx, query, user.Id, musicbrainzArtistId)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.Artist{}, err
@@ -81,7 +81,7 @@ func SelectSimilarArtists(ctx context.Context, musicbrainzArtistId string) ([]ty
 }
 
 func InsertSimilarArtistsRow(ctx context.Context, artistId string, similarArtistId string, sortOrder int) error {
-	_, err := DB.ExecContext(ctx, "INSERT INTO similar_artists (artist_id, similar_artist_id, sort_order) VALUES (?, ?, ?)", artistId, similarArtistId, sortOrder)
+	_, err := DbWrite.ExecContext(ctx, "INSERT INTO similar_artists (artist_id, similar_artist_id, sort_order) VALUES (?, ?, ?)", artistId, similarArtistId, sortOrder)
 	if err != nil {
 		return fmt.Errorf("inserting similar artist row: %v", err)
 	}

@@ -20,7 +20,7 @@ func SelectArtistsForMusicDir(ctx context.Context, musicDir string) ([]getArtist
 
 	var results []getArtistsLine
 
-	rows, err := DB.QueryContext(ctx, query, musicDir)
+	rows, err := DbRead.QueryContext(ctx, query, musicDir)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []getArtistsLine{}, err

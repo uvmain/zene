@@ -43,7 +43,7 @@ func UpsertUserRating(ctx context.Context, userId int, metadataId string, rating
 	query := `INSERT OR REPLACE INTO user_ratings (user_id, metadata_id, rating)
 		VALUES (?, ?, ?);`
 
-	_, err = DB.ExecContext(ctx, query, userId, metadataId, rating)
+	_, err = DbWrite.ExecContext(ctx, query, userId, metadataId, rating)
 	if err != nil {
 		return fmt.Errorf("upserting user rating row in UpsertUserRating: %v", err)
 	}
@@ -52,7 +52,7 @@ func UpsertUserRating(ctx context.Context, userId int, metadataId string, rating
 
 func DeleteUserRating(ctx context.Context, userId int, metadataId string) error {
 	query := `DELETE FROM user_ratings WHERE user_id = ? AND metadata_id = ?`
-	_, err := DB.ExecContext(ctx, query, userId, metadataId)
+	_, err := DbWrite.ExecContext(ctx, query, userId, metadataId)
 	if err != nil {
 		return fmt.Errorf("deleting user rating row in DeleteUserRating: %v", err)
 	}

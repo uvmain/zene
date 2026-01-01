@@ -37,12 +37,12 @@ func UpsertBookmark(ctx context.Context, musicbrainzTrackId string, position int
 		query := `INSERT INTO bookmarks (user_id, musicbrainz_track_id, created, changed, comment, position)
 			VALUES (?, ?, ?, ?, ?, ?)
 			ON CONFLICT(musicbrainz_track_id, user_id) DO UPDATE SET changed=excluded.changed, comment=excluded.comment, position=excluded.position`
-		_, err = DB.ExecContext(ctx, query, user.Id, musicbrainzTrackId, created_at, created_at, comment, position)
+		_, err = DbWrite.ExecContext(ctx, query, user.Id, musicbrainzTrackId, created_at, created_at, comment, position)
 	} else {
 		query := `INSERT INTO bookmarks (user_id, musicbrainz_track_id, created, changed, position)
 			VALUES (?, ?, ?, ?, ?)
 			ON CONFLICT(musicbrainz_track_id, user_id) DO UPDATE SET changed=excluded.changed, position=excluded.position`
-		_, err = DB.ExecContext(ctx, query, user.Id, musicbrainzTrackId, created_at, created_at, position)
+		_, err = DbWrite.ExecContext(ctx, query, user.Id, musicbrainzTrackId, created_at, created_at, position)
 	}
 
 	if err != nil {
@@ -87,7 +87,7 @@ func GetBookmarks(ctx context.Context) ([]types.Bookmark, error) {
 	where b.user_id = ?
 	group by m.musicbrainz_track_id`
 
-	rows, err := DB.QueryContext(ctx, query, user.Id)
+	rows, err := DbRead.QueryContext(ctx, query, user.Id)
 	if err != nil {
 		return []types.Bookmark{}, fmt.Errorf("querying bookmarks: %v", err)
 	}
@@ -164,7 +164,7 @@ func DeleteBookmark(ctx context.Context, musicbrainzTrackId string) error {
 	}
 
 	query := `DELETE FROM bookmarks WHERE musicbrainz_track_id = ? AND user_id = ?`
-	_, err = DB.ExecContext(ctx, query, musicbrainzTrackId, user.Id)
+	_, err = DbWrite.ExecContext(ctx, query, musicbrainzTrackId, user.Id)
 	if err != nil {
 		return fmt.Errorf("deleting bookmark: %v", err)
 	}

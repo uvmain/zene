@@ -45,7 +45,7 @@ func GetSong(ctx context.Context, musicbrainzTrackId string) (types.SubsonicChil
 	var played sql.NullString
 	var starred sql.NullString
 
-	err = DB.QueryRowContext(ctx, query, musicbrainzTrackId, requestUser.Id).Scan(
+	err = DbRead.QueryRowContext(ctx, query, musicbrainzTrackId, requestUser.Id).Scan(
 		&result.Id, &result.Parent, &result.Title, &result.Album, &result.Artist, &result.Track,
 		&result.Year, &result.Genre, &result.CoverArt,
 		&result.Size, &durationFloat, &result.BitRate, &result.Path, &result.Created, &result.DiscNumber, &result.ArtistId,
@@ -133,7 +133,7 @@ func GetSongsForAlbum(ctx context.Context, musicbrainzAlbumId string) ([]types.S
 
 	var results []types.SubsonicChild
 
-	rows, err := DB.QueryContext(ctx, query, args...)
+	rows, err := DbRead.QueryContext(ctx, query, args...)
 	if err != nil {
 		logger.Printf("Query failed: %v", err)
 		return []types.SubsonicChild{}, err
