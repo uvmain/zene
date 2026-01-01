@@ -23,8 +23,13 @@ const episodeArtUrl = computed(() => {
   return `/share/img/${props.episode.coverArt}?size=192`
 })
 
-const descriptionLinesCleaned = computed(() => {
-  return props.episode.description.split('\n').filter(line => line.trim() !== '').join('<br>')
+const descriptionLinesCleaned = computed<string>(() => {
+  return props.episode.description
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n')
+    .filter(line => line.trim() !== '')
+    .join('\n')
 })
 
 async function downloadEpisode() {
@@ -150,9 +155,8 @@ onBeforeMount(async () => {
         <icon-nrk-media-play class="size-12 footer-icon" />
       </ZButton>
     </div>
-    <div
-      class="line-clamp-4 overflow-hidden text-ellipsis whitespace-normal text-pretty text-op-80"
-      v-html="descriptionLinesCleaned"
-    />
+    <div class="line-clamp-4 overflow-hidden text-ellipsis whitespace-pre-line text-pretty">
+      {{ descriptionLinesCleaned }}
+    </div>
   </div>
 </template>
