@@ -14,7 +14,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
 
   <!-- Navbar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-64 flex flex-col background-2 p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
+    class="fixed inset-y-0 left-0 z-50 w-full flex flex-col background-2 p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
     :class="{
       'translate-x-0': isMobileNavOpen,
       '-translate-x-full md:translate-x-0': !isMobileNavOpen,
@@ -22,28 +22,26 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
   >
     <!-- Mobile close button -->
     <div class="mb-4 flex justify-start md:hidden">
-      <button
-        class="size-12"
+      <ZButton
+        :size12="true"
         @click="closeMobileNav()"
       >
         <icon-nrk-close class="text-2xl" />
-      </button>
+      </ZButton>
     </div>
 
     <div class="flex flex-col space-y-6">
       <RouterLink class="flex items-center gap-x-2 px-2" to="/">
         <img
-          class="size-12 opacity-90"
+          class="size-20 opacity-90 lg:size-12"
           src="/minidisk.svg"
           alt="Logo"
-          width="48"
-          height="48"
         />
-        <div class="text-2xl text-muted font-bold">
+        <div class="text-3xl text-muted font-bold lg:text-2xl">
           Zene
         </div>
       </RouterLink>
-      <nav class="flex flex-col gap-y-4 px-2 lg:text-xl">
+      <nav class="flex flex-col gap-y-4 px-2">
         <NavLink route-name="Home" route-prop="/" />
         <NavLink route-name="Albums" route-prop="/albums" />
         <NavLink route-name="Artists" route-prop="/artists" />
@@ -55,7 +53,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
         <NavLink route-name="Queue" route-prop="/queue" />
       </nav>
     </div>
-    <NavArt class="mt-auto" />
+    <NavArt class="mt-auto hidden lg:block" />
   </aside>
 </template>
 

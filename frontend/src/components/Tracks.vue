@@ -192,14 +192,14 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             <div class="flex shrink">
               <div class="flex flex-col px-2">
                 <RouterLink
-                  class="text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
+                  class="line-clamp-1 text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
                   :to="`/tracks/${track.id}`"
                   @click.stop
                 >
                   {{ track.title }}
                 </RouterLink>
                 <RouterLink
-                  class="text-sm text-muted no-underline hover:underline hover:underline-white"
+                  class="hidden text-sm text-muted no-underline lg:block hover:underline hover:underline-white"
                   :to="`/artists/${track.artistId}`"
                   @click.stop
                 >

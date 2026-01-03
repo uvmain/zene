@@ -98,7 +98,7 @@ function actOnUpdatedArt() {
         />
       </div>
       <div class="max-w-150px">
-        <div v-if="showArtist" class="truncate text-nowrap text-sm text-primary md:text-base">
+        <div v-if="showArtist" class="truncate text-nowrap text-lg text-primary md:text-base">
           {{ album.title || album.name }}
         </div>
         <div v-if="showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
