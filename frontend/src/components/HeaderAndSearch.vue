@@ -19,7 +19,7 @@ const toggleDark = useToggle(isDark)
       </div>
 
       <div class="flex flex-grow items-center justify-center">
-        <div class="relative max-w-xs w-full md:max-w-md md:w-1/2">
+        <div class="relative w-full md:(max-w-md w-1/2)">
           <span class="absolute inset-y-0 left-0 h-full flex items-center justify-center pl-3 text-muted">
             <icon-nrk-search class="text-xl" />
           </span>
@@ -35,7 +35,7 @@ const toggleDark = useToggle(isDark)
           >
         </div>
       </div>
-      <div id="user-and-settings" class="flex gap-4 text-muted">
+      <div id="user-and-settings" class="flex items-center justify-center gap-4 text-muted">
         <div class="icon" @click="toggleDark()">
           <icon-fluent-dark-theme-24-regular class="text-2xl" />
         </div>

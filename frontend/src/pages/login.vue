@@ -51,7 +51,7 @@ async function login() {
 </script>
 
 <template>
-  <div class="my-auto flex flex-col items-center justify-center gap-6 background-1 p-4 lg:flex-row lg:gap-12">
+  <div class="my-auto flex flex-col items-center justify-center gap-6 background-1 p-4 lg:(flex-row gap-12)">
     <img
       class="size-full max-w-400px opacity-90"
       src="/minidisk.svg"
