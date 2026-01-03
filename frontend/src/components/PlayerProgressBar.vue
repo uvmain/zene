@@ -41,18 +41,18 @@ function seek(event: Event) {
 </script>
 
 <template>
-  <div v-if="currentlyPlayingTrack.duration || currentlyPlayingPodcastEpisode.duration" class="max-w-xs w-full flex flex-row items-center gap-2 lg:max-w-200 md:max-w-lg sm:max-w-md md:gap-2">
-    <span id="currentTime" class="w-10 text-right text-sm text-muted md:w-12 sm:w-10 sm:text-sm">
+  <div v-if="currentlyPlayingTrack.duration || currentlyPlayingPodcastEpisode.duration" class="max-w-xs w-full flex flex-row items-center gap-2 lg:max-w-200 lg:max-w-lg sm:max-w-md lg:gap-2">
+    <span id="currentTime" class="w-10 text-right text-sm text-muted lg:w-12 sm:w-10 sm:text-sm">
       {{ currentTime }}
     </span>
     <input
       type="range"
-      class="h-2 w-full cursor-pointer background-2 accent-primary1 md:h-1"
+      class="h-2 w-full cursor-pointer background-2 accent-primary1 lg:h-1"
       :max="inputDuration"
       :value="currentTimeInSeconds"
       @input="seek($event)"
     />
-    <span id="duration" class="w-10 text-sm text-muted md:w-12 sm:w-10 sm:text-sm">
+    <span id="duration" class="w-10 text-sm text-muted lg:w-12 sm:w-10 sm:text-sm">
       {{ duration }}
     </span>
   </div>

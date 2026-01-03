@@ -45,26 +45,26 @@ onBeforeUnmount(() => {
     <transition name="fade">
       <div
         v-if="open"
-        class="absolute right-0 mt-2 w-64 origin-top-right bg-white shadow-lg ring-1 ring-black ring-opacity-5 md:w-56"
+        class="absolute right-0 mt-2 w-64 origin-top-right bg-white shadow-lg ring-1 ring-black ring-opacity-5 lg:w-56"
       >
         <div class="py-1">
           <div
-            class="block cursor-pointer px-4 py-3 text-base text-gray-700 hover:bg-gray-100 md:py-2 md:text-sm"
+            class="block cursor-pointer px-4 py-3 text-base text-gray-700 hover:bg-gray-100 lg:py-2 lg:text-sm"
             @click="runScan"
           >
             Run a Scan
           </div>
           <div
-            class="block cursor-pointer px-4 py-3 text-base text-gray-700 hover:bg-gray-100 md:py-2 md:text-sm"
+            class="block cursor-pointer px-4 py-3 text-base text-gray-700 hover:bg-gray-100 lg:py-2 lg:text-sm"
             @click="toggleDebug()"
           >
             Debug: {{ useDebugBool ? 'On' : 'Off' }}
           </div>
-          <div class="px-4 py-3 md:py-2">
-            <label class="mb-2 block text-base text-gray-500 md:mb-1 md:text-sm">Stream Quality</label>
+          <div class="px-4 py-3 lg:py-2">
+            <label class="mb-2 block text-base text-gray-500 lg:mb-1 lg:text-sm">Stream Quality</label>
             <select
               v-model="streamQuality"
-              class="-md w-full border border-gray-300 px-3 py-2 text-base text-gray-700 md:px-2 md:py-1 md:text-sm focus:outline-none focus:ring focus:ring-blue-200"
+              class="-md w-full border border-gray-300 px-3 py-2 text-base text-gray-700 lg:px-2 lg:py-1 lg:text-sm focus:outline-none focus:ring focus:ring-blue-200"
             >
               <option
                 v-for="quality in StreamQualities"
@@ -77,7 +77,7 @@ onBeforeUnmount(() => {
           </div>
           <router-link
             to="/admin"
-            class="block px-4 py-3 text-base text-gray-700 hover:bg-gray-100 md:py-2 md:text-sm"
+            class="block px-4 py-3 text-base text-gray-700 hover:bg-gray-100 lg:py-2 lg:text-sm"
             @click="close"
           >
             Manage Users

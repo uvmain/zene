@@ -52,7 +52,7 @@ onBeforeMount(async () => {
           <div class="text-4xl font-bold">
             {{ episode.title }}
           </div>
-          <div v-if="episode.genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+          <div v-if="episode.genres?.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
             <ZInfo v-for="genre in episode.genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
           </div>
           <ZButton

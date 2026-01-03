@@ -124,7 +124,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
 
 <template>
   <div class="corner-cut-large background-2">
-    <table class="h-full w-full p-4 text-left">
+    <table class="h-full w-full p-2 text-left lg:p-4">
       <thead>
         <tr class="text-lg text-muted">
           <th class="w-15 cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">

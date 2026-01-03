@@ -43,7 +43,7 @@ onMounted(async () => {
     <div v-if="error" class="text-accent1 text-center">
       {{ error }}
     </div>
-    <div v-if="track && !loading && !error" class="flex flex-col gap-8 md:flex-row">
+    <div v-if="track && !loading && !error" class="flex flex-col gap-8 lg:flex-row">
       <img
         v-if="coverArtUrl"
         :src="coverArtUrl"
@@ -51,7 +51,7 @@ onMounted(async () => {
         class="h-auto max-w-30vw w-full shadow-lg"
         @error="onImageError"
       >
-      <div class="flex flex-col md:w-2/3">
+      <div class="flex flex-col lg:w-2/3">
         <h1 class="mb-2 text-3xl text-primary font-bold">
           {{ track.title }}
         </h1>

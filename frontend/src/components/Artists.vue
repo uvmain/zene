@@ -139,7 +139,7 @@ onBeforeMount(async () => {
         :key="artist.musicBrainzId"
         :artist="artist"
         :index="index"
-        class="mx-auto transition duration-200 md:(mx-none scale-95) hover:scale-100"
+        class="mx-auto transition duration-200 lg:(mx-none scale-95) hover:scale-100"
         @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
       />
     </div>

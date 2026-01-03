@@ -45,7 +45,7 @@ function navigate() {
       />
     </div>
     <div class="max-w-150px">
-      <div class="truncate text-center text-nowrap text-sm text-primary md:text-base">
+      <div class="truncate text-center text-nowrap text-sm text-primary lg:text-base">
         {{ artist.name }}
       </div>
     </div>

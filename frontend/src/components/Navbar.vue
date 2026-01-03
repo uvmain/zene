@@ -8,20 +8,20 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
   <!-- Mobile overlay backdrop -->
   <div
     v-if="isMobileNavOpen"
-    class="fixed inset-0 z-40 md:hidden"
+    class="fixed inset-0 z-40 lg:hidden"
     @click="closeMobileNav"
   />
 
   <!-- Navbar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-full flex flex-col background-2 p-4 transition-transform duration-300 ease-in-out md:relative md:w-auto md:flex"
+    class="fixed inset-y-0 left-0 z-50 w-full flex flex-col background-2 p-4 transition-transform duration-300 ease-in-out lg:relative lg:w-auto lg:flex"
     :class="{
       'translate-x-0': isMobileNavOpen,
-      '-translate-x-full md:translate-x-0': !isMobileNavOpen,
+      '-translate-x-full lg:translate-x-0': !isMobileNavOpen,
     }"
   >
     <!-- Mobile close button -->
-    <div class="mb-4 flex justify-start md:hidden">
+    <div class="mb-4 flex justify-start lg:hidden">
       <ZButton
         :size12="true"
         @click="closeMobileNav()"

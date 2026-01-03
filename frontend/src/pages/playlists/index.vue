@@ -69,7 +69,7 @@ onBeforeMount(getPlaylists)
       <div v-if="playlists.length === 0" class="text-primary">
         No playlists found.
       </div>
-      <div class="flex flex-wrap justify-center gap-6 md:justify-start">
+      <div class="flex flex-wrap justify-center gap-6 lg:justify-start">
         <div
           v-for="(playlist, index) in playlists"
           :key="playlist.id" class="mx-auto max-w-60dvw flex flex-col items-center justify-center gap-4 transition duration-150 hover:scale-101"

@@ -164,7 +164,7 @@ onBeforeMount(async () => {
         :album="album"
         :index="index"
         size="sm"
-        class="transition duration-200 hover:scale-100 md:scale-95"
+        class="transition duration-200 hover:scale-100 lg:scale-95"
         :show-date="false"
       />
     </div>
