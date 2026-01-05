@@ -24,6 +24,7 @@ const { isMobileNavOpen, closeMobileNav } = useNavbar()
     <div class="mb-4 flex justify-start lg:hidden">
       <ZButton
         :size12="true"
+        hover-text="Close Menu"
         @click="closeMobileNav()"
       >
         <icon-nrk-close class="text-2xl" />

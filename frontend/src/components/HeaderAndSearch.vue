@@ -36,13 +36,15 @@ const toggleDark = useToggle(isDark)
         </div>
       </div>
       <div id="user-and-settings" class="flex items-center justify-center gap-4 text-muted">
-        <div class="icon" @click="toggleDark()">
+        <abbr :title="isDark ? 'Light mode' : 'Dark mode'" class="icon" @click="toggleDark()">
           <icon-fluent-dark-theme-24-regular class="text-2xl" />
-        </div>
-        <SettingsDropDown class="icon" />
-        <div class="icon">
+        </abbr>
+        <abbr title="Settings">
+          <SettingsDropDown class="icon" />
+        </abbr>
+        <abbr title="User" class="icon">
           <icon-nrk-user-loggedin class="text-2xl" />
-        </div>
+        </abbr>
       </div>
     </div>
     <SearchResults />

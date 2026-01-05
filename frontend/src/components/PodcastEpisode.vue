@@ -3,7 +3,6 @@ import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import { downloadMediaBlob, openSubsonicFetchRequest } from '~/composables/backendFetch'
 import { formatTimeFromSeconds } from '~/composables/logic'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { deleteStoredEpisode, episodeIsStored, setStoredEpisode } from '~/stores/usePodcastStore'
 
 const props = defineProps({
@@ -13,7 +12,6 @@ const props = defineProps({
 
 const emits = defineEmits(['updateEpisodeStatus'])
 
-const { setCurrentlyPlayingPodcastEpisode } = usePlaybackQueue()
 const router = useRouter()
 
 const episodeDownloadedLocal = ref(false)
@@ -117,6 +115,9 @@ onBeforeMount(async () => {
           <div class="flex flex-row gap-2">
             <ZButton
               :size12="true"
+              :hover-text="episode.status === 'completed'
+                ? episodeDownloadedLocal ? 'Episode downloaded locally' : 'Episode downloaded on server'
+                : episode.status === 'downloading' ? 'Downloading...' : 'Download episode on server'"
               @click="downloadEpisode()"
             >
               <Loading
@@ -148,12 +149,11 @@ onBeforeMount(async () => {
           </div>
         </div>
       </div>
-      <ZButton
-        class="my-auto size-14"
-        @click="setCurrentlyPlayingPodcastEpisode(episode)"
-      >
-        <icon-nrk-media-play class="size-12 footer-icon" />
-      </ZButton>
+      <PlayButton
+        :podcast="episode"
+        class="my-auto"
+        hover-text="Play episode"
+      />
     </div>
     <div class="line-clamp-4 overflow-hidden text-ellipsis whitespace-pre-line text-pretty">
       {{ descriptionLinesCleaned }}

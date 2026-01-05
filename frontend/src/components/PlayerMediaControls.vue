@@ -44,6 +44,7 @@ onKeyStroke('MediaStop', (e) => {
       class="group/button"
       :primary="true"
       :size12="true"
+      hover-text="Play/Pause"
       @click="emits('togglePlayback')"
     >
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
