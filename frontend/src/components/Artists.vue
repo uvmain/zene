@@ -8,7 +8,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
   offset: { type: Number, default: 0 },
   scrollable: { type: Boolean, default: false },
-  twoRowsOnly: { type: Boolean, default: false },
+  limitRows: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
@@ -35,6 +35,18 @@ const sortOptions = [
   { label: 'Alphabetical', emitValue: 'alphabetical' },
   { label: 'Starred', emitValue: 'starred' },
 ]
+
+const heightStyle = computed(() => {
+  if (props.limitRows) {
+    const smHeight = (174 * 3) + 48
+    const lgHeight = (174 * 2) + 24
+    return {
+      'maxHeight': `${smHeight}px`,
+      '--albums-lg-max-height': `${lgHeight}px`,
+    }
+  }
+  return {}
+})
 
 watch(observerIsVisible, (newValue) => {
   if (newValue && props.scrollable) {
@@ -120,14 +132,14 @@ onBeforeMount(async () => {
     <div
       v-if="artists.length > 0"
       class="auto-grid-6 overflow-hidden"
-      :style="twoRowsOnly ? `max-height: calc(${174 * 2 + 24}px);` : ''"
+      :style="heightStyle"
     >
       <ArtistThumb
         v-for="(artist, index) in artists"
         :key="artist.musicBrainzId"
         :artist="artist"
         :index="index"
-        class="transition duration-200 hover:scale-100 md:scale-95"
+        class="mx-auto transition duration-200 lg:(mx-none scale-95) hover:scale-100"
         @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
       />
     </div>
@@ -136,3 +148,11 @@ onBeforeMount(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+@media (min-width: 1024px) {
+  .auto-grid-6 {
+    max-height: var(--albums-lg-max-height, none) !important;
+  }
+}
+</style>

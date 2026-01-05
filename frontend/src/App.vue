@@ -1,8 +1,8 @@
 <template>
-  <div class="h-screen flex background-1 text-muted md:grid md:grid-cols-[200px_1fr]">
+  <div class="h-screen flex background-1 text-muted lg:grid lg:grid-cols-[200px_1fr]">
     <Navbar />
     <main class="flex flex-1 flex-col overflow-y-auto">
-      <div class="flex flex-col overflow-y-auto p-3 space-y-4 md:p-6 md:space-y-6">
+      <div class="flex flex-col overflow-y-auto p-3 space-y-4 lg:p-6 lg:space-y-6">
         <HeaderAndSearch />
         <RouterView />
       </div>

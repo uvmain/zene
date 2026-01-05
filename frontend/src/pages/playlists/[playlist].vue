@@ -24,7 +24,7 @@ onBeforeMount(getPlaylist)
 
 <template>
   <div class="p-4 space-y-4">
-    <div v-if="playlist" class="flex flex-wrap justify-center gap-6 md:justify-start">
+    <div v-if="playlist" class="flex flex-wrap justify-center gap-6 lg:justify-start">
       <div>
         <img
           :src="playlist.coverArt"

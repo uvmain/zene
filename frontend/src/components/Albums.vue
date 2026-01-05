@@ -8,7 +8,7 @@ const props = defineProps({
   limit: { type: Number, default: 30 },
   offset: { type: Number, default: 0 },
   scrollable: { type: Boolean, default: false },
-  twoRowsOnly: { type: Boolean, default: false },
+  limitRows: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
@@ -37,10 +37,15 @@ const sortOptions = [
 const { height: firstAlbumHeight } = useElementSize(firstAlbumElement)
 
 const heightStyle = computed(() => {
-  if (props.twoRowsOnly && firstAlbumHeight.value > 0) {
-    return `max-height: calc(${(firstAlbumHeight.value * 2) + 24}px);`
+  if (props.limitRows && firstAlbumHeight.value > 0) {
+    const smHeight = (firstAlbumHeight.value * 3) + 24
+    const lgHeight = (firstAlbumHeight.value * 2) + 24
+    return {
+      'maxHeight': `${smHeight}px`,
+      '--albums-lg-max-height': `${lgHeight}px`,
+    }
   }
-  return ''
+  return {}
 })
 
 let fetchType: string
@@ -159,7 +164,7 @@ onBeforeMount(async () => {
         :album="album"
         :index="index"
         size="sm"
-        class="transition duration-200 hover:scale-100 md:scale-95"
+        class="transition duration-200 hover:scale-100 lg:scale-95"
         :show-date="false"
       />
     </div>
@@ -168,3 +173,11 @@ onBeforeMount(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+@media (min-width: 1024px) {
+  .auto-grid-6 {
+    max-height: var(--albums-lg-max-height, none) !important;
+  }
+}
+</style>

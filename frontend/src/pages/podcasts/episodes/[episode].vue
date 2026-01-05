@@ -2,10 +2,8 @@
 import type { SubsonicPodcastEpisodesResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import { openSubsonicFetchRequest } from '~/composables/backendFetch'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const route = useRoute()
-const { setCurrentlyPlayingPodcastEpisode } = usePlaybackQueue()
 
 watch(() => route.params.episode, async () => {
   getEpisode()
@@ -52,15 +50,14 @@ onBeforeMount(async () => {
           <div class="text-4xl font-bold">
             {{ episode.title }}
           </div>
-          <div v-if="episode.genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+          <div v-if="episode.genres?.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
             <ZInfo v-for="genre in episode.genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
           </div>
-          <ZButton
-            class="my-auto size-14"
-            @click="setCurrentlyPlayingPodcastEpisode(episode)"
-          >
-            <icon-nrk-media-play class="size-12 footer-icon" />
-          </ZButton>
+          <PlayButton
+            :podcast="episode"
+            class="my-auto"
+            hover-text="Play episode"
+          />
         </div>
       </div>
       <div

@@ -29,7 +29,7 @@ onKeyStroke('MediaStop', (e) => {
 </script>
 
 <template>
-  <div class="mt-2 flex flex-row items-center justify-center gap-x-2 md:mt-2 md:gap-x-4 sm:gap-x-2">
+  <div class="mt-2 flex flex-row items-center justify-center gap-x-2 lg:mt-2 lg:gap-x-4 sm:gap-x-2">
     <button id="repeat" class="media-control-button" @click="emits('stopPlayback')">
       <icon-nrk-media-stop class="footer-icon" />
     </button>
@@ -44,6 +44,7 @@ onKeyStroke('MediaStop', (e) => {
       class="group/button"
       :primary="true"
       :size12="true"
+      hover-text="Play/Pause"
       @click="emits('togglePlayback')"
     >
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
@@ -67,6 +68,6 @@ onKeyStroke('MediaStop', (e) => {
 
 <style scoped>
 .media-control-button {
-  @apply h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none md:h-12 md:w-12 sm:h-10 sm:w-10;
+  @apply h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10;
 }
 </style>

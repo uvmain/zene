@@ -133,7 +133,7 @@ onBeforeMount(async () => {
               class="line-clamp-6 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
               v-html="descriptionLinesCleaned"
             />
-            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
               <ZInfo v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
             </div>
             <div>

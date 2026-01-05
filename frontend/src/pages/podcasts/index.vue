@@ -66,7 +66,7 @@ onBeforeMount(getPodcasts)
       <div v-if="podcasts.length === 0" class="text-primary">
         No podcasts found.
       </div>
-      <div class="flex flex-wrap justify-center gap-6 md:justify-start">
+      <div class="flex flex-wrap justify-center gap-6 lg:justify-start">
         <div
           v-for="(podcast, index) in podcasts"
           :key="podcast.id" class="corner-cut flex flex-row cursor-pointer gap-4 border-1 border-muted border-solid p-4 align-top transition duration-150 hover:scale-101"
@@ -88,7 +88,7 @@ onBeforeMount(getPodcasts)
               class="line-clamp-5 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
               v-html="podcast.description.replaceAll(/\n/g, '<br>')"
             />
-            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
               <ZInfo v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
             </div>
           </div>

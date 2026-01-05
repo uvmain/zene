@@ -115,7 +115,7 @@ onBeforeMount(async () => {
             <div class="text-7xl text-primary font-bold">
               {{ artist.name }}
             </div>
-            <div v-if="artistGenres.length > 0" class="flex flex-wrap justify-center gap-2 md:justify-start">
+            <div v-if="artistGenres.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
               <GenreBottle v-for="genre in artistGenres" :key="genre" :genre="genre" />
             </div>
           </div>

@@ -98,7 +98,7 @@ function actOnUpdatedArt() {
         />
       </div>
       <div class="max-w-150px">
-        <div v-if="showArtist" class="truncate text-nowrap text-sm text-primary md:text-base">
+        <div v-if="showArtist" class="truncate text-nowrap text-lg text-primary lg:text-base">
           {{ album.title || album.name }}
         </div>
         <div v-if="showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
@@ -107,38 +107,35 @@ function actOnUpdatedArt() {
         <div v-else-if="showArtist && !showDate" class="cursor-pointer truncate text-nowrap text-sm" @click="navigateArtist()">
           {{ artist }}
         </div>
-        <div v-if="!showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
+        <div v-if="!showArtist && showDate" class="cursor-pointer truncate text-nowrap text-sm lg:text-base" @click="navigateArtist()">
           {{ albumAndDate }}
         </div>
-        <div v-else-if="!showArtist && !showDate" class="cursor-pointer truncate text-nowrap text-sm md:text-base" @click="navigateArtist()">
+        <div v-else-if="!showArtist && !showDate" class="cursor-pointer truncate text-nowrap text-sm lg:text-base" @click="navigateArtist()">
           {{ album.title }}
         </div>
       </div>
     </div>
-    <div v-else-if="props.size === 'md'" class="group corner-cut-large relative background-grad-2 p-3 md:p-10">
-      <div class="h-full flex flex-col items-center gap-2 md:flex-row md:gap-6">
+    <!-- medium -->
+    <div v-else-if="props.size === 'md'" class="group corner-cut relative background-grad-2 p-3 lg:(corner-cut-large p-8)">
+      <div class="h-30 flex flex-row gap-2 lg:h-52 lg:gap-6">
         <img
           :src="coverArtUrlMd"
-          class="aspect-square size-24 cursor-pointer border-muted md:size-52"
+          class="h-30 cursor-pointer border-muted lg:h-52"
           loading="lazy"
-          width="200"
-          height="200"
           @error="onImageError"
           @click="navigateAlbum()"
         >
-        <div class="h-24 flex flex-col justify-between text-center md:h-52 md:gap-4 md:text-left">
-          <div class="cursor-pointer text-lg font-bold md:text-4xl" @click="navigateAlbum()">
+        <div class="my-auto flex flex-col gap-1 text-left lg:gap-4">
+          <div class="cursor-pointer text-xl font-bold lg:text-4xl" @click="navigateAlbum()">
             {{ album.name }}
           </div>
-          <div class="cursor-pointer text-sm md:text-xl" @click="navigateArtist()">
+          <div class="cursor-pointer text-lg lg:text-xl" @click="navigateArtist()">
             {{ artistAndDate }}
           </div>
-          <div v-if="album.genres?.length > 0" class="flex justify-center gap-2 overflow-hidden md:flex-nowrap md:justify-start">
+          <div v-if="album.genres?.length > 0" class="hidden lg:(block flex flex-nowrap justify-start gap-2 overflow-hidden)">
             <GenreBottle v-for="genre in album.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
           </div>
-          <div class="flex justify-center md:justify-start">
-            <PlayButton :album="album" />
-          </div>
+          <PlayButton class="flex justify-start" :album="album" />
         </div>
       </div>
       <!-- Change Album Art section -->
@@ -147,7 +144,9 @@ function actOnUpdatedArt() {
           class="opacity-0 group-hover:opacity-100"
           @click="showChangeArtModal = true"
         >
-          Change Album Art
+          <div>
+            Change Album Art
+          </div>
         </ZButton>
         <ChangeAlbumArt
           v-if="showChangeArtModal"

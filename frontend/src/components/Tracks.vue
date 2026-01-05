@@ -124,7 +124,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
 
 <template>
   <div class="corner-cut-large background-2">
-    <table class="h-full w-full p-4 text-left">
+    <table class="h-full w-full p-2 text-left lg:p-4">
       <thead>
         <tr class="text-lg text-muted">
           <th class="w-15 cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
@@ -192,14 +192,14 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             <div class="flex shrink">
               <div class="flex flex-col px-2">
                 <RouterLink
-                  class="text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
+                  class="line-clamp-1 text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
                   :to="`/tracks/${track.id}`"
                   @click.stop
                 >
                   {{ track.title }}
                 </RouterLink>
                 <RouterLink
-                  class="text-sm text-muted no-underline hover:underline hover:underline-white"
+                  class="hidden text-sm text-muted no-underline lg:block hover:underline hover:underline-white"
                   :to="`/artists/${track.artistId}`"
                   @click.stop
                 >

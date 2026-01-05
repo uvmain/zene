@@ -79,8 +79,8 @@ onMounted(() => {
     <div class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
       <div class="relative w-full flex flex-col gap-4 border-1 border-zshade-500 border-solid background-3 p-4 lg:w-80dvw">
         <div class="flex flex-row items-center justify-center gap-4">
-          <ZButton aria-label="Close" @click="$emit('close')">
-            X
+          <ZButton :size12="true" aria-label="Close" hover-text="Close" @click="$emit('close')">
+            <icon-nrk-close class="size-full text-primary" />
           </ZButton>
           <p class="text-lg text-primary font-bold">
             Change Album Art

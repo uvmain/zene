@@ -79,7 +79,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-4 md:p-6">
+  <div class="p-4 lg:p-6">
     <h1 class="mb-6 text-2xl font-semibold">
       Manage Users
     </h1>

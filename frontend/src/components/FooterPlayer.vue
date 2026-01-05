@@ -158,9 +158,9 @@ async function handleGetRandomTracks() {
   <footer
     class="sticky bottom-0 mt-auto w-full border-0 border-t-1 border-zshade-400 border-zshade-600 border-solid background-2"
   >
-    <div class="flex flex-col items-center px-2 md:flex-row space-y-2 md:px-4 md:space-x-2 md:space-y-0">
+    <div class="flex flex-col items-center px-2 lg:flex-row space-y-2 lg:px-4 lg:space-x-2 lg:space-y-0">
       <div
-        class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 md:py-2 md:space-y-2"
+        class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 lg:py-2 lg:space-y-2"
       >
         <PlayerAudio
           ref="playerAudio"
@@ -189,7 +189,7 @@ async function handleGetRandomTracks() {
         </div>
       </div>
 
-      <div class="flex flex-row items-center gap-x-3 md:gap-x-4">
+      <div class="flex flex-row items-center gap-x-3 lg:gap-x-4">
         <!-- <PlayerCastButton /> -->
         <PlayerLyricsButton
           :current-time="currentTime"
