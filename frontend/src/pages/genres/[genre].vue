@@ -3,7 +3,7 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchSongsByGenre } from '~/composables/backendFetch'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
-const route = useRoute()
+const route = useRoute<'/genres/[genre]'>()
 const { routeTracks } = useRouteTracks()
 
 const tracks = ref<SubsonicSong[]>()

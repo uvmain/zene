@@ -6,7 +6,7 @@ import { fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/composables
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
-const route = useRoute()
+const route = useRoute<'/artists/[artist]'>()
 const { routeTracks } = useRouteTracks()
 
 const artist = ref<SubsonicArtist>()
@@ -109,7 +109,7 @@ onBeforeMount(async () => {
               height="240"
               @error="onImageError"
             />
-            <div id="verticalRule" class="w-2 bg-zshade-100 dark:bg-zshade-400" />
+            <div id="verticalRule" class="dark:bg-zshade-400 w-2 bg-zshade-100" />
           </div>
           <div class="flex flex-col gap-6">
             <div class="text-7xl text-primary font-bold">

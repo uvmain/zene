@@ -4,7 +4,7 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchAlbum } from '~/composables/backendFetch'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
-const route = useRoute()
+const route = useRoute<'/albums/[album]'>()
 const { routeTracks, clearRouteTracks } = useRouteTracks()
 
 const album = ref<SubsonicAlbum>()

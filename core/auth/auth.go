@@ -150,8 +150,6 @@ func validateWithTokenAndSalt(salt, token, encryptedPassword string) bool {
 	return ok
 }
 
-// AuthMiddleware is an HTTP middleware that authenticates requests using ValidateAuth.
-// If authentication fails, it writes a 401 response and does not call the next handler.
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		userName, userId, ok := ValidateAuth(r, w)

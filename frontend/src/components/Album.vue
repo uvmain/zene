@@ -126,7 +126,7 @@ function actOnUpdatedArt() {
           @click="navigateAlbum()"
         >
         <div class="my-auto flex flex-col gap-1 text-left lg:gap-4">
-          <div class="cursor-pointer text-xl font-bold lg:text-4xl" @click="navigateAlbum()">
+          <div class="line-clamp-1 cursor-pointer text-xl font-bold lg:text-4xl" @click="navigateAlbum()">
             {{ album.name }}
           </div>
           <div class="cursor-pointer text-lg lg:text-xl" @click="navigateArtist()">

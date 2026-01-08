@@ -127,22 +127,22 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
     <table class="h-full w-full p-2 text-left lg:p-4">
       <thead>
         <tr class="text-lg text-muted">
-          <th class="w-15 cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
+          <th class="w-6 cursor-pointer text-center md:w-15" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
             #
           </th>
           <th class="cursor-pointer px-2" @click="currentSortOption === 'titleAsc' ? sortTracksBy('titleDesc') : sortTracksBy('titleAsc')">
             Title
           </th>
-          <th v-if="showAlbum" class="w-16 cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
+          <th v-if="showAlbum" class="w-6 cursor-pointer text-center md:w-16" @click="currentSortOption === 'trackNumberAsc' ? sortTracksBy('trackNumberDesc') : sortTracksBy('trackNumberAsc')">
             Track
           </th>
           <th v-if="showAlbum" class="cursor-pointer px-2" @click="currentSortOption === 'albumAsc' ? sortTracksBy('albumDesc') : sortTracksBy('albumAsc')">
             Album
           </th>
-          <th class="w-16 cursor-pointer text-center text-sm" @click="sortTracksBy('playCount')">
+          <th class="w-6 cursor-pointer text-center text-sm md:w-16" @click="sortTracksBy('playCount')">
             Play Count
           </th>
-          <th class="w-16 cursor-pointer text-center" @click="currentSortOption === 'durationAsc' ? sortTracksBy('durationDesc') : sortTracksBy('durationAsc')">
+          <th class="w-6 cursor-pointer text-center md:w-16" @click="currentSortOption === 'durationAsc' ? sortTracksBy('durationDesc') : sortTracksBy('durationAsc')">
             <icon-nrk-clock class="inline" />
           </th>
         </tr>
@@ -167,13 +167,13 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
           class="group cursor-pointer transition-colors duration-200 ease-out"
           :class="{
             'hover:bg-primary2/40': !isTrackPlaying(track.id),
-            'background-3 bg-opacity-50': !isTrackPlaying(track.id) && index % 2 === 0,
+            'background-3 bg-opacity-40': !isTrackPlaying(track.id) && index % 2 === 0,
             'bg-primary1/40': isTrackPlaying(track.id),
           }"
           @click="handlePlay(track)"
         >
           <td
-            class="relative h-full w-15 flex items-center justify-center"
+            class="relative h-full w-15 flex items-center justify-center p-1"
           >
             <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
               <div v-if="!showAlbum">
@@ -192,7 +192,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
             <div class="flex shrink">
               <div class="flex flex-col px-2">
                 <RouterLink
-                  class="line-clamp-1 text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
+                  class="line-clamp-1 text-ellipsis text-primary no-underline md:text-lg hover:underline hover:underline-white"
                   :to="`/tracks/${track.id}`"
                   @click.stop
                 >
@@ -226,7 +226,7 @@ watch(playcount_updated_musicbrainz_track_id, (newTrack) => {
                 @click.stop
               >
                 <img
-                  class="size-10 object-cover"
+                  class="hidden size-10 object-cover md:block"
                   :src="getCoverArtUrl(track.albumId, 40)"
                   alt="Album Cover"
                   :loading="index < 20 ? 'eager' : 'lazy'"
