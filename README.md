@@ -61,15 +61,15 @@ This project uses a [calver](https://calver.org/) versioning system like `pip`
 
 `YY.MINOR.MICRO`
 
-## Installation
-- create a `.env` file using `.env.example` as a guide
-- copy the `docker-compose.yml` file into the same directory, and update the mount points as required
-- `docker compose up -d` to pull the image and run the container in the background
-
 ## Tagging guidelines
 Zene *requires* MusicBrainz ID tags for artist, album and track. It does not infer these from filenames or directory structure, and will fail to import any music files that do not have each of these tags set.
 
 These tags are already set by Lidarr. Alternatively, you can use a program like `beets` or `MusicBrainz Picard` to automatically assign these tags.
+
+## Installation
+- create a `.env` file using `.env.example` as a guide
+- copy the `docker-compose.yml` file into the same directory, and update the mount points as required
+- `docker compose up -d` to pull the image and run the container in the background
 
 ### example
 > .env
