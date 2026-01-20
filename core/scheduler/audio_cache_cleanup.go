@@ -129,6 +129,12 @@ func removeOrphanCache(ctx context.Context) error {
 	databaseFiles := []types.File{}
 	for _, row := range audioCacheRows {
 		filePathAbs := filepath.Join(config.AudioCacheFolder, row.CacheKey)
+		// Normalize the path to match what filepath.Abs returns
+		filePathAbs, err = filepath.Abs(filePathAbs)
+		if err != nil {
+			logger.Printf("Error getting absolute path for cache key %s: %v", row.CacheKey, err)
+			continue
+		}
 		databaseFiles = append(databaseFiles, types.File{
 			FileName:     row.CacheKey,
 			FilePathAbs:  filePathAbs,
@@ -136,9 +142,15 @@ func removeOrphanCache(ctx context.Context) error {
 		})
 	}
 
+	logger.Printf("removeOrphanCache: Found %d files in filesystem, %d entries in database", len(cacheFiles), len(databaseFiles))
+
 	orphanFiles := logic.FilesInSliceOnceNotInSliceTwo(cacheFiles, databaseFiles)
 
+	if len(orphanFiles) > 0 {
+		logger.Printf("removeOrphanCache: Found %d orphan files to delete", len(orphanFiles))
+	}
 	for _, file := range orphanFiles {
+		logger.Printf("Deleting orphan cache file: %s", file.FilePathAbs)
 		err = io.DeleteFile(file.FilePathAbs)
 		if err != nil {
 			logger.Printf("Error deleting orphan cache file %s: %v", file.FilePathAbs, err)
@@ -148,10 +160,14 @@ func removeOrphanCache(ctx context.Context) error {
 
 	orphanFiles = logic.FilesInSliceOnceNotInSliceTwo(databaseFiles, cacheFiles)
 
+	if len(orphanFiles) > 0 {
+		logger.Printf("removeOrphanCache: Found %d orphan database entries to delete", len(orphanFiles))
+	}
 	for _, file := range orphanFiles {
+		logger.Printf("Deleting orphan cache database entry: %s (path: %s)", file.FileName, file.FilePathAbs)
 		err = database.DeleteAudioCacheEntry(file.FileName)
 		if err != nil {
-			logger.Printf("Error deleting orphan cache file %s: %v", file.FileName, err)
+			logger.Printf("Error deleting orphan cache database entry %s: %v", file.FileName, err)
 			continue
 		}
 	}

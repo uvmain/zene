@@ -2,18 +2,22 @@ package ffmpeg
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
+	"time"
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/logger"
-
-	"github.com/google/uuid"
 )
+
+var activeTranscodes sync.Map
 
 func cleanupIncompleteCache(cachePath string, cacheKey string) {
 	if err := os.Remove(cachePath); err != nil {
@@ -38,7 +42,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	if useCache {
 		// serve from cache if it exists
 		if _, err := os.Stat(cachePath); err == nil {
-			logger.Printf("Serving transcoded file from cache: %s", cachePath)
+			logger.Printf("Serving transcoded file from cache for %s: %s", filePathAbs, cachePath)
 			if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
 				logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
 			}
@@ -57,6 +61,61 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 			_, err = io.Copy(w, f)
 			return err
 		}
+
+		// check if another request is already transcoding this file
+		mutex, loaded := activeTranscodes.LoadOrStore(cacheKey, &sync.Mutex{})
+		transcodeInProgress := loaded
+		cacheMutex := mutex.(*sync.Mutex)
+
+		if transcodeInProgress {
+			logger.Printf("Waiting for concurrent transcode to complete for: %s", cacheKey)
+
+			done := make(chan bool, 1)
+			go func() {
+				cacheMutex.Lock()
+				defer cacheMutex.Unlock()
+				done <- true
+			}()
+
+			select {
+			case <-done:
+				// transcode finished, check if cache file now exists
+				if _, err := os.Stat(cachePath); err == nil {
+					logger.Printf("Serving transcoded file from cache for %s after waiting: %s", filePathAbs, cachePath)
+					if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
+						logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
+					}
+					f, err := os.Open(cachePath)
+					if err != nil {
+						return fmt.Errorf("opening cached file: %w", err)
+					}
+					defer f.Close()
+					fileInfo, err := f.Stat()
+					if err != nil {
+						return fmt.Errorf("getting file info: %w", err)
+					}
+					w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+					w.Header().Set("Cache-Control", "public, max-age=31536000")
+					w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
+					_, err = io.Copy(w, f)
+					return err
+				}
+				// Cache file doesn't exist, fallback to not using cache
+				logger.Printf("Cache file not found after waiting, will transcode: %s", cacheKey)
+			case <-time.After(5 * time.Second):
+				// timed out waiting for first transcode to cache, fallback to not using cache
+				logger.Printf("Timeout waiting for concurrent transcode, will transcode ourselves: %s", cacheKey)
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+
+		// Lock the mutex for this cache key so other requests will wait
+		cacheMutex.Lock()
+		defer func() {
+			cacheMutex.Unlock()
+			activeTranscodes.Delete(cacheKey)
+		}()
 	}
 
 	if timeOffset > 0 {
@@ -156,11 +215,9 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	if useCache {
 		// write to a temp file first, only move to cachePath on success
-		randomId, err := uuid.NewRandom()
-		if err != nil {
-			return fmt.Errorf("generating random ID: %w", err)
-		}
-		tempCachePath = filepath.Join(config.AudioCacheFolder, randomId.String())
+		// Use deterministic hash for temp path so concurrent requests use same temp file
+		hash := sha256.Sum256([]byte(cacheKey))
+		tempCachePath = filepath.Join(config.AudioCacheFolder, ".tmp-"+hex.EncodeToString(hash[:]))
 		cacheFile, err = os.Create(tempCachePath)
 		if err != nil {
 			return fmt.Errorf("creating temp cache file: %w", err)
