@@ -120,7 +120,7 @@ function actOnUpdatedArt() {
       <div class="h-30 flex flex-row gap-2 lg:h-52 lg:gap-6">
         <img
           :src="coverArtUrlMd"
-          class="h-30 cursor-pointer border-muted lg:h-52"
+          class="aspect-square h-30 cursor-pointer border-muted lg:h-52"
           loading="lazy"
           @error="onImageError"
           @click="navigateAlbum()"
