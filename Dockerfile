@@ -4,7 +4,7 @@ WORKDIR /frontend
 
 COPY ./frontend .
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 FROM golang:1.25.5 AS backend-build

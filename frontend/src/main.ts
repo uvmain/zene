@@ -1,4 +1,4 @@
-import type { RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import { useLocalStorage } from '@vueuse/core'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
@@ -32,7 +32,7 @@ export const createApp = ViteSSG(
     base: import.meta.env.BASE_URL,
   },
   ({ router }) => {
-    router.beforeEach(async (to) => {
+    router.beforeEach(async (to: RouteLocationNormalized) => {
       if ((apiKey.value == null || apiKey.value.length === 0) && to.path !== '/login') {
         return { path: '/login', replace: true }
       }
