@@ -8,11 +8,11 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mmcdole/gofeed v1.3.0
-	github.com/ncruces/go-sqlite3 v0.30.4
+	github.com/ncruces/go-sqlite3 v0.30.5
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.11.1
 	github.com/timematic/anytime v0.0.0-20250424004116-93a49dc8f85f
-	golang.org/x/image v0.34.0
+	golang.org/x/image v0.35.0
 	golang.org/x/sync v0.19.0
 )
 
@@ -27,7 +27,7 @@ require (
 	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/tetratelabs/wazero v1.11.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
 )

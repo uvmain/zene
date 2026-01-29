@@ -69,5 +69,6 @@ export async function cacheBustAlbumArt(albumId: string) {
   promises.push(fetch(getCoverArtUrl(albumId, 120), { method: 'POST' }))
   promises.push(fetch(getCoverArtUrl(albumId, 150), { method: 'POST' }))
   promises.push(fetch(getCoverArtUrl(albumId, 200), { method: 'POST' }))
+  promises.push(fetch(getCoverArtUrl(albumId, 400), { method: 'POST' }))
   await Promise.all(promises)
 }
