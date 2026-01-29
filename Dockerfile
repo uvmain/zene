@@ -3,6 +3,7 @@ FROM node:24-alpine AS frontend-build
 WORKDIR /frontend
 
 COPY ./frontend .
+COPY ./package-lock.json ./
 
 RUN npm ci
 RUN npm run build
