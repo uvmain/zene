@@ -93,7 +93,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="corner-cut mx-auto max-w-60dvw flex flex-col gap-4 border-1 border-muted border-solid p-6 hover-background-grad-2">
+  <div class="corner-cut max-w-60dvw flex flex-col gap-4 border-1 border-muted border-solid p-6 hover-background-grad-2">
     <div class="flex flex-row justify-between gap-4">
       <div class="flex flex-row justify-start gap-4">
         <img
@@ -101,8 +101,8 @@ onBeforeMount(async () => {
           alt="Podcast Cover"
           :loading="index < 20 ? 'eager' : 'lazy'"
           class="z-1 col-span-full row-span-full my-auto size-34 cursor-pointer rounded object-cover"
-          width="192"
-          height="192"
+          width="136"
+          height="136"
           @click="navigateToEpisode(episode.id)"
         />
         <div class="my-auto ml-1 flex flex-col gap-4">

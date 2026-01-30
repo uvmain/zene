@@ -3,7 +3,7 @@ import type { SubsonicPodcastEpisodesResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import { openSubsonicFetchRequest } from '~/composables/backendFetch'
 
-const route = useRoute()
+const route = useRoute('/podcasts/episodes/[episode]')
 
 watch(() => route.params.episode, async () => {
   getEpisode()

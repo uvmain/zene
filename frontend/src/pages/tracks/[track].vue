@@ -3,7 +3,7 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchSong } from '~/composables/backendFetch'
 import { formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/composables/logic'
 
-const route = useRoute()
+const route = useRoute('/tracks/[track]')
 
 const track = ref<SubsonicSong>()
 const loading = ref(true)

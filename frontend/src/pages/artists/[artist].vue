@@ -6,7 +6,7 @@ import { fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/composables
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 import { useRouteTracks } from '~/composables/useRouteTracks'
 
-const route = useRoute<'/artists/[artist]'>()
+const route = useRoute('/artists/[artist]')
 const { routeTracks } = useRouteTracks()
 
 const artist = ref<SubsonicArtist>()

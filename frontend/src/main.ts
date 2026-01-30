@@ -1,4 +1,4 @@
-import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalized, RouteRecordRaw, RouterScrollBehavior } from 'vue-router'
 import { useLocalStorage } from '@vueuse/core'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
@@ -27,7 +27,7 @@ const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => 
 export const createApp = ViteSSG(
   App as Component,
   {
-    routes,
+    routes: routes as RouteRecordRaw[],
     scrollBehavior,
     base: import.meta.env.BASE_URL,
   },

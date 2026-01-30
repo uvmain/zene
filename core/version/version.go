@@ -3,7 +3,7 @@ package version
 import "zene/core/types"
 
 var Version = types.Version{
-	ServerVersion:          "26.3.6",
+	ServerVersion:          "26.3.8",
 	DatabaseVersion:        "151",
 	SubsonicApiVersion:     "1.16.1",
 	OpenSubsonicApiVersion: "1",

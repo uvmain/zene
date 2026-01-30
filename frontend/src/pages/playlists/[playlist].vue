@@ -4,7 +4,7 @@ import type { SubsonicPlaylist } from '~/types/subsonicPlaylists'
 import { openSubsonicFetchRequest } from '~/composables/backendFetch'
 import { getCoverArtUrl, onImageError } from '~/composables/logic'
 
-const route = useRoute()
+const route = useRoute('/playlists/[playlist]')
 const playlistId = computed(() => `${route.params.playlist}`)
 
 const playlist = ref<SubsonicPlaylist>()

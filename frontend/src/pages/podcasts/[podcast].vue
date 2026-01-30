@@ -3,7 +3,7 @@ import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastChannel, SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import { openSubsonicFetchRequest, useServerSentEventsForPodcast } from '~/composables/backendFetch'
 
-const route = useRoute()
+const route = useRoute('/podcasts/[podcast]')
 const router = useRouter()
 
 const showDeleteChannelModal = ref(false)
