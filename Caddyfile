@@ -1,3 +1,7 @@
+{
+  admin off
+}
+
 zene.localhost {
 	handle /share/* {
 		reverse_proxy localhost:8080

@@ -18,6 +18,10 @@ async function getLyrics() {
     return
   }
   const lyrics = await fetchLyrics(props.currentlyPlayingTrack.musicBrainzId)
+  if (!lyrics) {
+    lyricsRef.value = []
+    return
+  }
   lyricsRef.value = lyrics.line.map(line => ({
     start: line.start ? line.start / 1000 : 0, // convert milliseconds to seconds, default to 0
     value: line.value,

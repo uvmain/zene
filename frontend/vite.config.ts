@@ -1,5 +1,3 @@
-/// <reference types="vite-ssg" />
-
 import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
@@ -8,12 +6,14 @@ import Unfonts from 'unplugin-fonts/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
-import VueRouter from 'unplugin-vue-router/vite'
 import { defineConfig } from 'vite'
+import VueRouter from 'vue-router/vite'
 
 export default defineConfig({
   plugins: [
-    VueRouter(),
+    VueRouter({
+      dts: 'route-map.d.ts',
+    }),
     AutoImport({
       imports: [
         'vue',
@@ -23,21 +23,24 @@ export default defineConfig({
       viteOptimizeDeps: true,
     }),
     vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: tag => tag === 'google-cast-launcher',
-        },
-      },
+      // template: {
+      //   compilerOptions: {
+      //     isCustomElement: tag => tag === 'google-cast-launcher',
+      //   },
+      // },
     }),
     Unfonts({
       google: {
         families: [
-          'Jura',
+          {
+            name: 'Jura',
+            styles: 'wght@300..700',
+            defer: true,
+          },
         ],
       },
     }),
     Icons(),
-    // https://github.com/antfu/unplugin-vue-components
     Components({
       extensions: ['vue'],
       dts: true,
@@ -55,9 +58,6 @@ export default defineConfig({
       '~/': `${path.resolve(__dirname, 'src')}/`,
     },
   },
-  assetsInclude: [
-    '**/*.md',
-  ],
   ssgOptions: {
     script: 'async',
     formatting: 'minify',
