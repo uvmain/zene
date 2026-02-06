@@ -1,4 +1,4 @@
-import { defineConfig, presetWebFonts, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { defineConfig, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   shortcuts: {
@@ -42,12 +42,6 @@ export default defineConfig({
   },
   presets: [
     presetWind3(),
-    presetWebFonts({
-      provider: 'google',
-      fonts: {
-        jura: ['Jura:300,400,500,600,700'],
-      },
-    }),
   ],
   transformers: [
     transformerDirectives(),

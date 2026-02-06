@@ -12,7 +12,8 @@
     "types": [
       "node",
       "vite/client",
-      "unplugin-vue-router/client"
+      "unplugin-fonts/client",
+      "vite-ssg"
     ],
     "strict": true,
     "noEmit": true,
@@ -25,9 +26,15 @@
     "uno.config.ts",
     "components.d.ts",
     "auto-imports.d.ts",
-    "typed-router.d.ts",
-    "cast.d.ts",
+    "./route-map.d.ts",
+    // "cast.d.ts",
     "src/**/*"
   ],
-  "exclude": ["node_modules", "dist", "eslint.config.js"]
+  "exclude": ["node_modules", "dist", "eslint.config.js"],
+  "vueCompilerOptions": {
+    "plugins": [
+      "vue-router/volar/sfc-typed-router",
+      "vue-router/volar/sfc-route-blocks"
+    ]
+  }
 }

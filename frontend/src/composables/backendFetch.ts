@@ -294,13 +294,18 @@ export async function fetchGenres(count?: number) {
   return allGenres
 }
 
-export async function fetchLyrics(musicbrainz_song_id: string): Promise<StructuredLyric> {
+export async function fetchLyrics(musicbrainz_song_id: string): Promise<StructuredLyric | null> {
   const formData = new FormData()
   formData.append('id', musicbrainz_song_id)
   const response = await openSubsonicFetchRequest<SubsonicLyricsListResponse>('getLyricsBySongId', {
     body: formData,
   })
-  return response.lyricsList.structuredLyrics[0]
+  if (response.lyricsList?.structuredLyrics?.length > 0) {
+    return response.lyricsList.structuredLyrics[0]
+  }
+  else {
+    return null
+  }
 }
 
 export async function fetchAlbumsForArtist(artistId: string): Promise<SubsonicAlbum[]> {
