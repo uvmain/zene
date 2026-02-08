@@ -53,14 +53,14 @@ func HandleGetPodcastsServerSentEvents(w http.ResponseWriter, r *http.Request) {
 	// every 2 seconds, getPodcasts and write to w
 	clientGone := r.Context().Done()
 
-	rc := http.NewResponseController(w)
-	t := time.NewTicker(time.Second * 2)
-	defer t.Stop()
+	responseController := http.NewResponseController(w)
+	ticker := time.NewTicker(time.Second * 2)
+	defer ticker.Stop()
 	for {
 		select {
 		case <-clientGone:
 			return
-		case <-t.C:
+		case <-ticker.C:
 			podcasts, err := getPodcasts(ctx, podcastIdInt)
 			if err != nil {
 				logger.Printf("Error getting podcasts in HandleGetPodcastsServerSentEvents: %v", err)
@@ -79,7 +79,7 @@ func HandleGetPodcastsServerSentEvents(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			err = rc.Flush()
+			err = responseController.Flush()
 			if err != nil {
 				logger.Printf("Error flushing response in HandleGetPodcastsServerSentEvents: %v", err)
 				return

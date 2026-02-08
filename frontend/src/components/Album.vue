@@ -83,7 +83,7 @@ function actOnUpdatedArt() {
   <div>
     <div v-if="size === 'sm'" class="group">
       <img
-        class="aspect-square size-150px cursor-pointer border-muted"
+        class="aspect-square size-150px cursor-pointer border-muted rounded-md"
         :src="coverArtUrlSm"
         alt="Album Cover"
         :loading="loading"
@@ -94,7 +94,7 @@ function actOnUpdatedArt() {
       <div class="relative">
         <PlayButton
           :album="album"
-          class="absolute bottom-2 right-1 z-10 opacity-0 transition-all duration-100 group-hover:opacity-100"
+          class="absolute bottom-2 right-2 z-10 opacity-0 transition-all duration-100 group-hover:opacity-100"
         />
       </div>
       <div class="max-w-150px">
@@ -120,7 +120,7 @@ function actOnUpdatedArt() {
       <div class="h-30 flex flex-row gap-2 lg:h-52 lg:gap-6">
         <img
           :src="coverArtUrlMd"
-          class="aspect-square h-30 cursor-pointer border-muted lg:h-52"
+          class="aspect-square h-30 cursor-pointer border-muted rounded-md lg:h-52"
           loading="lazy"
           @error="onImageError"
           @click="navigateAlbum()"

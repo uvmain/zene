@@ -72,6 +72,7 @@ declare module 'vue' {
     SearchResults: typeof import('./src/components/SearchResults.vue')['default']
     SettingsDropDown: typeof import('./src/components/SettingsDropDown.vue')['default']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
+    Track: typeof import('./src/components/Track.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']
     UserManagement: typeof import('./src/components/UserManagement.vue')['default']
     ZButton: typeof import('./src/components/ZButton.vue')['default']

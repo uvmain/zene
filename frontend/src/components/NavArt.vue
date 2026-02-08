@@ -59,7 +59,7 @@ const coverArtUrl = computed(() => {
       </RouterLink>
       <img
         :src="coverArtUrl"
-        class="w-full cursor-pointer object-cover"
+        class="w-full cursor-pointer rounded-md object-cover"
         @error="onImageError"
         @click="() => router.push(`/albums/${currentlyPlayingTrack?.albumId}`)"
       />
@@ -73,7 +73,7 @@ const coverArtUrl = computed(() => {
       </RouterLink>
       <img
         :src="coverArtUrl"
-        class="w-full cursor-pointer object-cover"
+        class="w-full cursor-pointer rounded-md object-cover"
         @error="onImageError"
         @click="() => router.push(`/podcasts/${currentlyPlayingPodcastEpisode?.channelId}`)"
       />

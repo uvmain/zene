@@ -41,7 +41,7 @@ onBeforeMount(async () => {
         <img
           :src="coverArt"
           alt="Podcast Cover"
-          class="size-70 rounded-lg object-cover"
+          class="size-70 rounded-md object-cover"
           width="280"
           height="280"
           loading="eager"

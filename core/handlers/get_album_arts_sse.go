@@ -60,6 +60,7 @@ func HandleGetAlbumArtsServerSentEvents(w http.ResponseWriter, r *http.Request) 
 	}
 
 	results := make(chan types.SseMessage, 3)
+	clientGone := ctx.Done()
 
 	var wg sync.WaitGroup
 	wg.Add(3)
@@ -73,12 +74,26 @@ func HandleGetAlbumArtsServerSentEvents(w http.ResponseWriter, r *http.Request) 
 		close(results)
 	}()
 
-	for msg := range results {
-		jsonBytes, _ := json.Marshal(msg)
-		fmt.Fprintf(w, "data: %s\n\n", jsonBytes)
-		flusher.Flush()
+	for {
+		select {
+		case <-clientGone:
+			return // Client disconnected, stop processing
+		case msg, ok := <-results:
+			if !ok {
+				// Channel closed, all results received
+				// Only send completion event if client is still connected
+				select {
+				case <-clientGone:
+					return
+				default:
+					fmt.Fprintf(w, "event: done\ndata: complete\n\n")
+					flusher.Flush()
+				}
+				return
+			}
+			jsonBytes, _ := json.Marshal(msg)
+			fmt.Fprintf(w, "data: %s\n\n", jsonBytes)
+			flusher.Flush()
+		}
 	}
-
-	fmt.Fprintf(w, "event: done\ndata: complete\n\n")
-	flusher.Flush()
 }

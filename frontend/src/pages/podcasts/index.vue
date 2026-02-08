@@ -76,7 +76,7 @@ onBeforeMount(getPodcasts)
             :src="podcast.coverArt"
             alt="Podcast Cover"
             :loading="index < 20 ? 'eager' : 'lazy'"
-            class="size-50 object-cover"
+            class="size-50 rounded-md object-cover"
             width="200"
             height="200"
           />
