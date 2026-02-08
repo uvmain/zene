@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/composables/logic'
+import { albumArtSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
 import { useRouteTracks } from '~/composables/useRouteTracks'
@@ -50,15 +50,16 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 <template>
   <div
     ref="trackElement"
-    class="group flex flex-row cursor-pointer items-center justify-between transition-colors duration-200 ease-out"
+    class="group corner-cut flex flex-row cursor-pointer items-center gap-2 p-2 transition-colors duration-200 ease-out"
     :class="{
       'hover:bg-primary2/40': !isTrackPlaying,
-      'background-3 bg-opacity-40': !isTrackPlaying && trackIndex % 2 === 0,
+      'dark:bg-zshade-700/50 bg-zshade-100/50': !isTrackPlaying && trackIndex % 2 === 0,
       'bg-primary1/40': isTrackPlaying,
     }"
     @click="handlePlay"
   >
     <div
+      id="track-number"
       class="relative h-full w-15 flex items-center justify-center p-1"
     >
       <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
@@ -74,7 +75,31 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         class="absolute m-auto translate-x-[-1rem] text-xl opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
       />
     </div>
-    <div>
+
+    <div
+      v-if="showAlbum"
+      id="album-art"
+    >
+      <div class="flex flex-row items-center gap-2 px-1">
+        <RouterLink
+          :to="`/albums/${track.albumId}`"
+          class="flex items-center"
+          @click.stop
+        >
+          <img
+            class="size-auto rounded-sm object-cover"
+            :src="getCoverArtUrl(track.albumId, albumArtSizes.size60)"
+            alt="Album Cover"
+            :loading="trackIndex < 20 ? 'eager' : 'lazy'"
+            width="60"
+            height="60"
+            @error="onImageError"
+          />
+        </RouterLink>
+      </div>
+    </div>
+
+    <div id="title-and-artist">
       <div class="flex shrink">
         <div class="flex flex-col px-2">
           <RouterLink
@@ -92,42 +117,6 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
             {{ track.artist }}
           </RouterLink>
         </div>
-      </div>
-    </div>
-
-    <div v-if="showAlbum" class="relative w-15 flex items-center justify-center">
-      <div v-if="track.discNumber > 1" class="absolute left-2 text-sm text-muted opacity-60">
-        {{ track.discNumber }}
-      </div>
-      <div>
-        {{ track.track }}
-      </div>
-    </div>
-
-    <div v-if="showAlbum">
-      <div class="flex flex-row items-center gap-2 px-1">
-        <RouterLink
-          :to="`/albums/${track.albumId}`"
-          class="flex items-center"
-          @click.stop
-        >
-          <img
-            class="hidden size-10 rounded-sm object-cover md:block"
-            :src="getCoverArtUrl(track.albumId, 40)"
-            alt="Album Cover"
-            :loading="trackIndex < 20 ? 'eager' : 'lazy'"
-            width="40"
-            height="40"
-            @error="onImageError"
-          />
-        </RouterLink>
-        <RouterLink
-          class="text-muted no-underline hover:underline hover:underline-white"
-          :to="`/albums/${track.albumId}`"
-          @click.stop
-        >
-          {{ track.album }}
-        </RouterLink>
       </div>
     </div>
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/composables/backendFetch'
-import { getCoverArtUrl } from '~/composables/logic'
+import { albumArtSizes, getCoverArtUrl } from '~/composables/logic'
 
 const METADATA_COUNT = 20
 const isShaking = ref(false)
@@ -36,7 +36,7 @@ async function getRandomAlbums(limit: number) {
 }
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(albumArray.value[index.value].coverArt, 210)
+  return getCoverArtUrl(albumArray.value[index.value].coverArt, albumArtSizes.size200)
 })
 
 function handleDiceClick() {

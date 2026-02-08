@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
+import { albumArtSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
 import { useSearch } from '../composables/useSearch'
 
 type AlbumSize = 'sm' | 'md' | 'lg'
@@ -55,11 +55,11 @@ const loading = computed<LoadingAttribute>(() => {
 })
 
 const coverArtUrlSm = computed(() => {
-  return getCoverArtUrl(`${props.album.id}`, 150, artUpdatedTime.value)
+  return getCoverArtUrl(`${props.album.id}`, albumArtSizes.size150, artUpdatedTime.value)
 })
 
 const coverArtUrlMd = computed(() => {
-  return getCoverArtUrl(`${props.album.id}`, 200, artUpdatedTime.value)
+  return getCoverArtUrl(`${props.album.id}`, albumArtSizes.size200, artUpdatedTime.value)
 })
 
 function navigateAlbum() {
@@ -120,7 +120,7 @@ function actOnUpdatedArt() {
       <div class="h-30 flex flex-row gap-2 lg:h-52 lg:gap-6">
         <img
           :src="coverArtUrlMd"
-          class="aspect-square h-30 cursor-pointer border-muted rounded-md lg:h-52"
+          class="aspect-square h-30 cursor-pointer border-muted rounded-md shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
           loading="lazy"
           @error="onImageError"
           @click="navigateAlbum()"

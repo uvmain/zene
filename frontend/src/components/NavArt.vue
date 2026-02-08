@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import { getImageColour } from '~/composables/averageColour'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
+import { albumArtSizes, getCoverArtUrl, onImageError } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 
 const { currentlyPlayingTrack, currentlyPlayingPodcastEpisode } = usePlaybackQueue()
@@ -25,10 +25,10 @@ const router = useRouter()
 
 const coverArtUrl = computed(() => {
   if (currentlyPlayingTrack.value) {
-    return getCoverArtUrl(currentlyPlayingTrack.value?.albumId, 200)
+    return getCoverArtUrl(currentlyPlayingTrack.value?.albumId, albumArtSizes.size200)
   }
   else if (currentlyPlayingPodcastEpisode.value) {
-    return getCoverArtUrl(currentlyPlayingPodcastEpisode.value.coverArt, 200)
+    return getCoverArtUrl(currentlyPlayingPodcastEpisode.value.coverArt, albumArtSizes.size200)
   }
   else {
     return '/default-square.png'
