@@ -20,6 +20,7 @@ export interface SubsonicSong {
   albumId: string
   artistId: string
   musicBrainzId: string
+  starred?: string
   genres: Genre2[]
   artists: Artist[]
   displayArtist: string

@@ -29,6 +29,8 @@ declare module 'vue' {
     IconNrkDice3: typeof import('~icons/nrk/dice3')['default']
     IconNrkDice3Active: typeof import('~icons/nrk/dice3-active')['default']
     IconNrkDownload: typeof import('~icons/nrk/download')['default']
+    IconNrkHeart: typeof import('~icons/nrk/heart')['default']
+    IconNrkHeartActive: typeof import('~icons/nrk/heart-active')['default']
     IconNrkList: typeof import('~icons/nrk/list')['default']
     IconNrkMediaFfw: typeof import('~icons/nrk/media-ffw')['default']
     IconNrkMediaJumpto: typeof import('~icons/nrk/media-jumpto')['default']

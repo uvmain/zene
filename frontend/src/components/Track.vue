@@ -26,6 +26,11 @@ const isTrackPlaying = computed(() => {
   return isPlaying
 })
 
+const trackGenres = computed(() => {
+  const genres = props.track.genres.length ? props.track.genres.map(g => g.name.trim()) : []
+  return genres
+})
+
 function handlePlay() {
   if (currentQueue.value?.tracks.some(queueTrack => queueTrack.id === props.track.id)) {
     setCurrentlyPlayingTrack(props.track)
@@ -50,7 +55,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 <template>
   <div
     ref="trackElement"
-    class="group corner-cut flex flex-row cursor-pointer items-center gap-2 p-2 transition-colors duration-300 ease-out"
+    class="group corner-cut max-w-100% flex flex-row cursor-pointer items-center gap-2 p-2 text-base transition-colors duration-300 ease-out"
     :class="{
       'hover:bg-primary2/40': !isTrackPlaying,
       'dark:bg-zshade-700/60 bg-zshade-100/60': !isTrackPlaying && trackIndex % 2 === 0,
@@ -59,11 +64,9 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     }"
     @click="handlePlay"
   >
-    <div
-      id="track-number"
-      class="relative h-full w-15 flex items-center justify-center p-1"
-    >
-      <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:translate-x-[1rem] group-hover:opacity-0">
+    <!-- track number and play button -->
+    <div class="relative h-full w-15 flex items-center justify-center">
+      <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:(translate-x-[1rem] opacity-0)">
         <div v-if="!showAlbum">
           <div v-if="track.discNumber > 1" class="absolute left--4 text-sm text-muted opacity-50">
             {{ track.discNumber }}
@@ -73,15 +76,12 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         <span v-else>{{ trackIndex + 1 }}</span>
       </div>
       <icon-nrk-media-play
-        class="absolute m-auto translate-x-[-1rem] text-xl opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+        class="absolute m-auto translate-x-[-1rem] text-xl opacity-0 transition-all duration-300 group-hover:(translate-x-0 opacity-100)"
       />
     </div>
-
-    <div
-      v-if="showAlbum"
-      id="album-art"
-    >
-      <div class="flex flex-row items-center gap-2 px-1">
+    <!-- album art, title and artist -->
+    <div class="flex flex-row items-center gap-2">
+      <div v-if="showAlbum" class="flex flex-row items-center gap-2">
         <RouterLink
           :to="`/albums/${track.albumId}`"
           class="flex items-center"
@@ -98,34 +98,59 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
           />
         </RouterLink>
       </div>
-    </div>
-
-    <div id="title-and-artist">
-      <div class="flex shrink">
-        <div class="flex flex-col px-2">
-          <RouterLink
-            class="line-clamp-1 text-ellipsis text-primary no-underline md:text-lg hover:underline hover:underline-white"
-            :to="`/tracks/${track.id}`"
-            @click.stop
-          >
-            {{ track.title }}
-          </RouterLink>
-          <RouterLink
-            class="hidden text-sm text-muted no-underline lg:block hover:underline hover:underline-white"
-            :to="`/artists/${track.artistId}`"
-            @click.stop
-          >
-            {{ track.artist }}
-          </RouterLink>
-        </div>
+      <div class="flex flex-col px-2">
+        <RouterLink
+          class="line-clamp-1 truncate text-lg text-primary no-underline hover:(underline underline-white)"
+          :to="`/tracks/${track.id}`"
+          @click.stop
+        >
+          {{ track.title }}
+        </RouterLink>
+        <RouterLink
+          class="line-clamp-1 truncate text-sm text-muted no-underline hover:(underline underline-white)"
+          :to="`/artists/${track.artistId}`"
+          @click.stop
+        >
+          {{ track.artist }}
+        </RouterLink>
       </div>
     </div>
-
-    <div class="w-15 cursor-pointer text-center" @click="handlePlay">
-      {{ playCount ?? 0 }}
-    </div>
+    <!-- track duration -->
     <div class="w-15 cursor-pointer text-center" @click="handlePlay">
       {{ formatTimeFromSeconds(track.duration) }}
+    </div>
+    <!-- album -->
+    <div v-if="showAlbum" class="flex-1 cursor-pointer text-center">
+      <RouterLink
+        :to="`/albums/${track.albumId}`"
+        class="line-clamp-1 truncate text-primary no-underline hover:(underline underline-white)"
+        @click.stop
+      >
+        {{ track.album }}
+      </RouterLink>
+    </div>
+    <!-- track genres -->
+    <div class="flex-1 cursor-pointer text-center">
+      <RouterLink
+        :to="`/genres/${trackGenres.join(',')}`"
+        class="line-clamp-1 truncate text-primary no-underline hover:(underline underline-white)"
+        @click.stop
+      >
+        {{ trackGenres.join(', ') }}
+      </RouterLink>
+    </div>
+    <!-- year -->
+    <div class="w-15 cursor-pointer text-center" @click="handlePlay">
+      {{ track.year }}
+    </div>
+    <!-- starred -->
+    <div class="w-15 flex cursor-pointer items-center justify-center" @click="handlePlay">
+      <icon-nrk-heart-active v-if="track.starred" class="text-yellow-400" />
+      <icon-nrk-heart v-else class="text-muted opacity-40 hover:opacity-100" />
+    </div>
+    <!-- play count -->
+    <div class="w-15 cursor-pointer text-center" @click="handlePlay">
+      {{ playCount ?? 0 }}
     </div>
   </div>
 </template>
