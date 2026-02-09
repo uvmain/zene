@@ -48,6 +48,8 @@ declare module 'vue' {
     IconNrkReorder: typeof import('~icons/nrk/reorder')['default']
     IconNrkSearch: typeof import('~icons/nrk/search')['default']
     IconNrkSettings: typeof import('~icons/nrk/settings')['default']
+    IconNrkStar: typeof import('~icons/nrk/star')['default']
+    IconNrkStarActive: typeof import('~icons/nrk/star-active')['default']
     IconNrkTrash: typeof import('~icons/nrk/trash')['default']
     IconNrkUserLoggedin: typeof import('~icons/nrk/user-loggedin')['default']
     ImageSelector: typeof import('./src/components/ImageSelector.vue')['default']

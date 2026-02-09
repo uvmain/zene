@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
+import { postTrackStarred } from '~/composables/backendFetch'
 import { albumArtSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/composables/logic'
 import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
 import { usePlaycounts } from '~/composables/usePlaycounts'
@@ -17,6 +18,7 @@ const { routeTracks, setCurrentlyPlayingTrackInRouteTracks } = useRouteTracks()
 const { playcountUpdatedMusicbrainzTrackId } = usePlaycounts()
 
 const trackElement = useTemplateRef('trackElement')
+const isStarred = ref<string | undefined>(props.track.starred)
 
 const isTrackPlaying = computed(() => {
   const isPlaying = (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.id === props.track.id) ?? false
@@ -44,6 +46,17 @@ function handlePlay() {
 }
 
 const playCount = ref(props.track.playCount ?? 0)
+
+function toggleStarred() {
+  if (isStarred.value) {
+    postTrackStarred(props.track.id, false)
+    isStarred.value = undefined
+  }
+  else {
+    postTrackStarred(props.track.id, true)
+    isStarred.value = new Date().toDateString()
+  }
+}
 
 watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
   if (props.track.musicBrainzId === newtrack) {
@@ -116,7 +129,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       </div>
     </div>
     <!-- track duration -->
-    <div class="w-15 cursor-pointer text-center" @click="handlePlay">
+    <div class="w-15 cursor-pointer text-center">
       {{ formatTimeFromSeconds(track.duration) }}
     </div>
     <!-- album -->
@@ -140,16 +153,16 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       </RouterLink>
     </div>
     <!-- year -->
-    <div class="w-15 cursor-pointer text-center" @click="handlePlay">
+    <div class="w-15 cursor-pointer text-center">
       {{ track.year }}
     </div>
     <!-- starred -->
-    <div class="w-15 flex cursor-pointer items-center justify-center" @click="handlePlay">
-      <icon-nrk-heart-active v-if="track.starred" class="text-yellow-400" />
-      <icon-nrk-heart v-else class="text-muted opacity-40 hover:opacity-100" />
+    <div class="w-15 flex cursor-pointer items-center justify-center" @click="toggleStarred" @click.stop>
+      <icon-nrk-star-active v-if="isStarred" class="text-muted" />
+      <icon-nrk-star v-else class="text-muted opacity-40 hover:opacity-100" />
     </div>
     <!-- play count -->
-    <div class="w-15 cursor-pointer text-center" @click="handlePlay">
+    <div class="w-15 cursor-pointer text-center">
       {{ playCount ?? 0 }}
     </div>
   </div>

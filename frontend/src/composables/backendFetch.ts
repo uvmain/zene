@@ -455,3 +455,19 @@ export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
   const blob = await response.blob()
   return blob
 }
+
+export async function postTrackStarred(musicbrainz_track_id: string, starred: boolean): Promise<SubsonicResponse> {
+  const formData = new FormData()
+  formData.append('id', musicbrainz_track_id)
+
+  if (starred) {
+    return openSubsonicFetchRequest<SubsonicResponse>('star', {
+      body: formData,
+    })
+  }
+  else {
+    return openSubsonicFetchRequest<SubsonicResponse>('unstar', {
+      body: formData,
+    })
+  }
+}
