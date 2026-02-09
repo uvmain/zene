@@ -2,9 +2,12 @@ import type { RouteLocationNormalized, RouteRecordRaw, RouterScrollBehavior } fr
 import { useLocalStorage } from '@vueuse/core'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
+import { useSearch } from '~/composables/useSearch'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 import 'virtual:uno.css'
+
+const { closeSearch } = useSearch()
 
 const apiKey = useLocalStorage('apiKey', '')
 
@@ -33,6 +36,7 @@ export const createApp = ViteSSG(
   },
   ({ router }) => {
     router.beforeEach(async (to: RouteLocationNormalized) => {
+      closeSearch()
       if ((apiKey.value == null || apiKey.value.length === 0) && to.path !== '/login') {
         return { path: '/login', replace: true }
       }

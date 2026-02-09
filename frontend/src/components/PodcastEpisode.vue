@@ -66,10 +66,6 @@ async function deleteEpisode() {
   }
 }
 
-function navigateToEpisode(episodeId: string) {
-  router.push(`/podcasts/episodes/${episodeId}`)
-}
-
 const episodeStatusButtonText = computed(() => {
   if (props.episode.status === 'completed') {
     return episodeDownloadedLocal.value ? 'Downloaded locally' : 'Downloaded on server'
@@ -81,6 +77,10 @@ const episodeStatusButtonText = computed(() => {
 
 async function updateLocalStorageStatus() {
   episodeDownloadedLocal.value = await episodeIsStored(props.episode.streamId)
+}
+
+function navigatePodcastEpisode(episodeId: string) {
+  router.push(`/podcasts/episodes/${episodeId}`)
 }
 
 watch(() => props.episode.status, async () => {
@@ -103,10 +103,10 @@ onBeforeMount(async () => {
           class="z-1 col-span-full row-span-full my-auto size-34 cursor-pointer rounded-md object-cover"
           width="136"
           height="136"
-          @click="navigateToEpisode(episode.id)"
+          @click="navigatePodcastEpisode(episode.id)"
         />
         <div class="my-auto ml-1 flex flex-col gap-4">
-          <div class="cursor-pointer text-lg" @click="navigateToEpisode(episode.id)">
+          <div class="cursor-pointer text-lg" @click="navigatePodcastEpisode(episode.id)">
             {{ episode.title }}
           </div>
           <div>

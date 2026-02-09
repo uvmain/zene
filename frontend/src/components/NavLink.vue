@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useNavbar } from '~/composables/useNavbar'
-import { useSearch } from '~/composables/useSearch'
 
 defineProps({
   routeName: { type: String, required: true },
@@ -8,7 +7,6 @@ defineProps({
 })
 
 const route = useRoute()
-const { closeSearch } = useSearch()
 const { closeMobileNav } = useNavbar()
 
 const currentRoute = computed(() => {
@@ -16,7 +14,6 @@ const currentRoute = computed(() => {
 })
 
 function handleLinkClick() {
-  closeSearch()
   closeMobileNav()
 }
 </script>

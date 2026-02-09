@@ -4,16 +4,14 @@ import type { SubsonicPlaylist } from '~/types/subsonicPlaylists'
 import { openSubsonicFetchRequest } from '~/composables/backendFetch'
 import { onImageError } from '~/composables/logic'
 
-const router = useRouter()
-
 const showModal = ref(false)
 const isSubmitting = ref(false)
 const submitError = ref('')
 const showSuccess = ref(false)
-
 const newPlaylistName = ref('')
-
 const playlists = ref<SubsonicPlaylist[]>([])
+
+const router = useRouter()
 
 async function createNewPlaylist() {
   if (isSubmitting.value)
@@ -52,7 +50,7 @@ async function getPlaylists() {
   })
 }
 
-function navigateToPlaylist(playlistId: string) {
+function navigateToPlaylist(playlistId: number) {
   router.push(`/playlists/${playlistId}`)
 }
 
@@ -73,7 +71,7 @@ onBeforeMount(getPlaylists)
         <div
           v-for="(playlist, index) in playlists"
           :key="playlist.id" class="mx-auto max-w-60dvw flex flex-col items-center justify-center gap-4 transition duration-150 hover:scale-101"
-          @click="navigateToPlaylist(`${playlist.id}`)"
+          @click="navigateToPlaylist(playlist.id)"
         >
           <img
             :src="playlist.coverArt"
