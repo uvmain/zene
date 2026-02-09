@@ -50,10 +50,11 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 <template>
   <div
     ref="trackElement"
-    class="group corner-cut flex flex-row cursor-pointer items-center gap-2 p-2 transition-colors duration-200 ease-out"
+    class="group corner-cut flex flex-row cursor-pointer items-center gap-2 p-2 transition-colors duration-300 ease-out"
     :class="{
       'hover:bg-primary2/40': !isTrackPlaying,
-      'dark:bg-zshade-700/50 bg-zshade-100/50': !isTrackPlaying && trackIndex % 2 === 0,
+      'dark:bg-zshade-700/60 bg-zshade-100/60': !isTrackPlaying && trackIndex % 2 === 0,
+      'dark:bg-zshade-700/20 bg-zshade-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
       'bg-primary1/40': isTrackPlaying,
     }"
     @click="handlePlay"

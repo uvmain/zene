@@ -84,6 +84,15 @@ function actOnUpdatedArt() {
   cacheBustAlbumArt(`${currentAlbum.value.id}`)
 }
 
+watch(() => props.album, (newAlbum) => {
+  if (newAlbum) {
+    albumArray.value = [newAlbum]
+  }
+  else {
+    getRandomAlbums(METADATA_COUNT)
+  }
+}, { immediate: true })
+
 onBeforeMount(async () => {
   if (!props.album) {
     await getRandomAlbums(METADATA_COUNT)
@@ -124,41 +133,39 @@ onBeforeMount(async () => {
               <PlayButton class="flex justify-start" :album="currentAlbum" />
             </div>
           </div>
-          <!-- Change Album Art section -->
-          <div v-if="props.album" class="absolute right-2 top-2 opacity-70 hover:opacity-100">
-            <ZButton
-              @click="showChangeArtModal = true"
-            >
-              <div>
-                Change Album Art
-              </div>
-            </ZButton>
-            <ChangeAlbumArt
-              v-if="showChangeArtModal"
-              :album="albumArray[index]"
-              @close="showChangeArtModal = false"
-              @art-updated="actOnUpdatedArt"
-            />
-          </div>
-          <!-- Dice and navigation buttons -->
-          <div
-            v-else
-            id="album-dice"
-            class="corner-cut absolute right-0 top-0 flex gap-2 background-2 p-3 lg:p-2"
-          >
-            <icon-nrk-chevron-left
-              class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
-              @click="prevIndex"
-            />
-            <icon-nrk-dice-3
-              class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
-              :class="{ shake: isShaking }"
-              @click="handleDiceClick()"
-            />
-            <icon-nrk-chevron-right
-              class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
-              @click="nextIndex"
-            />
+          <div class="absolute right-2 top-2 opacity-70 hover:opacity-100">
+            <!-- Change Album Art section -->
+            <div v-if="props.album">
+              <ZButton
+                @click="showChangeArtModal = true"
+              >
+                <div>
+                  Change Album Art
+                </div>
+              </ZButton>
+              <ChangeAlbumArt
+                v-if="showChangeArtModal"
+                :album="albumArray[index]"
+                @close="showChangeArtModal = false"
+                @art-updated="actOnUpdatedArt"
+              />
+            </div>
+            <!-- Dice and navigation buttons -->
+            <div v-else class="corner-cut absolute right-0 top-0 flex gap-2 background-2 p-3 lg:p-2">
+              <icon-nrk-chevron-left
+                class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
+                @click="prevIndex"
+              />
+              <icon-nrk-dice-3
+                class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
+                :class="{ shake: isShaking }"
+                @click="handleDiceClick()"
+              />
+              <icon-nrk-chevron-right
+                class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
+                @click="nextIndex"
+              />
+            </div>
           </div>
         </div>
       </div>
