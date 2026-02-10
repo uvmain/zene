@@ -55,7 +55,7 @@ export function generateSeed() {
   return Math.floor(Math.random() * 1000000)
 }
 
-export enum albumArtSizes {
+export enum artSizes {
   size60 = 60,
   size120 = 120,
   size150 = 150,
@@ -63,7 +63,7 @@ export enum albumArtSizes {
   size400 = 400,
 }
 
-export function getCoverArtUrl(musicbrainzId: string, size: number = albumArtSizes.size400, timeUpdated?: string): string {
+export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.size400, timeUpdated?: string): string {
   if (timeUpdated != null) {
     return `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
   }
@@ -73,7 +73,7 @@ export function getCoverArtUrl(musicbrainzId: string, size: number = albumArtSiz
 export async function cacheBustAlbumArt(albumId: string) {
   const promises = []
   promises.push(fetch(getCoverArtUrl(albumId), { method: 'POST' }))
-  for (const size of Object.values(albumArtSizes)) {
+  for (const size of Object.values(artSizes)) {
     promises.push(fetch(getCoverArtUrl(albumId, Number(size)), { method: 'POST' }))
   }
   await Promise.all(promises)

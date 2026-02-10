@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { postTrackStarred } from '~/logic/backendFetch'
-import { albumArtSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
+import { artSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrack } from '~/logic/playbackQueue'
 import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playCounts'
 import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
@@ -111,7 +111,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         >
           <img
             class="size-60px rounded-sm object-cover shadow-sm shadow-zshade-500 dark:shadow-zshade-900"
-            :src="getCoverArtUrl(track.albumId, albumArtSizes.size60)"
+            :src="getCoverArtUrl(track.albumId, artSizes.size60)"
             alt="Album Cover"
             :loading="trackIndex < 20 ? 'eager' : 'lazy'"
             width="60"

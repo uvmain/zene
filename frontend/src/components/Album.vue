@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { albumArtSizes, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
+import { artSizes, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: true },
@@ -46,7 +46,7 @@ const loading = computed<LoadingAttribute>(() => {
 })
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(`${props.album.id}`, albumArtSizes.size150)
+  return getCoverArtUrl(`${props.album.id}`, artSizes.size150)
 })
 
 function navigateAlbum() {

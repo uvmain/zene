@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
-import { albumArtSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
+import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: false },
@@ -44,7 +44,7 @@ async function getRandomAlbums(limit: number) {
 }
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(currentAlbum.value.coverArt, albumArtSizes.size200)
+  return getCoverArtUrl(currentAlbum.value.coverArt, artSizes.size200)
 })
 
 const artist = computed(() => {
@@ -140,7 +140,7 @@ onBeforeMount(async () => {
                 @click="showChangeArtModal = true"
               >
                 <div>
-                  Change Album Art
+                  Change Art
                 </div>
               </ZButton>
               <ChangeAlbumArt
