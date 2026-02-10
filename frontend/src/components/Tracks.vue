@@ -5,6 +5,7 @@ import { routeTracks } from '~/logic/routeTracks'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
+  primaryArtist: { type: String, required: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
   observerEnabled: { type: Boolean, default: false },
   autoScrolling: { type: Boolean, default: true },
@@ -118,6 +119,7 @@ watch(() => props.tracks, (newtracks) => {
         :key="track.id"
         :track="track"
         :track-index="index"
+        :primary-artist="primaryArtist"
         :show-album="showAlbum"
         :auto-scrolling="autoScrolling"
       />

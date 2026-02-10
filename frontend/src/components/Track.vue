@@ -9,12 +9,21 @@ import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/rout
 const props = defineProps({
   track: { type: Object as PropType<SubsonicSong>, required: true },
   showAlbum: { type: Boolean, default: false },
+  primaryArtist: { type: String, required: false },
   trackIndex: { type: Number, required: true },
   autoScrolling: { type: Boolean, default: true },
 })
 
 const trackElement = useTemplateRef('trackElement')
 const isStarred = ref<string | undefined>(props.track.starred)
+
+const artistIsAlbumArtist = computed(() => {
+  if (!props.primaryArtist) {
+    const albumArtists = props.track.albumArtists?.map(artist => artist.name.trim()) ?? []
+    return albumArtists.includes(props.track.artist.trim())
+  }
+  return props.track.artist.trim() === props.primaryArtist.trim()
+})
 
 const isTrackPlaying = computed(() => {
   const isPlaying = (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.id === props.track.id) ?? false
@@ -81,8 +90,8 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <div class="relative flex items-center justify-center">
       <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:(translate-x-[1rem] opacity-0)">
         <div v-if="!showAlbum">
-          <div v-if="track.discNumber > 1" class="absolute left--4 text-sm text-muted opacity-50">
-            {{ track.discNumber }}
+          <div v-if="track.discNumber > 1" class="absolute bottom-1px left--4 text-sm text-muted opacity-40">
+            {{ track.discNumber }}:
           </div>
           <div>{{ track.track }}</div>
         </div>
@@ -93,7 +102,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       />
     </div>
     <!-- album art, title and artist -->
-    <div class="min-w-0 flex flex-row items-center gap-4 overflow-hidden">
+    <div class="min-h-60px min-w-0 flex flex-row items-center gap-4 overflow-hidden">
       <div v-if="showAlbum" class="flex flex-shrink-0 items-center">
         <RouterLink
           :to="`/albums/${track.albumId}`"
@@ -121,6 +130,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         </RouterLink>
         <RouterLink
           class="line-clamp-1 truncate text-sm text-muted no-underline hover:(underline underline-white)"
+          :class="{ hidden: artistIsAlbumArtist }"
           :to="`/artists/${track.artistId}`"
           @click.stop
         >

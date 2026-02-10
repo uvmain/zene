@@ -156,6 +156,7 @@ onBeforeMount(async () => {
       :auto-scrolling="false"
       :tracks="tracks"
       :show-album="true"
+      :primary-artist="artist?.name"
       :observer-enabled="canLoadMore"
       @observer-visible="getTopSongs"
     />
