@@ -16,17 +16,16 @@ import type {
   SubsonicSongsByGenreResponse,
   SubsonicTopSongsResponse,
 } from '../types/subsonic'
-import type { SubsonicAlbum } from '../types/subsonicAlbum'
 import type { SearchResult } from '~/types'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { useLocalStorage } from '@vueuse/core'
-import { useDebug } from '~/composables/useDebug'
+import { debugLog } from '~/logic/logger'
 
-const { debugLog } = useDebug()
 const apiKey = useLocalStorage('apiKey', '')
 
 const concurrencyMap = new Map<string, Promise<any>>()
@@ -454,4 +453,20 @@ export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
   }
   const blob = await response.blob()
   return blob
+}
+
+export async function postTrackStarred(musicbrainz_track_id: string, starred: boolean): Promise<SubsonicResponse> {
+  const formData = new FormData()
+  formData.append('id', musicbrainz_track_id)
+
+  if (starred) {
+    return openSubsonicFetchRequest<SubsonicResponse>('star', {
+      body: formData,
+    })
+  }
+  else {
+    return openSubsonicFetchRequest<SubsonicResponse>('unstar', {
+      body: formData,
+    })
+  }
 }

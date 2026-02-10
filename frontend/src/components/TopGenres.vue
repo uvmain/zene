@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicGenre } from '~/types/subsonicGenres'
-import { fetchGenres } from '~/composables/backendFetch'
+import { fetchGenres } from '~/logic/backendFetch'
 
 const genres = ref<SubsonicGenre[]>()
 

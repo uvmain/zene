@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchAlbum } from '~/composables/backendFetch'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { fetchAlbum } from '~/logic/backendFetch'
+import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
 
 const route = useRoute('/albums/[album]')
-const { routeTracks, clearRouteTracks } = useRouteTracks()
 
 const album = ref<SubsonicAlbum>()
 const tracks = ref<SubsonicSong[]>()
@@ -32,8 +31,8 @@ onUnmounted(() => clearRouteTracks())
 <template>
   <div v-if="album && tracks">
     <div class="flex flex-grow flex-col gap-4 lg:gap-6">
-      <Album :album="album" size="md" :show-change-art-button="true" />
-      <Tracks :tracks="tracks" />
+      <HeroAlbum :album="album" />
+      <Tracks :tracks="tracks" :primary-artist="album.artist" />
     </div>
   </div>
 </template>

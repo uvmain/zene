@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
-import { useNavbar } from '~/composables/useNavbar'
-import { useSearch } from '~/composables/useSearch'
-
-const { getSearchResults, searchInput } = useSearch()
-const { toggleMobileNav } = useNavbar()
+import { toggleMobileNav } from '~/logic/navbar'
+import { getSearchResults, searchInput } from '~/logic/search'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)

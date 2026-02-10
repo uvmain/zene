@@ -1,10 +1,9 @@
 import type { ReleaseDate } from '../types/subsonicAlbum'
 import { useLocalStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
-import { useSettings } from '~/composables/useSettings'
+import { streamQuality } from '~/logic/settings'
 
 const apiKey = useLocalStorage('apiKey', '')
-const { streamQuality } = useSettings()
 
 export function niceDate(dateString: string): string {
   const date = dayjs(dateString)
@@ -22,13 +21,6 @@ export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)
   const seconds = Math.floor(time % 60)
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
-}
-
-export function getCoverArtUrl(musicbrainzId: string, size = 400, timeUpdated?: string): string {
-  if (timeUpdated != null) {
-    return `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
-  }
-  return `/share/img/${musicbrainzId}?size=${size}`
 }
 
 export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = false): string {
@@ -63,12 +55,26 @@ export function generateSeed() {
   return Math.floor(Math.random() * 1000000)
 }
 
+export enum artSizes {
+  size60 = 60,
+  size120 = 120,
+  size150 = 150,
+  size200 = 200,
+  size400 = 400,
+}
+
+export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.size400, timeUpdated?: string): string {
+  if (timeUpdated != null) {
+    return `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
+  }
+  return `/share/img/${musicbrainzId}?size=${size}`
+}
+
 export async function cacheBustAlbumArt(albumId: string) {
   const promises = []
   promises.push(fetch(getCoverArtUrl(albumId), { method: 'POST' }))
-  promises.push(fetch(getCoverArtUrl(albumId, 120), { method: 'POST' }))
-  promises.push(fetch(getCoverArtUrl(albumId, 150), { method: 'POST' }))
-  promises.push(fetch(getCoverArtUrl(albumId, 200), { method: 'POST' }))
-  promises.push(fetch(getCoverArtUrl(albumId, 400), { method: 'POST' }))
+  for (const size of Object.values(artSizes)) {
+    promises.push(fetch(getCoverArtUrl(albumId, Number(size)), { method: 'POST' }))
+  }
   await Promise.all(promises)
 }

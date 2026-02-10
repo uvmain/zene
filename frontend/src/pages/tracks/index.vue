@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { useLocalStorage } from '@vueuse/core'
-import { fetchRandomTracks } from '~/composables/backendFetch'
-import { generateSeed } from '~/composables/logic'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { fetchRandomTracks } from '~/logic/backendFetch'
+import { generateSeed } from '~/logic/common'
+import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
 
-const { routeTracks, clearRouteTracks } = useRouteTracks()
 const seed = useLocalStorage<number>('randomTracksSeed', 0)
 
 const tracks = ref<SubsonicSong[]>()

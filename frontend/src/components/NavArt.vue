@@ -1,9 +1,8 @@
 <script setup lang="ts">
-// import { getImageColour } from '~/composables/averageColour'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
+// import { getImageColour } from '~/logic/averageColour'
+import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
+import { currentlyPlayingPodcastEpisode, currentlyPlayingTrack } from '~/logic/playbackQueue'
 
-const { currentlyPlayingTrack, currentlyPlayingPodcastEpisode } = usePlaybackQueue()
 const router = useRouter()
 // const albumArtElement = useTemplateRef<HTMLImageElement>('albumArtElement')
 // const averageColour = ref<string>('hsl(32 100% 50%)')
@@ -25,10 +24,10 @@ const router = useRouter()
 
 const coverArtUrl = computed(() => {
   if (currentlyPlayingTrack.value) {
-    return getCoverArtUrl(currentlyPlayingTrack.value?.albumId, 200)
+    return getCoverArtUrl(currentlyPlayingTrack.value?.albumId, artSizes.size200)
   }
   else if (currentlyPlayingPodcastEpisode.value) {
-    return getCoverArtUrl(currentlyPlayingPodcastEpisode.value.coverArt, 200)
+    return getCoverArtUrl(currentlyPlayingPodcastEpisode.value.coverArt, artSizes.size200)
   }
   else {
     return '/default-square.png'
@@ -59,7 +58,7 @@ const coverArtUrl = computed(() => {
       </RouterLink>
       <img
         :src="coverArtUrl"
-        class="w-full cursor-pointer object-cover"
+        class="w-full cursor-pointer rounded-md object-cover"
         @error="onImageError"
         @click="() => router.push(`/albums/${currentlyPlayingTrack?.albumId}`)"
       />
@@ -73,7 +72,7 @@ const coverArtUrl = computed(() => {
       </RouterLink>
       <img
         :src="coverArtUrl"
-        class="w-full cursor-pointer object-cover"
+        class="w-full cursor-pointer rounded-md object-cover"
         @error="onImageError"
         @click="() => router.push(`/podcasts/${currentlyPlayingPodcastEpisode?.channelId}`)"
       />

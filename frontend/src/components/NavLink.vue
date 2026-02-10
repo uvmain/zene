@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { useNavbar } from '~/composables/useNavbar'
-import { useSearch } from '~/composables/useSearch'
+import { closeMobileNav } from '~/logic/navbar'
 
 defineProps({
   routeName: { type: String, required: true },
@@ -8,15 +7,12 @@ defineProps({
 })
 
 const route = useRoute()
-const { closeSearch } = useSearch()
-const { closeMobileNav } = useNavbar()
 
 const currentRoute = computed(() => {
   return route.path
 })
 
 function handleLinkClick() {
-  closeSearch()
   closeMobileNav()
 }
 </script>

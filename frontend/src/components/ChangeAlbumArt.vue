@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '../types/subsonicAlbum'
-import { postNewAlbumArt, useServerSentEventsForAlbumArt } from '~/composables/backendFetch'
+import { postNewAlbumArt, useServerSentEventsForAlbumArt } from '~/logic/backendFetch'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: true },

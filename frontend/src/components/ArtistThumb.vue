@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
-import { useSearch } from '~/composables/useSearch'
+import { getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({
   artist: { type: Object as PropType<SubsonicIndexArtist>, required: true },
   index: { type: Number, default: 0 },
 })
-
-const { closeSearch } = useSearch()
 
 const router = useRouter()
 
@@ -21,16 +18,14 @@ const loading = computed<LoadingAttribute>(() => {
   return props.index < 10 ? 'eager' : 'lazy'
 })
 
-function navigate() {
-  closeSearch()
-  const artistId = props.artist.id ?? props.artist.musicBrainzId
-  router.push(`/artists/${artistId}`)
+function navigateArtist() {
+  router.push(`/artists/${props.artist.id ?? props.artist.musicBrainzId}`)
 }
 </script>
 
 <template>
   <div>
-    <div class="group grid cursor-pointer" @click="navigate()">
+    <div class="group grid cursor-pointer" @click="navigateArtist()">
       <img
         class="z-1 col-span-full row-span-full rounded-full object-cover"
         :src="coverArtUrl"
@@ -41,7 +36,7 @@ function navigate() {
       />
       <PlayButton
         :artist="artist"
-        class="z-2 col-span-full row-span-full m-auto translate-x--2 opacity-0 duration-300 group-hover:translate-x-0 group-hover:opacity-100"
+        class="z-2 col-span-full row-span-full m-auto scale-50 pr-1 opacity-0 duration-200 group-hover:scale-100 group-hover:opacity-100"
       />
     </div>
     <div class="max-w-150px">

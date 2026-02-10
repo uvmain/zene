@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastEpisodesResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
-import { openSubsonicFetchRequest } from '~/composables/backendFetch'
+import { openSubsonicFetchRequest } from '~/logic/backendFetch'
 
 const route = useRoute('/podcasts/episodes/[episode]')
 
@@ -41,7 +41,7 @@ onBeforeMount(async () => {
         <img
           :src="coverArt"
           alt="Podcast Cover"
-          class="size-70 rounded-lg object-cover"
+          class="size-70 rounded-md object-cover"
           width="280"
           height="280"
           loading="eager"

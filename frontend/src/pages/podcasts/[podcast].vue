@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastChannel, SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
-import { openSubsonicFetchRequest, useServerSentEventsForPodcast } from '~/composables/backendFetch'
+import { openSubsonicFetchRequest, useServerSentEventsForPodcast } from '~/logic/backendFetch'
 
 const route = useRoute('/podcasts/[podcast]')
 const router = useRouter()
@@ -120,7 +120,7 @@ onBeforeMount(async () => {
           <img
             :src="channelCoverArt"
             alt="Podcast Cover"
-            class="size-70 object-cover"
+            class="size-70 rounded-md object-cover"
             width="280"
             height="280"
             loading="eager"

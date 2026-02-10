@@ -1,6 +1,4 @@
-import { useDebug } from '~/composables/useDebug'
-
-const { debugLog } = useDebug()
+import { debugLog } from '~/logic/logger'
 
 const STORE_NAME = 'episodes'
 

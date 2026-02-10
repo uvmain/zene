@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchSongsByGenre } from '~/composables/backendFetch'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { fetchSongsByGenre } from '~/logic/backendFetch'
+import { routeTracks } from '~/logic/routeTracks'
 
 const route = useRoute('/genres/[genre]')
-const { routeTracks } = useRouteTracks()
 
 const tracks = ref<SubsonicSong[]>()
 const canLoadMore = ref<boolean>(true)

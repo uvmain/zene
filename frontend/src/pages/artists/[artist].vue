@@ -2,12 +2,10 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/composables/backendFetch'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/logic/backendFetch'
+import { routeTracks } from '~/logic/routeTracks'
 
 const route = useRoute('/artists/[artist]')
-const { routeTracks } = useRouteTracks()
 
 const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()
@@ -21,7 +19,6 @@ const limit = ref<number>(100)
 const offset = ref<number>(0)
 
 const musicbrainzArtistId = computed(() => `${route.params.artist}`)
-const artistArtUrl = computed(() => getCoverArtUrl(musicbrainzArtistId.value, 240))
 
 async function getData() {
   const promisesArray = [
@@ -95,40 +92,14 @@ onBeforeMount(async () => {
 
 <template>
   <div class="flex flex-col gap-6">
-    <div v-if="artist" class="h-60">
-      <div
-        class="corner-cut-large h-full w-full bg-cover bg-center"
-        :style="{ backgroundImage: `url(${artistArtUrl})` }"
-      >
-        <div class="corner-cut-large h-full w-full flex items-center gap-6 background-grad-2 align-middle backdrop-blur-lg">
-          <div class="flex flex-row">
-            <img
-              class="corner-cut-large object-cover"
-              :src="artistArtUrl"
-              width="240"
-              height="240"
-              @error="onImageError"
-            />
-            <div id="verticalRule" class="dark:bg-zshade-400 w-2 bg-zshade-100" />
-          </div>
-          <div class="flex flex-col gap-6">
-            <div class="text-7xl text-primary font-bold">
-              {{ artist.name }}
-            </div>
-            <div v-if="artistGenres.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
-              <GenreBottle v-for="genre in artistGenres" :key="genre" :genre="genre" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <HeroArtist v-if="artist" :artist="artist" :genres="artistGenres" />
     <div v-if="artistAlbums.length > 0">
       <div class="mb-2 text-lg font-semibold">
         Albums
       </div>
       <div class="flex flex-wrap gap-6">
         <div v-for="album in artistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-          <Album :album="album" size="sm" :show-artist="false" :show-date="false" />
+          <Album :album="album" :show-artist="false" :show-date="false" />
         </div>
       </div>
     </div>
@@ -138,7 +109,7 @@ onBeforeMount(async () => {
       </div>
       <div class="flex flex-wrap gap-6">
         <div v-for="album in albumArtistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
-          <Album :album="album" size="sm" />
+          <Album :album="album" />
         </div>
       </div>
     </div>
@@ -157,6 +128,7 @@ onBeforeMount(async () => {
       :auto-scrolling="false"
       :tracks="tracks"
       :show-album="true"
+      :primary-artist="artist?.name"
       :observer-enabled="canLoadMore"
       @observer-visible="getTopSongs"
     />

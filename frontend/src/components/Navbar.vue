@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { useNavbar } from '~/composables/useNavbar'
-
-const { isMobileNavOpen, closeMobileNav } = useNavbar()
+import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
 </script>
 
 <template>
   <!-- Mobile overlay backdrop -->
   <div
-    v-if="isMobileNavOpen"
+    v-if="isMobileNavOpen()"
     class="fixed inset-0 z-40 lg:hidden"
     @click="closeMobileNav"
   />

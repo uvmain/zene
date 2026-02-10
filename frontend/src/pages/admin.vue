@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicUser } from '~/types/subsonicUser'
-import { fetchCurrentUser } from '~/composables/users'
+import { fetchCurrentUser } from '~/logic/users'
 
 const currentUser = ref<SubsonicUser | null>(null)
 

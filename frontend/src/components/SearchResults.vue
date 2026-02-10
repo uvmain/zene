@@ -2,9 +2,7 @@
 import type { SearchResult } from '~/types'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useSearch } from '../composables/useSearch'
-
-const { searchInput, getSearchResults, closeSearch } = useSearch()
+import { closeSearch, getSearchResults, searchInput } from '~/logic/search'
 
 const searchResults = ref<SearchResult | null>(null)
 
@@ -42,12 +40,12 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
         <div
           v-for="track in searchResults?.songs"
           :key="track.path"
-          class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
+          class="w-auto flex flex-none flex-col gap-y-1 overflow-hidden"
         >
           <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-primary">
             {{ track.title }}
           </div>
-          <Album :album="trackToAlbum(track)" size="sm" />
+          <Album :album="trackToAlbum(track)" />
         </div>
       </div>
       <h4>
@@ -57,9 +55,9 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
         <div
           v-for="album in searchResults?.albums"
           :key="album.name"
-          class="w-30 flex flex-none flex-col gap-y-1 overflow-hidden"
+          class="w-auto flex flex-none flex-col gap-y-1 overflow-hidden"
         >
-          <Album :album="album" size="sm" />
+          <Album :album="album" />
         </div>
       </div>
       <h4>

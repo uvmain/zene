@@ -1,19 +1,15 @@
 <script setup lang="ts">
 import { computedAsync } from '@vueuse/core'
-import { getAuthenticatedTrackUrl } from '~/composables/logic'
-import { useDebug } from '~/composables/useDebug'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
-import { usePlaycounts } from '~/composables/usePlaycounts'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { getAuthenticatedTrackUrl } from '~/logic/common'
+import { debugLog } from '~/logic/logger'
+import { clearQueue, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, currentQueue, getNextTrack, getPreviousTrack, getRandomTracks, resetCurrentlyPlayingTrack, setCurrentQueue } from '~/logic/playbackQueue'
+import { postPlaycount } from '~/logic/playCounts'
+import { routeTracks } from '~/logic/routeTracks'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
-const { debugLog } = useDebug()
-const { clearQueue, currentlyPlayingTrack, currentlyPlayingPodcastEpisode, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
-const { routeTracks } = useRouteTracks()
-const { postPlaycount } = usePlaycounts()
 const router = useRouter()
 
-const audioPlayer = useTemplateRef('playerAudio')
+const audioPlayer = useTemplateRef('audioPlayerElement')
 const isPlaying = ref(false)
 const playcountPosted = ref(false)
 const currentTime = ref(0)
@@ -156,14 +152,14 @@ async function handleGetRandomTracks() {
 
 <template>
   <footer
-    class="sticky bottom-0 mt-auto w-full border-0 border-t-1 border-zshade-400 border-zshade-600 border-solid background-2"
+    class="border-zshade-400 sticky bottom-0 mt-auto w-full border-0 border-t-1 border-zshade-600 border-solid background-2"
   >
     <div class="flex flex-col items-center px-2 lg:flex-row space-y-2 lg:px-4 lg:space-x-2 lg:space-y-0">
       <div
         class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 lg:py-2 lg:space-y-2"
       >
         <PlayerAudio
-          ref="playerAudio"
+          ref="audioPlayerElement"
           :track-url="trackUrl"
           @play="() => { isPlaying = true }"
           @pause="() => { isPlaying = false }"

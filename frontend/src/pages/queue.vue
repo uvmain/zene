@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
-
-const { currentQueue } = usePlaybackQueue()
+import { currentQueue } from '~/logic/playbackQueue'
 
 const tracks = ref<SubsonicSong[]>([])
 
