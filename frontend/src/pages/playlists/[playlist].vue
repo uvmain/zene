@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { SubsonicPlaylistResponse } from '~/types/subsonic'
 import type { SubsonicPlaylist } from '~/types/subsonicPlaylists'
-import { openSubsonicFetchRequest } from '~/composables/backendFetch'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
+import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { getCoverArtUrl, onImageError } from '~/logic/common'
 
 const route = useRoute('/playlists/[playlist]')
 const playlistId = computed(() => `${route.params.playlist}`)

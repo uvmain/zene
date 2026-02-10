@@ -27,7 +27,7 @@
     "components.d.ts",
     "auto-imports.d.ts",
     "./route-map.d.ts",
-    // "cast.d.ts",
+    "cast.d.ts",
     "src/**/*"
   ],
   "exclude": ["node_modules", "dist", "eslint.config.js"],

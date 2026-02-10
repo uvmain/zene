@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicRadioStationsResponse, SubsonicResponse } from '~/types/subsonic'
 import type { SubsonicRadioStation } from '~/types/subsonicRadioStations'
-import { openSubsonicFetchRequest } from '~/composables/backendFetch'
+import { openSubsonicFetchRequest } from '~/logic/backendFetch'
 
 const showModal = ref(false)
 const isSubmitting = ref(false)

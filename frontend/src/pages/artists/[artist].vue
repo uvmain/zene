@@ -2,12 +2,11 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/composables/backendFetch'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { fetchArtist, fetchArtistInfo, fetchArtistTopSongs } from '~/logic/backendFetch'
+import { getCoverArtUrl, onImageError } from '~/logic/common'
+import { routeTracks } from '~/logic/routeTracks'
 
 const route = useRoute('/artists/[artist]')
-const { routeTracks } = useRouteTracks()
 
 const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useLocalStorage } from '@vueuse/core'
 import md5 from 'md5'
-import { fetchApiKeysWithTokenAndSalt, fetchNewApiKeyWithTokenAndSalt } from '~/composables/backendFetch'
+import { fetchApiKeysWithTokenAndSalt, fetchNewApiKeyWithTokenAndSalt } from '~/logic/backendFetch'
 
 const router = useRouter()
 

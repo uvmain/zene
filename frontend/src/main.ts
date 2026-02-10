@@ -2,12 +2,10 @@ import type { RouteLocationNormalized, RouteRecordRaw, RouterScrollBehavior } fr
 import { useLocalStorage } from '@vueuse/core'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
-import { useSearch } from '~/composables/useSearch'
+import { closeSearch } from '~/logic/search'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 import 'virtual:uno.css'
-
-const { closeSearch } = useSearch()
 
 const apiKey = useLocalStorage('apiKey', '')
 

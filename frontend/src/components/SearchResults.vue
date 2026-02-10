@@ -2,9 +2,7 @@
 import type { SearchResult } from '~/types'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useSearch } from '../composables/useSearch'
-
-const { searchInput, getSearchResults, closeSearch } = useSearch()
+import { closeSearch, getSearchResults, searchInput } from '~/logic/search'
 
 const searchResults = ref<SearchResult | null>(null)
 

@@ -3,7 +3,7 @@ import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
+import { play } from '~/logic/playbackQueue'
 
 defineProps({
   artist: { type: Object as PropType<SubsonicIndexArtist>, required: false },
@@ -11,8 +11,6 @@ defineProps({
   track: { type: Object as PropType<SubsonicSong>, required: false },
   podcast: { type: Object as PropType<SubsonicPodcastEpisode>, required: false },
 })
-
-const { play } = usePlaybackQueue()
 </script>
 
 <template>

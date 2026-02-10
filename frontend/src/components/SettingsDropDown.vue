@@ -1,10 +1,7 @@
 <script setup>
-import { openSubsonicFetchRequest } from '~/composables/backendFetch'
-import { useDebug } from '~/composables/useDebug'
-import { useSettings } from '~/composables/useSettings'
-
-const { streamQuality, StreamQualities } = useSettings()
-const { toggleDebug, debugLog, useDebugBool } = useDebug()
+import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { debugEnabled, debugLog, toggleDebug } from '~/logic/logger'
+import { StreamQualities, streamQuality } from '~/logic/settings'
 
 const open = ref(false)
 const dropdownRef = useTemplateRef('dropdown')
@@ -58,7 +55,7 @@ onBeforeUnmount(() => {
             class="block cursor-pointer px-4 py-3 text-base text-gray-700 hover:bg-gray-100 lg:py-2 lg:text-sm"
             @click="toggleDebug()"
           >
-            Debug: {{ useDebugBool ? 'On' : 'Off' }}
+            Debug: {{ debugEnabled ? 'On' : 'Off' }}
           </div>
           <div class="px-4 py-3 lg:py-2">
             <label class="mb-2 block text-base text-gray-500 lg:mb-1 lg:text-sm">Stream Quality</label>

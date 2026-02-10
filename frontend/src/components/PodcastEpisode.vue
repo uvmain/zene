@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
-import { downloadMediaBlob, openSubsonicFetchRequest } from '~/composables/backendFetch'
-import { formatTimeFromSeconds } from '~/composables/logic'
+import { downloadMediaBlob, openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { formatTimeFromSeconds } from '~/logic/common'
 import { deleteStoredEpisode, episodeIsStored, setStoredEpisode } from '~/stores/usePodcastStore'
 
 const props = defineProps({

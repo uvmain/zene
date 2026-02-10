@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { useElementSize, useElementVisibility, useLocalStorage } from '@vueuse/core'
-import { fetchAlbums } from '~/composables/backendFetch'
-import { generateSeed } from '~/composables/logic'
+import { fetchAlbums } from '~/logic/backendFetch'
+import { generateSeed } from '~/logic/common'
 
 const props = defineProps({
   limit: { type: Number, default: 30 },

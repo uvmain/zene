@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchSong } from '~/composables/backendFetch'
-import { formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/composables/logic'
+import { fetchSong } from '~/logic/backendFetch'
+import { formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
 
 const route = useRoute('/tracks/[track]')
 

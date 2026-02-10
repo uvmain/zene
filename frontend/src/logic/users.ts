@@ -1,6 +1,6 @@
 import type { SubsonicResponse, SubsonicUserResponse, SubsonicUsersResponse } from '~/types/subsonic'
 import type { SubsonicUser } from '~/types/subsonicUser'
-import { openSubsonicFetchRequest } from './backendFetch'
+import { openSubsonicFetchRequest } from '~/logic/backendFetch'
 
 export async function fetchCurrentUser(): Promise<SubsonicUser> {
   const response = await openSubsonicFetchRequest<SubsonicUserResponse>('getUser')

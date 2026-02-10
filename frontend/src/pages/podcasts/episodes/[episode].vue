@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastEpisodesResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
-import { openSubsonicFetchRequest } from '~/composables/backendFetch'
+import { openSubsonicFetchRequest } from '~/logic/backendFetch'
 
 const route = useRoute('/podcasts/episodes/[episode]')
 

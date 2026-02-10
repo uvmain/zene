@@ -1,10 +1,9 @@
 import type { ReleaseDate } from '../types/subsonicAlbum'
 import { useLocalStorage } from '@vueuse/core'
 import dayjs from 'dayjs'
-import { useSettings } from '~/composables/useSettings'
+import { streamQuality } from '~/logic/settings'
 
 const apiKey = useLocalStorage('apiKey', '')
-const { streamQuality } = useSettings()
 
 export function niceDate(dateString: string): string {
   const date = dayjs(dateString)

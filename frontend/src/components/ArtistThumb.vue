@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '../types'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
-import { getCoverArtUrl, onImageError } from '~/composables/logic'
+import { getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({
   artist: { type: Object as PropType<SubsonicIndexArtist>, required: true },

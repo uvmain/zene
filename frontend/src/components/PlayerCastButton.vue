@@ -1,8 +1,6 @@
 <script setup lang="ts">
 // import type { SubsonicSong } from '~/types/subsonicSong'
-// import { useDebug } from '~/composables/useDebug'
-
-// const { debugLog } = useDebug()
+// import { debugLog } from '~/logic/logger'
 
 // const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
 // const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)

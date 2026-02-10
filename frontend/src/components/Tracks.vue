@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { useElementVisibility } from '@vueuse/core'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { routeTracks } from '~/logic/routeTracks'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
@@ -11,8 +11,6 @@ const props = defineProps({
 })
 
 const emits = defineEmits(['observerVisible'])
-
-const { routeTracks } = useRouteTracks()
 
 const observer = useTemplateRef('observer')
 const observerIsVisible = useElementVisibility(observer)
@@ -83,24 +81,36 @@ watch(() => props.tracks, (newtracks) => {
 <template>
   <div class="corner-cut-large background-2">
     <div class="h-full flex flex-col p-2 text-left lg:p-4">
-      <div class="flex flex-row justify-between gap-2 text-lg text-muted">
-        <div class="w-6 cursor-pointer text-center md:w-15" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
+      <div
+        class="grid mb-2 items-center gap-4 p-2 text-lg text-muted"
+        :class="{
+          'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
+          'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,
+        }"
+      >
+        <div class="cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
           #
         </div>
-        <div class="cursor-pointer px-2" @click="currentSortOption === 'titleAsc' ? sorttracksBy('titleDesc') : sorttracksBy('titleAsc')">
+        <div class="cursor-pointer" @click="currentSortOption === 'titleAsc' ? sorttracksBy('titleDesc') : sorttracksBy('titleAsc')">
           Title
         </div>
-        <div v-if="showAlbum" class="w-6 cursor-pointer text-center md:w-16" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
-          track
+        <div class="mx-auto flex cursor-pointer items-center" @click="currentSortOption === 'durationAsc' ? sorttracksBy('durationDesc') : sorttracksBy('durationAsc')">
+          <icon-nrk-clock />
         </div>
-        <div v-if="showAlbum" class="cursor-pointer px-2" @click="currentSortOption === 'albumAsc' ? sorttracksBy('albumDesc') : sorttracksBy('albumAsc')">
+        <div v-if="showAlbum" class="cursor-pointer" @click="currentSortOption === 'albumAsc' ? sorttracksBy('albumDesc') : sorttracksBy('albumAsc')">
           Album
         </div>
-        <div class="w-6 cursor-pointer text-center text-sm md:w-16" @click="sorttracksBy('playCount')">
-          Play Count
+        <div class="cursor-pointer">
+          Genres
         </div>
-        <div class="w-6 cursor-pointer text-center md:w-16" @click="currentSortOption === 'durationAsc' ? sorttracksBy('durationDesc') : sorttracksBy('durationAsc')">
-          <icon-nrk-clock class="inline" />
+        <div class="cursor-pointer text-center">
+          Year
+        </div>
+        <div class="mx-auto flex cursor-pointer items-center">
+          <icon-nrk-star />
+        </div>
+        <div class="cursor-pointer text-center" @click="sorttracksBy('playCount')">
+          Plays
         </div>
       </div>
       <Track

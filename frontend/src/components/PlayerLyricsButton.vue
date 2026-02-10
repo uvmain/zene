@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StructuredLyricLine } from '../types/subsonicLyrics'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchLyrics } from '../composables/backendFetch'
+import { fetchLyrics } from '../logic/backendFetch'
 
 const props = defineProps({
   currentlyPlayingTrack: { type: Object as PropType<SubsonicSong | null>, default: null },

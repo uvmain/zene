@@ -1,9 +1,8 @@
 <script setup lang="ts">
-// import { getImageColour } from '~/composables/averageColour'
-import { albumArtSizes, getCoverArtUrl, onImageError } from '~/composables/logic'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
+// import { getImageColour } from '~/logic/averageColour'
+import { albumArtSizes, getCoverArtUrl, onImageError } from '~/logic/common'
+import { currentlyPlayingPodcastEpisode, currentlyPlayingTrack } from '~/logic/playbackQueue'
 
-const { currentlyPlayingTrack, currentlyPlayingPodcastEpisode } = usePlaybackQueue()
 const router = useRouter()
 // const albumArtElement = useTemplateRef<HTMLImageElement>('albumArtElement')
 // const averageColour = ref<string>('hsl(32 100% 50%)')

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { SubsonicPlaylistsResponse, SubsonicResponse } from '~/types/subsonic'
 import type { SubsonicPlaylist } from '~/types/subsonicPlaylists'
-import { openSubsonicFetchRequest } from '~/composables/backendFetch'
-import { onImageError } from '~/composables/logic'
+import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { onImageError } from '~/logic/common'
 
 const showModal = ref(false)
 const isSubmitting = ref(false)

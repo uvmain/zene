@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchAlbum } from '~/composables/backendFetch'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { fetchAlbum } from '~/logic/backendFetch'
+import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
 
 const route = useRoute('/albums/[album]')
-const { routeTracks, clearRouteTracks } = useRouteTracks()
 
 const album = ref<SubsonicAlbum>()
 const tracks = ref<SubsonicSong[]>()

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { fetchAlbums } from '~/composables/backendFetch'
-import { albumArtSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/composables/logic'
+import { fetchAlbums } from '~/logic/backendFetch'
+import { albumArtSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: false },
@@ -133,7 +133,7 @@ onBeforeMount(async () => {
               <PlayButton class="flex justify-start" :album="currentAlbum" />
             </div>
           </div>
-          <div class="absolute right-2 top-2 opacity-70 hover:opacity-100">
+          <div class="absolute right-2 top-2 opacity-50 hover:opacity-100">
             <!-- Change Album Art section -->
             <div v-if="props.album">
               <ZButton

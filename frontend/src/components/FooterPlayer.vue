@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { computedAsync } from '@vueuse/core'
-import { getAuthenticatedTrackUrl } from '~/composables/logic'
-import { useDebug } from '~/composables/useDebug'
-import { usePlaybackQueue } from '~/composables/usePlaybackQueue'
-import { usePlaycounts } from '~/composables/usePlaycounts'
-import { useRouteTracks } from '~/composables/useRouteTracks'
+import { getAuthenticatedTrackUrl } from '~/logic/common'
+import { debugLog } from '~/logic/logger'
+import { clearQueue, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, currentQueue, getNextTrack, getPreviousTrack, getRandomTracks, resetCurrentlyPlayingTrack, setCurrentQueue } from '~/logic/playbackQueue'
+import { postPlaycount } from '~/logic/playCounts'
+import { routeTracks } from '~/logic/routeTracks'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
-const { debugLog } = useDebug()
-const { clearQueue, currentlyPlayingTrack, currentlyPlayingPodcastEpisode, resetCurrentlyPlayingTrack, getNextTrack, getPreviousTrack, getRandomTracks, currentQueue, setCurrentQueue } = usePlaybackQueue()
-const { routeTracks } = useRouteTracks()
-const { postPlaycount } = usePlaycounts()
 const router = useRouter()
 
 const audioPlayer = useTemplateRef('audioPlayerElement')

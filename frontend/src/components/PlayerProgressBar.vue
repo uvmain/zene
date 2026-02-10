@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { formatTimeFromSeconds } from '~/composables/logic'
+import { formatTimeFromSeconds } from '~/logic/common'
 
 const props = defineProps({
   currentTimeInSeconds: { type: Number, default: 0 },
