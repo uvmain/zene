@@ -1,17 +1,13 @@
-let mobileNavOpen = false
-
-export function isMobileNavOpen(): boolean {
-  return mobileNavOpen
-}
+export const isMobileNavOpen = ref(false)
 
 export function toggleMobileNav() {
-  mobileNavOpen = !mobileNavOpen
+  isMobileNavOpen.value = !isMobileNavOpen.value
 }
 
 export function closeMobileNav() {
-  mobileNavOpen = false
+  isMobileNavOpen.value = false
 }
 
 export function openMobileNav() {
-  mobileNavOpen = true
+  isMobileNavOpen.value = true
 }

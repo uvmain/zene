@@ -5,7 +5,7 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
 <template>
   <!-- Mobile overlay backdrop -->
   <div
-    v-if="isMobileNavOpen()"
+    v-if="isMobileNavOpen"
     class="fixed inset-0 z-40 lg:hidden"
     @click="closeMobileNav"
   />
