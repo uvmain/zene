@@ -96,7 +96,7 @@ watch(() => props.tracks, (newtracks) => {
           Title
         </div>
         <div class="mx-auto flex cursor-pointer items-center" @click="currentSortOption === 'durationAsc' ? sorttracksBy('durationDesc') : sorttracksBy('durationAsc')">
-          <icon-nrk-clock />
+          <icon-nrk-clock class="text-base" />
         </div>
         <div v-if="showAlbum" class="cursor-pointer" @click="currentSortOption === 'albumAsc' ? sorttracksBy('albumDesc') : sorttracksBy('albumAsc')">
           Album
@@ -108,7 +108,7 @@ watch(() => props.tracks, (newtracks) => {
           Year
         </div>
         <div class="mx-auto flex cursor-pointer items-center">
-          <icon-nrk-star />
+          <icon-nrk-star class="text-base" />
         </div>
         <div class="cursor-pointer text-center" @click="sorttracksBy('playCount')">
           Plays
