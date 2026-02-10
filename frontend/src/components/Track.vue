@@ -14,13 +14,15 @@ const props = defineProps({
   autoScrolling: { type: Boolean, default: true },
 })
 
+const route = useRoute()
+
 const trackElement = useTemplateRef('trackElement')
 const isStarred = ref<string | undefined>(props.track.starred)
 
 const artistIsAlbumArtist = computed(() => {
   if (!props.primaryArtist) {
     const albumArtists = props.track.albumArtists?.map(artist => artist.name.trim()) ?? []
-    return albumArtists.includes(props.track.artist.trim())
+    return albumArtists.includes(props.track.artist.trim()) && route.path.startsWith('/artists/')
   }
   return props.track.artist.trim() === props.primaryArtist.trim()
 })
