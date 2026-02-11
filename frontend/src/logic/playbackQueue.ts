@@ -144,3 +144,20 @@ export async function getPreviousTrack(): Promise<SubsonicSong | undefined> {
     return randomTrack
   }
 }
+
+export async function getPreviousShuffledTrack(): Promise<SubsonicSong | undefined> {
+  if (currentQueue.value && currentQueue.value.tracks.length) {
+    previousIndexes.value.pop()
+    const previousIndex = previousIndexes.value[previousIndexes.value.length - 1]
+    const prevTrack = currentQueue.value.tracks[previousIndex]
+    currentQueue.value.position = previousIndex
+    if (prevTrack !== undefined) {
+      setCurrentlyPlayingTrack(prevTrack)
+    }
+    return prevTrack
+  }
+  else {
+    const randomTrack = await getRandomTrack()
+    return randomTrack
+  }
+}

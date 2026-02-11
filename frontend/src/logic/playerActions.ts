@@ -1,5 +1,5 @@
 import { debugLog } from '~/logic/logger'
-import { clearQueue, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, currentQueue, getNextTrack, getPreviousTrack, getShuffledTrack, resetCurrentlyPlayingTrack, setCurrentQueue } from '~/logic/playbackQueue'
+import { clearQueue, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, currentQueue, getNextTrack, getPreviousShuffledTrack, getPreviousTrack, getShuffledTrack, resetCurrentlyPlayingTrack, setCurrentQueue } from '~/logic/playbackQueue'
 import { postPlaycount } from '~/logic/playCounts'
 import { routeTracks } from '~/logic/routeTracks'
 
@@ -10,6 +10,7 @@ export const previousVolume = ref(1)
 export const currentVolume = ref(1)
 export const trackUrl = ref('')
 export const shuffleEnabled = ref(false)
+export const repeatStatus = ref<'off' | '1' | 'all'>('off')
 
 type AudioElement = HTMLAudioElement | null | undefined
 
@@ -74,7 +75,7 @@ export async function handleNextTrack() {
 }
 
 export async function handlePreviousTrack() {
-  await getPreviousTrack()
+  shuffleEnabled.value ? await getPreviousShuffledTrack() : await getPreviousTrack()
 }
 
 export function seek(audioElement: AudioElement, seekSeconds: number) {
@@ -113,4 +114,19 @@ export function volumeInput(audioElement: AudioElement, volumeString: string) {
   }
 
   currentVolume.value = volume
+}
+
+export function toggleRepeat() {
+  switch (repeatStatus.value) {
+    case 'off':
+      repeatStatus.value = '1'
+      break
+    case '1':
+      repeatStatus.value = 'all'
+      break
+    case 'all':
+      repeatStatus.value = 'off'
+      break
+  }
+  console.log('Toggle repeat')
 }
