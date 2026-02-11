@@ -122,7 +122,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
           />
         </RouterLink>
       </div>
-      <div class="min-w-0 flex-1">
+      <div class="min-w-0 flex flex-shrink-1 flex-col">
         <RouterLink
           class="line-clamp-1 truncate text-lg text-primary no-underline hover:(underline underline-white)"
           :to="`/tracks/${track.id}`"
@@ -155,7 +155,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       </RouterLink>
     </div>
     <!-- track genres -->
-    <div class="fade-to-zero line-clamp-1 min-w-0 flex flex-row gap-1 truncate">
+    <div class="fade-out line-clamp-1 min-w-0 gap-1 truncate">
       <RouterLink
         v-for="genre in trackGenres"
         :key="genre"
@@ -163,7 +163,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         class="text-primary no-underline hover:(underline underline-white)"
         @click.stop
       >
-        {{ genre }}<span v-if="genre !== trackGenres[trackGenres.length - 1]" class="text-muted">,</span>
+        {{ genre }}<span v-if="genre !== trackGenres[trackGenres.length - 1]" class="text-muted">, </span>
       </RouterLink>
     </div>
     <!-- year -->
@@ -183,8 +183,8 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 </template>
 
 <style lang="css" scoped>
-.fade-to-zero {
-  mask: linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,0.4) 100%);
-  -webkit-mask: linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,0.4) 100%);
+.fade-out {
+  mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
+  -webkit-mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
 }
 </style>

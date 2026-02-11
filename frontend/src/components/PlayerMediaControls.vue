@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
+import { repeatStatus, shuffleEnabled, toggleRepeat, toggleShuffle } from '~/logic/playerActions'
 
 defineProps({
   isPlaying: { type: Boolean, default: false },
@@ -33,8 +34,13 @@ onKeyStroke('MediaStop', (e) => {
     <button id="repeat" class="media-control-button" @click="emits('stopPlayback')">
       <icon-nrk-media-stop class="footer-icon" />
     </button>
-    <button id="shuffle" class="media-control-button" @click="emits('togglePlayback')">
-      <icon-nrk-reorder class="footer-icon" />
+    <button id="shuffle" class="media-control-button" @click="toggleShuffle">
+      <icon-ion-shuffle-sharp
+        :class="{
+          'footer-icon': !shuffleEnabled,
+          'footer-icon-on': shuffleEnabled,
+        }"
+      />
     </button>
     <button id="back" class="media-control-button" @click="emits('previousTrack')">
       <icon-nrk-media-previous class="footer-icon" />
@@ -53,8 +59,19 @@ onKeyStroke('MediaStop', (e) => {
     <button id="forward" class="media-control-button" @click="emits('nextTrack')">
       <icon-nrk-media-next class="footer-icon" />
     </button>
-    <button id="repeat" class="media-control-button" @click="emits('togglePlayback')">
-      <icon-nrk-media-jumpto class="footer-icon" />
+    <button id="repeat" class="media-control-button relative" @click="toggleRepeat">
+      <icon-nrk-media-jumpto
+        :class="{
+          'footer-icon': repeatStatus === 'off',
+          'footer-icon-on': repeatStatus !== 'off',
+        }"
+      />
+      <span
+        v-if="repeatStatus !== 'off'"
+        class="absolute top-0 w-4 text-left text-xs text-primary2 -right-1"
+      >
+        {{ repeatStatus }}
+      </span>
     </button>
     <button
       id="shuffle"
@@ -65,9 +82,3 @@ onKeyStroke('MediaStop', (e) => {
     </button>
   </div>
 </template>
-
-<style scoped>
-.media-control-button {
-  @apply h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10;
-}
-</style>

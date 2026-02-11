@@ -43,10 +43,7 @@ async function getPodcasts() {
   const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getPodcasts', {
     body: formData,
   })
-  podcasts.value = response?.podcasts?.channel
-  podcasts.value.forEach((podcast) => {
-    podcast.coverArt = `/share/img/${podcast.coverArt}?size=400`
-  })
+  podcasts.value = response?.podcasts?.channel ?? []
 }
 
 function navigateToPodcast(podcastId: string) {
@@ -57,7 +54,7 @@ onBeforeMount(getPodcasts)
 </script>
 
 <template>
-  <div class="mx-auto max-w-60dvw p-4 space-y-4">
+  <div class="mx-auto p-4 lg:max-w-60dvw space-y-4">
     <button class="z-button" @click="showAddPodcastModal = true">
       Add New Podcast Channel
     </button>
@@ -66,33 +63,13 @@ onBeforeMount(getPodcasts)
       <div v-if="podcasts.length === 0" class="text-primary">
         No podcasts found.
       </div>
-      <div class="flex flex-wrap justify-center gap-6 lg:justify-start">
-        <div
-          v-for="(podcast, index) in podcasts"
-          :key="podcast.id" class="corner-cut flex flex-row cursor-pointer gap-4 border-1 border-muted border-solid p-4 align-top transition duration-150 hover:scale-101"
+      <div class="flex flex-wrap gap-6">
+        <HeroPodcast
+          v-for="podcast in podcasts"
+          :key="podcast.id"
+          :podcast="podcast"
           @click="navigateToPodcast(podcast.id)"
-        >
-          <img
-            :src="podcast.coverArt"
-            alt="Podcast Cover"
-            :loading="index < 20 ? 'eager' : 'lazy'"
-            class="size-50 rounded-md object-cover"
-            width="200"
-            height="200"
-          />
-          <div class="my-auto flex flex-col gap-4">
-            <div class="text-2xl font-bold">
-              {{ podcast.title }}
-            </div>
-            <div
-              class="line-clamp-5 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
-              v-html="podcast.description.replaceAll(/\n/g, '<br>')"
-            />
-            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
-              <ZInfo v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
-            </div>
-          </div>
-        </div>
+        />
       </div>
     </div>
 

@@ -2,12 +2,7 @@ import { defineConfig, presetWind3, transformerDirectives, transformerVariantGro
 
 export default defineConfig({
   shortcuts: {
-    'touch-target': 'min-h-11 min-w-11 flex items-center justify-center',
-    'touch-button': 'touch-target cursor-pointer transition-colors duration-200',
-    'mobile-grid': 'grid grid-cols-1 lg:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-    'mobile-padding': 'p-3 lg:p-6',
-    'mobile-margin': 'm-3 lg:m-6',
-    'mobile-gap': 'gap-3 lg:gap-6',
+    'media-control-button': 'h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10',
     'corner-cut': 'rounded-tl-12px [corner-top-left-shape:_bevel]',
     'corner-cut-large': 'rounded-tl-36px [corner-top-left-shape:_bevel]',
     'text-primary': 'dark:text-zshade-100 text-zshade-900',
@@ -18,7 +13,8 @@ export default defineConfig({
     'background-grad-2': 'dark:from-zshade-800 from-zshade-200 bg-gradient-to-r',
     'background-3': 'dark:bg-zshade-700 bg-zshade-100',
     'z-button': 'border-1 border-solid relative font-semibold corner-cut flex cursor-pointer items-center justify-center cursor-pointer px-3 py-1 text-sm outline-none transition-all duration-200 text-muted background-2 hover:from-primary2 hover:text-primary hover:bg-gradient-to-br',
-    'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl sm:text-lg dark:hover:text-primary1 hover:text-primary1 dark:group-hover/button:text-primary1 group-hover/button:text-primary1',
+    'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl sm:text-lg active:text-primary1',
+    'footer-icon-on': 'scale-110 text-lg text-primary1 transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl sm:text-lg',
     'auto-grid-6': '[grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))] grid gap-6',
   },
   theme: {
