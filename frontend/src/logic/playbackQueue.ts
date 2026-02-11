@@ -9,6 +9,8 @@ export const currentlyPlayingTrack = ref<SubsonicSong | undefined>()
 export const currentlyPlayingPodcastEpisode = ref<SubsonicPodcastEpisode | undefined>()
 export const currentQueue = ref<Queue | undefined>()
 
+const previousIndexes = ref<number[]>([])
+
 export function resetCurrentlyPlayingTrack() {
   currentlyPlayingTrack.value = undefined
 }
@@ -24,20 +26,23 @@ export function setCurrentlyPlayingTrack(track: SubsonicSong) {
 export function setCurrentlyPlayingPodcastEpisode(episode: SubsonicPodcastEpisode) {
   currentlyPlayingTrack.value = undefined
   currentlyPlayingPodcastEpisode.value = episode
-  currentQueue.value = undefined
+  clearQueue()
 }
 
-export function setCurrentQueue(tracks: SubsonicSong[], playFirstTrack: boolean = true) {
+export function setCurrentQueue(tracks: SubsonicSong[], playRandomTrack: boolean = false) {
   currentQueue.value = {
     tracks,
     position: 0,
   }
-  if (playFirstTrack && tracks.length > 0) {
-    setCurrentlyPlayingTrack(tracks[0])
+  let index = 0
+  if (playRandomTrack && tracks.length > 0) {
+    index = Math.floor(Math.random() * tracks.length)
   }
+  setCurrentlyPlayingTrack(tracks[index])
 }
 
 export function clearQueue() {
+  previousIndexes.value = []
   currentQueue.value = undefined
 }
 
@@ -45,14 +50,14 @@ async function getRandomTrack(): Promise<SubsonicSong> {
   const randomTracks = await fetchRandomTracks(1)
   const randomTrack = randomTracks[0]
   setCurrentlyPlayingTrack(randomTrack)
-  currentQueue.value = undefined
+  clearQueue()
   return randomTrack
 }
 
 export async function play(artist?: SubsonicIndexArtist, album?: SubsonicAlbum, track?: SubsonicSong, podcastEpisode?: SubsonicPodcastEpisode) {
   if (track) {
     setCurrentlyPlayingTrack(track)
-    currentQueue.value = undefined
+    clearQueue()
   }
   else if (album) {
     const tracks = await fetchAlbum(album.id).then(fetchedAlbum => fetchedAlbum.song)
@@ -67,9 +72,10 @@ export async function play(artist?: SubsonicIndexArtist, album?: SubsonicAlbum, 
   }
 }
 
-export async function getRandomTracks(size: number = 10): Promise<SubsonicSong[]> {
+export async function getRandomTracks(size: number = 10, shuffled = false): Promise<SubsonicSong[]> {
+  previousIndexes.value = []
   const randomTracks = await fetchRandomTracks(size)
-  setCurrentQueue(randomTracks)
+  setCurrentQueue(randomTracks, shuffled)
   return randomTracks
 }
 
@@ -94,6 +100,26 @@ export async function getNextTrack(): Promise<SubsonicSong | undefined> {
     const randomTrack = await getRandomTrack()
     return randomTrack
   }
+}
+
+export async function getShuffledTrack(): Promise<SubsonicSong | undefined> {
+  let nextTrack: SubsonicSong | undefined
+  if (currentQueue.value && currentQueue.value.tracks.length) {
+    let randomIndex: number
+    randomIndex = Math.floor(Math.random() * currentQueue.value.tracks.length)
+    let whileCounter = 0
+    while (previousIndexes.value.includes(randomIndex) && whileCounter < 50) {
+      randomIndex = Math.floor(Math.random() * currentQueue.value.tracks.length)
+      whileCounter++
+    }
+    previousIndexes.value.push(randomIndex)
+    nextTrack = currentQueue.value.tracks[randomIndex]
+    currentQueue.value.position = randomIndex
+  }
+  if (nextTrack !== undefined) {
+    setCurrentlyPlayingTrack(nextTrack)
+  }
+  return nextTrack
 }
 
 export async function getPreviousTrack(): Promise<SubsonicSong | undefined> {

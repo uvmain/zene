@@ -22,8 +22,10 @@ const coverArtUrl = computed(() => {
           <div class="h-auto flex flex-row gap-2 lg:gap-6">
             <img
               :src="coverArtUrl"
-              class="my-auto aspect-square h-30 cursor-pointer border-muted rounded-md shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
+              class="my-auto aspect-square cursor-pointer border-muted rounded-md shadow-md shadow-zshade-500 dark:shadow-zshade-900"
               loading="lazy"
+              width="200"
+              height="200"
               @error="onImageError"
             >
             <div class="my-auto flex flex-col gap-1 text-left lg:gap-4">
@@ -37,7 +39,7 @@ const coverArtUrl = computed(() => {
               <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="hidden lg:(block flex flex-nowrap justify-start gap-2 overflow-hidden)">
                 <GenreBottle v-for="genre in podcast.episode[0].genres.slice(0, 8)" :key="genre.name" :genre="genre.name" />
               </div>
-              <PlayButton class="flex justify-start" :podcast="podcast.episode[0]" />
+              <!-- <PlayButton class="flex justify-start" :podcast="podcast.episode[0]" /> -->
             </div>
           </div>
         </div>

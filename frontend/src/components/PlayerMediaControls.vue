@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
+import { shuffleEnabled, toggleShuffle } from '~/logic/playerActions'
 
 defineProps({
   isPlaying: { type: Boolean, default: false },
@@ -33,8 +34,13 @@ onKeyStroke('MediaStop', (e) => {
     <button id="repeat" class="media-control-button" @click="emits('stopPlayback')">
       <icon-nrk-media-stop class="footer-icon" />
     </button>
-    <button id="shuffle" class="media-control-button" @click="emits('togglePlayback')">
-      <icon-nrk-reorder class="footer-icon" />
+    <button id="shuffle" class="media-control-button" @click="toggleShuffle">
+      <icon-ion-shuffle-sharp
+        :class="{
+          'footer-icon': !shuffleEnabled,
+          'footer-icon-on': shuffleEnabled,
+        }"
+      />
     </button>
     <button id="back" class="media-control-button" @click="emits('previousTrack')">
       <icon-nrk-media-previous class="footer-icon" />
@@ -65,9 +71,3 @@ onKeyStroke('MediaStop', (e) => {
     </button>
   </div>
 </template>
-
-<style scoped>
-.media-control-button {
-  @apply h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10;
-}
-</style>
