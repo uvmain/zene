@@ -72,7 +72,7 @@ const coverArtUrl = computed(() => {
       </RouterLink>
       <img
         :src="coverArtUrl"
-        class="w-full cursor-pointer rounded-md object-cover"
+        class="aspect-square w-full cursor-pointer rounded-md object-cover"
         @error="onImageError"
         @click="() => router.push(`/podcasts/${currentlyPlayingPodcastEpisode?.channelId}`)"
       />
