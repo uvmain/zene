@@ -1,3 +1,4 @@
+import { useLocalStorage } from '@vueuse/core'
 import { debugLog } from '~/logic/logger'
 import { clearQueue, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, currentQueue, getNextTrack, getPreviousShuffledTrack, getPreviousTrack, getShuffledTrack, resetCurrentlyPlayingTrack, setCurrentQueue } from '~/logic/playbackQueue'
 import { postPlaycount } from '~/logic/playCounts'
@@ -9,8 +10,8 @@ export const currentTime = ref(0)
 export const previousVolume = ref(1)
 export const currentVolume = ref(1)
 export const trackUrl = ref('')
-export const shuffleEnabled = ref(false)
-export const repeatStatus = ref<'off' | '1' | 'all'>('off')
+export const shuffleEnabled = useLocalStorage<boolean>('shuffleEnabled', false)
+export const repeatStatus = useLocalStorage<'off' | '1' | 'all'>('repeatStatus', 'off')
 
 type AudioElement = HTMLAudioElement | null | undefined
 
@@ -68,14 +69,14 @@ export async function stopPlayback(audioElement: AudioElement) {
   isPlaying.value = false
 }
 
-export async function handleNextTrack() {
+export async function handleNextTrack(audioElement: AudioElement) {
   if (currentQueue.value && currentQueue.value.tracks.length > 0) {
-    shuffleEnabled.value ? await getShuffledTrack() : await getNextTrack()
+    shuffleEnabled.value ? await getShuffledTrack() : await getNextTrack(repeatStatus.value, audioElement)
   }
 }
 
 export async function handlePreviousTrack() {
-  shuffleEnabled.value ? await getPreviousShuffledTrack() : await getPreviousTrack()
+  shuffleEnabled.value ? await getPreviousShuffledTrack() : await getPreviousTrack(repeatStatus.value)
 }
 
 export function seek(audioElement: AudioElement, seekSeconds: number) {
@@ -128,5 +129,4 @@ export function toggleRepeat() {
       repeatStatus.value = 'off'
       break
   }
-  console.log('Toggle repeat')
 }

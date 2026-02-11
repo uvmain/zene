@@ -12,6 +12,9 @@ watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
     trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
     playcountPosted.value = false
   }
+  else {
+    trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
+  }
 })
 
 watch(currentlyPlayingPodcastEpisode, (newEpisode, oldEpisode) => {
@@ -57,7 +60,7 @@ async function handleGetRandomTracks() {
           @play="() => { isPlaying = true }"
           @pause="() => { isPlaying = false }"
           @time-update="updateProgress(audioPlayer?.audioRef)"
-          @ended="handleNextTrack()"
+          @ended="handleNextTrack(audioPlayer?.audioRef)"
         />
         <div>
           <PlayerProgressBar
@@ -70,7 +73,7 @@ async function handleGetRandomTracks() {
             :is-playing="isPlaying"
             @stop-playback="stopPlayback(audioPlayer?.audioRef)"
             @toggle-playback="togglePlayback(audioPlayer?.audioRef)"
-            @next-track="handleNextTrack()"
+            @next-track="handleNextTrack(audioPlayer?.audioRef)"
             @previous-track="handlePreviousTrack()"
             @get-random-tracks="handleGetRandomTracks()"
           />
