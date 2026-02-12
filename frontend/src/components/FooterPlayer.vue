@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { getAuthenticatedTrackUrl } from '~/logic/common'
-import { currentlyPlayingPodcastEpisode, currentlyPlayingTrack, getRandomTracks } from '~/logic/playbackQueue'
-import { currentTime, currentVolume, handleNextTrack, handlePreviousTrack, isPlaying, playcountPosted, seek, shuffleEnabled, stopPlayback, toggleMute, togglePlayback, trackUrl, updateProgress, volumeInput } from '~/logic/playerActions'
+import { audioElement, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, currentTime, currentVolume, isPlaying, playcountPosted, trackUrl } from '~/logic/playbackQueue'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
-const router = useRouter()
 const audioPlayer = useTemplateRef('audioPlayerElement')
 
 watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
@@ -40,10 +38,11 @@ watch(currentlyPlayingPodcastEpisode, (newEpisode, oldEpisode) => {
   }
 })
 
-async function handleGetRandomTracks() {
-  await getRandomTracks(500, shuffleEnabled.value)
-  router.push('/queue')
-}
+watch(audioPlayer, () => {
+  if (audioPlayer.value) {
+    audioElement.value = audioPlayer.value.audioRef
+  }
+})
 </script>
 
 <template>
@@ -57,29 +56,18 @@ async function handleGetRandomTracks() {
         <PlayerAudio
           ref="audioPlayerElement"
           :track-url="trackUrl"
-          @play="() => { isPlaying = true }"
-          @pause="() => { isPlaying = false }"
-          @time-update="updateProgress(audioPlayer?.audioRef)"
-          @ended="handleNextTrack(audioPlayer?.audioRef)"
         />
         <div>
           <PlayerProgressBar
             :current-time-in-seconds="currentTime"
             :currently-playing-track="currentlyPlayingTrack"
             :currently-playing-podcast-episode="currentlyPlayingPodcastEpisode"
-            @seek="seek(audioPlayer?.audioRef, $event)"
           />
           <PlayerMediaControls
             :is-playing="isPlaying"
-            @stop-playback="stopPlayback(audioPlayer?.audioRef)"
-            @toggle-playback="togglePlayback(audioPlayer?.audioRef)"
-            @next-track="handleNextTrack(audioPlayer?.audioRef)"
-            @previous-track="handlePreviousTrack()"
-            @get-random-tracks="handleGetRandomTracks()"
           />
         </div>
       </div>
-
       <div class="flex flex-row items-center gap-x-3 lg:gap-x-4">
         <!-- <PlayerCastButton /> -->
         <PlayerLyricsButton
@@ -88,10 +76,7 @@ async function handleGetRandomTracks() {
         />
         <PlayerPlaylistButton />
         <PlayerVolumeSlider
-          :audio-ref="audioPlayer?.audioRef"
           :model-value="currentVolume"
-          @toggle-mute="toggleMute(audioPlayer?.audioRef)"
-          @update:model-value="volumeInput(audioPlayer?.audioRef, $event)"
         />
       </div>
     </div>

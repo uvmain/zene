@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { handleNextTrack, isPlaying, updateProgress } from '~/logic/playbackQueue'
+
 const props = defineProps({
   trackUrl: { type: String, required: false, default: '' },
 })
-
-const emits = defineEmits(['play', 'pause', 'timeUpdate', 'ended'])
 
 const audioRef = useTemplateRef('audioRef')
 
@@ -42,19 +42,19 @@ onMounted(() => {
   if (!audio) {
     return
   }
-  audio.addEventListener('play', () => emits('play'))
-  audio.addEventListener('pause', () => emits('pause'))
-  audio.addEventListener('timeupdate', () => emits('timeUpdate', audio.currentTime))
-  audio.addEventListener('ended', () => emits('ended'))
+  audio.addEventListener('play', () => isPlaying.value = true)
+  audio.addEventListener('pause', () => isPlaying.value = false)
+  audio.addEventListener('timeupdate', () => updateProgress())
+  audio.addEventListener('ended', () => handleNextTrack())
 })
 
 onUnmounted(() => {
   const audio = audioRef.value
   if (audio) {
-    audio.removeEventListener('play', () => emits('play'))
-    audio.removeEventListener('pause', () => emits('pause'))
-    audio.removeEventListener('timeupdate', () => emits('timeUpdate', audio.currentTime))
-    audio.removeEventListener('ended', () => emits('ended'))
+    audio.removeEventListener('play', () => isPlaying.value = true)
+    audio.removeEventListener('pause', () => isPlaying.value = false)
+    audio.removeEventListener('timeupdate', () => updateProgress())
+    audio.removeEventListener('ended', () => handleNextTrack())
 
     audio.pause()
     audio.removeAttribute('src')

@@ -1,22 +1,21 @@
 <script setup lang="ts">
+import { audioElement, toggleMute, volumeInput } from '~/logic/playbackQueue'
+
 defineProps({
-  audioRef: { type: Object as PropType<HTMLAudioElement | undefined | null>, required: false, default: null },
   modelValue: { type: Number, default: 0.5 },
 })
 
-const emits = defineEmits(['update:modelValue', 'toggleMute'])
-
 function handleInput(e: Event) {
   const value = (e.target as HTMLInputElement).value
-  emits('update:modelValue', value)
+  volumeInput(value)
 }
 </script>
 
 <template>
-  <div v-if="audioRef" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 lg:gap-2">
-    <div @click="emits('toggleMute')">
-      <icon-nrk-media-volume-3 v-if="audioRef.volume > 0.66" class="text-sm text-muted sm:text-sm" />
-      <icon-nrk-media-volume-2 v-else-if="audioRef.volume > 0.33" class="text-sm text-muted sm:text-sm" />
+  <div v-if="audioElement" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 lg:gap-2">
+    <div @click="toggleMute()">
+      <icon-nrk-media-volume-3 v-if="audioElement.volume > 0.66" class="text-sm text-muted sm:text-sm" />
+      <icon-nrk-media-volume-2 v-else-if="audioElement.volume > 0.33" class="text-sm text-muted sm:text-sm" />
       <icon-nrk-media-volume-1 v-else class="text-sm text-muted sm:text-sm" />
     </div>
     <input
@@ -25,7 +24,7 @@ function handleInput(e: Event) {
       max="1"
       step="0.01"
       :value="modelValue"
-      @input="handleInput"
+      @input="handleInput($event)"
     />
   </div>
 </template>

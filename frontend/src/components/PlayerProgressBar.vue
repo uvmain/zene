@@ -2,14 +2,13 @@
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { formatTimeFromSeconds } from '~/logic/common'
+import { seek } from '~/logic/playbackQueue'
 
 const props = defineProps({
   currentTimeInSeconds: { type: Number, default: 0 },
   currentlyPlayingTrack: { type: Object as PropType<SubsonicSong>, default: () => ({}) },
   currentlyPlayingPodcastEpisode: { type: Object as PropType<SubsonicPodcastEpisode>, default: () => ({}) },
 })
-
-const emits = defineEmits(['seek'])
 
 const currentTime = computed(() => formatTimeFromSeconds(props.currentTimeInSeconds))
 
@@ -33,10 +32,10 @@ const inputDuration = computed(() => {
   return 0
 })
 
-function seek(event: Event) {
+function handleSeek(event: Event) {
   const target = event.target as HTMLInputElement
   const seekTime = Number.parseFloat(target.value)
-  emits('seek', seekTime)
+  seek(seekTime)
 }
 </script>
 
@@ -50,7 +49,7 @@ function seek(event: Event) {
       class="h-2 w-full cursor-pointer background-2 accent-primary1 lg:h-1"
       :max="inputDuration"
       :value="currentTimeInSeconds"
-      @input="seek($event)"
+      @input="handleSeek($event)"
     />
     <span id="duration" class="w-10 text-sm text-muted lg:w-12 sm:w-10 sm:text-sm">
       {{ duration }}
