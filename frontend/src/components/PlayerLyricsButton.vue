@@ -1,23 +1,18 @@
 <script setup lang="ts">
 import type { StructuredLyricLine } from '../types/subsonicLyrics'
-import type { SubsonicSong } from '~/types/subsonicSong'
+import { currentlyPlayingTrack, currentTime } from '~/logic/playbackQueue'
 import { fetchLyrics } from '../logic/backendFetch'
-
-const props = defineProps({
-  currentlyPlayingTrack: { type: Object as PropType<SubsonicSong | null>, default: null },
-  currentTime: { type: Number, default: 0 },
-})
 
 const showLyrics = ref(false)
 
 const lyricsRef = ref<StructuredLyricLine[]>([])
 
 async function getLyrics() {
-  if (props.currentlyPlayingTrack?.musicBrainzId === undefined) {
+  if (currentlyPlayingTrack.value?.musicBrainzId === undefined) {
     lyricsRef.value = []
     return
   }
-  const lyrics = await fetchLyrics(props.currentlyPlayingTrack.musicBrainzId)
+  const lyrics = await fetchLyrics(currentlyPlayingTrack.value?.musicBrainzId)
   if (!lyrics) {
     lyricsRef.value = []
     return
@@ -28,7 +23,7 @@ async function getLyrics() {
   }))
 }
 
-watch(() => props.currentlyPlayingTrack?.musicBrainzId, async (newTrack, oldTrack) => {
+watch(() => currentlyPlayingTrack.value?.musicBrainzId, async (newTrack, oldTrack) => {
   if (newTrack !== oldTrack) {
     await getLyrics()
   }

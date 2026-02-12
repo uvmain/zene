@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getAuthenticatedTrackUrl } from '~/logic/common'
-import { audioElement, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, currentTime, currentVolume, isPlaying, playcountPosted, trackUrl } from '~/logic/playbackQueue'
+import { audioElement, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, playcountPosted, trackUrl } from '~/logic/playbackQueue'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
 const audioPlayer = useTemplateRef('audioPlayerElement')
@@ -58,26 +58,15 @@ watch(audioPlayer, () => {
           :track-url="trackUrl"
         />
         <div>
-          <PlayerProgressBar
-            :current-time-in-seconds="currentTime"
-            :currently-playing-track="currentlyPlayingTrack"
-            :currently-playing-podcast-episode="currentlyPlayingPodcastEpisode"
-          />
-          <PlayerMediaControls
-            :is-playing="isPlaying"
-          />
+          <PlayerProgressBar />
+          <PlayerMediaControls />
         </div>
       </div>
       <div class="flex flex-row items-center gap-x-3 lg:gap-x-4">
         <!-- <PlayerCastButton /> -->
-        <PlayerLyricsButton
-          :current-time="currentTime"
-          :currently-playing-track="currentlyPlayingTrack"
-        />
+        <PlayerLyricsButton />
         <PlayerPlaylistButton />
-        <PlayerVolumeSlider
-          :model-value="currentVolume"
-        />
+        <PlayerVolumeSlider />
       </div>
     </div>
   </footer>

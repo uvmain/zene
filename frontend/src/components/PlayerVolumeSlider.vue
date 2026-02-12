@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { audioElement, toggleMute, volumeInput } from '~/logic/playbackQueue'
+import { audioElement, currentVolume, toggleMute, volumeInput } from '~/logic/playbackQueue'
 
 defineProps({
   modelValue: { type: Number, default: 0.5 },
@@ -23,7 +23,7 @@ function handleInput(e: Event) {
       class="h-2 w-20 cursor-pointer background-1 accent-primary2 lg:w-30 sm:w-24 active:accent-primary1"
       max="1"
       step="0.01"
-      :value="modelValue"
+      :value="currentVolume"
       @input="handleInput($event)"
     />
   </div>
