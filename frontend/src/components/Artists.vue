@@ -149,7 +149,7 @@ onBeforeMount(async () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 @media (min-width: 1024px) {
   .auto-grid-6 {
     max-height: var(--albums-lg-max-height, none) !important;

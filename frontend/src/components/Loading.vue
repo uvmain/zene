@@ -9,7 +9,7 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 .spinner-smooth {
   will-change: transform;
   /* fallback for browsers that support CSS animation on SVG */

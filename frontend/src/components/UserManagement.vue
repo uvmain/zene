@@ -234,7 +234,7 @@ onMounted(async () => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 /* Basic styling for the table and modals, can be expanded or use a UI library like TailwindCSS more extensively */
 button {
   transition: background-color 0.2s ease-in-out;

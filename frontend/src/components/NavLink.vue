@@ -39,7 +39,7 @@ function handleLinkClick() {
   </RouterLink>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 .navlink {
   @apply block flex  text-muted font-semibold no-underline transition-all duration-100 uppercase flex items-center;
 }

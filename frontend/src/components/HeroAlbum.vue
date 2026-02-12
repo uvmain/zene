@@ -173,7 +173,7 @@ onBeforeMount(async () => {
   </section>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 @keyframes shake {
   0% {
     transform: rotate(0deg);

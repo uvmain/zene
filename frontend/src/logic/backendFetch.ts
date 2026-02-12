@@ -8,6 +8,7 @@ import type {
   SubsonicArtistsResponse,
   SubsonicGenresResponse,
   SubsonicLyricsListResponse,
+  SubsonicPodcastChannelsResponse,
   SubsonicRandomSongsResponse,
   SubsonicResponse,
   SubsonicResponseWrapper,
@@ -469,4 +470,13 @@ export async function postTrackStarred(musicbrainz_track_id: string, starred: bo
       body: formData,
     })
   }
+}
+
+export async function fetchPodcastChannel(podcastChannelId: string): Promise<SubsonicPodcastChannelsResponse> {
+  const formData = new FormData()
+  formData.append('id', podcastChannelId)
+  const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getpodcasts', {
+    body: formData,
+  })
+  return response
 }

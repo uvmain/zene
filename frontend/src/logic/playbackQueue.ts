@@ -13,6 +13,7 @@ const previousIndexes = ref<number[]>([])
 
 export function resetCurrentlyPlayingTrack(audioElement?: HTMLAudioElement) {
   currentlyPlayingTrack.value = undefined
+  currentlyPlayingPodcastEpisode.value = undefined
   if (audioElement) {
     audioElement.currentTime = 0
   }
@@ -23,6 +24,7 @@ export function setCurrentlyPlayingTrack(track: SubsonicSong) {
     const index = currentQueue.value.tracks.indexOf(track)
     currentQueue.value.position = index
   }
+  currentlyPlayingPodcastEpisode.value = undefined
   currentlyPlayingTrack.value = track
 }
 

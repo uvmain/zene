@@ -48,7 +48,7 @@ const toggleDark = useToggle(isDark)
   </header>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 .icon {
   @apply items-center justify-center hover:cursor-pointer hover:text-primary opacity-70 hover:opacity-100;
 }
