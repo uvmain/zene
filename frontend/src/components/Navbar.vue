@@ -52,11 +52,11 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
         <NavLink route-name="Queue" route-prop="/queue" />
       </nav>
     </div>
-    <NavArt class="mt-auto hidden lg:block" />
+    <NavArt />
   </aside>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 :deep(a) {
   text-decoration: none;
 }

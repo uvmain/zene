@@ -85,7 +85,7 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.15s ease;

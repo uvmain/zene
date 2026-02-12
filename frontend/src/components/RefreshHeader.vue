@@ -26,7 +26,7 @@ async function refresh() {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="css">
 @keyframes spin {
   from {
     transform: rotate(0deg);

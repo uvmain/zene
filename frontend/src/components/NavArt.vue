@@ -1,26 +1,9 @@
 <script setup lang="ts">
-// import { getImageColour } from '~/logic/averageColour'
+import { fetchPodcastChannel } from '~/logic/backendFetch'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingPodcastEpisode, currentlyPlayingTrack } from '~/logic/playbackQueue'
 
-const router = useRouter()
-// const albumArtElement = useTemplateRef<HTMLImageElement>('albumArtElement')
-// const averageColour = ref<string>('hsl(32 100% 50%)')
-
-// function updateAverageColour() {
-//   if (albumArtElement.value) {
-//     const colour = getImageColour(albumArtElement.value)
-//     if (colour.luminosity() < 0.5) {
-//       averageColour.value = colour.hsl().lightness(50).string()
-//     }
-//     else {
-//       averageColour.value = colour.hsl().string()
-//     }
-//   }
-//   else {
-//     averageColour.value = 'hsl(32 100% 50%)'
-//   }
-// }
+const podcastChannelName = ref<string>('')
 
 const coverArtUrl = computed(() => {
   if (currentlyPlayingTrack.value) {
@@ -33,49 +16,76 @@ const coverArtUrl = computed(() => {
     return '/default-square.png'
   }
 })
+
+const trackTarget = computed(() => {
+  return currentlyPlayingTrack.value ? `/tracks/${currentlyPlayingTrack.value.id}` : `/podcasts/${currentlyPlayingPodcastEpisode.value?.id}`
+})
+
+const artistTarget = computed(() => {
+  return currentlyPlayingTrack.value ? `/artists/${currentlyPlayingTrack.value.artistId}` : `/podcasts/${currentlyPlayingPodcastEpisode.value?.channelId}`
+})
+
+const artTarget = computed(() => {
+  return currentlyPlayingTrack.value ? `/albums/${currentlyPlayingTrack.value.albumId}` : `/podcasts/${currentlyPlayingPodcastEpisode.value?.channelId}`
+})
+
+async function fetchPodcastChannelName(channelId: string) {
+  const response = await fetchPodcastChannel(channelId)
+  podcastChannelName.value = response?.podcasts.channel[0].title || ''
+}
+
+watch(currentlyPlayingPodcastEpisode, (newEpisode) => {
+  if (newEpisode) {
+    fetchPodcastChannelName(newEpisode.channelId)
+  }
+})
 </script>
 
 <template>
-  <div>
-    <div v-if="currentlyPlayingTrack" class="flex flex-col gap-2">
+  <div
+    v-if="currentlyPlayingTrack || currentlyPlayingPodcastEpisode"
+    class="mt-auto hidden flex flex-col lg:block space-y-2"
+  >
+    <div class="flex flex-col space-y-1">
       <RouterLink
-        class="line-clamp-1 cursor-pointer overflow-hidden text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
-        :to="`/tracks/${currentlyPlayingTrack?.id}`"
+        class="text-lg text-primary"
+        :class="{ 'router-link': currentlyPlayingTrack, 'podcast-link': currentlyPlayingPodcastEpisode }"
+        :to="trackTarget"
       >
-        {{ currentlyPlayingTrack?.title }}
+        {{ currentlyPlayingTrack?.title || currentlyPlayingPodcastEpisode?.title }}
       </RouterLink>
       <RouterLink
-        class="line-clamp-1 cursor-pointer text-sm text-muted no-underline hover:underline hover:underline-white"
-        :to="`/artists/${currentlyPlayingTrack.artistId}`"
+        class="router-link text-sm text-muted"
+        :to="artistTarget"
       >
-        {{ currentlyPlayingTrack?.artist }}
+        {{ currentlyPlayingTrack?.artist || podcastChannelName }}
       </RouterLink>
       <RouterLink
-        class="line-clamp-1 cursor-pointer text-sm text-muted no-underline hover:underline hover:underline-white"
+        v-if="currentlyPlayingTrack"
+        class="router-link text-sm text-muted"
         :to="`/albums/${currentlyPlayingTrack.albumId}`"
       >
         {{ currentlyPlayingTrack?.album }}
       </RouterLink>
-      <img
-        :src="coverArtUrl"
-        class="w-full cursor-pointer rounded-md object-cover"
-        @error="onImageError"
-        @click="() => router.push(`/albums/${currentlyPlayingTrack?.albumId}`)"
-      />
     </div>
-    <div v-else-if="currentlyPlayingPodcastEpisode" class="flex flex-col gap-2">
-      <RouterLink
-        class="line-clamp-1 cursor-pointer overflow-hidden text-ellipsis text-lg text-primary no-underline hover:underline hover:underline-white"
-        :to="`/podcasts/${currentlyPlayingPodcastEpisode?.channelId}`"
-      >
-        {{ currentlyPlayingPodcastEpisode?.title }}
-      </RouterLink>
+    <RouterLink
+      class="router-link text-sm text-muted"
+      :to="artTarget"
+    >
       <img
         :src="coverArtUrl"
         class="aspect-square w-full cursor-pointer rounded-md object-cover"
         @error="onImageError"
-        @click="() => router.push(`/podcasts/${currentlyPlayingPodcastEpisode?.channelId}`)"
       />
-    </div>
+    </RouterLink>
   </div>
 </template>
+
+<style scoped lang="css">
+.router-link {
+  @apply line-clamp-1 truncate cursor-pointer no-underline hover:underline hover:underline-white;
+}
+.podcast-link {
+  @apply line-clamp-3 truncate cursor-pointer no-underline hover:underline hover:underline-white text-wrap;
+}
+</style>
