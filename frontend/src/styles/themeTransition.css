@@ -1,0 +1,12 @@
+::view-transition-old(root) {
+  animation-delay: 300ms;
+}
+
+::view-transition-new(root) {
+  animation: circle-in 800ms;
+}
+
+@keyframes circle-in {
+  from { clip-path: circle(5% at 100% 0%); }
+  to { clip-path: circle(150% at 100% 0%); }
+}

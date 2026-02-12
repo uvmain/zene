@@ -1,10 +1,21 @@
 <script setup lang="ts">
-import { useDark, useToggle } from '@vueuse/core'
+import { useDark } from '@vueuse/core'
 import { toggleMobileNav } from '~/logic/navbar'
 import { getSearchResults, searchInput } from '~/logic/search'
 
 const isDark = useDark()
-const toggleDark = useToggle(isDark)
+
+function toggleDark() {
+  if (!document.startViewTransition) {
+    // Fallback for browsers that don't support view transitions
+    isDark.value = !isDark.value
+    return
+  }
+
+  document.startViewTransition(() => {
+    isDark.value = !isDark.value
+  })
+}
 </script>
 
 <template>

@@ -5,7 +5,9 @@ import { routes } from 'vue-router/auto-routes'
 import { closeSearch } from '~/logic/search'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
+
 import 'virtual:uno.css'
+import '~/styles/themeTransition.css'
 
 const apiKey = useLocalStorage('apiKey', '')
 
