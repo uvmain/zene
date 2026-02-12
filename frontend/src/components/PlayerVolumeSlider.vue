@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { audioElement, currentVolume, toggleMute, volumeInput } from '~/logic/playbackQueue'
 
-defineProps({
-  modelValue: { type: Number, default: 0.5 },
-})
-
 function handleInput(e: Event) {
   const value = (e.target as HTMLInputElement).value
   volumeInput(value)

@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { handleNextTrack, isPlaying, updateProgress } from '~/logic/playbackQueue'
-
-const props = defineProps({
-  trackUrl: { type: String, required: false, default: '' },
-})
+import { handleNextTrack, isPlaying, trackUrl, updateProgress } from '~/logic/playbackQueue'
 
 const audioRef = useTemplateRef('audioRef')
 
 defineExpose({ audioRef })
 
 watch(
-  () => props.trackUrl,
+  () => trackUrl,
   (newTrack, oldTrack) => {
     const audio = audioRef.value
     if (!audio || newTrack === oldTrack) {

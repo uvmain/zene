@@ -53,10 +53,7 @@ watch(audioPlayer, () => {
       <div
         class="h-full w-full flex flex-grow flex-col items-center justify-center py-2 space-y-2 lg:py-2 lg:space-y-2"
       >
-        <PlayerAudio
-          ref="audioPlayerElement"
-          :track-url="trackUrl"
-        />
+        <PlayerAudio ref="audioPlayerElement" />
         <div>
           <PlayerProgressBar />
           <PlayerMediaControls />
