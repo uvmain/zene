@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LoadingAttribute } from '../types'
+import type { LoadingAttribute } from '~/types'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import { getCoverArtUrl, onImageError } from '~/logic/common'
 

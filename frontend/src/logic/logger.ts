@@ -1,6 +1,4 @@
-import { useLocalStorage } from '@vueuse/core'
-
-export const debugEnabled = useLocalStorage('debugEnabled', false)
+import { debugEnabled } from '~/logic/store'
 
 export function toggleDebug(): boolean {
   debugEnabled.value = !debugEnabled.value

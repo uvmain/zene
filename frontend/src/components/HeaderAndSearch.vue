@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useDark } from '@vueuse/core'
+import { searchInput } from '~/logic/store'
 import { toggleMobileNav } from '~/logic/navbar'
-import { getSearchResults, searchInput } from '~/logic/search'
+import { getSearchResults } from '~/logic/search'
 
 const isDark = useDark()
 

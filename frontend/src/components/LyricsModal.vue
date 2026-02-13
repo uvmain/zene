@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { StructuredLyricLine } from '../types/subsonicLyrics'
+import type { StructuredLyricLine } from '~/types/subsonicLyrics'
 
 defineProps({
   lyrics: { type: Array as PropType<StructuredLyricLine[]>, default: () => [] },

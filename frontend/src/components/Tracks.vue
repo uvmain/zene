@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { useElementVisibility } from '@vueuse/core'
-import { routeTracks } from '~/logic/routeTracks'
+import { routeTracks } from '~/logic/store'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { StructuredLyricLine } from '../types/subsonicLyrics'
+import type { StructuredLyricLine } from '~/types/subsonicLyrics'
+import { fetchLyrics } from '~/logic/backendFetch'
 import { currentlyPlayingTrack, currentTime } from '~/logic/playbackQueue'
-import { fetchLyrics } from '../logic/backendFetch'
 
 const showLyrics = ref(false)
 

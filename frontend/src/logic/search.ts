@@ -1,8 +1,6 @@
 import type { SearchResult } from '~/types'
-import { useSessionStorage } from '@vueuse/core'
 import { fetchSearchResults } from '~/logic/backendFetch'
-
-export const searchInput = useSessionStorage<string>('searchInput', '')
+import { searchInput } from '~/logic/store'
 
 export function closeSearch() {
   searchInput.value = ''

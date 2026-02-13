@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
 import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({

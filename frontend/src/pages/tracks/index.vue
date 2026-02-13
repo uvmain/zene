@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useLocalStorage } from '@vueuse/core'
 import { fetchRandomTracks } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
-
-const seed = useLocalStorage<number>('randomTracksSeed', 0)
+import { clearRouteTracks } from '~/logic/routeTracks'
+import { randomTracksSeed, routeTracks } from '~/logic/store'
 
 const tracks = ref<SubsonicSong[]>()
 const canLoadMore = ref<boolean>(true)
@@ -13,7 +11,7 @@ const limit = ref<number>(100)
 const offset = ref<number>(0)
 
 async function getData() {
-  const randomTracks = await fetchRandomTracks(limit.value, offset.value, seed.value)
+  const randomTracks = await fetchRandomTracks(limit.value, offset.value, randomTracksSeed.value)
   tracks.value = tracks.value?.concat(randomTracks) ?? randomTracks
   routeTracks.value = tracks.value
   offset.value += randomTracks.length
@@ -24,7 +22,7 @@ async function getData() {
 }
 
 onMounted(async () => {
-  seed.value = generateSeed()
+  randomTracksSeed.value = generateSeed()
   await getData()
 })
 

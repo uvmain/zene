@@ -3,11 +3,10 @@ import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useLocalStorage } from '@vueuse/core'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { debugLog } from '~/logic/logger'
 import { postPlaycount } from '~/logic/playCounts'
-import { routeTracks } from '~/logic/routeTracks'
+import { repeatStatus, routeTracks, shuffleEnabled } from '~/logic/store'
 
 type AudioElement = HTMLAudioElement | null | undefined
 
@@ -22,9 +21,6 @@ export const currentVolume = ref(1)
 export const trackUrl = ref('')
 export const audioElement = ref<AudioElement>(null)
 const previousIndexes = ref<number[]>([])
-
-export const shuffleEnabled = useLocalStorage<boolean>('shuffleEnabled', false)
-export const repeatStatus = useLocalStorage<'off' | '1' | 'all'>('repeatStatus', 'off')
 
 export function resetCurrentlyPlayingTrack() {
   currentlyPlayingTrack.value = undefined
@@ -50,13 +46,14 @@ export function setCurrentlyPlayingPodcastEpisode(episode: SubsonicPodcastEpisod
 }
 
 export function setCurrentQueue(tracks: SubsonicSong[]) {
-  currentQueue.value = {
-    tracks,
-    position: 0,
-  }
+  clearQueue()
   let index = 0
   if (shuffleEnabled.value && tracks.length > 0) {
     index = Math.floor(Math.random() * tracks.length)
+  }
+  currentQueue.value = {
+    tracks,
+    position: index,
   }
   setCurrentlyPlayingTrack(tracks[index])
 }
@@ -93,7 +90,6 @@ export async function play(artist?: SubsonicIndexArtist, album?: SubsonicAlbum, 
 }
 
 export async function getRandomTracks(size: number = 10): Promise<SubsonicSong[]> {
-  previousIndexes.value = []
   const randomTracks = await fetchRandomTracks(size)
   setCurrentQueue(randomTracks)
   return randomTracks
@@ -287,12 +283,11 @@ export async function updateProgress() {
 }
 
 export function volumeInput(volumeString: string) {
-  const volume = Number.parseFloat(volumeString)
-
-  if (audioElement.value) {
-    audioElement.value.volume = volume
+  if (!audioElement.value) {
+    return
   }
-
+  const volume = Number.parseFloat(volumeString)
+  audioElement.value.volume = volume
   currentVolume.value = volume
 }
 

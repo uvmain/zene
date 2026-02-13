@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchSongsByGenre } from '~/logic/backendFetch'
-import { routeTracks } from '~/logic/routeTracks'
+import { routeTracks } from '~/logic/store'
 
 const route = useRoute('/genres/[genre]')
 

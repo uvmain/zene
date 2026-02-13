@@ -1,15 +1,13 @@
 import type { RouteLocationNormalized, RouteRecordRaw, RouterScrollBehavior } from 'vue-router'
-import { useLocalStorage } from '@vueuse/core'
 import { ViteSSG } from 'vite-ssg'
 import { routes } from 'vue-router/auto-routes'
+import { apiKey } from '~/logic/store'
 import { closeSearch } from '~/logic/search'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 
 import 'virtual:uno.css'
 import '~/styles/themeTransition.css'
-
-const apiKey = useLocalStorage('apiKey', '')
 
 createEpisodeStoreIfNotExists()
 

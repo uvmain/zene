@@ -4,7 +4,8 @@ import { postTrackStarred } from '~/logic/backendFetch'
 import { artSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrack } from '~/logic/playbackQueue'
 import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playCounts'
-import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
+import { setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
+import { routeTracks } from '~/logic/store'
 
 const props = defineProps({
   track: { type: Object as PropType<SubsonicSong>, required: true },
