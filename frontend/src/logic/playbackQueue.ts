@@ -6,7 +6,8 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { debugLog } from '~/logic/logger'
 import { postPlaycount } from '~/logic/playCounts'
-import { repeatStatus, routeTracks, shuffleEnabled } from '~/logic/store'
+import { routeTracks } from '~/logic/routeTracks'
+import { repeatStatus, shuffleEnabled } from '~/logic/store'
 
 type AudioElement = HTMLAudioElement | null | undefined
 

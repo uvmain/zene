@@ -1,6 +1,7 @@
 import type { SearchResult } from '~/types'
 import { fetchSearchResults } from '~/logic/backendFetch'
-import { searchInput } from '~/logic/store'
+
+export const searchInput = ref<string>('')
 
 export function closeSearch() {
   searchInput.value = ''

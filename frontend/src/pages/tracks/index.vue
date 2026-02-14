@@ -2,8 +2,8 @@
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchRandomTracks } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { clearRouteTracks } from '~/logic/routeTracks'
-import { randomTracksSeed, routeTracks } from '~/logic/store'
+import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
+import { randomTracksSeed } from '~/logic/store'
 
 const tracks = ref<SubsonicSong[]>()
 const canLoadMore = ref<boolean>(true)

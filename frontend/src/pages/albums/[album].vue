@@ -2,8 +2,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchAlbum } from '~/logic/backendFetch'
-import { clearRouteTracks } from '~/logic/routeTracks'
-import { routeTracks } from '~/logic/store'
+import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
 
 const route = useRoute('/albums/[album]')
 

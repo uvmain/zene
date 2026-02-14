@@ -1,6 +1,7 @@
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { setCurrentlyPlayingTrack, setCurrentQueue } from '~/logic/playbackQueue'
-import { routeTracks } from '~/logic/store'
+
+export const routeTracks = ref<SubsonicSong[]>([])
 
 export function clearRouteTracks() {
   routeTracks.value = [] as SubsonicSong[]
