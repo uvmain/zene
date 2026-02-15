@@ -15,6 +15,7 @@ const isShaking = ref(false)
 const albumArray = ref<SubsonicAlbum[]>([])
 const index = ref(0)
 const showChangeArtModal = ref(false)
+const artUpdatedTime = ref<string | undefined>(undefined)
 
 const currentAlbum = computed(() => {
   return albumArray.value[index.value]
@@ -44,7 +45,7 @@ async function getRandomAlbums(limit: number) {
 }
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(currentAlbum.value.coverArt, artSizes.size200)
+  return getCoverArtUrl(currentAlbum.value.coverArt, artSizes.size200, artUpdatedTime.value)
 })
 
 const artist = computed(() => {
@@ -82,6 +83,7 @@ function handleDiceClick() {
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
   cacheBustAlbumArt(`${currentAlbum.value.id}`)
+  artUpdatedTime.value = Date.now().toString()
 }
 
 watch(() => props.album, (newAlbum) => {

@@ -71,7 +71,6 @@ export async function cacheBustAlbumArt(albumId: string) {
   const promises = []
   promises.push(fetch(getCoverArtUrl(albumId), { method: 'POST' }))
   for (const size of Object.values(artSizes).filter(value => typeof value === 'number')) {
-    console.log(`Cache busting album art for album ${albumId} at size ${size}`)
     promises.push(fetch(getCoverArtUrl(albumId, size), { method: 'POST' }))
   }
   await Promise.all(promises)
