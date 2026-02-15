@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
-import { repeatStatus, shuffleEnabled } from '~/logic/store'
 import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback, toggleRepeat, toggleShuffle } from '~/logic/playbackQueue'
+import { repeatStatus, shuffleEnabled } from '~/logic/store'
 
 const router = useRouter()
 
@@ -32,7 +32,7 @@ onKeyStroke('MediaStop', (e) => {
 </script>
 
 <template>
-  <div class="mt-2 flex flex-row items-center justify-center gap-x-2 lg:mt-2 lg:gap-x-4 sm:gap-x-2">
+  <div class="flex flex-row items-center justify-center gap-x-2 lg:gap-x-4 sm:gap-x-2">
     <button id="repeat" class="media-control-button" @click="stopPlayback()">
       <icon-nrk-media-stop class="footer-icon" />
     </button>

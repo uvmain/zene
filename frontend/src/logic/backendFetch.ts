@@ -6,8 +6,8 @@ import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { apiKey } from '~/logic/store'
 import { debugLog } from '~/logic/logger'
+import { apiKey } from '~/logic/store'
 
 const concurrencyMap = new Map<string, Promise<any>>()
 

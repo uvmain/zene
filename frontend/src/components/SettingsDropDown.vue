@@ -1,7 +1,7 @@
 <script setup>
 import { openSubsonicFetchRequest } from '~/logic/backendFetch'
-import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 import { debugLog, toggleDebug } from '~/logic/logger'
+import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 
 const open = ref(false)
 const dropdownRef = useTemplateRef('dropdown')

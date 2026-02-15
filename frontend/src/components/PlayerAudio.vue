@@ -1,12 +1,45 @@
 <script setup lang="ts">
-import { handleNextTrack, isPlaying, trackUrl, updateProgress } from '~/logic/playbackQueue'
+import { getAuthenticatedTrackUrl } from '~/logic/common'
+import { audioElement, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
+import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
 const audioRef = useTemplateRef('audioRef')
 
-defineExpose({ audioRef })
+watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
+  if (newTrack !== oldTrack) {
+    trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
+    playcountPosted.value = false
+  }
+  else {
+    trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
+  }
+})
+
+watch(currentlyPlayingPodcastEpisode, (newEpisode, oldEpisode) => {
+  if (newEpisode !== oldEpisode) {
+    if (newEpisode) {
+      episodeIsStored(newEpisode.streamId).then((stored) => {
+        if (!stored) {
+          trackUrl.value = getAuthenticatedTrackUrl(newEpisode.streamId, true)
+        }
+        else {
+          getStoredEpisode(newEpisode.streamId).then((blob) => {
+            if (blob) {
+              const objectUrl = URL.createObjectURL(blob)
+              trackUrl.value = objectUrl
+            }
+          })
+        }
+      })
+    }
+    else {
+      trackUrl.value = ''
+    }
+  }
+})
 
 watch(
-  () => trackUrl,
+  trackUrl,
   (newTrack, oldTrack) => {
     const audio = audioRef.value
     if (!audio || newTrack === oldTrack) {
@@ -32,6 +65,12 @@ watch(
     }
   },
 )
+
+watch(audioRef, () => {
+  if (audioRef.value) {
+    audioElement.value = audioRef.value
+  }
+})
 
 onMounted(() => {
   const audio = audioRef.value
@@ -60,5 +99,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
+  <audio ref="audioRef" :src="trackUrl" preload="metadata" />
 </template>
