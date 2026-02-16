@@ -1,16 +1,45 @@
 <script setup lang="ts">
-const props = defineProps({
-  trackUrl: { type: String, required: false, default: '' },
-})
-
-const emits = defineEmits(['play', 'pause', 'timeUpdate', 'ended'])
+import { getAuthenticatedTrackUrl } from '~/logic/common'
+import { audioElement, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
+import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
 const audioRef = useTemplateRef('audioRef')
 
-defineExpose({ audioRef })
+watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
+  if (newTrack !== oldTrack) {
+    trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
+    playcountPosted.value = false
+  }
+  else {
+    trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
+  }
+})
+
+watch(currentlyPlayingPodcastEpisode, (newEpisode, oldEpisode) => {
+  if (newEpisode !== oldEpisode) {
+    if (newEpisode) {
+      episodeIsStored(newEpisode.streamId).then((stored) => {
+        if (!stored) {
+          trackUrl.value = getAuthenticatedTrackUrl(newEpisode.streamId, true)
+        }
+        else {
+          getStoredEpisode(newEpisode.streamId).then((blob) => {
+            if (blob) {
+              const objectUrl = URL.createObjectURL(blob)
+              trackUrl.value = objectUrl
+            }
+          })
+        }
+      })
+    }
+    else {
+      trackUrl.value = ''
+    }
+  }
+})
 
 watch(
-  () => props.trackUrl,
+  trackUrl,
   (newTrack, oldTrack) => {
     const audio = audioRef.value
     if (!audio || newTrack === oldTrack) {
@@ -37,24 +66,30 @@ watch(
   },
 )
 
+watch(audioRef, () => {
+  if (audioRef.value) {
+    audioElement.value = audioRef.value
+  }
+})
+
 onMounted(() => {
   const audio = audioRef.value
   if (!audio) {
     return
   }
-  audio.addEventListener('play', () => emits('play'))
-  audio.addEventListener('pause', () => emits('pause'))
-  audio.addEventListener('timeupdate', () => emits('timeUpdate', audio.currentTime))
-  audio.addEventListener('ended', () => emits('ended'))
+  audio.addEventListener('play', () => isPlaying.value = true)
+  audio.addEventListener('pause', () => isPlaying.value = false)
+  audio.addEventListener('timeupdate', () => updateProgress())
+  audio.addEventListener('ended', () => handleNextTrack())
 })
 
 onUnmounted(() => {
   const audio = audioRef.value
   if (audio) {
-    audio.removeEventListener('play', () => emits('play'))
-    audio.removeEventListener('pause', () => emits('pause'))
-    audio.removeEventListener('timeupdate', () => emits('timeUpdate', audio.currentTime))
-    audio.removeEventListener('ended', () => emits('ended'))
+    audio.removeEventListener('play', () => isPlaying.value = true)
+    audio.removeEventListener('pause', () => isPlaying.value = false)
+    audio.removeEventListener('timeupdate', () => updateProgress())
+    audio.removeEventListener('ended', () => handleNextTrack())
 
     audio.pause()
     audio.removeAttribute('src')
@@ -64,5 +99,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <audio ref="audioRef" :src="trackUrl" preload="metadata" class="hidden" />
+  <audio ref="audioRef" :src="trackUrl" preload="metadata" />
 </template>

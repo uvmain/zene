@@ -1,40 +1,42 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
-import { repeatStatus, shuffleEnabled, toggleRepeat, toggleShuffle } from '~/logic/playerActions'
+import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback, toggleRepeat, toggleShuffle } from '~/logic/playbackQueue'
+import { repeatStatus, shuffleEnabled } from '~/logic/store'
 
-defineProps({
-  isPlaying: { type: Boolean, default: false },
-})
+const router = useRouter()
 
-const emits = defineEmits(['togglePlayback', 'stopPlayback', 'nextTrack', 'previousTrack', 'getRandomTracks'])
+async function handleGetRandomTracks() {
+  await getRandomTracks(500)
+  router.push('/queue')
+}
 
 onKeyStroke('MediaPlayPause', (e) => {
   e.preventDefault()
-  emits('togglePlayback')
+  togglePlayback()
 })
 
 onKeyStroke('MediaTrackPrevious', (e) => {
   e.preventDefault()
-  emits('previousTrack')
+  handlePreviousTrack()
 })
 
 onKeyStroke('MediaTrackNext', (e) => {
   e.preventDefault()
-  emits('nextTrack')
+  handleNextTrack()
 })
 
 onKeyStroke('MediaStop', (e) => {
   e.preventDefault()
-  emits('stopPlayback')
+  stopPlayback()
 })
 </script>
 
 <template>
-  <div class="mt-2 flex flex-row items-center justify-center gap-x-2 lg:mt-2 lg:gap-x-4 sm:gap-x-2">
-    <button id="repeat" class="media-control-button" @click="emits('stopPlayback')">
+  <div class="flex flex-row items-center justify-center gap-x-2 lg:gap-x-4 sm:gap-x-2">
+    <button id="repeat" class="media-control-button" @click="stopPlayback()">
       <icon-nrk-media-stop class="footer-icon" />
     </button>
-    <button id="shuffle" class="media-control-button" @click="toggleShuffle">
+    <button id="shuffle" class="media-control-button" @click="toggleShuffle()">
       <icon-ion-shuffle-sharp
         :class="{
           'footer-icon': !shuffleEnabled,
@@ -42,7 +44,7 @@ onKeyStroke('MediaStop', (e) => {
         }"
       />
     </button>
-    <button id="back" class="media-control-button" @click="emits('previousTrack')">
+    <button id="back" class="media-control-button" @click="handlePreviousTrack()">
       <icon-nrk-media-previous class="footer-icon" />
     </button>
     <ZButton
@@ -51,15 +53,15 @@ onKeyStroke('MediaStop', (e) => {
       :primary="true"
       :size12="true"
       hover-text="Play/Pause"
-      @click="emits('togglePlayback')"
+      @click="togglePlayback()"
     >
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
       <icon-nrk-media-pause v-else class="footer-icon" />
     </ZButton>
-    <button id="forward" class="media-control-button" @click="emits('nextTrack')">
+    <button id="forward" class="media-control-button" @click="handleNextTrack()">
       <icon-nrk-media-next class="footer-icon" />
     </button>
-    <button id="repeat" class="media-control-button relative" @click="toggleRepeat">
+    <button id="repeat" class="relative media-control-button" @click="toggleRepeat">
       <icon-nrk-media-jumpto
         :class="{
           'footer-icon': repeatStatus === 'off',
@@ -76,7 +78,7 @@ onKeyStroke('MediaStop', (e) => {
     <button
       id="shuffle"
       class="media-control-button"
-      @click="emits('getRandomTracks')"
+      @click="handleGetRandomTracks()"
     >
       <icon-nrk-dice-3-active class="footer-icon" />
     </button>

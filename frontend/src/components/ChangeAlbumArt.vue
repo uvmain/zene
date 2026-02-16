@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SubsonicAlbum } from '../types/subsonicAlbum'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { postNewAlbumArt, useServerSentEventsForAlbumArt } from '~/logic/backendFetch'
 
 const props = defineProps({

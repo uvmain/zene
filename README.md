@@ -11,7 +11,7 @@
 ![Docker Pulls](https://img.shields.io/docker/pulls/uvmain/zene)
 
 # Zene
-![Zene screenshot](./docs/assets/zene-home-v200.webp)
+![Zene screenshot](./docs/assets/main.webp)
 
 ## Self hosted Music Server and Web player
 ### Fast, small and feature packed with smart caching

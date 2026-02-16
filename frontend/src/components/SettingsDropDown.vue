@@ -1,7 +1,7 @@
 <script setup>
 import { openSubsonicFetchRequest } from '~/logic/backendFetch'
-import { debugEnabled, debugLog, toggleDebug } from '~/logic/logger'
-import { StreamQualities, streamQuality } from '~/logic/settings'
+import { debugLog, toggleDebug } from '~/logic/logger'
+import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 
 const open = ref(false)
 const dropdownRef = useTemplateRef('dropdown')
@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
               class="-md w-full border border-gray-300 px-3 py-2 text-base text-gray-700 lg:px-2 lg:py-1 lg:text-sm focus:outline-none focus:ring focus:ring-blue-200"
             >
               <option
-                v-for="quality in StreamQualities"
+                v-for="quality in streamQualities"
                 :key="quality"
                 :value="quality"
               >

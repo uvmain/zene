@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import type { ArtistOrder } from '~/logic/store'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
-import { useElementVisibility, useLocalStorage } from '@vueuse/core'
+import { useElementVisibility } from '@vueuse/core'
 import { fetchArtistList } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
+import { artistOrder, artistSeed } from '~/logic/store'
 
 const props = defineProps({
   limit: { type: Number, default: 30 },
@@ -12,10 +14,7 @@ const props = defineProps({
   sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
-type OrderType = 'newest' | 'random' | 'alphabetical' | 'starred' | 'recent'
-
 const loading = ref(false)
-const seed = useLocalStorage<number>('artistSeed', 0)
 const router = useRouter()
 const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
@@ -23,10 +22,6 @@ const observer = useTemplateRef<HTMLDivElement>('observer')
 const observerIsVisible = useElementVisibility(observer)
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
 const showOrderOptions = ref(false)
-
-const _allowedOrders = ['newest', 'random', 'alphabetical', 'starred', 'recent'] as const
-type AllowedOrder = typeof _allowedOrders[number]
-const currentOrder = useLocalStorage<AllowedOrder>(props.sortKey, 'newest')
 
 const sortOptions = [
   { label: 'Recently Updated', emitValue: 'newest' },
@@ -55,7 +50,7 @@ watch(observerIsVisible, (newValue) => {
 })
 
 const headerTitle = computed(() => {
-  switch (currentOrder.value) {
+  switch (artistOrder.value) {
     case 'newest':
       return 'Artists: Recently Updated'
     case 'random':
@@ -71,12 +66,12 @@ const headerTitle = computed(() => {
   }
 })
 
-function setOrder(order: OrderType) {
-  if (currentOrder.value === order) {
+function setOrder(order: ArtistOrder) {
+  if (artistOrder.value === order) {
     showOrderOptions.value = false
     return
   }
-  currentOrder.value = order
+  artistOrder.value = order
   showOrderOptions.value = false
   resetArtistsArray()
   getArtists()
@@ -97,7 +92,7 @@ async function getArtists() {
   if (!canLoadMore.value) {
     return
   }
-  const artistsResponse = await fetchArtistList(currentOrder.value, props.limit, currentOffset.value, seed.value)
+  const artistsResponse = await fetchArtistList(artistOrder.value, props.limit, currentOffset.value, artistSeed.value)
   if (artistsResponse.length > 0) {
     currentOffset.value += artistsResponse.length
     artists.value?.push(...artistsResponse)
@@ -112,8 +107,8 @@ async function getArtists() {
 }
 
 async function refresh() {
-  if (currentOrder.value === 'random') {
-    seed.value = generateSeed()
+  if (artistOrder.value === 'random') {
+    artistSeed.value = generateSeed()
   }
   resetArtistsArray()
   getArtists()

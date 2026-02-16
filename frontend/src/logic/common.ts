@@ -1,9 +1,6 @@
-import type { ReleaseDate } from '../types/subsonicAlbum'
-import { useLocalStorage } from '@vueuse/core'
+import type { ReleaseDate } from '~/types/subsonicAlbum'
 import dayjs from 'dayjs'
-import { streamQuality } from '~/logic/settings'
-
-const apiKey = useLocalStorage('apiKey', '')
+import { apiKey, streamQuality } from '~/logic/store'
 
 export function niceDate(dateString: string): string {
   const date = dayjs(dateString)
@@ -73,8 +70,8 @@ export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.si
 export async function cacheBustAlbumArt(albumId: string) {
   const promises = []
   promises.push(fetch(getCoverArtUrl(albumId), { method: 'POST' }))
-  for (const size of Object.values(artSizes)) {
-    promises.push(fetch(getCoverArtUrl(albumId, Number(size)), { method: 'POST' }))
+  for (const size of Object.values(artSizes).filter(value => typeof value === 'number')) {
+    promises.push(fetch(getCoverArtUrl(albumId, size), { method: 'POST' }))
   }
   await Promise.all(promises)
 }

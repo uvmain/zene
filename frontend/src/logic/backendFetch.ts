@@ -1,33 +1,13 @@
-import type {
-  SubsonicAlbumListResponse,
-  SubsonicAlbumResponse,
-  SubsonicApiKeyResponse,
-  SubsonicArtistInfoResponse,
-  SubsonicArtistListResponse,
-  SubsonicArtistResponse,
-  SubsonicArtistsResponse,
-  SubsonicGenresResponse,
-  SubsonicLyricsListResponse,
-  SubsonicPodcastChannelsResponse,
-  SubsonicRandomSongsResponse,
-  SubsonicResponse,
-  SubsonicResponseWrapper,
-  SubsonicSearchResponse,
-  SubsonicSongResponse,
-  SubsonicSongsByGenreResponse,
-  SubsonicTopSongsResponse,
-} from '../types/subsonic'
 import type { SearchResult } from '~/types'
+import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useLocalStorage } from '@vueuse/core'
 import { debugLog } from '~/logic/logger'
-
-const apiKey = useLocalStorage('apiKey', '')
+import { apiKey } from '~/logic/store'
 
 const concurrencyMap = new Map<string, Promise<any>>()
 
@@ -46,12 +26,12 @@ export async function fetchNewApiKeyWithTokenAndSalt(username: string, token: st
       method: 'POST',
       body: formData,
     })
-    const data = await response.json() as SubsonicResponseWrapper
+    const data = await response.json() as Types.SubsonicResponseWrapper
 
     if (data['subsonic-response'].status !== 'ok') {
       throw new Error(data['subsonic-response'].error?.message ?? 'Failed to create new API key')
     }
-    const apiKeysResponse = data['subsonic-response'] as SubsonicApiKeyResponse
+    const apiKeysResponse = data['subsonic-response'] as Types.SubsonicApiKeyResponse
     return apiKeysResponse.apiKeys.apiKey[0].api_key
   }
   catch (error) {
@@ -60,7 +40,7 @@ export async function fetchNewApiKeyWithTokenAndSalt(username: string, token: st
   }
 }
 
-export async function fetchApiKeysWithTokenAndSalt(username: string, token: string, salt: string): Promise<SubsonicApiKeyResponse> {
+export async function fetchApiKeysWithTokenAndSalt(username: string, token: string, salt: string): Promise<Types.SubsonicApiKeyResponse> {
   try {
     const formData = new FormData()
     formData.append('u', username)
@@ -75,16 +55,16 @@ export async function fetchApiKeysWithTokenAndSalt(username: string, token: stri
       method: 'POST',
       body: formData,
     })
-    const data = await response.json() as SubsonicResponseWrapper
+    const data = await response.json() as Types.SubsonicResponseWrapper
 
     if (data['subsonic-response'].status !== 'ok') {
       throw new Error(data['subsonic-response'].error?.message ?? 'Failed to fetch existing API keys')
     }
-    return data['subsonic-response'] as SubsonicApiKeyResponse
+    return data['subsonic-response'] as Types.SubsonicApiKeyResponse
   }
   catch (error) {
     debugLog(error as string)
-    return {} as SubsonicApiKeyResponse
+    return {} as Types.SubsonicApiKeyResponse
   }
 }
 
@@ -128,7 +108,7 @@ export async function openSubsonicFetchRequest<T>(path: string, options: Request
     const response = await fetch(url, options)
 
     try {
-      const jsonData = await response.json() as SubsonicResponseWrapper
+      const jsonData = await response.json() as Types.SubsonicResponseWrapper
       if (jsonData['subsonic-response']?.status === 'error' && [40, 44].includes(jsonData['subsonic-response']?.error?.code ?? 0)) {
       // user is not authenticated
         apiKey.value = ''
@@ -171,7 +151,7 @@ export function getStreamUrl(path: string, params: URLSearchParams = {} as URLSe
 export async function fetchAlbum(musicbrainz_album_id: string): Promise<SubsonicAlbum> {
   const formData = new FormData()
   formData.append('id', musicbrainz_album_id)
-  const response = await openSubsonicFetchRequest<SubsonicAlbumResponse>('getAlbum', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicAlbumResponse>('getAlbum', {
     body: formData,
   })
   return response.album
@@ -185,7 +165,7 @@ export async function fetchAlbums(type: string, size = 50, offset = 0, seed?: nu
   if (type === 'random' && seed !== undefined && seed > 0) {
     formData.append('seed', seed.toString())
   }
-  const response = await openSubsonicFetchRequest<SubsonicAlbumListResponse>('getAlbumList', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicAlbumListResponse>('getAlbumList', {
     body: formData,
   })
   return response.albumList.album
@@ -207,14 +187,14 @@ export async function fetchRandomTracks(limit?: number, offset?: number, seed?: 
     }
     options.body = formData
   }
-  const response = await openSubsonicFetchRequest<SubsonicRandomSongsResponse>('getRandomSongs', options)
+  const response = await openSubsonicFetchRequest<Types.SubsonicRandomSongsResponse>('getRandomSongs', options)
   return response.randomSongs.song
 }
 
 export async function fetchArtist(musicbrainz_artist_id: string): Promise<SubsonicArtist> {
   const formData = new FormData()
   formData.append('id', musicbrainz_artist_id)
-  const response = await openSubsonicFetchRequest<SubsonicArtistResponse>('getArtist', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicArtistResponse>('getArtist', {
     body: formData,
   })
   return response.artist
@@ -224,14 +204,14 @@ export async function fetchArtistInfo(musicbrainz_artist_id: string, limit = 20)
   const formData = new FormData()
   formData.append('id', musicbrainz_artist_id)
   formData.append('count', limit.toString())
-  const response = await openSubsonicFetchRequest<SubsonicArtistInfoResponse>('getArtistInfo', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicArtistInfoResponse>('getArtistInfo', {
     body: formData,
   })
   return response.artistInfo
 }
 
 export async function fetchArtists(limit = 0): Promise<SubsonicIndexArtist[]> {
-  const response = await openSubsonicFetchRequest<SubsonicArtistsResponse>('getArtists')
+  const response = await openSubsonicFetchRequest<Types.SubsonicArtistsResponse>('getArtists')
   const artists = response.artists
   const artistArray: SubsonicIndexArtist[] = []
   for (const index of artists.index) {
@@ -253,7 +233,7 @@ export async function fetchArtistList(type: string, limit: number, offset: numbe
   if (seed !== undefined && seed > 0) {
     formData.append('seed', seed.toString())
   }
-  const response = await openSubsonicFetchRequest<SubsonicArtistListResponse>('getArtistList', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicArtistListResponse>('getArtistList', {
     body: formData,
   })
   const artists = response.artistList.artist
@@ -267,7 +247,7 @@ export async function fetchArtistTopSongs(musicbrainz_artist_id: string, limit =
   if (offset > 0) {
     formData.append('offset', offset.toString())
   }
-  const response = await openSubsonicFetchRequest<SubsonicTopSongsResponse>('getTopSongs', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicTopSongsResponse>('getTopSongs', {
     body: formData,
   })
   return response.topSongs.song
@@ -276,14 +256,14 @@ export async function fetchArtistTopSongs(musicbrainz_artist_id: string, limit =
 export async function postScrobble(musicbrainz_track_id: string): Promise<boolean> {
   const formData = new FormData()
   formData.append('id', musicbrainz_track_id)
-  const response = await openSubsonicFetchRequest<SubsonicResponse>('scrobble', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicResponse>('scrobble', {
     body: formData,
   })
   return response.status === 'ok'
 }
 
 export async function fetchGenres(count?: number) {
-  const response = await openSubsonicFetchRequest<SubsonicGenresResponse>('getGenres')
+  const response = await openSubsonicFetchRequest<Types.SubsonicGenresResponse>('getGenres')
   const allGenres = response.genres.genre
   if (allGenres.length === 0) {
     return [] as SubsonicGenre[]
@@ -297,7 +277,7 @@ export async function fetchGenres(count?: number) {
 export async function fetchLyrics(musicbrainz_song_id: string): Promise<StructuredLyric | null> {
   const formData = new FormData()
   formData.append('id', musicbrainz_song_id)
-  const response = await openSubsonicFetchRequest<SubsonicLyricsListResponse>('getLyricsBySongId', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicLyricsListResponse>('getLyricsBySongId', {
     body: formData,
   })
   if (response.lyricsList?.structuredLyrics?.length > 0) {
@@ -311,7 +291,7 @@ export async function fetchLyrics(musicbrainz_song_id: string): Promise<Structur
 export async function fetchAlbumsForArtist(artistId: string): Promise<SubsonicAlbum[]> {
   const formData = new FormData()
   formData.append('id', artistId)
-  const response = await openSubsonicFetchRequest<SubsonicArtistResponse>('getArtist', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicArtistResponse>('getArtist', {
     body: formData,
   })
   const albums: SubsonicAlbum[] = []
@@ -327,7 +307,7 @@ export async function fetchSongsByGenre(genre: string, limit: number, offset: nu
   formData.append('genre', genre)
   formData.append('count', limit.toString())
   formData.append('offset', offset.toString())
-  const response = await openSubsonicFetchRequest<SubsonicSongsByGenreResponse>('getSongsByGenre', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicSongsByGenreResponse>('getSongsByGenre', {
     body: formData,
   })
   return response.songsByGenre.song
@@ -336,7 +316,7 @@ export async function fetchSongsByGenre(genre: string, limit: number, offset: nu
 export async function fetchSong(musicbrainz_track_id: string): Promise<SubsonicSong> {
   const formData = new FormData()
   formData.append('id', musicbrainz_track_id)
-  const response = await openSubsonicFetchRequest<SubsonicSongResponse>('getSong', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicSongResponse>('getSong', {
     body: formData,
   })
   return response.song
@@ -348,7 +328,7 @@ export async function fetchSearchResults(query: string, limit = 50): Promise<Sea
   formData.append('artistcount', limit.toString())
   formData.append('albumcount', limit.toString())
   formData.append('songcount', limit.toString())
-  const response = await openSubsonicFetchRequest<SubsonicSearchResponse>('search2', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicSearchResponse>('search2', {
     body: formData,
   })
   const artists = response.searchResult2.artist
@@ -397,12 +377,12 @@ export async function useServerSentEventsForAlbumArt(artist: string, album: stri
   return eventSource
 }
 
-export async function postNewAlbumArt(musicbrainz_song_id: string, image: Blob): Promise<SubsonicResponse> {
+export async function postNewAlbumArt(musicbrainz_song_id: string, image: Blob): Promise<Types.SubsonicResponse> {
   const formData = new FormData()
   formData.append('id', musicbrainz_song_id)
   formData.append('file', image)
 
-  const response = await openSubsonicFetchRequest<SubsonicResponse>('updateAlbumArt', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicResponse>('updateAlbumArt', {
     body: formData,
   })
   return response
@@ -456,26 +436,26 @@ export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
   return blob
 }
 
-export async function postTrackStarred(musicbrainz_track_id: string, starred: boolean): Promise<SubsonicResponse> {
+export async function postTrackStarred(musicbrainz_track_id: string, starred: boolean): Promise<Types.SubsonicResponse> {
   const formData = new FormData()
   formData.append('id', musicbrainz_track_id)
 
   if (starred) {
-    return openSubsonicFetchRequest<SubsonicResponse>('star', {
+    return openSubsonicFetchRequest<Types.SubsonicResponse>('star', {
       body: formData,
     })
   }
   else {
-    return openSubsonicFetchRequest<SubsonicResponse>('unstar', {
+    return openSubsonicFetchRequest<Types.SubsonicResponse>('unstar', {
       body: formData,
     })
   }
 }
 
-export async function fetchPodcastChannel(podcastChannelId: string): Promise<SubsonicPodcastChannelsResponse> {
+export async function fetchPodcastChannel(podcastChannelId: string): Promise<Types.SubsonicPodcastChannelsResponse> {
   const formData = new FormData()
   formData.append('id', podcastChannelId)
-  const response = await openSubsonicFetchRequest<SubsonicPodcastChannelsResponse>('getpodcasts', {
+  const response = await openSubsonicFetchRequest<Types.SubsonicPodcastChannelsResponse>('getpodcasts', {
     body: formData,
   })
   return response

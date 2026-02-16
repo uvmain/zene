@@ -46,7 +46,6 @@ declare module 'vue' {
     IconNrkMediaVolume3: typeof import('~icons/nrk/media-volume3')['default']
     IconNrkMening: typeof import('~icons/nrk/mening')['default']
     IconNrkRefresh: typeof import('~icons/nrk/refresh')['default']
-    IconNrkReorder: typeof import('~icons/nrk/reorder')['default']
     IconNrkSearch: typeof import('~icons/nrk/search')['default']
     IconNrkSettings: typeof import('~icons/nrk/settings')['default']
     IconNrkStar: typeof import('~icons/nrk/star')['default']

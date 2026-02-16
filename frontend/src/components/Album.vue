@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { LoadingAttribute } from '../types'
-import type { SubsonicAlbum } from '../types/subsonicAlbum'
+import type { LoadingAttribute } from '~/types'
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { artSizes, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 
 const props = defineProps({

@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import type { AlbumOrder } from '~/logic/store'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { useElementSize, useElementVisibility, useLocalStorage } from '@vueuse/core'
+import { useElementSize, useElementVisibility } from '@vueuse/core'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
+import { albumOrder, albumOrders, albumSeed } from '~/logic/store'
 
 const props = defineProps({
   limit: { type: Number, default: 30 },
@@ -13,7 +15,6 @@ const props = defineProps({
 })
 
 const loading = ref(false)
-const seed = useLocalStorage<number>('albumSeed', 0)
 const currentOffset = ref<number>(0)
 const canLoadMore = ref(true)
 const observer = useTemplateRef('observer')
@@ -21,10 +22,6 @@ const firstAlbumElement = ref<HTMLElement | null>(null)
 const observerIsVisible = useElementVisibility(observer)
 const albums = ref<SubsonicAlbum[]>([])
 const showOrderOptions = ref(false)
-
-const allowedOrders = ['recentlyUpdated', 'random', 'alphabetical', 'releaseDate', 'recentlyPlayed'] as const
-type AlbumOrder = typeof allowedOrders[number]
-const currentOrder = useLocalStorage<AlbumOrder>(props.sortKey, 'recentlyUpdated')
 
 const sortOptions = [
   { label: 'Recently Updated', emitValue: 'recentlyUpdated' },
@@ -51,8 +48,8 @@ const heightStyle = computed(() => {
 let fetchType: string
 
 watchEffect(() => {
-  if (!allowedOrders.includes(currentOrder.value as AlbumOrder)) {
-    currentOrder.value = 'recentlyUpdated'
+  if (!albumOrders.includes(albumOrder.value as AlbumOrder)) {
+    albumOrder.value = 'recentlyUpdated'
   }
 })
 
@@ -63,7 +60,7 @@ watch(observerIsVisible, (newValue) => {
 })
 
 const headerTitle = computed(() => {
-  switch (currentOrder.value) {
+  switch (albumOrder.value) {
     case 'recentlyUpdated':
       return 'Albums: Recently Updated'
     case 'random':
@@ -80,11 +77,11 @@ const headerTitle = computed(() => {
 })
 
 function setOrder(order: AlbumOrder) {
-  if (currentOrder.value === order) {
+  if (albumOrder.value === order) {
     showOrderOptions.value = false
     return
   }
-  currentOrder.value = order
+  albumOrder.value = order
   showOrderOptions.value = false
   resetAlbumsArray()
   getAlbums()
@@ -105,7 +102,7 @@ async function getAlbums() {
   if (!canLoadMore.value) {
     return
   }
-  switch (currentOrder.value) {
+  switch (albumOrder.value) {
     case 'recentlyUpdated':
       fetchType = 'newest'
       break
@@ -122,7 +119,7 @@ async function getAlbums() {
       fetchType = 'recent'
       break
   }
-  const albumsResponse = await fetchAlbums(fetchType, props.limit, currentOffset.value, seed.value)
+  const albumsResponse = await fetchAlbums(fetchType, props.limit, currentOffset.value, albumSeed.value)
   if (albumsResponse.length > 0) {
     currentOffset.value += albumsResponse.length
     albums.value?.push(...albumsResponse)
@@ -138,7 +135,7 @@ async function getAlbums() {
 
 async function refresh() {
   if (fetchType === 'random') {
-    seed.value = generateSeed()
+    albumSeed.value = generateSeed()
   }
   resetAlbumsArray()
   await getAlbums()

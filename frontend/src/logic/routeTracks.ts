@@ -1,8 +1,7 @@
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useLocalStorage } from '@vueuse/core'
 import { setCurrentlyPlayingTrack, setCurrentQueue } from '~/logic/playbackQueue'
 
-export const routeTracks = useLocalStorage<SubsonicSong[]>('routeTracks', [] as SubsonicSong[])
+export const routeTracks = ref<SubsonicSong[]>([])
 
 export function clearRouteTracks() {
   routeTracks.value = [] as SubsonicSong[]

@@ -1,23 +1,18 @@
 <script setup lang="ts">
-import type { StructuredLyricLine } from '../types/subsonicLyrics'
-import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchLyrics } from '../logic/backendFetch'
-
-const props = defineProps({
-  currentlyPlayingTrack: { type: Object as PropType<SubsonicSong | null>, default: null },
-  currentTime: { type: Number, default: 0 },
-})
+import type { StructuredLyricLine } from '~/types/subsonicLyrics'
+import { fetchLyrics } from '~/logic/backendFetch'
+import { currentlyPlayingTrack, currentTime } from '~/logic/playbackQueue'
 
 const showLyrics = ref(false)
 
 const lyricsRef = ref<StructuredLyricLine[]>([])
 
 async function getLyrics() {
-  if (props.currentlyPlayingTrack?.musicBrainzId === undefined) {
+  if (currentlyPlayingTrack.value?.musicBrainzId === undefined) {
     lyricsRef.value = []
     return
   }
-  const lyrics = await fetchLyrics(props.currentlyPlayingTrack.musicBrainzId)
+  const lyrics = await fetchLyrics(currentlyPlayingTrack.value?.musicBrainzId)
   if (!lyrics) {
     lyricsRef.value = []
     return
@@ -28,7 +23,7 @@ async function getLyrics() {
   }))
 }
 
-watch(() => props.currentlyPlayingTrack?.musicBrainzId, async (newTrack, oldTrack) => {
+watch(() => currentlyPlayingTrack.value?.musicBrainzId, async (newTrack, oldTrack) => {
   if (newTrack !== oldTrack) {
     await getLyrics()
   }
@@ -43,10 +38,20 @@ onMounted(async () => {
   <div>
     <button
       id="lyrics"
-      class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10"
+      class="h-10 w-10 flex items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10"
+      :class="{
+        'cursor-not-allowed': lyricsRef.length === 0,
+        'cursor-pointer': lyricsRef.length > 0,
+      }"
+      :disabled="lyricsRef.length === 0"
       @click="showLyrics = !showLyrics"
     >
-      <icon-nrk-mening class="footer-icon" />
+      <icon-nrk-mening
+        :class="{
+          'footer-icon-disabled': lyricsRef.length === 0,
+          'footer-icon': lyricsRef.length > 0,
+        }"
+      />
     </button>
     <LyricsModal
       v-if="showLyrics && currentlyPlayingTrack"
