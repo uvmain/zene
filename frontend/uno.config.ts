@@ -14,6 +14,7 @@ export default defineConfig({
     'background-3': 'dark:bg-zshade-700 bg-zshade-100',
     'z-button': 'border-1 border-solid relative font-semibold corner-cut flex cursor-pointer items-center justify-center cursor-pointer px-3 py-1 text-sm outline-none transition-all duration-200 text-muted background-2 hover:from-primary2 hover:text-primary hover:bg-gradient-to-br',
     'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl sm:text-lg active:text-primary1',
+    'footer-icon-disabled': 'scale-100 text-lg text-muted lg:text-xl sm:text-lg opacity-50',
     'footer-icon-on': 'scale-110 text-lg text-primary1 transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl sm:text-lg',
     'auto-grid-6': '[grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))] grid gap-6',
   },

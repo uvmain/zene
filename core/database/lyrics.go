@@ -29,7 +29,7 @@ func UpsertTrackLyrics(ctx context.Context, musicbrainzTrackId string, lyrics ty
 	return nil
 }
 
-func GetLyricsForMusicBrainzTrackId(ctx context.Context, musicbrainzTrackId string) (types.LyricsDatabaseRow, error) {
+func GetTrackLyrics(ctx context.Context, musicbrainzTrackId string) (types.LyricsDatabaseRow, error) {
 	query := "SELECT musicbrainz_track_id, plain_lyrics, synced_lyrics FROM track_lyrics WHERE musicbrainz_track_id = ?"
 	var musicbrainzTrackID, plainLyrics, syncedLyrics string
 	err := DB.QueryRowContext(ctx, query, musicbrainzTrackId).Scan(&musicbrainzTrackID, &plainLyrics, &syncedLyrics)

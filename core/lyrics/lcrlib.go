@@ -19,13 +19,17 @@ import (
 )
 
 func GetLyricsForMusicBrainzTrackId(ctx context.Context, musicBrainzTrackId string) (types.LyricsDatabaseRow, error) {
-	lyrics, err := database.GetLyricsForMusicBrainzTrackId(ctx, musicBrainzTrackId)
+	lyrics, err := database.GetTrackLyrics(ctx, musicBrainzTrackId)
 	if err != nil {
 		logger.Printf("Error querying database in GetLyricsForMusicBrainzTrackId: %v", err)
 		return types.LyricsDatabaseRow{}, fmt.Errorf("failed to query database for lyrics: %w", err)
 	}
+	if lyrics.PlainLyrics == "NoLyricsFound" {
+		logger.Printf("No lyrics previously found in lrclib for track ID: %s", musicBrainzTrackId)
+		return types.LyricsDatabaseRow{}, fmt.Errorf("no lyrics previously found for track ID: %s", musicBrainzTrackId)
+	}
 	if lyrics.PlainLyrics == "" && lyrics.SyncedLyrics == "" {
-		logger.Printf("No lyrics found in database for track ID: %s", musicBrainzTrackId)
+		logger.Printf("No lyrics found in database, fetching from lrclib for track ID: %s", musicBrainzTrackId)
 		return GetLyricsForMusicBrainzTrackIdFromLrclib(ctx, musicBrainzTrackId)
 	}
 	logger.Printf("Found lyrics in database for track ID: %s", musicBrainzTrackId)
@@ -82,13 +86,30 @@ func GetLyricsForMusicBrainzTrackIdFromLrclib(ctx context.Context, musicBrainzTr
 		return types.LyricsDatabaseRow{}, err
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return types.LyricsDatabaseRow{}, fmt.Errorf("unexpected status: %s", res.Status)
-	}
-
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return types.LyricsDatabaseRow{}, err
+	}
+
+	var upsertData types.LyricsDatabaseRow
+	upsertData.MusicBrainzTrackID = musicBrainzTrackId
+
+	if res.StatusCode == http.StatusNotFound {
+		// Track not found on lrclib (or track is instrumental!), store "NoLyricsFound" in the database
+		logger.Printf("No lyrics found on lrclib for track ID: %s", musicBrainzTrackId)
+		upsertData.PlainLyrics = "NoLyricsFound"
+		upsertData.SyncedLyrics = ""
+
+		err = database.UpsertTrackLyrics(ctx, musicBrainzTrackId, upsertData)
+		if err != nil {
+			logger.Printf("Error upserting 'NoLyricsFound' marker for %s: %v", musicBrainzTrackId, err)
+		}
+
+		return types.LyricsDatabaseRow{}, fmt.Errorf("no lyrics found for track ID: %s", musicBrainzTrackId)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return types.LyricsDatabaseRow{}, fmt.Errorf("unexpected status: %s", res.Status)
 	}
 
 	var data types.LrclibLyricsResponse
@@ -100,8 +121,6 @@ func GetLyricsForMusicBrainzTrackIdFromLrclib(ctx context.Context, musicBrainzTr
 		return types.LyricsDatabaseRow{}, err
 	}
 
-	var upsertData types.LyricsDatabaseRow
-	upsertData.MusicBrainzTrackID = musicBrainzTrackId
 	upsertData.PlainLyrics = data.PlainLyrics
 	upsertData.SyncedLyrics = data.SyncedLyrics
 
