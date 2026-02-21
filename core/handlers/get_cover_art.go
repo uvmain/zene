@@ -78,5 +78,5 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 	mimeType := http.DetectContentType(imageBlob)
 	w.Header().Set("Content-Type", mimeType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(imageBlob)
+	_, _ = w.Write(imageBlob)
 }

@@ -75,9 +75,10 @@ onBeforeMount(getPodcasts)
 
     <Modal
       :show-modal="showAddPodcastModal"
-      modal-text="Add New Podcast Channel"
+      modal-title="Add New Podcast Channel"
+      @close="showAddPodcastModal = false; submitError = ''; newPodcastUrl = ''"
     >
-      <template #buttons>
+      <template #content>
         <form class="space-y-4" @submit.prevent="createNewPodcast">
           <div>
             <label for="stream-url" class="mb-1 block text-muted font-medium">Stream URL</label>
@@ -90,26 +91,21 @@ onBeforeMount(getPodcasts)
               required
             />
           </div>
-          <div class="flex flex-row gap-2">
-            <ZButton aria-label="Close" @click="showAddPodcastModal = false">
-              Cancel
-            </ZButton>
-            <ZButton
-              aria-label="Add Podcast"
-              :disabled="isSubmitting || showSuccess"
-              @click="createNewPodcast()"
-            >
-              <span v-if="isSubmitting && !showSuccess">Adding...</span>
-              <span v-else-if="showSuccess">
-                <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-primary1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-              </span>
-              <span v-else>Add Podcast</span>
-            </ZButton>
-          </div>
           <div v-if="submitError" class="mt-2 text-sm text-red-600">
             {{ submitError }}
           </div>
         </form>
+        <ZButton
+          aria-label="Add Podcast"
+          :disabled="isSubmitting || showSuccess"
+          @click="createNewPodcast()"
+        >
+          <span v-if="isSubmitting && !showSuccess">Adding...</span>
+          <span v-else-if="showSuccess">
+            <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-primary1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+          </span>
+          <span v-else>Add Podcast</span>
+        </ZButton>
       </template>
     </Modal>
   </div>

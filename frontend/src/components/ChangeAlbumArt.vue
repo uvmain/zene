@@ -15,14 +15,6 @@ const localFolderArtUrl = ref<string | null>(null)
 const localEmbeddedArtUrl = ref<string | null>(null)
 const albumArt = ref<string | null>(null)
 
-// async function getAlbumArtUrls() {
-//   const options = await fetchAlbumArtOptions(props.album.albumArtists[0].name, props.album.name)
-//   deezerArtUrl.value = options.deezer
-//   coverArtArchiveUrl.value = options.cover_art_archive
-//   localFolderArtUrl.value = options.local_folder_art
-//   localEmbeddedArtUrl.value = options.local_embedded_art
-// }
-
 async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'localfolder' | 'localembedded') {
   let artUrl: string | null = null
   switch (source) {
@@ -75,58 +67,47 @@ onMounted(() => {
 </script>
 
 <template>
-  <teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-      <div class="relative w-full flex flex-col gap-4 border-1 border-zshade-500 border-solid background-3 p-4 lg:w-80dvw">
-        <div class="flex flex-row items-center justify-center gap-4">
-          <ZButton :size12="true" aria-label="Close" hover-text="Close" @click="$emit('close')">
-            <icon-nrk-close class="size-full text-primary" />
-          </ZButton>
-          <p class="text-lg text-primary font-bold">
-            Change Album Art
-          </p>
-          <div />
-        </div>
-        <Loading v-if="loading" class="h-56" />
-        <div v-else class="flex flex-wrap justify-center gap-4">
-          <ImageSelectorImage
-            v-if="deezerArtUrl"
-            :image-url="deezerArtUrl"
-            label="Deezer"
-            type="deezer"
-            @update-art="updateArt"
-          />
-          <ImageSelectorImage
-            v-if="coverArtArchiveUrl"
-            :image-url="coverArtArchiveUrl"
-            label="Cover Art Archive"
-            type="coverartarchive"
-            @update-art="updateArt"
-          />
-          <ImageSelectorImage
-            v-if="localFolderArtUrl"
-            :image-url="localFolderArtUrl"
-            label="Album folder"
-            type="localfolder"
-            @update-art="updateArt"
-          />
-          <ImageSelectorImage
-            v-if="localEmbeddedArtUrl"
-            :image-url="localEmbeddedArtUrl"
-            label="Embedded"
-            type="localembedded"
-            @update-art="updateArt"
-          />
-          <ImageSelectorImage
-            v-if="albumArt"
-            :image-url="albumArt"
-            label="Custom"
-            type="manual"
-            @update-art="updateArt"
-          />
-        </div>
-        <ImageSelector v-model="albumArt" />
+  <Modal :show-modal="true" modal-title="Change Album Art" @close="$emit('close')">
+    <template #content>
+      <Loading v-if="loading" class="h-56" />
+      <div v-else class="flex flex-wrap justify-center gap-4">
+        <ImageSelectorImage
+          v-if="deezerArtUrl"
+          :image-url="deezerArtUrl"
+          label="Deezer"
+          type="deezer"
+          @update-art="updateArt"
+        />
+        <ImageSelectorImage
+          v-if="coverArtArchiveUrl"
+          :image-url="coverArtArchiveUrl"
+          label="Cover Art Archive"
+          type="coverartarchive"
+          @update-art="updateArt"
+        />
+        <ImageSelectorImage
+          v-if="localFolderArtUrl"
+          :image-url="localFolderArtUrl"
+          label="Album folder"
+          type="localfolder"
+          @update-art="updateArt"
+        />
+        <ImageSelectorImage
+          v-if="localEmbeddedArtUrl"
+          :image-url="localEmbeddedArtUrl"
+          label="Embedded"
+          type="localembedded"
+          @update-art="updateArt"
+        />
+        <ImageSelectorImage
+          v-if="albumArt"
+          :image-url="albumArt"
+          label="Custom"
+          type="manual"
+          @update-art="updateArt"
+        />
       </div>
-    </div>
-  </teleport>
+      <ImageSelector v-model="albumArt" />
+    </template>
+  </Modal>
 </template>

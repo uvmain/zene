@@ -62,11 +62,8 @@ func DownloadZip(url string, fileName string, targetDirectory string, fileNameFi
 	if err != nil {
 		out.Close()
 		stringErr := fmt.Sprintf("error copying response body to file: %v", err)
-		err = zene_io.Cleanup(fileName)
-		if err != nil {
-			return fmt.Errorf("%s: %v", stringErr, err)
-		}
-		return fmt.Errorf(stringErr)
+		zene_io.Cleanup(fileName)
+		return fmt.Errorf("%s: %v", stringErr, err)
 	}
 
 	out.Close()
@@ -104,11 +101,8 @@ func DownloadBinaryFile(url string, filePath string) error {
 	if err != nil {
 		out.Close()
 		stringErr := fmt.Sprintf("error copying response body to file: %v", err)
-		err = zene_io.Cleanup(filePath)
-		if err != nil {
-			return fmt.Errorf("%s: %v", stringErr, err)
-		}
-		return fmt.Errorf(stringErr)
+		zene_io.Cleanup(filePath)
+		return fmt.Errorf("%s: %v", stringErr, err)
 	}
 
 	out.Close()
@@ -142,15 +136,18 @@ func WriteSubsonicResponse(w http.ResponseWriter, r *http.Request, response type
 	if format == "json" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
+		err := json.NewEncoder(w).Encode(response)
+		if err != nil {
+			logger.Printf("Failed to encode JSON response in WriteSubsonicResponse: %v", err)
+		}
 	} else {
 		w.Header().Set("Content-Type", "application/xml")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
+		_, _ = w.Write([]byte(`<?xml version="1.0" encoding="UTF-8"?>`))
 		encoder := xml.NewEncoder(w)
 		err := encoder.Encode(response.SubsonicResponse)
 		if err != nil {
-			logger.Printf("Failed to encode XML response: %v", err)
+			logger.Printf("Failed to encode XML response in WriteSubsonicResponse: %v", err)
 		}
 	}
 }
@@ -248,8 +245,4 @@ func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, 
 		}
 	}
 	return intSlice, stringSlice, nil
-}
-
-func WriteServerSentEvent(w http.ResponseWriter, event string, data string) {
-	fmt.Fprintf(w, "%s: %s\n\n", event, data)
 }

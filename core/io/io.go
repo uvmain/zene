@@ -158,20 +158,18 @@ func DeleteFile(filePath string) error {
 	return nil
 }
 
-func Cleanup(fileName string) error {
+func Cleanup(fileName string) {
 	macosxDir := "__MACOSX"
 
 	err := os.Remove(fileName)
 	if err != nil {
-		return fmt.Errorf("removing file %s: %v", fileName, err)
+		logger.Printf("Error removing file %s: %v", fileName, err)
 	}
 
 	err = os.RemoveAll(macosxDir)
 	if err != nil {
-		return fmt.Errorf("removing directory %s: %v", macosxDir, err)
+		logger.Printf("Error removing directory %s: %v", macosxDir, err)
 	}
-
-	return nil
 }
 
 func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error {

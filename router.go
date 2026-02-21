@@ -52,11 +52,6 @@ func (c *CaseInsensitiveMux) Handle(pattern string, handler http.Handler) {
 	c.mux.Handle(strings.ToLower(pattern), handler)
 }
 
-func (c *CaseInsensitiveMux) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
-	// lowercase the registered pattern
-	c.mux.HandleFunc(strings.ToLower(pattern), handler)
-}
-
 func StartServer() *http.Server {
 
 	// API router (case-insensitive)

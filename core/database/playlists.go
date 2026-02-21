@@ -191,7 +191,12 @@ func addPlaylistEntries(ctx context.Context, playlistId int, songIds []string) e
 	if err != nil {
 		return fmt.Errorf("starting transaction: %v", err)
 	}
-	defer tx.Rollback()
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			logger.Printf("Error rolling back transaction: %v", err)
+		}
+	}()
 
 	for _, songId := range songIds {
 		err := addPlaylistEntry(ctx, playlistId, songId)
