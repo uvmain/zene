@@ -39,7 +39,10 @@ var FfprobeConcurrentProcesses int
 
 func LoadConfig() {
 
-	godotenv.Load(".env")
+	err := godotenv.Load(".env")
+	if err != nil {
+		logger.Printf("no .env file found, using only environment variables")
+	}
 
 	BaseUrl = cmp.Or(os.Getenv("BASE_URL"), "http://localhost:8080")
 

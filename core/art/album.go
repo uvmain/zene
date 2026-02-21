@@ -72,6 +72,9 @@ func ImportArtForAlbum(ctx context.Context, musicBrainzAlbumId string, albumName
 				getArtFromFolder(ctx, musicBrainzAlbumId, foundFile)
 			} else if audioFileChangedTime.After(rowTime) {
 				err = getEmbeddedArtFromTrack(ctx, musicBrainzAlbumId, currentStatus.FilePath)
+				if err != nil {
+					logger.Printf("Error getting embedded art from track in ImportArtForAlbum: %v", err)
+				}
 			}
 		}
 		return
@@ -185,6 +188,10 @@ type LocalArts struct {
 func GetLocalArtAsBase64(ctx context.Context, musicBrainzAlbumId string) (LocalArts, error) {
 	var localArts LocalArts
 	tracks, err := database.GetSongsForAlbum(ctx, musicBrainzAlbumId)
+	if err != nil {
+		logger.Printf("Error getting tracks for album %s: %v", musicBrainzAlbumId, err)
+		return localArts, fmt.Errorf("error getting tracks for album: %s", musicBrainzAlbumId)
+	}
 	directory := filepath.Dir(tracks[0].Path)
 
 	var foundFile string

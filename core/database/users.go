@@ -271,7 +271,11 @@ func UpsertUser(ctx context.Context, user types.User) (int, error) {
 	}
 
 	query = `DELETE FROM user_music_folders WHERE user_id = ?`
-	DB.ExecContext(ctx, query, upsertedUser.Id)
+	_, err = DB.ExecContext(ctx, query, upsertedUser.Id)
+	if err != nil {
+		logger.Printf("Error deleting user music folders for user %d: %v", upsertedUser.Id, err)
+		return 0, fmt.Errorf("deleting user music folders: %v", err)
+	}
 
 	for _, folderId := range user.Folders {
 		query = `INSERT INTO user_music_folders (user_id, folder_id) VALUES (?, ?) ON CONFLICT(user_id, folder_id) DO NOTHING`

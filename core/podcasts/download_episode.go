@@ -76,8 +76,14 @@ func downloadEpisodeInBackground(episode types.PodcastEpisode) {
 	err = net.DownloadBinaryFile(episode.SourceUrl, targetFilePath)
 	if err != nil {
 		logger.Printf("Error downloading podcast episode: %v", err)
-		database.UpdatePodcastEpisodeStatus(ctx, episodeIdInt, string(types.PodcastStatusError))
-		database.UpdatePodcastChannelStatus(ctx, channelIdInt, string(types.PodcastStatusError))
+		err = database.UpdatePodcastEpisodeStatus(ctx, episodeIdInt, string(types.PodcastStatusError))
+		if err != nil {
+			logger.Printf("Error updating podcast episode status: %v", err)
+		}
+		err = database.UpdatePodcastChannelStatus(ctx, channelIdInt, string(types.PodcastStatusError))
+		if err != nil {
+			logger.Printf("Error updating podcast channel status: %v", err)
+		}
 		return
 	}
 
@@ -85,16 +91,28 @@ func downloadEpisodeInBackground(episode types.PodcastEpisode) {
 	fileInfo, err := os.Stat(targetFilePath)
 	if err != nil {
 		logger.Printf("Error getting file info: %v", err)
-		database.UpdatePodcastEpisodeStatus(ctx, episodeIdInt, string(types.PodcastStatusError))
-		database.UpdatePodcastChannelStatus(ctx, channelIdInt, string(types.PodcastStatusError))
+		err = database.UpdatePodcastEpisodeStatus(ctx, episodeIdInt, string(types.PodcastStatusError))
+		if err != nil {
+			logger.Printf("Error updating podcast episode status: %v", err)
+		}
+		err = database.UpdatePodcastChannelStatus(ctx, channelIdInt, string(types.PodcastStatusError))
+		if err != nil {
+			logger.Printf("Error updating podcast channel status: %v", err)
+		}
 		return
 	}
 
 	ffprobeDuration, ffprobeBitrate, err := ffprobe.GetDurationAndBitrate(ctx, targetFilePath)
 	if err != nil {
 		logger.Printf("Error getting ffprobe metadata: %v", err)
-		database.UpdatePodcastEpisodeStatus(ctx, episodeIdInt, string(types.PodcastStatusError))
-		database.UpdatePodcastChannelStatus(ctx, channelIdInt, string(types.PodcastStatusError))
+		err = database.UpdatePodcastEpisodeStatus(ctx, episodeIdInt, string(types.PodcastStatusError))
+		if err != nil {
+			logger.Printf("Error updating podcast episode status: %v", err)
+		}
+		err = database.UpdatePodcastChannelStatus(ctx, channelIdInt, string(types.PodcastStatusError))
+		if err != nil {
+			logger.Printf("Error updating podcast channel status: %v", err)
+		}
 		return
 	}
 	logger.Printf("FFprobe details for episode %s: Duration: %s, Bitrate: %s", episode.Title, ffprobeDuration, ffprobeBitrate)

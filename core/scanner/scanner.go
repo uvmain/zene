@@ -40,11 +40,14 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 			if err != nil {
 				logger.Printf("Error getting file and folder counts in RunScan: %v", err)
 			}
-			database.UpdateScanProgress(ctx, latestScan.Id, database.ScanRow{
+			err = database.UpdateScanProgress(ctx, latestScan.Id, database.ScanRow{
 				Count:         cmp.Or(fileAndFolderCount.FileCount, latestScan.Count),
 				FolderCount:   cmp.Or(fileAndFolderCount.FolderCount, latestScan.FolderCount),
 				CompletedDate: logic.GetCurrentTimeFormatted(),
 			})
+			if err != nil {
+				logger.Printf("Error updating orphaned scan progress in RunScan: %v", err)
+			}
 		} else {
 			return types.ScanStatus{
 				Scanning:      true,
@@ -87,7 +90,10 @@ func scanMusicDirs(ctx context.Context, scanId int) {
 	}
 
 	if ctx.Err() != nil {
-		database.UpdateScanProgress(ctx, scanId, scanUpdate)
+		err := database.UpdateScanProgress(ctx, scanId, scanUpdate)
+		if err != nil {
+			logger.Printf("Error updating scan progress for cancelled scan in scanMusicDirs: %v", err)
+		}
 		logger.Printf("scan was cancelled, context error in scanMusicDirs: %v", ctx.Err())
 		return
 	}
@@ -140,7 +146,9 @@ func scanMusicDirs(ctx context.Context, scanId int) {
 		CompletedDate: logic.GetCurrentTimeFormatted(),
 	}
 
-	database.UpdateScanProgress(ctx, scanId, scanUpdate)
+	if err := database.UpdateScanProgress(ctx, scanId, scanUpdate); err != nil {
+		logger.Printf("Error updating scan progress in scanMusicDirs: %v", err)
+	}
 }
 
 func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {

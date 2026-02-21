@@ -92,7 +92,7 @@ func resizeFileAndSaveAsJPG(imagePath string, outputPath string, pixelSize int) 
 	}
 }
 
-func ResizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) error {
+func ResizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) {
 	if filepath.Ext(outputPath) != ".jpg" {
 		outputPath = strings.TrimSuffix(outputPath, filepath.Ext(outputPath)) + ".jpg"
 	}
@@ -102,17 +102,13 @@ func ResizeImageAndSaveAsJPG(img image.Image, outputPath string, pixelSize int) 
 	outFile, err := os.Create(outputPath)
 	if err != nil {
 		logger.Printf("Failed to create output file: %v", err)
-		return err
 	}
 	defer outFile.Close()
 
 	opts := jpeg.Options{Quality: 90}
 	if err := jpeg.Encode(outFile, resizedImg, &opts); err != nil {
 		logger.Printf("Failed to encode image to jpg: %v", err)
-		return err
 	}
-
-	return nil
 }
 
 func resizeBytesAndSaveAsJPG(imgBytes []byte, outputPath string, pixelSize int) {
@@ -159,5 +155,6 @@ func ResizeMultipartFileAndSaveAsJPG(file multipart.File, filepath string, pixel
 		return err
 	}
 
-	return ResizeImageAndSaveAsJPG(img, filepath, pixelSize)
+	ResizeImageAndSaveAsJPG(img, filepath, pixelSize)
+	return nil
 }

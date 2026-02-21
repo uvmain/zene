@@ -8,7 +8,7 @@ COPY ./package-lock.json ./
 RUN npm ci
 RUN npm run build
 
-FROM golang:1.25.7 AS backend-build
+FROM golang:1.26.0 AS backend-build
 
 WORKDIR /app
 

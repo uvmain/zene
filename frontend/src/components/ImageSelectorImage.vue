@@ -22,7 +22,7 @@ const loaded = ref(false)
     />
     <Loading v-if="!loaded" class="absolute left-1/2 top-1/2 size-56 translate-x--1/2 translate-y--1/2" />
     <ZButton
-      class="absolute bottom-10 right-2"
+      class="absolute bottom-10 right-2 opacity-70 hover:opacity-100"
       aria-label="Choose art"
       @click="$emit('updateArt', props.type)"
     >

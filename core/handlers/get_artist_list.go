@@ -19,7 +19,6 @@ func HandleGetArtistList(w http.ResponseWriter, r *http.Request) {
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	ifModifiedSince := form["ifmodifiedsince"]
 	typeParam := strings.ToLower(form["type"])
 	sizeParam := form["size"]
 	offsetParam := form["offset"]
@@ -41,18 +40,6 @@ func HandleGetArtistList(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-	}
-
-	var ifModifiedSinceInt int
-
-	if ifModifiedSince != "" {
-		ifModifiedSinceInt, err = strconv.Atoi(ifModifiedSince)
-		if err != nil || ifModifiedSinceInt < 0 {
-			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "ifModifiedSince parameter must be a positive integer", "")
-			return
-		}
-	} else {
-		ifModifiedSinceInt = 0
 	}
 
 	/*

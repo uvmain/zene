@@ -157,25 +157,22 @@ onBeforeMount(async () => {
     <!-- delete channel modal -->
     <Modal
       :show-modal="showDeleteChannelModal"
-      modal-text="Are you sure you want to delete this podcast channel?"
+      modal-title="Are you sure you want to delete this podcast channel?"
+      @close="showDeleteChannelModal = false"
     >
-      <template #buttons>
-        <div class="flex flex-row gap-4">
-          <ZButton aria-label="Close" @click="showDeleteChannelModal = false">
-            Cancel
-          </ZButton>
-          <ZButton class="bg-red-600" @click="confirmDeletePodcast">
-            Delete
-          </ZButton>
-        </div>
+      <template #content>
+        <ZButton :is-warning="true" @click="confirmDeletePodcast">
+          Delete
+        </ZButton>
       </template>
     </Modal>
     <!-- refresh episodes modal -->
     <Modal
       :show-modal="showRefreshEpisodesModal"
-      modal-text="Episodes are now being refreshed. Please reload the page later to see updated episodes."
+      modal-title="Episodes are now being refreshed. Please reload the page later to see updated episodes."
+      @close="showRefreshEpisodesModal = false"
     >
-      <template #buttons>
+      <template #content>
         <ZButton aria-label="Close" @click="showRefreshEpisodesModal = false">
           Okay
         </ZButton>

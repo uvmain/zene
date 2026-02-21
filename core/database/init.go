@@ -26,7 +26,7 @@ func Initialise(ctx context.Context) {
 	migrateMusicFolders(ctx)
 	migrateUsers(ctx)
 	migrateApiKeys(ctx)
-	CreateAdminUserIfRequired(ctx)
+	_ = CreateAdminUserIfRequired(ctx)
 	migrateMetadata(ctx)
 	migratePlayCounts(ctx)
 	migrateChats(ctx)
@@ -58,25 +58,32 @@ func checkVersion(ctx context.Context) {
 		logger.Printf("Error getting latest version, defaulting to DB version %s: %v", thisVersion.DatabaseVersion, err)
 		existingVersion = version.Version
 		existingVersion.DatabaseVersion = thisVersion.DatabaseVersion
-		InsertVersion(ctx, existingVersion)
+		err := InsertVersion(ctx, existingVersion)
+		if err != nil {
+			log.Fatalf("Error inserting default version: %v", err)
+		}
 		existingVersion, err = GetLatestVersion(ctx)
 		if err != nil {
 			log.Fatalf("Error getting latest version after inserting default: %v", err)
 		}
 	}
 
+	err = nil
 	if existingVersion.DatabaseVersion != thisVersion.DatabaseVersion {
 		logger.Printf("Database version change detected, migrating from %v to %v", existingVersion.DatabaseVersion, thisVersion.DatabaseVersion)
-		InsertVersion(ctx, thisVersion)
+		err = InsertVersion(ctx, thisVersion)
 	} else if existingVersion.ServerVersion != thisVersion.ServerVersion {
 		logger.Printf("Server version change detected, migrating from %v to %v", existingVersion.ServerVersion, thisVersion.ServerVersion)
-		InsertVersion(ctx, thisVersion)
+		err = InsertVersion(ctx, thisVersion)
 	} else if existingVersion.SubsonicApiVersion != thisVersion.SubsonicApiVersion {
 		logger.Printf("Subsonic API version change detected, migrating from %v to %v", existingVersion.SubsonicApiVersion, thisVersion.SubsonicApiVersion)
-		InsertVersion(ctx, thisVersion)
+		err = InsertVersion(ctx, thisVersion)
 	} else if existingVersion.OpenSubsonicApiVersion != thisVersion.OpenSubsonicApiVersion {
 		logger.Printf("OpenSubsonic API version change detected, migrating from %v to %v", existingVersion.OpenSubsonicApiVersion, thisVersion.OpenSubsonicApiVersion)
-		InsertVersion(ctx, thisVersion)
+		err = InsertVersion(ctx, thisVersion)
+	}
+	if err != nil {
+		logger.Printf("Error inserting version: %v", err)
 	}
 }
 
@@ -114,8 +121,8 @@ func CleanShutdown() {
 		// wait for data to be flushed to disk
 		f, err := os.OpenFile(filepath.Join(config.DatabaseDirectory, dbFile), os.O_RDWR, 0660)
 		if err == nil {
-			f.Sync()
-			f.Close()
+			_ = f.Sync()
+			_ = f.Close()
 		}
 		log.Println("Database closed.")
 	}

@@ -124,7 +124,9 @@ func UpsertMetadataRows(ctx context.Context, metadataSlice []types.Metadata) err
 		`, strings.Join(placeholders, ", "))
 
 		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			tx.Rollback()
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return fmt.Errorf("insert batch %d-%d: %w; rollback error: %v", start, end, err, rbErr)
+			}
 			return fmt.Errorf("insert batch %d-%d: %w", start, end, err)
 		}
 	}
@@ -167,7 +169,9 @@ func DeleteMetadataRows(ctx context.Context, filepaths []string) error {
 		)
 
 		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
-			tx.Rollback()
+			if rbErr := tx.Rollback(); rbErr != nil {
+				return fmt.Errorf("insert batch %d-%d: %w; rollback error: %v", start, end, err, rbErr)
+			}
 			return fmt.Errorf("deleting metadata rows (batch %d-%d): %w", start, end, err)
 		}
 	}

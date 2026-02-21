@@ -144,8 +144,10 @@ func GetAlbumArtUrl(ctx context.Context, musicBrainzAlbumId string) (string, err
 
 	if data.Images[0].Thumbnails.Large != "" {
 		imageUrl = data.Images[0].Thumbnails.Large
+		logger.Printf("Coverartarchive: using large thumbnail for album %s: %s", musicBrainzAlbumId, imageUrl)
 	} else {
 		imageUrl = data.Images[0].Image
+		logger.Printf("Coverartarchive: large thumbnail not found, using original image for album %s: %s", musicBrainzAlbumId, imageUrl)
 	}
 
 	imageUrl = strings.Replace(imageUrl, "http://", "https://", 1)

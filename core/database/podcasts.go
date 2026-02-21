@@ -360,7 +360,12 @@ func InsertPodcastEpisodes(episodes []types.PodcastEpisodeRow) error {
 	if err != nil {
 		return fmt.Errorf("beginning transaction: %v", err)
 	}
-	defer tx.Rollback()
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			logger.Printf("Error rolling back transaction: %v", err)
+		}
+	}()
 
 	for _, episode := range episodes {
 		if err := UpsertPodcastEpisode(ctx, episode); err != nil {

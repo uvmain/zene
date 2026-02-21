@@ -20,8 +20,10 @@ func maxCacheSizeBytes() int64 {
 }
 
 func cleanupAudioCache(ctx context.Context) {
-
-	removeOrphanCache(ctx)
+	err := removeOrphanCache(ctx)
+	if err != nil {
+		logger.Printf("Error removing orphan cache files: %v", err)
+	}
 
 	dir := config.AudioCacheFolder
 

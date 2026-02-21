@@ -7,47 +7,10 @@ import (
 	"strconv"
 	"strings"
 	"zene/core/logger"
-	"zene/core/logic"
 	"zene/core/types"
 
 	"github.com/timematic/anytime"
 )
-
-func SelectTracksByAlbumId(ctx context.Context, musicbrainz_album_id string) ([]types.MetadataWithPlaycounts, error) {
-	userId, _ := logic.GetUserIdFromContext(ctx)
-	query := getUnendedMetadataWithPlaycountsSql(userId)
-
-	query += " where musicbrainz_album_id = ? order by cast(disc_number AS INTEGER), cast(track_number AS INTEGER);"
-
-	rows, err := DB.QueryContext(ctx, query, musicbrainz_album_id)
-	if err != nil {
-		logger.Printf("Query failed: %v", err)
-		return []types.MetadataWithPlaycounts{}, err
-	}
-	defer rows.Close()
-
-	var results []types.MetadataWithPlaycounts
-
-	for rows.Next() {
-		var result types.MetadataWithPlaycounts
-		if err := rows.Scan(&result.FilePath, &result.FileName, &result.DateAdded, &result.DateModified, &result.Format, &result.Duration,
-			&result.Size, &result.Bitrate, &result.Title, &result.Artist, &result.Album, &result.AlbumArtist, &result.Genre, &result.TrackNumber,
-			&result.TotalTracks, &result.DiscNumber, &result.TotalDiscs, &result.ReleaseDate, &result.MusicBrainzArtistID, &result.MusicBrainzAlbumID,
-			&result.MusicBrainzTrackID, &result.Label, &result.MusicFolderId, &result.Codec, &result.BitDepth, &result.SampleRate, &result.Channels,
-			&result.UserPlayCount, &result.GlobalPlayCount); err != nil {
-			logger.Printf("Failed to scan row in SelectTracksByAlbumId: %v", err)
-			return []types.MetadataWithPlaycounts{}, err
-		}
-		results = append(results, result)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Printf("Rows iteration error: %v", err)
-		return results, err
-	}
-
-	return results, nil
-}
 
 func SelectAlbumIdByTrackId(ctx context.Context, musicbrainz_track_id string) (string, error) {
 	var albumId string
@@ -349,29 +312,4 @@ func GetAlbumByArtistNameAndAlbumName(ctx context.Context, artistName string, al
 	album.Songs = []types.SubsonicChild{}
 
 	return album, nil
-}
-
-func SelectAlbumIds(ctx context.Context) ([]string, error) {
-	var ids []string
-
-	query := `SELECT distinct musicbrainz_album_id FROM metadata`
-	rows, err := DB.QueryContext(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var id string
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		ids = append(ids, id)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return ids, nil
 }

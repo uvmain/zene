@@ -39,7 +39,10 @@ func startAudioCacheCleanupRoutine(ctx context.Context) {
 
 func startNowPlayingCleanupRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting now playing cleanup routine")
-	database.CleanupNowPlaying(ctx)
+	err := database.CleanupNowPlaying(ctx)
+	if err != nil {
+		logger.Printf("Error cleaning up now playing: %v", err)
+	}
 	go func() {
 		ticker := time.NewTicker(5 * time.Minute)
 		defer ticker.Stop()
@@ -50,7 +53,10 @@ func startNowPlayingCleanupRoutine(ctx context.Context) {
 				logger.Println("Scheduler: stopping now playing cleanup routine")
 				return
 			case <-ticker.C:
-				database.CleanupNowPlaying(ctx)
+				err := database.CleanupNowPlaying(ctx)
+				if err != nil {
+					logger.Printf("Error cleaning up now playing: %v", err)
+				}
 			}
 		}
 	}()
@@ -58,7 +64,10 @@ func startNowPlayingCleanupRoutine(ctx context.Context) {
 
 func startOrphanedPlaylistEntriesCleanupRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting orphaned playlist entries cleanup routine")
-	database.RemoveOrphanedPlaylistEntries(ctx)
+	err := database.RemoveOrphanedPlaylistEntries(ctx)
+	if err != nil {
+		logger.Printf("Error removing orphaned playlist entries: %v", err)
+	}
 	go func() {
 		ticker := time.NewTicker(1 * time.Hour)
 		defer ticker.Stop()
@@ -69,7 +78,10 @@ func startOrphanedPlaylistEntriesCleanupRoutine(ctx context.Context) {
 				logger.Println("Scheduler: stopping orphaned playlist entries cleanup routine")
 				return
 			case <-ticker.C:
-				database.RemoveOrphanedPlaylistEntries(ctx)
+				err := database.RemoveOrphanedPlaylistEntries(ctx)
+				if err != nil {
+					logger.Printf("Error removing orphaned playlist entries: %v", err)
+				}
 			}
 		}
 	}()
@@ -134,7 +146,10 @@ func startAlbumArtCleanupRoutine(ctx context.Context) {
 
 func startScanScheduleRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting scan schedule routine")
-	scanner.RunScan(ctx)
+	_, err := scanner.RunScan(ctx)
+	if err != nil {
+		logger.Printf("Error starting scan schedule routine: %v", err)
+	}
 	go func() {
 		ticker := time.NewTicker(45 * time.Minute)
 		defer ticker.Stop()
@@ -145,7 +160,10 @@ func startScanScheduleRoutine(ctx context.Context) {
 				logger.Println("Scheduler: stopping album art cleanup routine")
 				return
 			case <-ticker.C:
-				scanner.RunScan(ctx)
+				_, err := scanner.RunScan(ctx)
+				if err != nil {
+					logger.Printf("Error running scan: %v", err)
+				}
 			}
 		}
 	}()
