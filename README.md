@@ -19,7 +19,7 @@
 - Light and Dark mode
 - Visualizations with [butterchurn](https://butterchurnviz.com/)
 
-![butterchurn](./docs/assets/butterchurn-fullscreen.webp)
+  ![butterchurn](./docs/assets/butterchurn-fullscreen.webp)
 - All transcoded audio is cached locally and cleaned with smart rules
 - Wide support of If-Modified-Since headers for 304 responses
 - Supports brotli and gzip compression
@@ -28,10 +28,11 @@
 - Album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
 - Artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
 - Similar artists/songs are fetched from https://api.deezer.com and saved locally
-- Full podcast support, including downloading and offline playing
 - Admins can update album art via frontend
 
-![art-selector](./docs/assets/art-selector.webp)
+  ![art-selector](./docs/assets/art-selector.webp)
+- Full podcast support, including downloading and offline playing
+
 
 ### Uses the OpenSubsonic API
 Supports the following OpenSubsonic API extensions:
