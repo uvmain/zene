@@ -58,10 +58,6 @@ export default defineConfig({
       '~/': `${path.resolve(__dirname, 'src')}/`,
     },
   },
-  ssgOptions: {
-    script: 'async',
-    formatting: 'minify',
-  },
   optimizeDeps: {
     include: [
       'vue',
