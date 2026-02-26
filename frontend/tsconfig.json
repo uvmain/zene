@@ -12,8 +12,7 @@
     "types": [
       "node",
       "vite/client",
-      "unplugin-fonts/client",
-      "vite-ssg"
+      "unplugin-fonts/client"
     ],
     "strict": true,
     "noEmit": true,
@@ -27,7 +26,8 @@
     "components.d.ts",
     "auto-imports.d.ts",
     "./route-map.d.ts",
-    "cast.d.ts",
+    "types/cast.d.ts",
+    "types/butterchurn.d.ts",
     "src/**/*"
   ],
   "exclude": ["node_modules", "dist", "eslint.config.js"],

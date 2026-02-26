@@ -4,10 +4,13 @@ import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopP
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 
 const router = useRouter()
+const route = useRoute()
 
 async function handleGetRandomTracks() {
   await getRandomTracks(500)
-  router.push('/queue')
+  if (route.path !== '/queue' && route.path !== '/visualizer') {
+    router.push('/queue')
+  }
 }
 
 onKeyStroke('MediaPlayPause', (e) => {

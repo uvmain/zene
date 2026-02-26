@@ -50,6 +50,7 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
         <NavLink route-name="Radio" route-prop="/radio" />
         <NavLink route-name="Podcasts" route-prop="/podcasts" />
         <NavLink route-name="Queue" route-prop="/queue" />
+        <NavLink route-name="Visualizer" route-prop="/visualizer" />
       </nav>
     </div>
     <NavArt />

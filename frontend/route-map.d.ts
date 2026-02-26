@@ -159,6 +159,13 @@ declare module 'vue-router/auto-routes' {
       { track: ParamValue<false> },
       | never
     >,
+    '/visualizer': RouteRecordInfo<
+      '/visualizer',
+      '/visualizer',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
   }
 
   /**
@@ -283,6 +290,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/tracks/[track].vue': {
       routes:
         | '/tracks/[track]'
+      views:
+        | never
+    }
+    'src/pages/visualizer.vue': {
+      routes:
+        | '/visualizer'
       views:
         | never
     }
