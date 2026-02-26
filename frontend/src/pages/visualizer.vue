@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import type { ButterchurnVisualizer } from 'butterchurn'
+import type { Visualizer, VisualizerOptions } from 'butterchurn'
 import butterchurn from 'butterchurn'
 import butterchurnPresets from 'butterchurn-presets'
 import { audioContext, audioNode } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
-const visualizer = ref<ButterchurnVisualizer | null>(null)
+const visualizer = ref<Visualizer | null>(null)
 const blendSeconds = 2.0
 const allPresets = butterchurnPresets.getPresets()
 
 let animationFrameId: number | null = null
 
 function renderLoop() {
-  if (visualizer.value) {
+  if (visualizer.value != null) {
     visualizer.value.render()
     animationFrameId = requestAnimationFrame(renderLoop)
   }
@@ -26,12 +26,9 @@ function stopRenderLoop() {
 }
 
 watch([audioContext, audioNode], () => {
-  if (visualizer.value) {
-    stopRenderLoop()
-    visualizer.value.destroy()
-    visualizer.value = null
-  }
-  if (audioContext.value && audioNode.value) {
+  stopRenderLoop()
+  visualizer.value = null
+  if (audioContext.value != null && audioNode.value != null) {
     createVisualizer()
   }
 })
@@ -41,10 +38,12 @@ function createVisualizer() {
     return
   }
 
-  visualizer.value = butterchurn.createVisualizer(audioContext.value, canvas.value, {
+  const options: VisualizerOptions = {
     width: 800,
     height: 600,
-  })
+  }
+
+  visualizer.value = butterchurn.createVisualizer(audioContext.value, canvas.value, options) as Visualizer
 
   visualizer.value.connectAudio(audioNode.value)
 
@@ -63,10 +62,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopRenderLoop()
-  if (visualizer.value) {
-    visualizer.value.destroy()
-    visualizer.value = null
-  }
+  visualizer.value = null
 })
 </script>
 
