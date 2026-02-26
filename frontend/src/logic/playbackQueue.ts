@@ -9,8 +9,6 @@ import { postPlaycount } from '~/logic/playCounts'
 import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 
-type AudioElement = HTMLAudioElement | null | undefined
-
 export const currentlyPlayingTrack = ref<SubsonicSong | undefined>()
 export const currentlyPlayingPodcastEpisode = ref<SubsonicPodcastEpisode | undefined>()
 export const currentQueue = ref<Queue | undefined>()
@@ -20,7 +18,9 @@ export const currentTime = ref(0)
 export const previousVolume = ref(1)
 export const currentVolume = ref(1)
 export const trackUrl = ref('')
-export const audioElement = ref<AudioElement>(null)
+export const audioElement = ref<HTMLAudioElement | null>(null)
+export const audioNode = ref<AudioNode | null>(null)
+export const audioContext = ref<AudioContext | null>(null)
 const previousIndexes = ref<number[]>([])
 
 export function resetCurrentlyPlayingTrack() {
