@@ -11,19 +11,17 @@ const blendSeconds = 2.0
 const allPresets = butterchurnPresets.getPresets()
 
 let animationFrameId: number | null = null
-const targetFPS = 60
-const frameDuration = 1000 / targetFPS
 
 function renderLoop() {
   if (visualizer.value != null) {
     visualizer.value.render()
-    animationFrameId = window.setTimeout(renderLoop, frameDuration)
+    requestAnimationFrame(renderLoop)
   }
 }
 
 function stopRenderLoop() {
   if (animationFrameId !== null) {
-    clearTimeout(animationFrameId)
+    cancelAnimationFrame(animationFrameId)
     animationFrameId = null
   }
 }
@@ -69,8 +67,7 @@ function createVisualizer() {
     width: 800,
     height: 600,
     pixelRatio: window.devicePixelRatio || 1,
-    onlyUseWASM: true,
-    hideControls: false,
+    // onlyUseWASM: true,
   }
 
   visualizer.value = butterchurn.createVisualizer(audioContext.value, canvas.value, options) as Visualizer
@@ -81,7 +78,7 @@ function createVisualizer() {
   const preset = allPresets[Object.keys(allPresets)[randomPresetInt]]
   visualizer.value.loadPreset(preset, blendSeconds)
 
-  visualizer.value.setRendererSize(600, 600)
+  visualizer.value.setRendererSize(1600, 1200)
 
   renderLoop()
 }
@@ -97,5 +94,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <canvas ref="canvas" width="600" height="600"></canvas>
+  <div class="h-100dvh w-full">
+    <canvas ref="canvas" class="h-full w-full" />
+  </div>
 </template>

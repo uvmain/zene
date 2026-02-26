@@ -17,6 +17,7 @@
 ### Fast, small and feature packed with smart caching
 - No rocket emojis - just good old optimisation
 - Light and Dark mode
+- Visualizations with [butterchurn](https://butterchurnviz.com/)
 - All transcoded audio is cached locally and cleaned with smart rules
 - Wide support of If-Modified-Since headers for 304 responses
 - Supports brotli and gzip compression
