@@ -192,22 +192,24 @@ func addPlaylistEntries(ctx context.Context, playlistId int, songIds []string) e
 		return fmt.Errorf("starting transaction: %v", err)
 	}
 
-	defer func() {
-		if err := tx.Rollback(); err != nil {
-			logger.Printf("Error rolling back transaction: %v", err)
-		}
-	}()
-
+	errOccurred := false
 	for _, songId := range songIds {
 		err := addPlaylistEntry(ctx, playlistId, songId)
 		if err != nil {
-			return fmt.Errorf("adding playlist entries: %v", err)
+			errOccurred = true
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("committing transaction: %v", err)
+	if errOccurred {
+		if err := tx.Rollback(); err != nil {
+			logger.Printf("Error rolling back transaction: %v", err)
+		}
+	} else {
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("committing transaction: %v", err)
+		}
 	}
+
 	return nil
 }
 

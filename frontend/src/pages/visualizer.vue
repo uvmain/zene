@@ -7,9 +7,11 @@ import { audioContext, audioNode } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
 const visualizer = ref<Visualizer | null>(null)
+
 const blendSeconds = 2.0
 const allPresets = butterchurnPresets.getPresets()
-
+let originalWidth = 800
+let originalHeight = 600
 let animationFrameId: number | null = null
 
 function renderLoop() {
@@ -35,15 +37,21 @@ watch([audioContext, audioNode], () => {
 })
 
 function toggleFullscreen() {
-  if (!canvas.value) {
+  if (!canvas.value || !visualizer.value) {
     return
   }
 
-  if (document.fullscreenElement) {
+  if (document.fullscreenElement === canvas.value) {
     document.exitFullscreen()
+    canvas.value.width = originalWidth
+    canvas.value.height = originalHeight
+    visualizer.value.setRendererSize(originalWidth, originalHeight)
   }
   else {
     canvas.value.requestFullscreen()
+    canvas.value.width = screen.width
+    canvas.value.height = screen.height
+    visualizer.value.setRendererSize(screen.width, screen.height)
   }
 }
 
@@ -52,20 +60,30 @@ onKeyStroke(['F', 'f'], (e) => {
   toggleFullscreen()
 })
 
-onMounted(() => {
-  if (canvas.value) {
-    canvas.value.addEventListener('dblclick', toggleFullscreen)
-  }
-})
-
 function createVisualizer() {
   if (!canvas.value || !audioContext.value || !audioNode.value) {
     return
   }
 
+  let width = 800
+  let height = 600
+  const parent = canvas.value.parentElement
+  if (parent) {
+    width = parent.clientWidth
+    height = parent.clientHeight
+  }
+  else {
+    width = window.innerWidth
+    height = window.innerHeight
+  }
+  originalWidth = width
+  originalHeight = height
+  canvas.value.width = width
+  canvas.value.height = height
+
   const options: VisualizerOptions = {
-    width: 800,
-    height: 600,
+    width,
+    height,
     pixelRatio: window.devicePixelRatio || 1,
     // onlyUseWASM: true,
   }
@@ -78,16 +96,22 @@ function createVisualizer() {
   const preset = allPresets[Object.keys(allPresets)[randomPresetInt]]
   visualizer.value.loadPreset(preset, blendSeconds)
 
-  visualizer.value.setRendererSize(1600, 1200)
+  visualizer.value.setRendererSize(width, height)
 
   renderLoop()
 }
 
 onMounted(() => {
+  if (canvas.value) {
+    canvas.value.addEventListener('dblclick', toggleFullscreen)
+  }
   createVisualizer()
 })
 
 onUnmounted(() => {
+  if (canvas.value) {
+    canvas.value.removeEventListener('dblclick', toggleFullscreen)
+  }
   stopRenderLoop()
   visualizer.value = null
 })
