@@ -74,7 +74,7 @@ watch(currentlyPlayingPodcastEpisode, (newEpisode) => {
     >
       <img
         :src="coverArtUrl"
-        class="aspect-square w-full cursor-pointer rounded-md object-cover"
+        class="aspect-square size-full cursor-pointer rounded-md"
         @error="onImageError"
       />
     </RouterLink>

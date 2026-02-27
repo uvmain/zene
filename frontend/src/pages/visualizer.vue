@@ -10,14 +10,16 @@ const gridParent = useTemplateRef('grid') as Ref<HTMLDivElement>
 const visualizer = ref<Visualizer | null>(null)
 const currentVisualizerIndex = ref(0)
 const initialFadeIn = ref(true)
+const isFullScreen = ref(false)
 
 const allPresets = butterchurnPresets.getPresets()
 let originalWidth = 800
 let originalHeight = 600
+const meshSize = { x: 48, y: 36 }
 let animationFrameId: number | null = null
 let presetInterval: NodeJS.Timeout | null = null
-const intervalSeconds = 10.0
-const blendSeconds = 2.0
+const intervalSeconds = 25.0
+const blendSeconds = 2.7
 
 function renderLoop() {
   if (visualizer.value != null) {
@@ -48,16 +50,32 @@ function toggleFullscreen() {
 
   if (document.fullscreenElement === gridParent.value) {
     document.exitFullscreen()
-    canvas.value.width = originalWidth
-    canvas.value.height = originalHeight
-    visualizer.value.setRendererSize(originalWidth, originalHeight)
+    setWindowed()
   }
   else {
     gridParent.value.requestFullscreen()
-    canvas.value.width = screen.width
-    canvas.value.height = screen.height
-    visualizer.value.setRendererSize(screen.width, screen.height)
+    setFullscreen()
   }
+}
+
+function setWindowed() {
+  if (!canvas.value || !visualizer.value) {
+    return
+  }
+  canvas.value.width = originalWidth
+  canvas.value.height = originalHeight
+  visualizer.value.setRendererSize(originalWidth, originalHeight)
+  isFullScreen.value = false
+}
+
+function setFullscreen() {
+  if (!canvas.value || !visualizer.value) {
+    return
+  }
+  canvas.value.width = screen.width
+  canvas.value.height = screen.height
+  visualizer.value.setRendererSize(screen.width, screen.height)
+  isFullScreen.value = true
 }
 
 function createVisualizer() {
@@ -85,29 +103,29 @@ function createVisualizer() {
     width,
     height,
     pixelRatio: window.devicePixelRatio || 1,
+    meshWidth: meshSize.x,
+    meshHeight: meshSize.y,
   }
 
   visualizer.value = butterchurn.createVisualizer(audioContext.value, canvas.value, options) as Visualizer
 
   visualizer.value.connectAudio(audioNode.value)
 
-  currentVisualizerIndex.value = Math.floor(Math.random() * Object.keys(allPresets).length)
-  const preset = allPresets[Object.keys(allPresets)[currentVisualizerIndex.value]]
-  visualizer.value.loadPreset(preset, blendSeconds)
+  loadRandomPreset()
 
   visualizer.value.setRendererSize(width, height)
 
   // load next preset on 10 second timer
-  presetInterval = setInterval(loadNextPreset, intervalSeconds * 1000)
+  presetInterval = setInterval(loadRandomPreset, intervalSeconds * 1000)
 
   renderLoop()
 }
 
-function loadNextPreset() {
+function loadRandomPreset() {
   if (!visualizer.value) {
     return
   }
-  currentVisualizerIndex.value = (currentVisualizerIndex.value + 1) % Object.keys(allPresets).length
+  currentVisualizerIndex.value = Math.floor(Math.random() * Object.keys(allPresets).length)
   const preset = allPresets[Object.keys(allPresets)[currentVisualizerIndex.value]]
   visualizer.value.loadPreset(preset, blendSeconds)
 }
@@ -121,6 +139,14 @@ onMounted(() => {
   if (canvas.value) {
     canvas.value.addEventListener('dblclick', toggleFullscreen)
   }
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement === gridParent.value) {
+      setFullscreen()
+    }
+    else {
+      setWindowed()
+    }
+  })
   createVisualizer()
 
   setTimeout(() => {
@@ -144,14 +170,17 @@ onUnmounted(() => {
   <div ref="grid" class="group grid h-100dvh w-full">
     <canvas ref="canvas" class="z-1 col-span-full row-span-full h-full w-full" />
     <div
-      class="corner-cut z-2 col-span-full row-span-full mb-2 ml-auto mr-2 mt-auto w-60 bg-cover bg-center transition-opacity duration-1000 transition-ease-out group-hover:opacity-100"
+      class="corner-cut z-2 col-span-full row-span-full mb-2 ml-auto mr-2 mt-auto w-80 bg-cover bg-center text-primary transition-opacity duration-1000 transition-ease-out group-hover:opacity-100"
       :class="{
         'opacity-100': initialFadeIn,
         'opacity-0': !initialFadeIn,
       }"
     >
-      <div class="corner-cut flex flex-col bg-black/40 px-4 py-2 backdrop-blur-xl">
-        <NavArt />
+      <!-- info panel -->
+      <div class="corner-cut z-3 flex flex-col bg-zshade-300/60 px-4 py-2 backdrop-blur-xl dark:bg-zshade-900/60">
+        <NavArt v-if="isFullScreen" />
+        <PlayerProgressBar v-if="isFullScreen" class="mt-2" :compact="true" />
+        <PlayerMediaControls v-if="isFullScreen" class="mt-2" :compact="true" />
         <p class="text-wrap text-sm">
           Press F or double-click to toggle fullscreen.
         </p>

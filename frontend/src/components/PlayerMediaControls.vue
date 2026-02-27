@@ -3,6 +3,10 @@ import { onKeyStroke } from '@vueuse/core'
 import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback, toggleRepeat, toggleShuffle } from '~/logic/playbackQueue'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 
+defineProps({
+  compact: { type: Boolean, default: false },
+})
+
 const router = useRouter()
 const route = useRoute()
 
@@ -35,7 +39,13 @@ onKeyStroke('MediaStop', (e) => {
 </script>
 
 <template>
-  <div class="flex flex-row items-center justify-center gap-x-2 lg:gap-x-4 sm:gap-x-2">
+  <div
+    class="flex flex-row items-center justify-center"
+    :class="{
+      'gap-x-2 lg:gap-x-4': !compact,
+      'gap-x-1': compact,
+    }"
+  >
     <button id="repeat" class="media-control-button" @click="stopPlayback()">
       <icon-nrk-media-stop class="footer-icon" />
     </button>
@@ -51,6 +61,7 @@ onKeyStroke('MediaStop', (e) => {
       <icon-nrk-media-previous class="footer-icon" />
     </button>
     <ZButton
+      v-if="!compact"
       id="play-pause"
       class="group/button"
       :primary="true"
@@ -61,6 +72,10 @@ onKeyStroke('MediaStop', (e) => {
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
       <icon-nrk-media-pause v-else class="footer-icon" />
     </ZButton>
+    <button v-else id="play-pause-compact" class="media-control-button" @click="togglePlayback()">
+      <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
+      <icon-nrk-media-pause v-else class="footer-icon" />
+    </button>
     <button id="forward" class="media-control-button" @click="handleNextTrack()">
       <icon-nrk-media-next class="footer-icon" />
     </button>
