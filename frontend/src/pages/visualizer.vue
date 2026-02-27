@@ -50,11 +50,9 @@ function toggleFullscreen() {
 
   if (document.fullscreenElement === gridParent.value) {
     document.exitFullscreen()
-    setWindowed()
   }
   else {
     gridParent.value.requestFullscreen()
-    setFullscreen()
   }
 }
 
@@ -158,6 +156,14 @@ onUnmounted(() => {
   if (canvas.value) {
     canvas.value.removeEventListener('dblclick', toggleFullscreen)
   }
+  document.removeEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement === gridParent.value) {
+      setFullscreen()
+    }
+    else {
+      setWindowed()
+    }
+  })
   stopRenderLoop()
   visualizer.value = null
   if (presetInterval) {
@@ -170,17 +176,21 @@ onUnmounted(() => {
   <div ref="grid" class="group grid h-100dvh w-full">
     <canvas ref="canvas" class="z-1 col-span-full row-span-full h-full w-full" />
     <div
-      class="corner-cut z-2 col-span-full row-span-full mb-2 ml-auto mr-2 mt-auto w-80 bg-cover bg-center text-primary transition-opacity duration-1000 transition-ease-out group-hover:opacity-100"
+      class="corner-cut z-2 col-span-full row-span-full w-80 bg-cover bg-center text-primary transition-opacity duration-1000 transition-ease-out group-hover:opacity-100"
       :class="{
         'opacity-100': initialFadeIn,
         'opacity-0': !initialFadeIn,
+        'fixed bottom-4 right-4': isFullScreen,
+        'mb-2 ml-auto mr-2 mt-auto': !isFullScreen,
       }"
     >
       <!-- info panel -->
       <div class="corner-cut z-3 flex flex-col bg-zshade-300/60 px-4 py-2 backdrop-blur-xl dark:bg-zshade-900/60">
-        <NavArt v-if="isFullScreen" />
-        <PlayerProgressBar v-if="isFullScreen" class="mt-2" :compact="true" />
-        <PlayerMediaControls v-if="isFullScreen" class="mt-2" :compact="true" />
+        <div v-if="isFullScreen" class="flex flex-col gap-2">
+          <NavArt />
+          <PlayerProgressBar :compact="true" />
+          <PlayerMediaControls :compact="true" />
+        </div>
         <p class="text-wrap text-sm">
           Press F or double-click to toggle fullscreen.
         </p>
