@@ -1,0 +1,90 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['rot']=(a['rot']+(0.10*Math.sin(div(a['time'],20)))); a['ob_r']=(a['ob_r']+(a['time']*Math.sin(a['bass']))); a['ob_b']=(a['ob_b']+(a['time']*Math.sin((a['treb']+1)))); a['ob_g']=(a['ob_g']+(a['time']*Math.sin(div(a['mid'],1.5)))); a['cx']=(2*Math.sin(a['time']));",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 1,
+    "decay": 0.9622,
+    "echo_zoom": 0.590156,
+    "modwavealphabyvolume": 1,
+    "wave_brighten": 0,
+    "wave_a": 0.001043,
+    "wave_scale": 0.01,
+    "wave_mystery": -1,
+    "zoomexp": 4.448402,
+    "fshader": 0.3,
+    "zoom": 1.072131,
+    "rot": 1,
+    "cx": 2,
+    "cy": -1,
+    "warp": 0.01,
+    "wave_r": 0.5,
+    "wave_g": 0.5,
+    "wave_b": 0.5,
+    "ob_size": 0.005,
+    "ob_r": 1,
+    "ob_a": 0.1,
+    "ib_size": 0.003,
+    "ib_r": 0,
+    "ib_g": 0,
+    "ib_b": 1,
+    "ib_a": 0.6,
+    "mv_x": 64,
+    "mv_y": 43.200001,
+    "mv_l": 4.5,
+    "mv_r": 0.5899,
+    "mv_g": 0.48,
+    "mv_b": 0.76,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

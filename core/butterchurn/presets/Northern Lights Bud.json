@@ -1,0 +1,80 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "a['tt'] = 0;",
+  "frame_eqs_str": "a['tt']=div(a['time'],100); a['wave_r']=(div(Math.sin(div((15*a['tt']),2)),2)+0.5); a['wave_g']=(div(Math.cos(div(a['tt'],3)),2)+0.5); a['wave_b']=(div(Math.cos(div((23*a['tt']),2)),2)+0.5);",
+  "pixel_eqs_str": "a['rot']=(div(pow(-a['ang'], 3),10)-Math.sin(a['ang'])); a['zoom']=(Math.sin(pow(-a['rad'], 3))+1);",
+  "baseVals": {
+    "rating": 3,
+    "decay": 0.925,
+    "echo_zoom": 1.006596,
+    "echo_orient": 3,
+    "wave_mode": 3,
+    "additivewave": 1,
+    "modwavealphabyvolume": 1,
+    "bmotionvectorson": 0,
+    "wave_a": 4.099998,
+    "wave_scale": 0.52509,
+    "wave_smoothing": 0.36,
+    "wave_mystery": -0.5,
+    "modwavealphastart": 0.71,
+    "modwavealphaend": 1.3,
+    "warpscale": 1.331,
+    "zoom": 1.070549,
+    "rot": 0.02,
+    "warp": 0.198054,
+    "sx": 1.220188,
+    "sy": 1.22019,
+    "wave_r": 0.65,
+    "wave_g": 0.65,
+    "wave_b": 0.65
+  },
+  "warp": "",
+  "comp": ""
+}

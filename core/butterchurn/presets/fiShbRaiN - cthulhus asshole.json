@@ -1,0 +1,95 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 3,
+        "additive": 1,
+        "textured": 1,
+        "rad": 0.542788,
+        "tex_zoom": 0.311603,
+        "g": 1,
+        "b": 1,
+        "r2": 1,
+        "b2": 1,
+        "border_a": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['ang']=a['time']; a['r2']=Math.abs(Math.sin(a['time'])); a['g2']=Math.abs(Math.cos(a['time'])); a['b2']=(a['treb_att']*0.65); a['rad']=(a['rad']+(a['bass_att']*0.1));"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['sx']=(a['sx']+(a['bass_att']*0.04)); a['sy']=(a['sy']+(a['treb_att']*0.04)); a['cx']=(0.5+(Math.sin(a['time'])*0.2)); a['cy']=(0.5+(Math.sin((a['time']*0.3))*0.1));",
+  "pixel_eqs_str": "a['rot']=(a['rot']+(((1-a['rad'])*Math.sin(a['time']))*0.5));",
+  "baseVals": {
+    "rating": 4,
+    "gammaadj": 1.21,
+    "decay": 0.945,
+    "echo_zoom": 1.100897,
+    "additivewave": 1,
+    "wave_brighten": 0,
+    "wave_a": 0.001,
+    "wave_scale": 1.285751,
+    "wave_smoothing": 0.63,
+    "modwavealphastart": 0.71,
+    "modwavealphaend": 1.3,
+    "warpscale": 1.331,
+    "zoomexp": 10.141068,
+    "fshader": 1,
+    "zoom": 0.979819,
+    "rot": 1,
+    "dy": 0.1,
+    "warp": 1.599181,
+    "sx": 1.220179,
+    "sy": 0.999991,
+    "wave_r": 0.65,
+    "wave_g": 0.65,
+    "wave_b": 0.65,
+    "ob_size": 0.1,
+    "ob_r": 0.01,
+    "ib_size": 0.21,
+    "mv_x": 21.473322,
+    "mv_y": 15.907337,
+    "mv_l": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

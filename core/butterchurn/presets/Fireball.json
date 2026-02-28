@@ -1,0 +1,66 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "a['angval'] = 0;",
+  "frame_eqs_str": "a['dx']=(a['dx']+(0.01*Math.sin((a['time']*0.2)))); a['dy']=(a['dy']+(0.01*Math.cos((a['time']*0.2)))); a['wave_g']=(a['wave_g']-div(a['bass'],6));",
+  "pixel_eqs_str": "a['angval']=div(0.2,sqrt(((3.14*Math.tan((a['ang']-(a['time']*0.1))))+10))); a['zoom']=(a['zoom']-div((a['rad']*a['angval']),10)); a['rot']=(a['rot']-((Math.abs(below((a['x']+a['y']), 0.15))>0.00001)?(div(a['rad'],0.15)):(div(a['rad'],(a['x']+a['y'])))));",
+  "baseVals": {
+    "wave_mode": 2,
+    "additivewave": 1,
+    "wrap": 0,
+    "wave_a": 3.394167,
+    "wave_scale": 0.819544,
+    "wave_smoothing": 0.63,
+    "wave_g": 0.4,
+    "wave_b": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

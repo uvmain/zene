@@ -2,8 +2,8 @@
 import type { Visualizer, VisualizerOptions } from 'butterchurn'
 import { onKeyStroke } from '@vueuse/core'
 import butterchurn from 'butterchurn'
-import butterchurnPresets from 'butterchurn-presets'
-import { audioContext, audioNode } from '~/logic/playbackQueue'
+import { getButterchurnPresets } from '~/logic/backendFetch'
+import { audioContext, audioNode, currentlyPlayingTrack } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
 const gridParent = useTemplateRef('grid') as Ref<HTMLDivElement>
@@ -11,8 +11,8 @@ const visualizer = ref<Visualizer | null>(null)
 const currentVisualizerIndex = ref(0)
 const initialFadeIn = ref(true)
 const isFullScreen = ref(false)
+const fetchedPresets = ref<{ [key: string]: any }>({})
 
-const allPresets = butterchurnPresets.getPresets()
 let originalWidth = 800
 let originalHeight = 600
 const meshSize = { x: 48, y: 36 }
@@ -113,7 +113,6 @@ function createVisualizer() {
 
   visualizer.value.setRendererSize(width, height)
 
-  // load next preset on 10 second timer
   presetInterval = setInterval(loadRandomPreset, intervalSeconds * 1000)
 
   renderLoop()
@@ -123,8 +122,8 @@ function loadRandomPreset() {
   if (!visualizer.value) {
     return
   }
-  currentVisualizerIndex.value = Math.floor(Math.random() * Object.keys(allPresets).length)
-  const preset = allPresets[Object.keys(allPresets)[currentVisualizerIndex.value]]
+  currentVisualizerIndex.value = Math.floor(Math.random() * Object.keys(fetchedPresets.value).length)
+  const preset = fetchedPresets.value[Object.keys(fetchedPresets.value)[currentVisualizerIndex.value]]
   visualizer.value.loadPreset(preset, blendSeconds)
 }
 
@@ -133,7 +132,13 @@ onKeyStroke(['F', 'f'], (e) => {
   toggleFullscreen()
 })
 
-onMounted(() => {
+watch(currentlyPlayingTrack, (old, current) => {
+  if (old !== current) {
+    loadRandomPreset()
+  }
+})
+
+onMounted(async () => {
   if (canvas.value) {
     canvas.value.addEventListener('dblclick', toggleFullscreen)
   }
@@ -145,6 +150,9 @@ onMounted(() => {
       setWindowed()
     }
   })
+
+  fetchedPresets.value = await getButterchurnPresets({ random: true, count: 100 })
+
   createVisualizer()
 
   setTimeout(() => {
@@ -191,9 +199,14 @@ onUnmounted(() => {
           <PlayerProgressBar :compact="true" />
           <PlayerMediaControls :compact="true" />
         </div>
-        <p class="text-wrap text-sm">
-          Press F or double-click to toggle fullscreen.
-        </p>
+        <div class="flex flex-row items-center justify-between">
+          <p class="text-wrap text-sm">
+            Press F or double-click to toggle fullscreen.
+          </p>
+          <div class="group/next cursor-pointer" @click="loadRandomPreset()">
+            <icon-nrk-media-ffw class="size-10 text-muted hover:text-primary1" />
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -1,0 +1,92 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 32,
+        "textured": 1,
+        "rad": 0.29877,
+        "tex_ang": 4.71239,
+        "tex_zoom": 1.48886,
+        "g": 1,
+        "b": 1,
+        "r2": 1,
+        "b2": 1,
+        "a2": 1,
+        "border_r": 0,
+        "border_g": 0,
+        "border_b": 0,
+        "border_a": 1
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": ""
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['count3'] = 0; a['wave1'] = 0; a['q1'] = 0; a['wave3'] = 0; a['wave2'] = 0; a['count2'] = 0; a['count1'] = 0; a['wave'] = 0; a['q2'] = 0; a['q3'] = 0; a['step'] = 0; a['count1']=0.1666; a['count2']=0.5; a['count3']=0.8333;",
+  "frame_eqs_str": "a['step']=div((0.2+(0.2*a['bass_att'])),a['fps']); a['count1']=((Math.abs(below(a['count1'], 1))>0.00001)?((a['count1']+a['step'])):((a['count1']-1))); a['count2']=((Math.abs(below(a['count2'], 1))>0.00001)?((a['count2']+a['step'])):((a['count2']-1))); a['count3']=((Math.abs(below(a['count3'], 1))>0.00001)?((a['count3']+a['step'])):((a['count3']-1))); a['q1']=a['count1']; a['q2']=a['count2']; a['q3']=a['count3']; a['warp']=0.075; a['ob_g']=(0.7+(0.3*Math.sin((a['time']*1.8)))); a['ob_b']=(0.65+(0.25*Math.sin((a['time']*3)))); a['ob_r']=(0.47+(0.3*Math.cos((a['time']*0.75)))); a['wave_a']=0;",
+  "pixel_eqs_str": "a['wave1']=(above(a['rad'], a['q1'])*below(a['rad'], (a['q1']+0.1666))); a['wave2']=(above(a['rad'], a['q2'])*below(a['rad'], (a['q2']+0.1666))); a['wave3']=(above(a['rad'], a['q3'])*below(a['rad'], (a['q3']+0.1666))); a['wave']=((a['wave1']+a['wave2'])+a['wave3']); a['zoom']=(a['zoom']-(0.5*a['wave']));",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 1.21,
+    "decay": 0.94,
+    "wave_brighten": 0,
+    "darken": 1,
+    "wave_scale": 2.026,
+    "wave_mystery": -0.3,
+    "warpanimspeed": 1.504,
+    "warpscale": 0.251,
+    "zoomexp": 0.15249,
+    "fshader": 1,
+    "zoom": 0.96097,
+    "ob_size": 0.035,
+    "ob_r": 0.04,
+    "ob_g": 0.04,
+    "ob_b": 0.04,
+    "ob_a": 1,
+    "ib_size": 0.05,
+    "ib_r": 0,
+    "ib_g": 0,
+    "ib_b": 0,
+    "ib_a": 1,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

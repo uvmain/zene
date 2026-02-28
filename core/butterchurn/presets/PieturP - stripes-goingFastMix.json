@@ -1,0 +1,92 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "scaling": 100,
+        "smoothing": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": "a['y']=a['sample']; a['x']=0; a['r']=((a['value1']*a['mid'])*0.03); a['g']=((a['value1']*a['treb'])*0.03); a['b']=((a['value1']*a['bass'])*0.03);"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['cx']=0; a['cy']=0; a['zoom']=1; a['sx']=10; a['sy']=1; a['decay']=1;",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 0,
+    "gammaadj": 1,
+    "decay": 0.9459,
+    "echo_zoom": 1.254851,
+    "echo_alpha": 1,
+    "echo_orient": 2,
+    "wave_thick": 1,
+    "wave_brighten": 0,
+    "wave_a": 0.001,
+    "wave_scale": 0.01,
+    "wave_smoothing": 0.63,
+    "wave_mystery": -0.38,
+    "modwavealphastart": 1,
+    "modwavealphaend": 1.1,
+    "warpscale": 0.01,
+    "zoomexp": 1.008148,
+    "zoom": 1.0018,
+    "warp": 0.01,
+    "sx": 1.001829,
+    "sy": 1.008151,
+    "wave_g": 0.65,
+    "wave_b": 0.65,
+    "ob_size": 0,
+    "ib_size": 0,
+    "ib_r": 0,
+    "ib_g": 0,
+    "ib_b": 0,
+    "ib_a": 1,
+    "mv_x": 3.84,
+    "mv_y": 6.600001,
+    "mv_dx": 1,
+    "mv_dy": 1,
+    "mv_l": 5,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

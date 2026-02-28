@@ -1,0 +1,133 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 20,
+        "x": 0.66,
+        "rad": 0.05164,
+        "tex_zoom": 0.08311,
+        "r": 0.64,
+        "g": 0.87,
+        "b": 1,
+        "g2": 0,
+        "a2": 1,
+        "border_a": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['x']=(0.5+(0.25*((0.9*Math.sin((0.31*a['time'])))+(0.1*Math.sin((0.32*a['time'])))))); a['y']=(0.5+(0.2*((0.1*Math.sin((0.2*a['time'])))+(0.9*Math.sin((0.21*a['time'])))))); a['x']=(0.5+(0.25*Math.sin((0.3*a['time'])))); a['y']=(0.5+(0.2*Math.sin((0.2*a['time'])))); a['r']=(0.5+(0.5*Math.sin((10*a['time'])))); a['g']=(0.5+(0.5*Math.sin((30*a['time'])))); a['rad']=(a['rad']+(0.005*Math.sin(((20*a['time'])+a['bass']))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 20,
+        "textured": 1,
+        "y": 0.33,
+        "rad": 0.06558,
+        "tex_zoom": 3.23533,
+        "g": 1,
+        "b": 1,
+        "r2": 1,
+        "b2": 1,
+        "a2": 1,
+        "border_a": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['x']=((0.5-(0.3*Math.sin(((0.3*Math.sin((0.4*a['time'])))+(0.7*Math.sin((0.6*a['time'])))))))+(0.02*((0.4*Math.sin((12*a['time'])))-(0.6*Math.sin((8*a['time'])))))); a['y']=((0.5-(0.3*Math.sin(((0.6*Math.sin((0.5*a['time'])))+(0.4*Math.sin((0.3*a['time'])))))))+(0.015*((0.6*Math.sin((10*a['time'])))-(0.4*Math.sin((8*a['time']))))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 50,
+        "x": 0.15,
+        "rad": 0.02015,
+        "tex_zoom": 12.03213,
+        "r": 0.48,
+        "g": 1,
+        "b": 1,
+        "g2": 0,
+        "a2": 1,
+        "border_a": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['x']=((0.5+(0.35*Math.sin(((0.7*Math.sin((0.5*a['time'])))+(0.3*Math.sin((0.7*a['time'])))))))+(0.01*((0.7*Math.sin((12*a['time'])))+(0.3*Math.sin((8*a['time'])))))); a['y']=((0.5+(0.35*Math.sin(((0.6*Math.sin((0.4*a['time'])))+(0.4*Math.sin((0.6*a['time'])))))))+(0.01*((0.6*Math.sin((8*a['time'])))+(0.4*Math.sin((11*a['time'])))))); a['g']=(0.9+(0.1*Math.sin((0.3*a['time'])))); a['r']=(0.9+(0.1*Math.sin((0.3*a['time']))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "samples": 102,
+        "spectrum": 1,
+        "additive": 1,
+        "scaling": 16.67835,
+        "smoothing": 0,
+        "a": 0.01
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['samples']=(100*a['bass']);",
+      "point_eqs_str": "a['x']=(0.5+(0.004*Math.sin(((10*a['time'])+a['bass']))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['rot']=(((0.00999*a['rot'])+0.6)+(0.55*Math.sin((0.05*a['time'])))); a['wave_x']=((0.5+(0.35*Math.sin(((0.7*Math.sin((0.5*a['time'])))+(0.3*Math.sin((0.7*a['time'])))))))+(0.01*((0.7*Math.sin((12*a['time'])))+(0.3*Math.sin((8*a['time'])))))); a['wave_y']=((0.5+(0.35*Math.sin(((0.6*Math.sin((0.4*a['time'])))+(0.4*Math.sin((0.6*a['time'])))))))+(0.01*((0.6*Math.sin((8*a['time'])))+(0.4*Math.sin((11*a['time'])))))); a['monitor']=a['rot'];",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 1.77,
+    "decay": 1,
+    "echo_zoom": 1.512,
+    "echo_alpha": 0.5,
+    "echo_orient": 2,
+    "modwavealphabyvolume": 1,
+    "wave_brighten": 0,
+    "wrap": 0,
+    "darken_center": 1,
+    "brighten": 1,
+    "wave_a": 0.033,
+    "wave_scale": 0.01,
+    "wave_smoothing": 0.9,
+    "wave_mystery": -0.52,
+    "modwavealphastart": 0.71,
+    "modwavealphaend": 1.2,
+    "warpanimspeed": 1.03,
+    "warpscale": 0.049,
+    "zoomexp": 0.01,
+    "zoom": 0.999,
+    "rot": 1,
+    "warp": 0.01,
+    "wave_x": 0.87,
+    "ob_size": 0.145,
+    "ob_a": 1,
+    "ib_size": 0.005,
+    "ib_r": 1,
+    "ib_g": 0.7,
+    "ib_b": 1,
+    "mv_x": 19.2,
+    "mv_y": 48,
+    "mv_l": 0.05,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

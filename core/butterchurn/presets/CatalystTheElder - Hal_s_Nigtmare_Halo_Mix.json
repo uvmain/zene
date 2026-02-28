@@ -1,0 +1,126 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 71,
+        "additive": 1,
+        "r": 0,
+        "g2": 0,
+        "border_a": 0
+      },
+      "init_eqs_str": " a['x']=0.500; a['y']=0.500;",
+      "frame_eqs_str": "a['r']=(a['r']+a['bass']); a['r2']=(a['r2']+a['bass']); a['rad']=(a['rad']+(0.25*a['bass']));"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 100,
+        "textured": 1,
+        "a2": 0.42,
+        "border_a": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['rad']=(a['rad']+(0.75*a['bass'])); a['additive']=(a['additive']+a['bass']);"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 100,
+        "additive": 1,
+        "thickoutline": 1,
+        "textured": 1,
+        "border_a": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['rad']=(a['rad']+(0.5*a['bass'])); a['additive']=(a['additive']+a['bass']);"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 100,
+        "g2": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['b']=(a['b']+a['bass']); a['b2']=(a['b2']+a['bass']); a['rad']=(a['rad']+(0.1*a['bass']));"
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sep": 31,
+        "thick": 1,
+        "additive": 1,
+        "scaling": 0.91434,
+        "smoothing": 0,
+        "r": 0,
+        "g": 0.3,
+        "b": 0.090001,
+        "a": 0.340001
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['my1'] = 0;",
+  "frame_eqs_str": "a['decay']=0.8; a['wave_g']=(a['wave_g']+(0.1*a['treb'])); a['my1']=div(((a['bass']+a['mid'])+a['treb']),3); a['zoom']=(a['zoom']+0.001); a['warp']=(a['warp']+(0.0*(a['my1']-0)));",
+  "pixel_eqs_str": "a['rot']=(a['rot']+(a['bass']*0.01));",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 1,
+    "decay": 1,
+    "echo_zoom": 1.000499,
+    "wave_mode": 1,
+    "additivewave": 1,
+    "wave_dots": 1,
+    "modwavealphabyvolume": 1,
+    "wrap": 0,
+    "darken": 1,
+    "solarize": 1,
+    "wave_a": 0.811768,
+    "wave_scale": 0.627609,
+    "wave_smoothing": 0.027,
+    "modwavealphastart": 0.98,
+    "modwavealphaend": 1.02,
+    "zoomexp": 1.000158,
+    "zoom": 1.000223,
+    "warp": 0,
+    "sx": 0.999999,
+    "sy": 0.999999,
+    "wave_r": 0,
+    "wave_g": 0,
+    "wave_b": 0,
+    "ob_size": 0.005,
+    "ob_g": 0.5999,
+    "ob_a": 0.1,
+    "ib_size": 0.005,
+    "ib_r": 0,
+    "ib_g": 0,
+    "ib_b": 0.58,
+    "ib_a": 0.42,
+    "mv_x": 64,
+    "mv_y": 48,
+    "mv_l": 0,
+    "mv_b": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

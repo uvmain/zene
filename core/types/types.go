@@ -4,6 +4,8 @@ import "time"
 
 type ContextKey string
 
+type ButterchurnPresets map[string]interface{}
+
 type FileMetadata struct {
 	Format              string `json:"format"`
 	Duration            string `json:"duration"`

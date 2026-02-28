@@ -1,0 +1,106 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "rad": 4.44951,
+        "tex_ang": 4.52389,
+        "tex_zoom": 0.40034,
+        "r": 0.7,
+        "g": 0.2,
+        "b": 0.1,
+        "g2": 0,
+        "a2": 1,
+        "border_g": 0.4,
+        "border_a": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['y']=1.5;"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 100,
+        "num_inst": 20,
+        "rad": 3.99407,
+        "g": 1,
+        "b": 1,
+        "a": 0,
+        "g2": 0,
+        "border_g": 0.7,
+        "border_a": 0.7
+      },
+      "init_eqs_str": "a['i'] = 0; a['q1'] = 0; a['q6'] = 0; ",
+      "frame_eqs_str": "a['i']=a['instance']; a['x']=(0.5+div((a['q1']*a['gmegabuf'][Math.floor((10000+(3*a['i'])))]),a['q6'])); a['y']=(0.5+(a['q1']*a['gmegabuf'][Math.floor((10001+(3*a['i'])))])); a['rad']=((2*a['q1'])*a['gmegabuf'][Math.floor((10002+(3*a['i'])))]); a['border_g']=(0.5+(0.5*Math.sin((0.2*a['i'])))); a['border_b']=(0.5+(0.5*Math.sin((0.2*a['i']))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 12,
+        "thickoutline": 1,
+        "num_inst": 400,
+        "x": 0.3,
+        "y": 0.8,
+        "rad": 0.11678,
+        "tex_zoom": 1.85319,
+        "g": 1,
+        "g2": 0,
+        "a2": 1,
+        "border_r": 0.1,
+        "border_g": 0.3,
+        "border_b": 0.7,
+        "border_a": 0
+      },
+      "init_eqs_str": "a['i'] = 0; a['q1'] = 0; a['q6'] = 0; ",
+      "frame_eqs_str": "a['i']=a['instance']; a['x']=(0.5+div((a['q1']*a['gmegabuf'][Math.floor((3*a['i']))]),a['q6'])); a['y']=(0.5+(a['q1']*a['gmegabuf'][Math.floor(((3*a['i'])+1))])); a['a']=a['gmegabuf'][Math.floor(((3*a['i'])+2))]; a['a2']=a['a']; a['rad']=(a['rad']*a['q1']); a['g']=(0.5+(0.5*Math.sin((0.1*a['i'])))); a['r']=1; a['b']=a['g']; a['r2']=(0.3*a['r']); a['g2']=(0.3*a['g']); a['b2']=(0.3*a['b']);"
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['d'] = 0; a['q6'] = 0; a['p'] = 0; a['q1'] = 0; a['ya'] = 0; a['x'] = 0; a['ind'] = 0; a['yb'] = 0; a['i1'] = 0; a['a'] = 0; a['instance'] = 0; a['xb'] = 0; a['y'] = 0; a['ra'] = 0; a['h'] = 0; a['i2'] = 0; a['xa'] = 0; a['c'] = 0; a['rb'] = 0; a['i']=0; for(var mdparser_idx117=0;mdparser_idx117<10000;mdparser_idx117++){a['gmegabuf'][Math.floor(a['i'])]=0; a['i']=(a['i']+1);}",
+  "frame_eqs_str": "a['warp']=0; a['wave_a']=0; a['zoom']=1; a['decay']=0; a['q6']=a['aspecty']; a['q1']=(0.2+(0.05*Math.sin((0.2*a['time'])))); a['ind']=0; a['i1']=0; for(var mdparser_idx118=0;mdparser_idx118<20;mdparser_idx118++){a['xa']=Math.sin(((0.3*a['time'])+(0.314*a['i1']))); a['ya']=(0*Math.cos(((0.3*a['time'])+(0.314*a['i1'])))); a['ra']=((10*Math.sin(((0.5*0.314)*a['i1'])))*a['q1']); a['gmegabuf'][Math.floor((10000+(3*a['i1'])))]=a['xa']; a['gmegabuf'][Math.floor((10001+(3*a['i1'])))]=a['ya']; a['gmegabuf'][Math.floor((10002+(3*a['i1'])))]=a['ra']; a['i2']=0; for(var mdparser_idx119=0;mdparser_idx119<20;mdparser_idx119++){a['xb']=Math.sin(((0.3*a['time'])+(0.314*a['i2']))); a['yb']=(0*Math.cos(((0.3*a['time'])+(0.314*a['i2'])))); a['rb']=((10*Math.sin(((0.5*0.314)*a['i2'])))*a['q1']); a['d']=sqrt((sqr((a['xa']-a['xb']))+sqr((a['ya']-a['yb'])))); a['p']=div((((a['ra']*a['ra'])-(a['rb']*a['rb']))+(a['d']*a['d'])),(2*a['d'])); a['h']=sqrt(((a['ra']*a['ra'])-(a['p']*a['p']))); a['c']=pow(-1, a['instance']); a['x']=(a['xa']+div((a['p']*(a['xb']-a['xa'])),a['d'])); a['y']=(a['ya']+div((a['p']*(a['yb']-a['ya'])),a['d'])); a['x']=(a['x']-div(((a['c']*a['h'])*(a['yb']-a['ya'])),a['d'])); a['y']=(a['y']+div(((a['c']*a['h'])*(a['xb']-a['xa'])),a['d'])); a['a']=((Math.abs(above(a['d'], (a['ra']+a['rb'])))>0.00001)?(0):(1)); a['a']=((Math.abs(below(a['d'], Math.abs((a['ra']-a['rb']))))>0.00001)?(0):(a['a'])); a['a']=((Math.abs(equal(a['d'], 0))>0.00001)?(0):(a['a'])); a['gmegabuf'][Math.floor((3*a['ind']))]=a['x']; a['gmegabuf'][Math.floor(((3*a['ind'])+1))]=a['y']; a['gmegabuf'][Math.floor(((3*a['ind'])+2))]=a['a']; a['ind']=(a['ind']+1); a['i2']=(a['i2']+1);} a['i1']=(a['i1']+1);}",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 1,
+    "decay": 0.5,
+    "echo_zoom": 0.997,
+    "echo_orient": 3,
+    "wave_mode": 2,
+    "wrap": 0,
+    "brighten": 1,
+    "wave_scale": 0.01,
+    "warp": 0.01,
+    "ob_size": 0,
+    "ob_a": 1,
+    "ib_size": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

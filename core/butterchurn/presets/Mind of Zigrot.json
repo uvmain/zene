@@ -1,0 +1,65 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['warp']=0; a['dx']=(a['dx']-0.001); a['dy']=(a['dy']-0.001); a['wave_b']=(0.2+(a['mid_att']*0.3));",
+  "pixel_eqs_str": "a['zoom']=((a['zoom']+(a['bass_att']*0.05))-0.02); a['dx']=((a['rad']*Math.sin((a['ang']*10)))*0.05); a['warp']=a['rad'];",
+  "baseVals": {
+    "rating": 5,
+    "wrap": 0,
+    "bmotionvectorson": 0,
+    "wave_scale": 0.01,
+    "wave_mystery": -0.24,
+    "wave_r": 0,
+    "wave_g": 0.1999,
+    "wave_b": 0.5
+  },
+  "warp": "",
+  "comp": ""
+}

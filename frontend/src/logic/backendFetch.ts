@@ -460,3 +460,30 @@ export async function fetchPodcastChannel(podcastChannelId: string): Promise<Typ
   })
   return response
 }
+
+export async function getButterchurnPresets({ random = true, count = 100 }: { random?: boolean, count?: number }): Promise<any> {
+  try {
+    const formData = new FormData()
+    formData.append('apiKey', apiKey.value)
+    formData.append('f', 'json')
+    formData.append('v', '1.16.0')
+    formData.append('c', 'zene-frontend')
+    formData.append('random', random.toString())
+    formData.append('count', count.toString())
+
+    const url = 'rest/getbutterchurnpresets'
+    const response = await fetch(url, {
+      method: 'POST',
+      body: formData,
+    })
+    const data = await response.json() as {
+      [key: string]: any
+    }
+
+    return data
+  }
+  catch (error) {
+    debugLog(error as string)
+    return {}
+  }
+}

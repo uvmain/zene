@@ -1,0 +1,69 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 5,
+        "rad": 0.947608,
+        "g2": 0,
+        "border_a": 0.3
+      },
+      "init_eqs_str": "a['q1'] = 0; a['q2'] = 0; a['q3'] = 0; a['q4'] = 0; a['temp'] = 0; ",
+      "frame_eqs_str": "a['r']=(2*a['q1']); a['g']=(2*a['q2']); a['b']=(2*a['q3']); a['r2']=(Math.abs(Math.cos(div(a['time'],13.27)))-a['q3']); a['g2']=(1-a['q4']); a['b2']=(Math.abs(Math.sin((div(a['time'],13.14)+240)))-a['q1']); a['temp']=(a['temp']+div(a['q4'],3)); a['ang']=a['temp']; a['border_r']=a['r']; a['border_g']=a['g']; a['border_b']=a['b'];"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['vollvl'] = 0; a['bassmax'] = 0; a['midlvl'] = 0; a['q6'] = 0; a['q1'] = 0; a['q5'] = 0; a['treblvl'] = 0; a['midmax'] = 0; a['volmax'] = 0; a['q4'] = 0; a['maxdec'] = 0; a['basslvl'] = 0; a['beat'] = 0; a['vol'] = 0; a['trebmax'] = 0; a['q2'] = 0; a['q3'] = 0;",
+  "frame_eqs_str": "a['maxdec']=0.0001; a['q5']=0.987654321; a['bassmax']=((a['bassmax']+(above(a['bass'], a['bassmax'])*(a['bass']-a['bassmax'])))-(above(a['bassmax'], a['bass'])*(a['bassmax']*a['maxdec']))); a['basslvl']=((above(a['bass'], a['basslvl'])*a['bass'])+(above(a['basslvl'], a['bass'])*(a['basslvl']*a['q5']))); a['q1']=div(a['basslvl'],a['bassmax']); a['midmax']=((a['midmax']+(above(a['mid'], a['midmax'])*(a['mid']-a['midmax'])))-(above(a['midmax'], a['mid'])*(a['midmax']*a['maxdec']))); a['midlvl']=((above(a['mid'], a['midlvl'])*a['mid'])+(above(a['midlvl'], a['mid'])*(a['midlvl']*a['q5']))); a['q2']=div(a['midlvl'],a['midmax']); a['trebmax']=((a['trebmax']+(above(a['treb'], a['trebmax'])*(a['treb']-a['trebmax'])))-(above(a['trebmax'], a['treb'])*(a['trebmax']*a['maxdec']))); a['treblvl']=((above(a['treb'], a['treblvl'])*a['treb'])+(above(a['treblvl'], a['treb'])*(a['treblvl']*a['q5']))); a['q3']=div(a['treblvl'],a['trebmax']); a['vol']=div(((a['bass']+a['treb'])+a['mid']),3); a['beat']=div((above(a['vol'], a['vollvl'])*a['vollvl']),a['vol']); a['volmax']=((a['volmax']+(above(a['vol'], a['volmax'])*(a['vol']-a['volmax'])))-(above(a['volmax'], a['vol'])*(a['volmax']*a['maxdec']))); a['vollvl']=((above(a['vol'], a['vollvl'])*a['vol'])+(above(a['vollvl'], a['vol'])*(a['vollvl']*a['q5']))); a['q4']=div(a['vollvl'],a['volmax']); a['q6']=a['beat']; a['monitor']=a['volmax'];",
+  "pixel_eqs_str": "a['zoom']=Math.abs(div(Math.sin(((a['ang']*(a['q1']*10))+(a['time']*2))),a['q4']));",
+  "baseVals": {
+    "rating": 3,
+    "decay": 0.5,
+    "wrap": 0,
+    "darken": 1,
+    "wave_a": 0.001,
+    "warp": 0.01,
+    "wave_r": 0,
+    "wave_g": 0,
+    "wave_b": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

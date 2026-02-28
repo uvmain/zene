@@ -1,0 +1,92 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "thickoutline": 1,
+        "textured": 1,
+        "rad": 1.089253,
+        "tex_zoom": 0.685152,
+        "g": 1,
+        "b": 1,
+        "r2": 1,
+        "b2": 1,
+        "a2": 1,
+        "border_a": 0
+      },
+      "init_eqs_str": "a['q2'] = 0; a['q3'] = 0; a['q4'] = 0; ",
+      "frame_eqs_str": "a['border_b']=a['q2']; a['border_g']=a['q3']; a['border_r']=a['q4']; a['ang']=(0.09*Math.sin((0.8*a['time']))); a['x']=(0.5+(0.05*(Math.sin((0.5*a['time']))+Math.sin((0.2*a['time']))))); a['y']=(0.5+(0.05*(Math.sin((0.8*a['time']))+Math.sin((0.4*a['time'])))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['tot'] = 0;",
+  "frame_eqs_str": "a['rot']=(a['tot']+(0.1*Math.sin(a['time']))); a['dx']=(a['dx']+(0.1*Math.sin((a['time']*0.5)))); a['dy']=(a['dy']+(0.1*Math.sin((a['time']*0.3))));",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 1,
+    "decay": 0.885,
+    "echo_zoom": 1.1003,
+    "additivewave": 1,
+    "wave_brighten": 0,
+    "wave_a": 0.001,
+    "warpscale": 1.331,
+    "zoomexp": 0.999998,
+    "zoom": 0.4639,
+    "warp": 0.000022,
+    "ob_size": 0.035,
+    "ob_r": 0.34,
+    "ob_g": 0.34,
+    "ob_b": 0.34,
+    "ob_a": 0.38,
+    "ib_size": 0.02,
+    "ib_r": 0.34,
+    "ib_g": 0.34,
+    "ib_b": 0.34,
+    "ib_a": 0.21,
+    "mv_x": 9.439999,
+    "mv_y": 7.560001,
+    "mv_l": 2.499999,
+    "mv_r": 0,
+    "mv_g": 0,
+    "mv_a": 0.1
+  },
+  "warp": "",
+  "comp": ""
+}

@@ -1,0 +1,70 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['warp']=(a['treb_att']-1); a['wave_g']=(1-above(a['treb_att'], 1.5)); a['wave_r']=(1-above(a['treb_att'], 1.5));",
+  "pixel_eqs_str": "a['zoom']=(1+(0.15*(a['rad']-0.33)));",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 2.12,
+    "decay": 0.895,
+    "echo_zoom": 1.007,
+    "echo_alpha": 0.5,
+    "echo_orient": 3,
+    "wave_mode": 1,
+    "additivewave": 1,
+    "wave_thick": 1,
+    "modwavealphabyvolume": 1,
+    "wave_scale": 2.625,
+    "modwavealphastart": 0.8,
+    "modwavealphaend": 2,
+    "warpanimspeed": 26.672,
+    "warpscale": 2.007,
+    "fshader": 1,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

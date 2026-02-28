@@ -1,0 +1,91 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['wave_b']=(a['wave_b']+(0.2*((0.6*Math.sin((0.955*a['time'])))+(0.4*Math.sin(a['bass']))))); a['wave_g']=(a['wave_g']+(0.2*((0.6*Math.sin((0.9*a['time'])))+(0.4*Math.sin(a['treb']))))); a['wave_r']=(a['wave_r']+(0.2*((0.6*Math.sin((0.565*a['time'])))+(0.4*Math.sin((0.6*a['time']))))));",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 5,
+    "gammaadj": 1.998,
+    "decay": 1,
+    "echo_zoom": 1.001829,
+    "echo_alpha": 0.5,
+    "echo_orient": 3,
+    "wave_mode": 1,
+    "wave_thick": 1,
+    "wave_brighten": 0,
+    "darken": 1,
+    "solarize": 1,
+    "wave_a": 100,
+    "wave_scale": 1.071876,
+    "wave_smoothing": 0.9,
+    "wave_mystery": 0.64,
+    "warpanimspeed": 100,
+    "warpscale": 0.01,
+    "fshader": 1,
+    "zoom": 0.972327,
+    "rot": -0.02,
+    "warp": 0.972365,
+    "wave_r": 0.3,
+    "wave_g": 0.4,
+    "wave_b": 0.8,
+    "ob_a": 0.01,
+    "ib_size": 0.05,
+    "ib_r": 0,
+    "ib_g": 0,
+    "ib_b": 0,
+    "ib_a": 0.1,
+    "mv_x": 49.279999,
+    "mv_y": 36.960003,
+    "mv_l": 0.6,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

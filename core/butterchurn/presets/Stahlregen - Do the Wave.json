@@ -1,0 +1,67 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['wave_r']=(0.5*Math.sin((a['time']*0.5))); a['wave_b']=0.8; a['wave_g']=(0.5+(0.2*Math.sin((a['time']*2)))); a['warp']=0;",
+  "pixel_eqs_str": "a['sx']=((1-((0.02*Math.sin((4.75*a['time'])))*above(a['x'], (0.5*a['bass_att']))))+((0.02*Math.sin((5.33*a['time'])))*below(a['x'], (0.5*a['bass_att'])))); a['sy']=((1+((0.02*Math.sin((4.5*a['time'])))*above(a['y'], (0.5*a['treb_att']))))-((0.02*Math.sin((4.25*a['time'])))*below(a['y'], (0.5*a['treb_att']))));",
+  "baseVals": {
+    "rating": 3,
+    "echo_zoom": 2.777,
+    "echo_alpha": 0.35,
+    "wave_mode": 7,
+    "additivewave": 1,
+    "wave_thick": 1,
+    "brighten": 1,
+    "darken": 1,
+    "wave_a": 0.268,
+    "wave_scale": 0.547,
+    "wave_smoothing": 0.9,
+    "zoom": 1.01,
+    "wave_y": 0.43,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}
