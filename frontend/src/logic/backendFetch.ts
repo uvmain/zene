@@ -1,4 +1,4 @@
-import type { SearchResult } from '~/types'
+import type { ButterchurnPreset, SearchResult } from '~/types'
 import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtist } from '~/types/subsonicArtist'
@@ -461,7 +461,7 @@ export async function fetchPodcastChannel(podcastChannelId: string): Promise<Typ
   return response
 }
 
-export async function getButterchurnPresets({ random = true, count = 100 }: { random?: boolean, count?: number }): Promise<any> {
+export async function getButterchurnPresets({ random = true, count = 100 }: { random?: boolean, count?: number }): Promise<ButterchurnPreset[]> {
   try {
     const formData = new FormData()
     formData.append('apiKey', apiKey.value)
@@ -476,14 +476,12 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
       method: 'POST',
       body: formData,
     })
-    const data = await response.json() as {
-      [key: string]: any
-    }
+    const data = await response.json() as ButterchurnPreset[]
 
     return data
   }
   catch (error) {
     debugLog(error as string)
-    return {}
+    return []
   }
 }

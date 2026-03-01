@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/fs"
 	"math/rand/v2"
+	"path/filepath"
+	"strings"
 	"zene/core/types"
 )
 
@@ -35,7 +37,7 @@ func getFilePaths() ([]string, error) {
 	return paths, nil
 }
 
-func GetPresets(count int, random bool) (types.ButterchurnPresets, error) {
+func GetPresets(count int, random bool) ([]types.ButterchurnPreset, error) {
 	subFS, err := fs.Sub(presetFiles, "presets")
 	if err != nil {
 		return nil, err
@@ -58,7 +60,7 @@ func GetPresets(count int, random bool) (types.ButterchurnPresets, error) {
 		count = fileCount
 	}
 
-	presets := make(types.ButterchurnPresets)
+	presets := make([]types.ButterchurnPreset, 0, count)
 
 	if random {
 		rand.Shuffle(fileCount, func(i, j int) {
@@ -78,7 +80,12 @@ func GetPresets(count int, random bool) (types.ButterchurnPresets, error) {
 			return nil, err
 		}
 
-		presets[path] = jsonData
+		name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+
+		presets = append(presets, types.ButterchurnPreset{
+			Name:   name,
+			Preset: jsonData,
+		})
 	}
 
 	return presets, nil

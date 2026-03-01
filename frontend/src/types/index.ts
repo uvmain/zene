@@ -11,3 +11,8 @@ export interface Queue {
 export type LoadingAttribute = 'lazy' | 'eager'
 
 export interface SearchResult { artists: SubsonicArtist[], albums: SubsonicAlbum[], songs: SubsonicSong[], genres: SubsonicGenre[] }
+
+export interface ButterchurnPreset {
+  name: string
+  preset: any
+}

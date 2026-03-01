@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Visualizer, VisualizerOptions } from 'butterchurn'
+import type { ButterchurnPreset } from '~/types'
 import { onKeyStroke } from '@vueuse/core'
 import butterchurn from 'butterchurn'
 import { getButterchurnPresets } from '~/logic/backendFetch'
@@ -10,8 +11,10 @@ const gridParent = useTemplateRef('grid') as Ref<HTMLDivElement>
 const visualizer = ref<Visualizer | null>(null)
 const currentVisualizerIndex = ref(0)
 const initialFadeIn = ref(true)
+const presetNameFadeIn = ref(true)
 const isFullScreen = ref(false)
-const fetchedPresets = ref<{ [key: string]: any }>({})
+const fetchedPresets = ref<ButterchurnPreset[]>([])
+const presetNameFadeTimeout = ref<NodeJS.Timeout | null>(null)
 
 let originalWidth = 800
 let originalHeight = 600
@@ -77,7 +80,7 @@ function setFullscreen() {
 }
 
 function createVisualizer() {
-  if (!canvas.value || !audioContext.value || !audioNode.value) {
+  if (!canvas.value || !audioContext.value || !audioNode.value || !fetchedPresets.value || fetchedPresets.value.length === 0) {
     return
   }
 
@@ -118,13 +121,20 @@ function createVisualizer() {
   renderLoop()
 }
 
-function loadRandomPreset() {
-  if (!visualizer.value) {
+async function loadRandomPreset(blendTimeSeconds = blendSeconds) {
+  if (presetNameFadeTimeout.value) {
+    clearTimeout(presetNameFadeTimeout.value)
+  }
+  presetNameFadeIn.value = true
+  if (!visualizer.value || !fetchedPresets.value || fetchedPresets.value.length === 0) {
     return
   }
-  currentVisualizerIndex.value = Math.floor(Math.random() * Object.keys(fetchedPresets.value).length)
-  const preset = fetchedPresets.value[Object.keys(fetchedPresets.value)[currentVisualizerIndex.value]]
-  visualizer.value.loadPreset(preset, blendSeconds)
+  currentVisualizerIndex.value = Math.floor(Math.random() * fetchedPresets.value.length)
+  const preset = fetchedPresets.value[currentVisualizerIndex.value]
+  await visualizer.value.loadPreset(preset.preset, blendTimeSeconds)
+  presetNameFadeTimeout.value = setTimeout(() => {
+    presetNameFadeIn.value = false
+  }, Math.max(blendTimeSeconds * 1000, blendSeconds * 1000))
 }
 
 onKeyStroke(['F', 'f'], (e) => {
@@ -136,6 +146,11 @@ watch(currentlyPlayingTrack, (old, current) => {
   if (old !== current) {
     loadRandomPreset()
   }
+})
+
+onBeforeMount(async () => {
+  const presets = await getButterchurnPresets({ random: true, count: 200 })
+  fetchedPresets.value = presets
 })
 
 onMounted(async () => {
@@ -150,8 +165,6 @@ onMounted(async () => {
       setWindowed()
     }
   })
-
-  fetchedPresets.value = await getButterchurnPresets({ random: true, count: 100 })
 
   createVisualizer()
 
@@ -199,15 +212,29 @@ onUnmounted(() => {
           <PlayerProgressBar :compact="true" />
           <PlayerMediaControls :compact="true" />
         </div>
-        <div class="flex flex-row items-center justify-between">
-          <p class="text-wrap text-sm">
-            Press F or double-click to toggle fullscreen.
-          </p>
-          <div class="group/next cursor-pointer" @click="loadRandomPreset()">
-            <icon-nrk-media-ffw class="size-10 text-muted hover:text-primary1" />
+        <div class="group/next h-10 flex flex-row cursor-pointer items-center justify-between">
+          <div class="flex items-center text-wrap text-sm" @click="loadRandomPreset(0)">
+            <p class="fixed opacity-100 transition-opacity duration-500 group-hover/next:opacity-0">
+              Press F or double-click to toggle fullscreen.
+            </p>
+            <p class="fixed opacity-0 transition-opacity duration-500 group-hover/next:opacity-100">
+              Next preset
+            </p>
           </div>
+          <icon-nrk-media-ffw class="size-10 min-w-10 text-muted group-hover/next:text-primary1" />
         </div>
       </div>
+    </div>
+    <!-- preset name -->
+    <div
+      v-if="fetchedPresets && fetchedPresets.length > 0 && visualizer"
+      class="corner-cut corner-cut z-2 z-4 col-span-full row-span-full mx-auto mb-auto mt-2 overflow-hidden text-ellipsis whitespace-nowrap bg-zshade-300/60 px-4 py-2 text-sm backdrop-blur-xl transition-opacity duration-500 dark:bg-zshade-900/60"
+      :class="{
+        'opacity-100': presetNameFadeIn,
+        'opacity-0': !presetNameFadeIn,
+      }"
+    >
+      preset: {{ fetchedPresets[currentVisualizerIndex].name }}
     </div>
   </div>
 </template>
