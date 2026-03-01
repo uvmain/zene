@@ -47,9 +47,7 @@ function toggleDark() {
         <abbr :title="isDark ? 'Light mode' : 'Dark mode'" class="icon" @click="toggleDark()">
           <icon-fluent-dark-theme-24-regular class="text-2xl" />
         </abbr>
-        <abbr title="Settings">
-          <SettingsDropDown class="icon" />
-        </abbr>
+        <SettingsDropDown class="icon" />
         <abbr title="User" class="icon">
           <icon-nrk-user-loggedin class="text-2xl" />
         </abbr>

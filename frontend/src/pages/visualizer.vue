@@ -214,7 +214,7 @@ onUnmounted(() => {
       <div class="corner-cut z-3 flex flex-col bg-zshade-300/60 px-4 py-2 backdrop-blur-xl dark:bg-zshade-900/60">
         <div v-if="isFullScreen" class="flex flex-col gap-2">
           <NavArt />
-          <PlayerProgressBar :compact="true" />
+          <PlayerProgressBar />
           <PlayerMediaControls :compact="true" />
         </div>
         <div class="group/next h-10 flex flex-row cursor-pointer items-center justify-between">
