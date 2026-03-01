@@ -148,11 +148,6 @@ watch(currentlyPlayingTrack, (old, current) => {
   }
 })
 
-onBeforeMount(async () => {
-  const presets = await getButterchurnPresets({ random: true, count: 200 })
-  fetchedPresets.value = presets
-})
-
 onMounted(async () => {
   if (canvas.value) {
     canvas.value.addEventListener('dblclick', toggleFullscreen)
@@ -165,6 +160,9 @@ onMounted(async () => {
       setWindowed()
     }
   })
+
+  const presets = await getButterchurnPresets({ random: true, count: 200 })
+  fetchedPresets.value = presets
 
   createVisualizer()
 
