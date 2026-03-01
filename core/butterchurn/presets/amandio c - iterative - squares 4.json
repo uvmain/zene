@@ -1,0 +1,105 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 10,
+        "additive": 1,
+        "num_inst": 1024,
+        "x": 0.38,
+        "y": 0.28,
+        "rad": 0.08081,
+        "tex_zoom": 1.54929,
+        "r": 0.5,
+        "g": 0.7,
+        "b": 1,
+        "a": 0.1,
+        "g2": 0,
+        "b2": 1,
+        "a2": 0.5,
+        "border_a": 0
+      },
+      "init_eqs_str": "a['i'] = 0; a['d'] = 0; a['zoom'] = 0; a['q6'] = 0; ",
+      "frame_eqs_str": "a['i']=(2*a['instance']); a['x']=a['gmegabuf'][Math.floor(a['i'])]; a['y']=a['gmegabuf'][Math.floor((a['i']+1))]; a['d']=sqrt(((a['x']*a['x'])+(a['y']*a['y']))); a['zoom']=0.0005; a['x']=(0.5+div((a['zoom']*a['x']),a['q6'])); a['y']=(0.5+(a['zoom']*a['y'])); a['rad']=((a['zoom']*a['rad'])*a['d']);"
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['s'] = 0; a['q6'] = 0; a['p'] = 0; a['x'] = 0; a['t'] = 0; a['i'] = 0; a['y'] = 0; a['p1'] = 0; a['sample'] = 0; a['i']=0; for(var mdparser_idx251=0;mdparser_idx251<10000;mdparser_idx251++){a['gmegabuf'][Math.floor(a['i'])]=0; a['i']=(a['i']+1);}",
+  "frame_eqs_str": "a['wave_a']=0; a['warp']=0; a['decay']=0; a['zoom']=1; a['q6']=a['aspecty']; a['t']=(2*a['time']); a['x']=0; a['y']=0; a['i']=0; for(var mdparser_idx252=0;mdparser_idx252<1024;mdparser_idx252++){a['sample']=div(a['i'],1024); a['s']=((5*6.28)*a['sample']); a['p']=mod((20*a['sample']),20); a['p1']=mod((-10+(20*a['sample'])),20); a['x']=((a['x']+mod(((a['p']*Math.sin((a['s']+a['t'])))*a['p']),2))+((a['p1']*Math.sin((a['s']-(2*a['t']))))*(1-mod(a['p1'],2)))); a['y']=((a['y']+((a['p']*Math.cos((a['s']+a['t'])))*(1-mod(a['p'],2))))+((a['p1']*Math.cos((a['s']-(2*a['t']))))*mod(a['p1'],2))); a['gmegabuf'][Math.floor((2*a['i']))]=a['x']; a['gmegabuf'][Math.floor(((2*a['i'])+1))]=a['y']; a['i']=(a['i']+1);}",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 2.4,
+    "decay": 1,
+    "echo_zoom": 1,
+    "echo_orient": 2,
+    "wave_mode": 4,
+    "wave_thick": 1,
+    "brighten": 1,
+    "wave_a": 100,
+    "wave_scale": 0.01,
+    "wave_smoothing": 0.5,
+    "wave_mystery": -0.4,
+    "modwavealphastart": 0.5,
+    "modwavealphaend": 1,
+    "zoom": 1.0099,
+    "cy": 0.86,
+    "dx": 0.00001,
+    "dy": 0.00001,
+    "warp": 0.01,
+    "wave_r": 0.5,
+    "wave_g": 0.5,
+    "wave_b": 0.5,
+    "ob_size": 0,
+    "ob_r": 1,
+    "ob_g": 1,
+    "ob_b": 1,
+    "ob_a": 1,
+    "ib_size": 0.002,
+    "ib_r": 0,
+    "ib_g": 0,
+    "ib_b": 0,
+    "mv_x": 64,
+    "mv_y": 48,
+    "mv_l": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

@@ -84,16 +84,3 @@ declare module 'butterchurn' {
   const butterchurn: Butterchurn
   export default butterchurn
 }
-
-declare module 'butterchurn-presets' {
-  export interface ButterchurnPreset {
-    [key: string]: any
-  }
-
-  export interface ButterchurnPresets {
-    getPresets: () => { [presetName: string]: ButterchurnPreset }
-  }
-
-  const butterchurnPresets: ButterchurnPresets
-  export default butterchurnPresets
-}

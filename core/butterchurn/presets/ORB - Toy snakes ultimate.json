@@ -1,0 +1,82 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 3,
+        "additive": 1,
+        "thickoutline": 1,
+        "rad": 0.1833,
+        "a2": 1,
+        "border_a": 1
+      },
+      "init_eqs_str": "a['q1'] = 0; a['q3'] = 0; a['q2'] = 0; a['xpass']=0; a['ypass']=0;",
+      "frame_eqs_str": "a['ang']=(a['q1']*5); a['sides']=a['q3']; a['x']=a['q1']; a['y']=a['q2']; a['r']=(a['r']+(0.5*Math.sin((a['time']*1.33)))); a['g']=(a['g']+(0.5*Math.sin((a['time']*1.959)))); a['b']=(a['b']+(0.5*Math.sin((a['time']*1.360)))); a['r2']=(a['r2']+(0.5*Math.sin((a['time']*1.944)))); a['g2']=(a['g2']+(0.5*Math.sin((a['time']*1.206)))); a['b2']=(a['b2']+(0.5*Math.sin((a['time']*1.407)))); a['border_r']=(a['border_r']+(0.5*Math.sin((a['time']*1.430)))); a['border_g']=(a['border_g']+(0.5*Math.sin((a['time']*1.1007)))); a['border_b']=(a['border_b']+(0.5*Math.sin((a['time']*1.607))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['basstime'] = 0; a['xs'] = 0; a['bass_clip'] = 0; a['state_shappe'] = 0; a['state_count'] = 0; a['q1'] = 0; a['state_rot'] = 0; a['ys'] = 0; a['state_ori'] = 0; a['bass_time'] = 0; a['state'] = 0; a['q2'] = 0; a['speed'] = 0; a['q3'] = 0; a['state_shape'] = 0; a['state_rot']=0; a['state_ori']=0; a['state_count']=0; a['state_shape']=0; a['state']=0; a['xs']=0; a['xy']=0;",
+  "frame_eqs_str": "a['bass_clip']=((above(a['bass_att'], a['bass_clip'])*2)+((1-above(a['bass_att'], a['bass_clip']))*(((a['bass_clip']-1.3)*0.96)+1.3))); a['basstime']=((a['basstime']+(((a['bass_att']*0.09)*a['bass_att'])*0.25))+(a['time']*0.1)); a['state_rot']=(a['state_rot']+(equal(a['bass_clip'], 2)*9.48)); a['state_rot']=((Math.abs(above(a['state_rot'], 9.49))>0.00001)?(-4.74):(a['state_rot'])); a['rot']=a['state_rot']; a['state_ori']=(a['state_ori']+equal(a['bass_clip'], 2)); a['state_ori']=((Math.abs(above(a['state_ori'], 4))>0.00001)?(0):(a['state_ori'])); a['echo_orient']=a['state_ori']; a['state']=(a['state']+equal(a['bass_clip'], 2)); a['state']=((Math.abs(above(a['state'], 4))>0.00001)?(-1):(a['state'])); a['state_count']=(a['state_count']+equal(a['state'], -1)); a['state_count']=((Math.abs(above(a['state_count'], 1))>0.00001)?(0):(a['state_count'])); a['state_shape']=(a['state_shape']+equal(a['bass_clip'], 2)); a['state_shape']=((Math.abs(equal(a['state_shape'], 7))>0.00001)?(98):(a['state_shape'])); a['state_shape']=((Math.abs(above(a['state_shape'], 98))>0.00001)?(0):(a['state_shappe'])); a['state']=(a['state']+equal(a['state'], -1)); a['xs']=(a['xs']+(0.1*equal(2, a['bass_clip']))); a['ys']=(a['ys']+(0.1*equal(2, a['bass_clip']))); a['speed']=0.08; a['xs']=(a['xs']+((equal(0, a['state'])*Math.atan((a['bass_time']*4)))*a['speed'])); a['ys']=(a['ys']+((equal(0, a['state'])*Math.cos((a['bass_time']*4)))*a['speed'])); a['xs']=(a['xs']+((equal(1, a['state'])*Math.cos((a['bass_time']*4)))*a['speed'])); a['ys']=(a['ys']+((equal(1, a['state'])*Math.cos((a['bass_time']*4)))*a['speed'])); a['xs']=(a['xs']+((equal(2, a['state'])*Math.cos((a['bass_time']*4)))*a['speed'])); a['ys']=(a['ys']+((equal(2, a['state'])*Math.sin((a['bass_time']*4)))*a['speed'])); a['xs']=(a['xs']+((equal(3, a['state'])*Math.cos((a['bass_time']*5)))*a['speed'])); a['ys']=(a['ys']+((equal(3, a['state'])*Math.cos((a['bass_time']*9)))*a['speed'])); a['xs']=(a['xs']+((equal(4, a['state'])*Math.atan((a['bass_time']*6)))*a['speed'])); a['ys']=(a['ys']+((equal(4, a['state'])*Math.cos((a['bass_time']*2)))*a['speed'])); a['q1']=((0.5+((equal(a['state_count'], 0)*0.45)*Math.sin(a['xs'])))+((equal(a['state_count'], 1)*0.45)*Math.sin((a['xs']*1.1)))); a['q2']=((0.5+((equal(a['state_count'], 0)*0.45)*Math.sin(a['ys'])))+((equal(a['state_count'], 1)*0.45)*Math.cos(a['ys']))); a['q3']=a['state_shape'];",
+  "pixel_eqs_str": "a['zoom']=0.95; a['dx']=(1+((((a['q1']-0.5)*0.1)*a['x'])*a['rad'])); a['dy']=(1+((((a['q2']-0.5)*0.1)*a['y'])*a['rad'])); a['sx']=(1+(((a['q1']-0.5)*0.1)*a['x'])); a['sy']=(1+(((a['q2']-0.5)*0.1)*a['x']));",
+  "baseVals": {
+    "rating": 3,
+    "decay": 1,
+    "echo_zoom": 0.999604,
+    "echo_alpha": 0.5,
+    "wave_a": 0.001,
+    "rot": -1.499999,
+    "warp": 0.01,
+    "wave_r": 0,
+    "wave_g": 0,
+    "wave_b": 0,
+    "ob_a": 1,
+    "ib_r": 1,
+    "ib_g": 1,
+    "ib_b": 1,
+    "mv_x": 5.139158,
+    "mv_y": 3.854369,
+    "mv_l": 0.871413,
+    "mv_r": 0.714074,
+    "mv_g": 0.714074,
+    "mv_b": 0.714074,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

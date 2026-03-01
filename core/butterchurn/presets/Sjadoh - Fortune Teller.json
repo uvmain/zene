@@ -1,0 +1,84 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "a['trebble'] = 0; a['midd'] = 0;",
+  "frame_eqs_str": "a['zoom']=(a['zoom']+(0.313*((0.60*Math.sin(a['bass']))+(0.40*Math.sin(a['bass']))))); a['wave_r']=(a['wave_r']+a['bass']); a['wave_g']=(a['wave_g']+a['trebble']); a['wave_b']=(a['wave_b']+a['mid']);",
+  "pixel_eqs_str": "a['warp']=(2+(Math.sin((((5-(a['bass_att']*3))+a['trebble'])+a['midd']))*3));",
+  "baseVals": {
+    "gammaadj": 2.4,
+    "decay": 0.9,
+    "echo_zoom": 0.605984,
+    "echo_alpha": 0.2,
+    "wave_mode": 4,
+    "wave_brighten": 0,
+    "wrap": 0,
+    "darken_center": 1,
+    "bmotionvectorson": 0,
+    "mv_x": 1,
+    "mv_y": 1,
+    "wave_a": 100,
+    "wave_scale": 1.207771,
+    "wave_smoothing": 0.9,
+    "modwavealphastart": 1,
+    "modwavealphaend": 1,
+    "warpanimspeed": 0.591237,
+    "warpscale": 0.88027,
+    "zoomexp": 21.082397,
+    "fshader": 1,
+    "zoom": 2.38096,
+    "rot": 0.4,
+    "cx": 1.1,
+    "dx": 0.4,
+    "dy": -0.2,
+    "warp": 2.155453,
+    "sx": 1.347847
+  },
+  "warp": "",
+  "comp": ""
+}

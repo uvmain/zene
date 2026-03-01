@@ -1,0 +1,88 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['warp']=0; a['wave_r']=a['treb']; a['wave_g']=a['mid']; a['wave_b']=a['bass']; a['dy']=div(a['bass'],50);",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 1,
+    "decay": 0.99,
+    "echo_zoom": 0.999601,
+    "echo_alpha": 0.4999,
+    "wave_mode": 6,
+    "wave_brighten": 0,
+    "wrap": 0,
+    "bmotionvectorson": 0,
+    "brighten": 1,
+    "darken": 1,
+    "wave_a": 100,
+    "wave_scale": 0.199862,
+    "wave_smoothing": 0,
+    "modwavealphastart": 2,
+    "modwavealphaend": 2,
+    "warpscale": 1.000353,
+    "zoomexp": 1.000157,
+    "zoom": 0.999511,
+    "cx": 0.500001,
+    "cy": 0.05,
+    "warp": 0.01,
+    "sx": 1.000158,
+    "wave_r": 0,
+    "wave_g": 0,
+    "wave_b": 0,
+    "wave_x": 0.999,
+    "wave_y": 0,
+    "ob_size": 0.5,
+    "ob_r": 0.01,
+    "ib_size": 0.26
+  },
+  "warp": "",
+  "comp": ""
+}

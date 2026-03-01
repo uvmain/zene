@@ -1,0 +1,84 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['thresh'] = 0; a['dx_r'] = 0; a['dy_r'] = 0;",
+  "frame_eqs_str": "a['warp']=0; a['wave_r']=((a['wave_r']+(0.25*Math.cos((1.12*a['time']))))+(0.2*((0.3*Math.cos((1.28*a['time'])))+(0.317*Math.sin((1.8*a['time'])))))); a['wave_g']=((a['wave_g']+(0.25*Math.cos((1.142*a['time']))))+(0.2*((0.3*Math.cos((1.2*a['time'])))+(0.32*Math.sin((1.623*a['time'])))))); a['wave_b']=((a['wave_b']+(0.25*Math.cos((1.13*a['time']))))+(0.2*((0.4*Math.cos((0.9*a['time'])))+(0.328*Math.sin((1.5245*a['time'])))))); a['ob_r']=a['wave_r']; a['ob_g']=a['wave_b']; a['ob_b']=a['wave_g']; a['ib_r']=a['wave_g']; a['ib_g']=a['wave_r']; a['ib_b']=a['wave_b'];",
+  "pixel_eqs_str": "a['thresh']=((above(a['bass_att'], a['thresh'])*2)+((1-above(a['bass_att'], a['thresh']))*(((a['thresh']-1.3)*0.96)+1.3))); a['dx_r']=(((equal(a['thresh'], 2)*0.015)*Math.sin((5*a['time'])))+((1-equal(a['thresh'], 2))*a['dx_r'])); a['dy_r']=(((equal(a['thresh'], 2)*0.015)*Math.sin((6*a['time'])))+((1-equal(a['thresh'], 2))*a['dy_r'])); a['zoom']=(a['zoom']-Math.abs((0.01+(0.08*a['dx_r'])))); a['dx']=(a['dx']-(0.8*Math.sin(((4*Math.tan(((a['dy_r']*12)*Math.sin((4.1*a['dx_r'])))))*(1.25*Math.cos((6*a['rad']))))))); a['dy']=(a['dy']+(0.8*Math.sin(((4*Math.tan(((a['dx_r']*12)*Math.sin((4.13*a['dy_r'])))))*(1.05*Math.cos((6*a['rad']))))))); a['rot']=(a['rot']+(0.3*Math.sin(((12*Math.cos(((a['rad']*12)*Math.cos((0.5*a['time'])))))*(1.25*((0.5*Math.sin((2*a['time'])))*a['rad'])))))); a['zoom']=(a['zoom']-(0.2*Math.sin(Math.cos(Math.sin((-5*a['ang']))))));",
+  "baseVals": {
+    "rating": 4,
+    "gammaadj": 1.7,
+    "decay": 0.9,
+    "echo_zoom": 1,
+    "echo_alpha": 0.5,
+    "echo_orient": 3,
+    "wave_mode": 2,
+    "wrap": 0,
+    "wave_a": 0.011683,
+    "wave_scale": 1.074092,
+    "wave_smoothing": 0.5,
+    "modwavealphastart": 0.5,
+    "modwavealphaend": 1,
+    "fshader": 1,
+    "dx": 0.00001,
+    "dy": 0.00001,
+    "warp": 0.01,
+    "wave_g": 0.6,
+    "wave_b": 0.4,
+    "ob_size": 0.005,
+    "ob_r": 1,
+    "ob_a": 1,
+    "ib_size": 0.005,
+    "ib_r": 0,
+    "ib_g": 1,
+    "ib_b": 0,
+    "ib_a": 1,
+    "mv_x": 0,
+    "mv_y": 0,
+    "mv_l": 1,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

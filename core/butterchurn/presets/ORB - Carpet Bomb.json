@@ -1,0 +1,87 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "usedots": 1
+      },
+      "init_eqs_str": "a['val'] = 0; a['dx'] = 0; a['dy'] = 0; a['dz'] = 0; a['q1'] = 0; a['time_vol'] = 0; a['basstime'] = 0; a['t1'] = 0; ",
+      "frame_eqs_str": "a['basstime']=(a['basstime']+(a['bass_att']*0.02)); a['t1']=a['basstime'];",
+      "point_eqs_str": "a['val']=((a['sample']*6)*10); a['dx']=pow(Math.cos(a['sample']), 2); a['dy']=Math.sin(a['sample']); a['dz']=((Math.log(Math.sin(a['sample']))*5)*Math.sin(a['q1'])); a['time_vol']=(a['time_vol']+((a['bass']+a['mid'])*0.1)); a['x']=(((div(a['dx'],a['dz'])*0.5)+0.5)+(Math.sin(a['time_vol'])*0.1)); a['y']=(((div(a['dy'],a['dz'])*0.5)+0.5)+(Math.cos(a['time_vol'])*0.1)); a['g']=(0.5+(0.5*Math.sin((a['time']*2.55)))); a['r']=(0.5+(0.5*Math.sin((a['time']*1.66)))); a['b']=(0.5+(0.5*Math.sin((a['time']*2))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "usedots": 1
+      },
+      "init_eqs_str": "a['val'] = 0; a['dx'] = 0; a['dy'] = 0; a['dz'] = 0; a['q1'] = 0; a['time_vol'] = 0; a['basstime'] = 0; a['t1'] = 0; ",
+      "frame_eqs_str": "a['basstime']=(a['basstime']+(a['bass_att']*0.02)); a['t1']=a['basstime'];",
+      "point_eqs_str": "a['val']=((a['sample']*6)*10); a['dx']=pow(Math.cos(a['sample']), 2); a['dy']=Math.sin(a['sample']); a['dz']=((Math.log(Math.sin(a['sample']))*5)*Math.sin(a['q1'])); a['time_vol']=(a['time_vol']+((a['bass']+a['mid'])*0.1)); a['x']=(((div(a['dx'],a['dz'])*0.5)+0.5)+(Math.sin(a['time_vol'])*0.1)); a['y']=(((div(a['dy'],a['dz'])*0.5)+0.5)+(Math.cos(a['time_vol'])*0.1)); a['x']=(-a['x']+1); a['g']=(0.5+(0.5*Math.sin((a['time']*2.55)))); a['r']=(0.5+(0.5*Math.sin((a['time']*1.66)))); a['b']=(0.5+(0.5*Math.sin((a['time']*2))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "usedots": 1
+      },
+      "init_eqs_str": "a['val'] = 0; a['dx'] = 0; a['dy'] = 0; a['dz'] = 0; a['q1'] = 0; a['time_vol'] = 0; a['basstime'] = 0; a['t1'] = 0; ",
+      "frame_eqs_str": "a['basstime']=(a['basstime']+(a['bass_att']*0.02)); a['t1']=a['basstime'];",
+      "point_eqs_str": "a['val']=((a['sample']*6)*10); a['dx']=pow(Math.cos(a['sample']), 2); a['dy']=Math.sin(a['sample']); a['dz']=((Math.log(Math.sin(a['sample']))*5)*Math.sin(a['q1'])); a['time_vol']=(a['time_vol']+((a['bass']+a['mid'])*0.1)); a['x']=(((div(a['dx'],a['dz'])*0.5)+0.5)+(Math.sin(a['time_vol'])*0.1)); a['y']=(((div(a['dy'],a['dz'])*0.5)+0.5)+(Math.cos(a['time_vol'])*0.1)); a['x']=(-a['x']+1); a['y']=(-a['y']+1); a['g']=(0.5+(0.5*Math.sin((a['time']*2.55)))); a['r']=(0.5+(0.5*Math.sin((a['time']*1.66)))); a['b']=(0.5+(0.5*Math.sin((a['time']*2))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "usedots": 1
+      },
+      "init_eqs_str": "a['val'] = 0; a['dx'] = 0; a['dy'] = 0; a['dz'] = 0; a['q1'] = 0; a['time_vol'] = 0; a['basstime'] = 0; a['t1'] = 0; ",
+      "frame_eqs_str": "a['basstime']=(a['basstime']+(a['bass_att']*0.02)); a['t1']=a['basstime'];",
+      "point_eqs_str": "a['val']=((a['sample']*6)*10); a['dx']=pow(Math.cos(a['sample']), 2); a['dy']=Math.sin(a['sample']); a['dz']=((Math.log(Math.sin(a['sample']))*5)*Math.sin(a['q1'])); a['time_vol']=(a['time_vol']+((a['bass']+a['mid'])*0.1)); a['x']=(((div(a['dx'],a['dz'])*0.5)+0.5)+(Math.sin(a['time_vol'])*0.1)); a['y']=(((div(a['dy'],a['dz'])*0.5)+0.5)+(Math.cos(a['time_vol'])*0.1)); a['y']=(-a['y']+1); a['g']=(0.5+(0.5*Math.sin((a['time']*2.55)))); a['r']=(0.5+(0.5*Math.sin((a['time']*1.66)))); a['b']=(0.5+(0.5*Math.sin((a['time']*2))));"
+    }
+  ],
+  "init_eqs_str": "a['bass_clip'] = 0; a['marker'] = 0; a['q1'] = 0;",
+  "frame_eqs_str": "a['bass_clip']=((above(a['bass_att'], a['bass_clip'])*2)+((1-above(a['bass_att'], a['bass_clip']))*(((a['bass_clip']-1.3)*0.96)+1.3))); a['marker']=(a['marker']+((equal(a['bass_clip'], 2)*Math.floor(randint(100)))*0.1)); a['q1']=a['marker']; a['monitor']=a['marker'];",
+  "pixel_eqs_str": "a['zoom']=1.05; a['rot']=5;",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 4.5,
+    "decay": 0.980499,
+    "echo_zoom": 1.488267,
+    "darken": 1,
+    "solarize": 1,
+    "wave_a": 0.001,
+    "zoom": 0.99,
+    "rot": 6.199995,
+    "warp": 0.008264,
+    "wave_r": 0,
+    "wave_g": 0,
+    "wave_b": 0,
+    "wave_x": 0,
+    "wave_y": 0,
+    "ob_size": 0.005,
+    "ob_a": 1,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

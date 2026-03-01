@@ -17,7 +17,7 @@
 ### Fast, small and feature packed with smart caching
 - No rocket emojis - just good old optimisation
 - Light and Dark mode
-- Visualizations with [butterchurn](https://butterchurnviz.com/)
+- Visualizations with [butterchurn](https://butterchurnviz.com/) and a curated select of presets from [Ansorre's collection](https://github.com/ansorre/tens-of-thousands-milkdrop-presets-for-butterchurn/tree/master)
 
   ![butterchurn](./docs/assets/butterchurn-fullscreen.webp)
 - All transcoded audio is cached locally and cleaned with smart rules
@@ -59,6 +59,7 @@ Supports the following OpenSubsonic API extensions:
 - `updateAlbumArt` Accepts an `id` parameter and a `file` form blob to update album art. Only admins can call this endpoint.
 - `getArtistList` Like getAlbumList, requires `type` param which can be: `starred`, `random`, `newest`, `highest`, `frequent`, `recent` or `alphabetical`. If type=random, accepts an optional `seed` param (integer) to get deterministic results.
 - `refreshPodcast` Like refreshPodcasts, but for a single channel. Requires an `id` parameter.
+- `getbutterchurnpresets` Accepts `count: number` and `random: boolean` parameters. Returns `[{ name: 'presetName', preset: 'presetJson' }]`
 
 ## Versioning
 This project uses a [calver](https://calver.org/) versioning system like `pip`

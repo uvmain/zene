@@ -8,6 +8,7 @@ import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 
 import 'virtual:uno.css'
+import '@unocss/reset/tailwind.css'
 import '~/styles/themeTransition.css'
 
 createEpisodeStoreIfNotExists()

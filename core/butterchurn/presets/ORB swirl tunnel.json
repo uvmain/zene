@@ -1,0 +1,75 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['basstime'] = 0;",
+  "frame_eqs_str": "a['basstime']=(a['basstime']+(a['bass_att']*0.001)); a['mv_x']=(a['mv_x']+Math.abs((6*Math.sin((a['time']*0.2))))); a['mv_y']=(a['mv_x']+Math.abs((6*Math.sin((a['time']*0.2))))); a['zoom']=a['zoom']; a['rot']=(a['rot']*a['basstime']);",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 2.47,
+    "echo_zoom": 1.567,
+    "wave_mode": 1,
+    "wrap": 0,
+    "invert": 1,
+    "wave_scale": 0.020068,
+    "zoom": 1.124762,
+    "rot": -8.480003,
+    "dy": -0.005,
+    "sy": 0.5396,
+    "wave_r": 0.26,
+    "wave_g": 0.14,
+    "wave_b": 0.24,
+    "wave_x": 0,
+    "wave_y": 0,
+    "ob_size": 0.5,
+    "ib_r": 1,
+    "ib_g": 0.12,
+    "mv_x": 0,
+    "mv_y": 0,
+    "mv_l": 5
+  },
+  "warp": "",
+  "comp": ""
+}

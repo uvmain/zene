@@ -1,0 +1,106 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 3,
+        "thickoutline": 1,
+        "rad": 0.29874,
+        "tex_zoom": 1.2059,
+        "g": 1,
+        "r2": 1,
+        "g2": 0.1,
+        "a2": 1,
+        "border_g": 0.6,
+        "border_a": 1
+      },
+      "init_eqs_str": "a['treble'] = 0; ",
+      "frame_eqs_str": "a['ang']=(4.2*Math.sin(a['time'])); a['sides']=(3+(2.5*((a['bass']+a['mid'])+a['treble'])));"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "scaling": 0.3116,
+        "smoothing": 0,
+        "r": 0,
+        "g": 0,
+        "a": 0.5
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {
+        "enabled": 1,
+        "usedots": 1,
+        "thick": 1,
+        "scaling": 0.60804,
+        "smoothing": 1,
+        "g": 0,
+        "b": 0
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['wave_r']=(a['wave_r']+(1*((0.60*Math.sin((0.933*a['treb'])))+(0.40*Math.sin((1.045*a['time'])))))); a['wave_b']=(a['wave_b']+(1*((1.60*Math.sin((1.900*a['bass'])))+(0.40*Math.sin((0.956*a['time']))))));",
+  "pixel_eqs_str": "",
+  "baseVals": {
+    "rating": 5,
+    "decay": 0.999,
+    "echo_zoom": 1,
+    "echo_alpha": 0.5,
+    "echo_orient": 1,
+    "additivewave": 1,
+    "darken": 1,
+    "wave_a": 0.498,
+    "wave_scale": 1.002,
+    "wave_smoothing": 0.9,
+    "modwavealphastart": 1,
+    "modwavealphaend": 1,
+    "warpscale": 6.986,
+    "zoomexp": 0.01,
+    "zoom": 1.09351,
+    "warp": 1.9504,
+    "wave_b": 0,
+    "ob_a": 0.5,
+    "mv_x": 0,
+    "mv_y": 0,
+    "mv_l": 1,
+    "mv_r": 0,
+    "mv_b": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

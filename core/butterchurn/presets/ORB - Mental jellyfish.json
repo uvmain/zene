@@ -1,0 +1,79 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 1,
+        "sides": 3,
+        "thickoutline": 1,
+        "rad": 0.325446,
+        "r": 0,
+        "a2": 1,
+        "border_r": 0,
+        "border_g": 0,
+        "border_b": 0,
+        "border_a": 1
+      },
+      "init_eqs_str": " ",
+      "frame_eqs_str": "a['r2']=((Math.abs(above(Math.sin((a['time']*50)), 0))>0.00001)?(1):(0)); a['b2']=((Math.abs(above(Math.sin((a['time']*50)), 0))>0.00001)?(0):(1)); a['g2']=0; a['border_r']=((Math.abs(above(Math.sin((a['time']*50)), 0))>0.00001)?(1):(0)); a['border_b']=((Math.abs(above(Math.sin((a['time']*50)), 0))>0.00001)?(0):(1)); a['border_g']=0; a['ang']=(a['time']*4); a['x']=(a['x']+(0.4*Math.sin(((a['time']*400)*a['rad'])))); a['y']=(a['y']+(0.4*Math.cos(((a['time']*400)*a['rad']))));"
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "init_eqs_str": "a['bass_clip'] = 0; a['inc'] = 0; a['ori'] = 0; a['bass_clip']=2;",
+  "frame_eqs_str": "a['bass_clip']=((above(a['bass_att'], a['bass_clip'])*2)+((1-above(a['bass_att'], a['bass_clip']))*(((a['bass_clip']-1.3)*0.96)+1.3))); a['inc']=(a['inc']+(equal(a['bass_clip'], 2)*0.5)); a['ori']=(a['ori']+(equal(a['bass_clip'], 2)*1)); a['ori']=((Math.abs(above(a['ori'], 3))>0.00001)?(1):(a['ori'])); a['echo_orient']=a['ori']; a['cy']=(0.5+(0.4*Math.sin(a['inc']))); a['cx']=(0.5+(0.4*Math.sin((a['inc']+3.14))));",
+  "pixel_eqs_str": "a['rot']=(0+((a['bass_att']*0.05)*a['rad'])); a['zoom']=(1-(a['bass']*0.05));",
+  "baseVals": {
+    "rating": 3,
+    "echo_zoom": 1.000477,
+    "echo_alpha": 0.5,
+    "echo_orient": 2,
+    "wave_mode": 6,
+    "wave_dots": 1,
+    "wave_a": 0.001,
+    "warpscale": 100,
+    "zoom": 0.97,
+    "rot": -1.539999,
+    "warp": 0.031381,
+    "wave_r": 0,
+    "wave_b": 0,
+    "mv_l": 0,
+    "mv_a": 0
+  },
+  "warp": "",
+  "comp": ""
+}

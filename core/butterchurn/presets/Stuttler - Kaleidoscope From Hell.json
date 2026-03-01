@@ -1,0 +1,82 @@
+{
+  "shapes": [
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    },
+    {
+      "baseVals": {
+        "enabled": 0
+      }
+    }
+  ],
+  "waves": [
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    },
+    {
+      "baseVals": {},
+      "init_eqs_str": " ",
+      "frame_eqs_str": "",
+      "point_eqs_str": ""
+    }
+  ],
+  "init_eqs_str": "",
+  "frame_eqs_str": "a['wave_r']=(a['wave_r']+(0.400*((0.60*Math.sin((0.933*a['time'])))+(0.40*Math.sin((1.045*a['time'])))))); a['wave_g']=(a['wave_g']+(0.400*((0.60*Math.sin((0.900*a['time'])))+(0.40*Math.sin((0.956*a['time'])))))); a['wave_b']=(a['wave_b']+(0.400*((0.60*Math.sin((0.910*a['time'])))+(0.40*Math.sin((0.920*a['time'])))))); a['zoom']=Math.max(0.98, Math.min((0.15+(0.48*a['bass_att'])), 0.75)); a['rot']=(a['rot']+(0.040*((0.60*Math.sin((0.381*a['time'])))+(0.40*Math.sin((0.579*a['time']))))));",
+  "pixel_eqs_str": "a['zoom']=(a['zoom']+(0.17*Math.sin(((a['rad']*15)+(a['time']*1.5)))));",
+  "baseVals": {
+    "rating": 3,
+    "gammaadj": 2.9,
+    "echo_zoom": 2.695697,
+    "echo_alpha": 0.5,
+    "wave_mode": 2,
+    "additivewave": 1,
+    "wave_dots": 1,
+    "modwavealphabyvolume": 1,
+    "bmotionvectorson": 1,
+    "red_blue": 1,
+    "mv_x": 7,
+    "mv_y": 7,
+    "wave_a": 0.027153,
+    "wave_scale": 0.1986,
+    "wave_smoothing": 0.7,
+    "warpanimspeed": 5.99579,
+    "warpscale": 21.254658,
+    "zoomexp": 0.1347,
+    "fshader": 1,
+    "zoom": 0.425966,
+    "rot": 0.12,
+    "warp": 0.01,
+    "wave_r": 0.5,
+    "wave_g": 0.5,
+    "wave_b": 0.5
+  },
+  "warp": "",
+  "comp": ""
+}
