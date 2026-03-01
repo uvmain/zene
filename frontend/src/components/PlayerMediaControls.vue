@@ -17,6 +17,19 @@ async function handleGetRandomTracks() {
   }
 }
 
+const repeatAbbreviation = computed(() => {
+  switch (repeatStatus.value) {
+    case 'off':
+      return 'repeat 1'
+    case '1':
+      return 'repeat all'
+    case 'all':
+      return 'repeat off'
+    default:
+      return 'repeat off'
+  }
+})
+
 onKeyStroke('MediaPlayPause', (e) => {
   e.preventDefault()
   togglePlayback()
@@ -46,20 +59,26 @@ onKeyStroke('MediaStop', (e) => {
       'gap-x-1': compact,
     }"
   >
-    <button id="repeat" class="media-control-button" @click="stopPlayback()">
-      <icon-nrk-media-stop class="footer-icon" />
-    </button>
-    <button id="shuffle" class="media-control-button" @click="toggleShuffle()">
-      <icon-ion-shuffle-sharp
-        :class="{
-          'footer-icon': !shuffleEnabled,
-          'footer-icon-on': shuffleEnabled,
-        }"
-      />
-    </button>
-    <button id="back" class="media-control-button" @click="handlePreviousTrack()">
-      <icon-nrk-media-previous class="footer-icon" />
-    </button>
+    <abbr title="Stop playback">
+      <button id="repeat" class="media-control-button" @click="stopPlayback()">
+        <icon-nrk-media-stop class="footer-icon" />
+      </button>
+    </abbr>
+    <abbr title="Shuffle">
+      <button id="shuffle" class="media-control-button" @click="toggleShuffle()">
+        <icon-ion-shuffle-sharp
+          :class="{
+            'footer-icon': !shuffleEnabled,
+            'footer-icon-on': shuffleEnabled,
+          }"
+        />
+      </button>
+    </abbr>
+    <abbr title="Previous track">
+      <button id="back" class="media-control-button" @click="handlePreviousTrack()">
+        <icon-nrk-media-previous class="footer-icon" />
+      </button>
+    </abbr>
     <ZButton
       v-if="!compact"
       id="play-pause"
@@ -72,33 +91,41 @@ onKeyStroke('MediaStop', (e) => {
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
       <icon-nrk-media-pause v-else class="footer-icon" />
     </ZButton>
-    <button v-else id="play-pause-compact" class="media-control-button" @click="togglePlayback()">
-      <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
-      <icon-nrk-media-pause v-else class="footer-icon" />
-    </button>
-    <button id="forward" class="media-control-button" @click="handleNextTrack()">
-      <icon-nrk-media-next class="footer-icon" />
-    </button>
-    <button id="repeat" class="relative media-control-button" @click="toggleRepeat">
-      <icon-nrk-media-jumpto
-        :class="{
-          'footer-icon': repeatStatus === 'off',
-          'footer-icon-on': repeatStatus !== 'off',
-        }"
-      />
-      <span
-        v-if="repeatStatus !== 'off'"
-        class="absolute top-0 w-4 text-left text-xs text-primary2 -right-1"
+    <abbr v-else title="Play/Pause">
+      <button id="play-pause-compact" class="media-control-button" @click="togglePlayback()">
+        <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
+        <icon-nrk-media-pause v-else class="footer-icon" />
+      </button>
+    </abbr>
+    <abbr title="Next track">
+      <button id="forward" class="media-control-button" @click="handleNextTrack()">
+        <icon-nrk-media-next class="footer-icon" />
+      </button>
+    </abbr>
+    <abbr :title="repeatAbbreviation">
+      <button id="repeat" class="relative media-control-button" @click="toggleRepeat">
+        <icon-nrk-media-jumpto
+          :class="{
+            'footer-icon': repeatStatus === 'off',
+            'footer-icon-on': repeatStatus !== 'off',
+          }"
+        />
+        <span
+          v-if="repeatStatus !== 'off'"
+          class="absolute top-0 w-4 text-left text-xs text-primary2 -right-1"
+        >
+          {{ repeatStatus }}
+        </span>
+      </button>
+    </abbr>
+    <abbr title="Play random tracks">
+      <button
+        id="shuffle"
+        class="media-control-button"
+        @click="handleGetRandomTracks()"
       >
-        {{ repeatStatus }}
-      </span>
-    </button>
-    <button
-      id="shuffle"
-      class="media-control-button"
-      @click="handleGetRandomTracks()"
-    >
-      <icon-nrk-dice-3-active class="footer-icon" />
-    </button>
+        <icon-nrk-dice-3-active class="footer-icon" />
+      </button>
+    </abbr>
   </div>
 </template>

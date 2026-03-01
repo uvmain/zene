@@ -22,7 +22,7 @@ const meshSize = { x: 48, y: 36 }
 let animationFrameId: number | null = null
 let presetInterval: NodeJS.Timeout | null = null
 const intervalSeconds = 25.0
-const blendSeconds = 2.7
+const blendSeconds = 0 // 2.7
 
 function renderLoop() {
   if (visualizer.value != null) {
@@ -142,9 +142,13 @@ onKeyStroke(['F', 'f'], (e) => {
   toggleFullscreen()
 })
 
-watch(currentlyPlayingTrack, (old, current) => {
-  if (old !== current) {
+watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
+  if (newTrack !== oldTrack) {
     loadRandomPreset()
+    const launchText = newTrack
+      ? `${newTrack.artist}: ${newTrack.title}`
+      : 'No track playing'
+    visualizer.value?.launchSongTitleAnim(launchText)
   }
 })
 
@@ -193,13 +197,16 @@ onUnmounted(() => {
 
 <template>
   <div ref="grid" class="group grid h-100dvh w-full">
+    <div v-if="!audioContext" class="corner-cut z-2 col-span-full row-span-full flex items-center justify-center bg-zshade-300/60 px-4 py-2 text-sm backdrop-blur-xl dark:bg-zshade-900/60">
+      No audio context available yet. Play a track to see the visualizer.
+    </div>
     <canvas ref="canvas" class="z-1 col-span-full row-span-full h-full w-full" />
     <div
       class="corner-cut z-2 col-span-full row-span-full w-80 bg-cover bg-center text-primary transition-opacity duration-1000 transition-ease-out group-hover:opacity-100"
       :class="{
         'opacity-100': initialFadeIn,
         'opacity-0': !initialFadeIn,
-        'fixed bottom-4 right-4': isFullScreen,
+        'm-auto lg:(fixed bottom-4 right-4)': isFullScreen,
         'mb-2 ml-auto mr-2 mt-auto': !isFullScreen,
       }"
     >
