@@ -17,6 +17,19 @@ async function handleGetRandomTracks() {
   }
 }
 
+const repeatAbbreviation = computed(() => {
+  switch (repeatStatus.value) {
+    case 'off':
+      return 'repeat 1'
+    case '1':
+      return 'repeat all'
+    case 'all':
+      return 'repeat off'
+    default:
+      return 'repeat off'
+  }
+})
+
 onKeyStroke('MediaPlayPause', (e) => {
   e.preventDefault()
   togglePlayback()
@@ -46,10 +59,10 @@ onKeyStroke('MediaStop', (e) => {
       'gap-x-1': compact,
     }"
   >
-    <button id="repeat" class="media-control-button" @click="stopPlayback()">
+    <button id="repeat" title="Stop playback" class="media-control-button" @click="stopPlayback()">
       <icon-nrk-media-stop class="footer-icon" />
     </button>
-    <button id="shuffle" class="media-control-button" @click="toggleShuffle()">
+    <button id="shuffle" title="Shuffle" class="media-control-button" @click="toggleShuffle()">
       <icon-ion-shuffle-sharp
         :class="{
           'footer-icon': !shuffleEnabled,
@@ -57,7 +70,7 @@ onKeyStroke('MediaStop', (e) => {
         }"
       />
     </button>
-    <button id="back" class="media-control-button" @click="handlePreviousTrack()">
+    <button id="back" title="Previous track" class="media-control-button" @click="handlePreviousTrack()">
       <icon-nrk-media-previous class="footer-icon" />
     </button>
     <ZButton
@@ -72,14 +85,14 @@ onKeyStroke('MediaStop', (e) => {
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
       <icon-nrk-media-pause v-else class="footer-icon" />
     </ZButton>
-    <button v-else id="play-pause-compact" class="media-control-button" @click="togglePlayback()">
+    <button v-else id="play-pause-compact" title="Play/Pause" class="media-control-button" @click="togglePlayback()">
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
       <icon-nrk-media-pause v-else class="footer-icon" />
     </button>
-    <button id="forward" class="media-control-button" @click="handleNextTrack()">
+    <button id="forward" title="Next track" class="media-control-button" @click="handleNextTrack()">
       <icon-nrk-media-next class="footer-icon" />
     </button>
-    <button id="repeat" class="relative media-control-button" @click="toggleRepeat">
+    <button id="repeat" :title="repeatAbbreviation" class="relative media-control-button" @click="toggleRepeat">
       <icon-nrk-media-jumpto
         :class="{
           'footer-icon': repeatStatus === 'off',
@@ -95,6 +108,7 @@ onKeyStroke('MediaStop', (e) => {
     </button>
     <button
       id="shuffle"
+      title="Play random tracks"
       class="media-control-button"
       @click="handleGetRandomTracks()"
     >

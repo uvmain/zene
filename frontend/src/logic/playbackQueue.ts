@@ -21,6 +21,7 @@ export const trackUrl = ref('')
 export const audioElement = ref<HTMLAudioElement | null>(null)
 export const audioNode = ref<AudioNode | null>(null)
 export const audioContext = ref<AudioContext | null>(null)
+export const isMuted = ref(false)
 const previousIndexes = ref<number[]>([])
 
 export function resetCurrentlyPlayingTrack() {
@@ -210,10 +211,12 @@ export function toggleMute() {
       previousVolume.value = audioElement.value.volume
       audioElement.value.volume = 0
       currentVolume.value = 0
+      isMuted.value = true
     }
     else {
       audioElement.value.volume = previousVolume.value
       currentVolume.value = previousVolume.value
+      isMuted.value = false
     }
   }
 }

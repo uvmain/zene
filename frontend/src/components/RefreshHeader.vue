@@ -22,7 +22,11 @@ async function refresh() {
     <ZButton @click="emits('titleClick')">
       <span class="text-sm lg:text-base">{{ title }}</span>
     </ZButton>
-    <icon-nrk-refresh class="cursor-pointer text-sm hover:text-primary2" :class="{ spin: refreshed }" @click="refresh()" />
+    <abbr title="Refresh">
+      <button class="flex items-center justify-center" @click="refresh()">
+        <icon-nrk-refresh class="cursor-pointer text-sm hover:text-primary2" :class="{ spin: refreshed }" />
+      </button>
+    </abbr>
   </div>
 </template>
 
