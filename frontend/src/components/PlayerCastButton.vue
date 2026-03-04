@@ -1,22 +1,27 @@
 <script setup lang="ts">
-// import type { SubsonicSong } from '~/types/subsonicSong'
-// import { debugLog } from '~/logic/logger'
+import type { SubsonicSong } from '~/types/subsonicSong'
+import { debugLog } from '~/logic/logger'
+import { setCurrentlyPlayingTrack } from '~/logic/playbackQueue'
 
-// const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
-// const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
-// const session = ref<cast.framework.CastSession | null>(null)
-// const isCasting = ref(false)
+const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
+const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
+const castContext = ref<cast.framework.CastContext | null>(null)
+const session = ref<cast.framework.CastSession | null>(null)
+const isCasting = ref(false)
 // const castProgressInterval = ref<NodeJS.Timeout | null>(null)
 
-// function initializeCast() {
-//   const context = cast.framework.CastContext.getInstance()
-//   context.setOptions({
-//     receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-//     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-//   })
+function initializeCast() {
+  castContext.value = cast.framework.CastContext.getInstance()
+  castContext.value.setOptions({
+    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+  })
 
-//   debugLog('CastContext initialized')
-// }
+  // castContext.value.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+  // castContext.value.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
+
+  debugLog('CastContext initialized')
+}
 
 // function toggleMute() {
 //   if (isCasting.value && castPlayerController.value) {
@@ -28,9 +33,6 @@
 //   if (!castPlayer.value) {
 //     castPlayer.value = new cast.framework.RemotePlayer()
 //     castPlayerController.value = new cast.framework.RemotePlayerController(castPlayer.value)
-
-//     castPlayerController.value.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-//     castPlayerController.value.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
 
 //     // Listen for remote player events
 //     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
@@ -47,20 +49,20 @@
 //   }
 // }
 
-// function cleanupCastPlayer() {
-//   if (castPlayerController.value) {
-//     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
-//     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
-//     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
-//     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
-//     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
-//     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onCastMediaInfoChanged)
-//   }
+function cleanupCastPlayer() {
+  if (castPlayerController.value) {
+    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
+    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
+    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
+    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
+    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
+    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onCastMediaInfoChanged)
+  }
 
-//   stopCastProgressTracking()
-//   castPlayer.value = null
-//   castPlayerController.value = null
-// }
+  // stopCastProgressTracking()
+  castPlayer.value = null
+  castPlayerController.value = null
+}
 
 // function onCastConnectionChanged() {
 //   if (castPlayer.value && !castPlayer.value.isConnected) {
@@ -191,42 +193,42 @@
 //   }
 // }
 
-// function updateCastState() {
-//   const context = cast.framework.CastContext.getInstance()
-//   const currentSession = context.getCurrentSession()
+function updateCastState() {
+  const context = cast.framework.CastContext.getInstance()
+  const currentSession = context.getCurrentSession()
 
-//   // Check if we're transitioning from casting to local
-//   if (session.value && !currentSession && isCasting.value) {
-//     // Cast session ended, prepare to resume local playback
-//     isTransitioningFromCast.value = true
-//     debugLog('Cast session ended, preparing to resume local playback')
+  // Check if we're transitioning from casting to local
+  if (session.value && !currentSession && isCasting.value) {
+    // Cast session ended, prepare to resume local playback
+    // isTransitioningFromCast.value = true
+    debugLog('Cast session ended, preparing to resume local playback')
 
-//     // Capture the last known cast position before cleanup
-//     if (castPlayer.value && castPlayer.value.isConnected) {
-//       savedLocalPosition.value = castPlayer.value.currentTime
-//       debugLog(`Captured cast position: ${savedLocalPosition.value}s`)
-//     }
-//   }
+    // Capture the last known cast position before cleanup
+    if (castPlayer.value && castPlayer.value.isConnected) {
+      // savedLocalPosition.value = castPlayer.value.currentTime
+      // debugLog(`Captured cast position: ${savedLocalPosition.value}s`)
+    }
+  }
 
-//   session.value = currentSession
+  //   session.value = currentSession
 
-//   if (session.value) {
-//     isCasting.value = true
-//     setupCastPlayer()
-//   }
-//   else {
-//     const wasPlayingBeforeTransition = isCasting.value && isPlaying.value
-//     isCasting.value = false
-//     cleanupCastPlayer()
+  //   if (session.value) {
+  //     isCasting.value = true
+  //     setupCastPlayer()
+  //   }
+  //   else {
+  //     const wasPlayingBeforeTransition = isCasting.value && isPlaying.value
+  //     isCasting.value = false
+  //     cleanupCastPlayer()
 
-//     // Resume local playback if we were playing before and have a track
-//     if (isTransitioningFromCast.value && wasPlayingBeforeTransition && currentlyPlayingTrack.value && audioPlayer.value) {
-//       resumeLocalPlayback()
-//     }
+  //     // Resume local playback if we were playing before and have a track
+  //     if (isTransitioningFromCast.value && wasPlayingBeforeTransition && currentlyPlayingTrack.value && audioPlayer.value) {
+  //       resumeLocalPlayback()
+  //     }
 
 //     isTransitioningFromCast.value = false
 //   }
-// }
+}
 
 // function onCastStateChanged(event: any) {
 //   debugLog(`Cast state changed:', ${event.castState}`)
@@ -251,41 +253,41 @@
 //   updateCastState()
 // }
 
-// onMounted(async () => {
-//   debugLog('Waiting for Cast SDK...')
+onMounted(async () => {
+  debugLog('Waiting for Cast SDK...')
 
-//   // Hook for when the SDK becomes available (in case it's not already)
-//   window.__onGCastApiAvailable = (isAvailable: boolean) => {
-//     debugLog(`Cast API available (async): ${isAvailable}`)
-//     if (isAvailable) {
-//       initializeCast()
-//       updateCastState() // Initialize cast state
-//     }
-//     else {
-//       console.warn('Cast API not available')
-//     }
-//   }
+  // Hook for when the SDK becomes available (in case it's not already)
+  window.__onGCastApiAvailable = (isAvailable: boolean) => {
+    debugLog(`Cast API available (async): ${isAvailable}`)
+    if (isAvailable) {
+      initializeCast()
+      updateCastState() // Initialize cast state
+    }
+    else {
+      console.warn('Cast API not available')
+    }
+  }
 
-//   // If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
-//   // we have to check manually and initialize right now
-//   if ((window.cast && window.cast.isAvailable) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
-//     debugLog('Cast API already available (sync)')
-//     initializeCast()
-//     updateCastState() // Initialize cast state
-//   }
-// })
+  // If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
+  // we have to check manually and initialize right now
+  if ((window.cast && window.cast.framework) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
+    debugLog('Cast API already available (sync)')
+    initializeCast()
+    updateCastState() // Initialize cast state
+  }
+})
 
-// onUnmounted(() => {
-//   // Clean up cast resources
-//   cleanupCastPlayer()
+onUnmounted(() => {
+  // Clean up cast resources
+  cleanupCastPlayer()
 
-//   // Remove cast context listeners
-//   const context = cast.framework.CastContext.getInstance()
-//   if (context) {
-//     context.removeEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-//     context.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
-//   }
-// })
+  // Remove cast context listeners
+  const context = cast.framework.CastContext.getInstance()
+  if (context) {
+    // context.removeEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+    // context.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
+  }
+})
 
 // function onCastMuteChanged() {
 //   if (castPlayer.value) {

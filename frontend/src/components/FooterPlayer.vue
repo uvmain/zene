@@ -11,7 +11,7 @@
         <PlayerMediaControls />
       </div>
       <div class="flex flex-row items-center gap-x-4">
-        <!-- <PlayerCastButton /> -->
+        <PlayerCastButton />
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />

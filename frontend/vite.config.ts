@@ -23,11 +23,11 @@ export default defineConfig({
       viteOptimizeDeps: true,
     }),
     vue({
-      // template: {
-      //   compilerOptions: {
-      //     isCustomElement: tag => tag === 'google-cast-launcher',
-      //   },
-      // },
+      template: {
+        compilerOptions: {
+          isCustomElement: tag => tag === 'google-cast-launcher',
+        },
+      },
     }),
     Unfonts({
       google: {
