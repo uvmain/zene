@@ -1,118 +1,8 @@
 <script setup lang="ts">
-import type { SubsonicSong } from '~/types/subsonicSong'
+import { chromecastAvailable, cleanupCastPlayer, initializeCast } from '~/logic/chromecast'
 import { debugLog } from '~/logic/logger'
-import { setCurrentlyPlayingTrack } from '~/logic/playbackQueue'
 
-const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
-const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
-const castContext = ref<cast.framework.CastContext | null>(null)
-const session = ref<cast.framework.CastSession | null>(null)
-const isCasting = ref(false)
-// const castProgressInterval = ref<NodeJS.Timeout | null>(null)
-
-function initializeCast() {
-  castContext.value = cast.framework.CastContext.getInstance()
-  castContext.value.setOptions({
-    receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-    autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-  })
-
-  // castContext.value.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-  // castContext.value.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
-
-  debugLog('CastContext initialized')
-}
-
-// function toggleMute() {
-//   if (isCasting.value && castPlayerController.value) {
-//     castPlayerController.value.muteOrUnmute()
-//   }
-// }
-
-// function setupCastPlayer() {
-//   if (!castPlayer.value) {
-//     castPlayer.value = new cast.framework.RemotePlayer()
-//     castPlayerController.value = new cast.framework.RemotePlayerController(castPlayer.value)
-
-//     // Listen for remote player events
-//     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
-//     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
-//     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
-//     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
-//     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
-
-//     // Listen for media info changes to detect track changes on the remote player
-//     castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onCastMediaInfoChanged)
-
-//     // Start progress tracking for cast
-//     startCastProgressTracking()
-//   }
-// }
-
-function cleanupCastPlayer() {
-  if (castPlayerController.value) {
-    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_PAUSED_CHANGED, onCastPlayerStateChanged)
-    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.CURRENT_TIME_CHANGED, onCastTimeChanged)
-    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.VOLUME_LEVEL_CHANGED, onCastVolumeChanged)
-    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_MUTED_CHANGED, onCastMuteChanged)
-    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
-    // castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onCastMediaInfoChanged)
-  }
-
-  // stopCastProgressTracking()
-  castPlayer.value = null
-  castPlayerController.value = null
-}
-
-// function onCastConnectionChanged() {
-//   if (castPlayer.value && !castPlayer.value.isConnected) {
-//     debugLog('Cast device disconnected unexpectedly')
-//     // Capture position before losing connection
-//     if (castPlayer.value.currentTime > 0) {
-//       savedLocalPosition.value = castPlayer.value.currentTime
-//       debugLog(`Position captured on disconnect: ${savedLocalPosition.value}s`)
-//     }
-//   }
-//   // Update cast state to handle potential transition back to local playback
-//   updateCastState()
-// }
-
-// function startCastProgressTracking() {
-//   if (castProgressInterval.value) {
-//     clearInterval(castProgressInterval.value)
-//   }
-
-//   castProgressInterval.value = setInterval(() => {
-//     if (castPlayer.value && castPlayer.value.isConnected) {
-//       updateProgress()
-//     }
-//   }, 1000) // Update every second
-// }
-
-// function stopCastProgressTracking() {
-//   if (castProgressInterval.value) {
-//     clearInterval(castProgressInterval.value)
-//     castProgressInterval.value = null
-//   }
-// }
-
-// function onCastPlayerStateChanged() {
-//   if (castPlayer.value) {
-//     isPlaying.value = !castPlayer.value.isPaused
-//   }
-// }
-
-// function onCastTimeChanged() {
-//   if (castPlayer.value) {
-//     currentTime.value = castPlayer.value.currentTime
-//   }
-// }
-
-// function onCastVolumeChanged() {
-//   if (castPlayer.value) {
-//     currentVolume.value = castPlayer.value.volumeLevel
-//   }
-// }
+const castButton = useTemplateRef('castButton')
 
 // async function castAudio() {
 //   const context = cast.framework.CastContext.getInstance()
@@ -192,190 +82,55 @@ function cleanupCastPlayer() {
 //     isTransitioningToCast.value = false
 //   }
 // }
-
-function updateCastState() {
-  const context = cast.framework.CastContext.getInstance()
-  const currentSession = context.getCurrentSession()
-
-  // Check if we're transitioning from casting to local
-  if (session.value && !currentSession && isCasting.value) {
-    // Cast session ended, prepare to resume local playback
-    // isTransitioningFromCast.value = true
-    debugLog('Cast session ended, preparing to resume local playback')
-
-    // Capture the last known cast position before cleanup
-    if (castPlayer.value && castPlayer.value.isConnected) {
-      // savedLocalPosition.value = castPlayer.value.currentTime
-      // debugLog(`Captured cast position: ${savedLocalPosition.value}s`)
-    }
+function updateStyle(elem: HTMLElement) {
+  const shadow = elem.shadowRoot
+  if (!shadow)
+    return
+  const styleNode = shadow.querySelector('style')
+  if (styleNode) {
+    styleNode.textContent = '.cast_caf_state_c {fill: hsl(32 100% 50%);}.cast_caf_state_d {fill: var(--disconnected-color, #7d7d7d);}.cast_caf_state_h {opacity: 0;}'
   }
-
-  //   session.value = currentSession
-
-  //   if (session.value) {
-  //     isCasting.value = true
-  //     setupCastPlayer()
-  //   }
-  //   else {
-  //     const wasPlayingBeforeTransition = isCasting.value && isPlaying.value
-  //     isCasting.value = false
-  //     cleanupCastPlayer()
-
-  //     // Resume local playback if we were playing before and have a track
-  //     if (isTransitioningFromCast.value && wasPlayingBeforeTransition && currentlyPlayingTrack.value && audioPlayer.value) {
-  //       resumeLocalPlayback()
-  //     }
-
-//     isTransitioningFromCast.value = false
-//   }
 }
-
-// function onCastStateChanged(event: any) {
-//   debugLog(`Cast state changed:', ${event.castState}`)
-//   updateCastState()
-// }
-
-// function onSessionStateChanged(event: any) {
-//   debugLog(`Session state changed: ${event.sessionState}`)
-
-//   // Handle specific session states for better transition management
-//   if (event.sessionState === cast.framework.SessionState.SESSION_ENDED
-//     || event.sessionState === cast.framework.SessionState.SESSION_ENDING) {
-//     debugLog('Cast session ending/ended')
-
-//     // Capture final cast position if available
-//     if (castPlayer.value && castPlayer.value.isConnected) {
-//       savedLocalPosition.value = castPlayer.value.currentTime
-//       debugLog(`Final cast position captured: ${savedLocalPosition.value}s`)
-//     }
-//   }
-
-//   updateCastState()
-// }
 
 onMounted(async () => {
   debugLog('Waiting for Cast SDK...')
-
-  // Hook for when the SDK becomes available (in case it's not already)
   window.__onGCastApiAvailable = (isAvailable: boolean) => {
-    debugLog(`Cast API available (async): ${isAvailable}`)
     if (isAvailable) {
+      debugLog('Cast API available')
+      chromecastAvailable.value = true
       initializeCast()
-      updateCastState() // Initialize cast state
     }
     else {
-      console.warn('Cast API not available')
+      debugLog('Cast API unavailable')
     }
   }
 
-  // If the SDK already loaded and called __onGCastApiAvailable BEFORE this script ran
-  // we have to check manually and initialize right now
+  // If the SDK already loaded, manually check and initialize
   if ((window.cast && window.cast.framework) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
-    debugLog('Cast API already available (sync)')
+    debugLog('Cast API already available')
+    chromecastAvailable.value = true
     initializeCast()
-    updateCastState() // Initialize cast state
   }
+
+  updateStyle(castButton.value)
 })
 
 onUnmounted(() => {
-  // Clean up cast resources
   cleanupCastPlayer()
-
-  // Remove cast context listeners
-  const context = cast.framework.CastContext.getInstance()
-  if (context) {
-    // context.removeEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-    // context.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
-  }
 })
-
-// function onCastMuteChanged() {
-//   if (castPlayer.value) {
-//     currentVolume.value = castPlayer.value.isMuted ? 0 : castPlayer.value.volumeLevel
-//   }
-// }
-
-// async function onCastMediaInfoChanged() {
-//   if (!castPlayer.value || !castPlayer.value.isConnected || !castPlayer.value.mediaInfo) {
-//     return
-//   }
-
-//   debugLog('Cast media info changed, checking for track changes')
-
-//   const remoteMediaUrl = castPlayer.value.mediaInfo.contentId
-//   const currentTrackUrl = trackUrl.value
-
-//   // Check if the media URL on the remote player is different from our current track
-//   if (remoteMediaUrl && currentTrackUrl && !remoteMediaUrl.includes(currentTrackUrl)) {
-//     debugLog('Remote player track changed, syncing local queue')
-
-//     // Extract track ID from the remote media URL
-//     // The URL format should be something like: /api/v1/tracks/{track_id}/audio
-//     const trackIdMatch = remoteMediaUrl.match(/\/tracks\/([^/]+)\/audio/)
-//     if (trackIdMatch && trackIdMatch[1]) {
-//       const remoteTrackId = trackIdMatch[1]
-
-//       // Check if this track change matches what we expect from our queue
-//       if (currentQueue.value && currentQueue.value.tracks.length > 0) {
-//         const nextTrackIndex = currentQueue.value.position + 1
-//         const prevTrackIndex = currentQueue.value.position - 1
-
-//         let targetTrack: SubsonicSong | undefined
-
-//         // Check if the remote track matches the next track in our queue
-//         if (nextTrackIndex < currentQueue.value.tracks.length) {
-//           const nextTrack = currentQueue.value.tracks[nextTrackIndex]
-//           if (nextTrack.id === remoteTrackId) {
-//             currentQueue.value.position = nextTrackIndex
-//             targetTrack = nextTrack
-//             debugLog('Remote player advanced to next track in queue')
-//           }
-//         }
-
-//         // Check if the remote track matches the previous track in our queue
-//         if (!targetTrack && prevTrackIndex >= 0) {
-//           const prevTrack = currentQueue.value.tracks[prevTrackIndex]
-//           if (prevTrack.id === remoteTrackId) {
-//             currentQueue.value.position = prevTrackIndex
-//             targetTrack = prevTrack
-//             debugLog('Remote player went back to previous track in queue')
-//           }
-//         }
-
-//         // Check if it's a track at the beginning or end (queue wrapping)
-//         if (!targetTrack) {
-//           for (let i = 0; i < currentQueue.value.tracks.length; i++) {
-//             if (currentQueue.value.tracks[i].id === remoteTrackId) {
-//               currentQueue.value.position = i
-//               targetTrack = currentQueue.value.tracks[i]
-//               debugLog(`Remote player jumped to track at position ${i}`)
-//               break
-//             }
-//           }
-//         }
-
-//         // Update the currently playing track if we found a match
-//         if (targetTrack) {
-//           setCurrentlyPlayingTrack(targetTrack)
-//           debugLog('Local queue synced with remote player')
-//         }
-//         else {
-//           debugLog('Remote track not found in current queue, may need to handle queue changes')
-//         }
-//       }
-//       else {
-//         debugLog('No current queue available for syncing')
-//       }
-//     }
-//     else {
-//       debugLog(`Could not extract track ID from remote media URL: ${remoteMediaUrl}`)
-//     }
-//   }
-// }
 </script>
 
 <template>
-  <div class="inline-block size-22px flex cursor-pointer items-center sm:size-24px">
-    <google-cast-launcher />
+  <div v-if="chromecastAvailable" class="flex cursor-pointer items-center justify-center border-none">
+    <google-cast-launcher ref="castButton" class="size-7" />
   </div>
 </template>
+
+<style lang="css" scoped>
+:root {
+  --connected-color: rgb(209, 147, 12);
+}
+#google-cast-launcher .cast_caf_state_c {
+  fill: var(--connected-color);
+}
+</style>

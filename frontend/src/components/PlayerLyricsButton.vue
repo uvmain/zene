@@ -39,7 +39,7 @@ onMounted(async () => {
     <abbr :title="lyricsRef.length > 0 ? 'Show lyrics' : 'No Lyrics Available'">
       <button
         id="lyrics"
-        class="h-10 w-10 flex items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10"
+        class="flex items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none"
         :class="{
           'cursor-not-allowed': lyricsRef.length === 0,
           'cursor-pointer': lyricsRef.length > 0,
