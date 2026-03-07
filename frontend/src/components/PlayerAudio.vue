@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { debugLog } from '~/logic/logger'
-import { audioContext, audioElement, audioNode, currentlyPlayingTrack, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
+import { audioElement, createContextOnPlay, currentlyPlayingTrack, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
 
 const audioRef = useTemplateRef('audioRef')
-const contextCreated = ref(false)
 
 watch(currentlyPlayingTrack, () => {
   playcountPosted.value = false
@@ -34,35 +32,6 @@ watch(trackUrl, (newTrack, oldTrack) => {
   }
 })
 
-function getAudioContext() {
-  if (typeof window !== 'undefined') {
-    const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext
-    return new AudioCtx()
-  }
-  return null
-}
-
-// One-time play event to create AudioContext after user interaction
-function createContextOnPlay() {
-  const audio = audioRef.value
-  if (!audio) {
-    return
-  }
-  if (!contextCreated.value) {
-    audioContext.value = getAudioContext()
-    if (audioContext.value) {
-      audioNode.value = audioContext.value.createMediaElementSource(audio)
-      audioNode.value.connect(audioContext.value.destination)
-      contextCreated.value = true
-      debugLog('Audio context created')
-    }
-    else {
-      debugLog('Failed to create audio context')
-    }
-  }
-  audio.removeEventListener('play', createContextOnPlay)
-}
-
 onMounted(() => {
   const audio = audioElement.value = audioRef.value
   if (!audio) {
@@ -87,6 +56,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  track url:{{ trackUrl }}
   <audio ref="audioRef" :src="trackUrl" preload="metadata" />
 </template>

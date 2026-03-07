@@ -23,7 +23,9 @@ export const currentVolume = ref(1)
 export const audioElement = ref<HTMLAudioElement | null>(null)
 export const audioNode = ref<AudioNode | null>(null)
 export const audioContext = ref<AudioContext | null>(null)
+
 const previousIndexes = ref<number[]>([])
+const contextCreated = ref(false)
 
 export const trackArtUrl = computed(() => {
   return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.musicBrainzId) : ''
@@ -323,4 +325,34 @@ export function toggleRepeat() {
       repeatStatus.value = 'off'
       break
   }
+}
+
+interface ExtendedWindow extends Window {
+  AudioContext?: typeof AudioContext
+  webkitAudioContext?: typeof AudioContext
+}
+
+// One-time play event to create AudioContext after user interaction
+export function createContextOnPlay() {
+  const audio = audioElement.value
+  if (!audio) {
+    return
+  }
+  if (!contextCreated.value && typeof window !== 'undefined') {
+    const extendedWindow = window as ExtendedWindow
+    const AudioContextConstructor = extendedWindow.AudioContext || extendedWindow.webkitAudioContext
+    if (AudioContextConstructor) {
+      audioContext.value = new AudioContextConstructor()
+    }
+    if (audioContext.value) {
+      audioNode.value = audioContext.value.createMediaElementSource(audio)
+      audioNode.value.connect(audioContext.value.destination)
+      contextCreated.value = true
+      debugLog('Audio context created')
+    }
+    else {
+      debugLog('Failed to create audio context')
+    }
+  }
+  audio.removeEventListener('play', createContextOnPlay)
 }
