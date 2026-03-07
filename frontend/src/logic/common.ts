@@ -62,14 +62,14 @@ export enum artSizes {
 
 export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.size400, timeUpdated?: string): string {
   if (timeUpdated != null) {
-    return `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
+    return size === 0 ? `/share/img/${musicbrainzId}?time=${timeUpdated}` : `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
   }
-  return `/share/img/${musicbrainzId}?size=${size}`
+  return size === 0 ? `/share/img/${musicbrainzId}` : `/share/img/${musicbrainzId}?size=${size}`
 }
 
 export async function cacheBustAlbumArt(albumId: string) {
   const promises = []
-  promises.push(fetch(getCoverArtUrl(albumId), { method: 'POST' }))
+  promises.push(fetch(getCoverArtUrl(albumId, 0), { method: 'POST' }))
   for (const size of Object.values(artSizes).filter(value => typeof value === 'number')) {
     promises.push(fetch(getCoverArtUrl(albumId, size), { method: 'POST' }))
   }

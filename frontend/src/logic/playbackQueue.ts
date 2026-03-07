@@ -3,11 +3,14 @@ import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
+import { computedAsync } from '@vueuse/core'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
+import { getAuthenticatedTrackUrl, getCoverArtUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
 import { postPlaycount } from '~/logic/playCounts'
 import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
+import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
 export const currentlyPlayingTrack = ref<SubsonicSong | undefined>()
 export const currentlyPlayingPodcastEpisode = ref<SubsonicPodcastEpisode | undefined>()
@@ -17,20 +20,33 @@ export const playcountPosted = ref(false)
 export const currentTime = ref(0)
 export const previousVolume = ref(1)
 export const currentVolume = ref(1)
-export const trackUrl = ref('')
 export const audioElement = ref<HTMLAudioElement | null>(null)
 export const audioNode = ref<AudioNode | null>(null)
 export const audioContext = ref<AudioContext | null>(null)
-export const isMuted = ref(false)
 const previousIndexes = ref<number[]>([])
 
-export function resetCurrentlyPlayingTrack() {
-  currentlyPlayingTrack.value = undefined
-  currentlyPlayingPodcastEpisode.value = undefined
-  if (audioElement.value) {
-    audioElement.value.currentTime = 0
+export const trackArtUrl = computed(() => {
+  return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.musicBrainzId) : ''
+})
+
+export const trackUrl = computedAsync(async () => {
+  if (currentlyPlayingTrack.value !== undefined) {
+    return getAuthenticatedTrackUrl(currentlyPlayingTrack.value.musicBrainzId)
   }
-}
+  else if (currentlyPlayingPodcastEpisode.value) {
+    return episodeIsStored(currentlyPlayingPodcastEpisode.value.streamId).then(async (stored) => {
+      if (!stored) {
+        return getAuthenticatedTrackUrl(currentlyPlayingPodcastEpisode.value!.streamId, true)
+      }
+      else {
+        return getStoredEpisode(currentlyPlayingPodcastEpisode.value!.streamId).then((blob) => {
+          return URL.createObjectURL(blob)
+        })
+      }
+    })
+  }
+  return ''
+})
 
 export function setCurrentlyPlayingTrack(track: SubsonicSong) {
   if (currentQueue.value) {
@@ -211,12 +227,10 @@ export function toggleMute() {
       previousVolume.value = audioElement.value.volume
       audioElement.value.volume = 0
       currentVolume.value = 0
-      isMuted.value = true
     }
     else {
       audioElement.value.volume = previousVolume.value
       currentVolume.value = previousVolume.value
-      isMuted.value = false
     }
   }
 }
@@ -248,7 +262,9 @@ export async function togglePlayback() {
 export async function stopPlayback() {
   if (audioElement.value) {
     if (audioElement.value.currentTime < 1) {
-      resetCurrentlyPlayingTrack()
+      currentlyPlayingTrack.value = undefined
+      currentlyPlayingPodcastEpisode.value = undefined
+      audioElement.value.currentTime = 0
       clearQueue()
     }
     audioElement.value.pause()

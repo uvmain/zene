@@ -1,43 +1,12 @@
 <script setup lang="ts">
-import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
-import { audioContext, audioElement, audioNode, currentlyPlayingPodcastEpisode, currentlyPlayingTrack, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
-import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
+import { audioContext, audioElement, audioNode, currentlyPlayingTrack, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
 
 const audioRef = useTemplateRef('audioRef')
 const contextCreated = ref(false)
 
-watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
-  if (newTrack !== oldTrack) {
-    trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
-    playcountPosted.value = false
-  }
-  else {
-    trackUrl.value = newTrack ? getAuthenticatedTrackUrl(newTrack.musicBrainzId) : ''
-  }
-})
-
-watch(currentlyPlayingPodcastEpisode, (newEpisode, oldEpisode) => {
-  if (newEpisode !== oldEpisode) {
-    if (newEpisode) {
-      episodeIsStored(newEpisode.streamId).then((stored) => {
-        if (!stored) {
-          trackUrl.value = getAuthenticatedTrackUrl(newEpisode.streamId, true)
-        }
-        else {
-          getStoredEpisode(newEpisode.streamId).then((blob) => {
-            if (blob) {
-              const objectUrl = URL.createObjectURL(blob)
-              trackUrl.value = objectUrl
-            }
-          })
-        }
-      })
-    }
-    else {
-      trackUrl.value = ''
-    }
-  }
+watch(currentlyPlayingTrack, () => {
+  playcountPosted.value = false
 })
 
 watch(trackUrl, (newTrack, oldTrack) => {
@@ -73,28 +42,31 @@ function getAudioContext() {
   return null
 }
 
-onMounted(() => {
-  audioElement.value = audioRef.value
-
+// One-time play event to create AudioContext after user interaction
+function createContextOnPlay() {
   const audio = audioRef.value
   if (!audio) {
     return
   }
-  // One-time play event to create AudioContext after user interaction
-  const createContextOnPlay = () => {
-    if (!contextCreated.value) {
-      audioContext.value = getAudioContext()
-      if (audioContext.value) {
-        audioNode.value = audioContext.value.createMediaElementSource(audio)
-        audioNode.value.connect(audioContext.value.destination)
-        contextCreated.value = true
-        debugLog('Audio context created')
-      }
-      else {
-        debugLog('Failed to create audio context')
-      }
+  if (!contextCreated.value) {
+    audioContext.value = getAudioContext()
+    if (audioContext.value) {
+      audioNode.value = audioContext.value.createMediaElementSource(audio)
+      audioNode.value.connect(audioContext.value.destination)
+      contextCreated.value = true
+      debugLog('Audio context created')
     }
-    audio.removeEventListener('play', createContextOnPlay)
+    else {
+      debugLog('Failed to create audio context')
+    }
+  }
+  audio.removeEventListener('play', createContextOnPlay)
+}
+
+onMounted(() => {
+  const audio = audioElement.value = audioRef.value
+  if (!audio) {
+    return
   }
   audio.addEventListener('play', createContextOnPlay)
   audio.addEventListener('play', () => isPlaying.value = true)
@@ -115,5 +87,6 @@ onUnmounted(() => {
 </script>
 
 <template>
+  track url:{{ trackUrl }}
   <audio ref="audioRef" :src="trackUrl" preload="metadata" />
 </template>

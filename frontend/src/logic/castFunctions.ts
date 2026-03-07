@@ -1,13 +1,6 @@
-import { currentVolume, isMuted, isPlaying, seek, updateProgress } from '~/logic/playbackQueue'
+import { currentVolume, isPlaying, seek, updateProgress } from '~/logic/playbackQueue'
+import { castContext, castPlayer, castPlayerController, castSession, chromecastAvailable, savedLocalPosition } from './castRefs'
 import { debugLog } from './logger'
-
-export const chromecastAvailable = ref<boolean>(false)
-export const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
-export const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
-export const castContext = ref<cast.framework.CastContext | null>(null)
-export const session = ref<cast.framework.CastSession | null>(null)
-export const isCasting = ref<boolean>(false)
-const savedLocalPosition = ref<number>(0)
 
 export function initializeCast() {
   castContext.value = cast.framework.CastContext.getInstance()
@@ -47,6 +40,10 @@ function onSessionStateChanged(event: cast.framework.SessionStateEventData) {
       debugLog(`Final cast position captured: ${savedLocalPosition.value}s`)
     }
   }
+  else if (event.sessionState === cast.framework.SessionState.SESSION_STARTED) {
+    debugLog('Cast session started')
+    castSession.value = castContext.value?.getCurrentSession() as cast.framework.CastSession | null
+  }
 }
 
 function onCastPlayerStateChanged() {
@@ -68,16 +65,14 @@ function onCastVolumeChanged() {
   debugLog(`Cast player volume changed: volumeLevel=${castPlayer.value?.volumeLevel}`)
   if (castPlayer.value) {
     currentVolume.value = castPlayer.value.isMuted ? 0 : castPlayer.value.volumeLevel
-    isMuted.value = castPlayer.value.isMuted
+    if (castPlayer.value.isMuted) {
+      currentVolume.value = 0
+    }
   }
 }
 
 function onCastMuteChanged() {
-  debugLog(`Cast player mute changed: isMuted=${castPlayer.value?.isMuted}`)
-  if (castPlayer.value) {
-    currentVolume.value = castPlayer.value.isMuted ? 0 : castPlayer.value.volumeLevel
-    isMuted.value = castPlayer.value.isMuted
-  }
+  onCastVolumeChanged()
 }
 
 function onCastConnectionChanged() {
