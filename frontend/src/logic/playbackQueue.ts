@@ -5,15 +5,19 @@ import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { computedAsync } from '@vueuse/core'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
-import { getAuthenticatedTrackUrl, getCoverArtUrl } from '~/logic/common'
+import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
 import { postPlaycount } from '~/logic/playerUtils'
-import { routeTracks } from '~/logic/routeTracks'
+import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
-export const currentlyPlayingTrack = ref<SubsonicSong | undefined>()
-export const currentlyPlayingPodcastEpisode = ref<SubsonicPodcastEpisode | undefined>()
+interface PlayItem {
+  track?: SubsonicSong
+  podcastEpisode?: SubsonicPodcastEpisode
+}
+
+export const currentlyPlayingItem = ref<PlayItem>({})
 export const currentQueue = ref<Queue | undefined>()
 export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
@@ -24,24 +28,20 @@ export const audioElement = ref<HTMLAudioElement | null>(null)
 export const audioNode = ref<AudioNode | null>(null)
 export const audioContext = ref<AudioContext | null>(null)
 
-const previousIndexes = ref<number[]>([])
-const contextCreated = ref(false)
-
-export const trackArtUrl = computed(() => {
-  return currentlyPlayingTrack.value ? getCoverArtUrl(currentlyPlayingTrack.value?.musicBrainzId) : ''
-})
+let previousIndexes: number[] = []
+let contextCreated: boolean = false
 
 export const trackUrl = computedAsync(async () => {
-  if (currentlyPlayingTrack.value !== undefined) {
-    return getAuthenticatedTrackUrl(currentlyPlayingTrack.value.musicBrainzId)
+  if (currentlyPlayingItem.value.track !== undefined) {
+    return getAuthenticatedTrackUrl(currentlyPlayingItem.value.track.musicBrainzId)
   }
-  else if (currentlyPlayingPodcastEpisode.value) {
-    return episodeIsStored(currentlyPlayingPodcastEpisode.value.streamId).then(async (stored) => {
-      if (!stored) {
-        return getAuthenticatedTrackUrl(currentlyPlayingPodcastEpisode.value!.streamId, true)
+  else if (currentlyPlayingItem.value.podcastEpisode) {
+    return episodeIsStored(currentlyPlayingItem.value.podcastEpisode.streamId).then(async (stored) => {
+      if (!stored && currentlyPlayingItem.value.podcastEpisode) {
+        return getAuthenticatedTrackUrl(currentlyPlayingItem.value.podcastEpisode.streamId, true)
       }
-      else {
-        return getStoredEpisode(currentlyPlayingPodcastEpisode.value!.streamId).then((blob) => {
+      else if (currentlyPlayingItem.value.podcastEpisode) {
+        return getStoredEpisode(currentlyPlayingItem.value.podcastEpisode.streamId).then((blob) => {
           return URL.createObjectURL(blob)
         })
       }
@@ -50,18 +50,28 @@ export const trackUrl = computedAsync(async () => {
   return ''
 })
 
+export function handlePlay(track: SubsonicSong) {
+  if (currentQueue.value?.tracks.some(queueTrack => queueTrack.id === track.id)) {
+    setCurrentlyPlayingTrack(track)
+  }
+  else if (routeTracks.value?.some(queueTrack => queueTrack.musicBrainzId === track.musicBrainzId)) {
+    setCurrentlyPlayingTrackInRouteTracks(track)
+  }
+  else {
+    void play({ track })
+  }
+}
+
 export function setCurrentlyPlayingTrack(track: SubsonicSong) {
   if (currentQueue.value) {
     const index = currentQueue.value.tracks.indexOf(track)
     currentQueue.value.position = index
   }
-  currentlyPlayingPodcastEpisode.value = undefined
-  currentlyPlayingTrack.value = track
+  currentlyPlayingItem.value = { track }
 }
 
 export function setCurrentlyPlayingPodcastEpisode(episode: SubsonicPodcastEpisode) {
-  currentlyPlayingTrack.value = undefined
-  currentlyPlayingPodcastEpisode.value = episode
+  currentlyPlayingItem.value = { podcastEpisode: episode }
   clearQueue()
 }
 
@@ -79,7 +89,7 @@ export function setCurrentQueue(tracks: SubsonicSong[]) {
 }
 
 export function clearQueue() {
-  previousIndexes.value = []
+  previousIndexes = []
   currentQueue.value = undefined
 }
 
@@ -91,21 +101,28 @@ async function getRandomTrack(): Promise<SubsonicSong> {
   return randomTrack
 }
 
-export async function play(artist?: SubsonicIndexArtist, album?: SubsonicAlbum, track?: SubsonicSong, podcastEpisode?: SubsonicPodcastEpisode) {
-  if (track) {
-    setCurrentlyPlayingTrack(track)
+interface PlayOptions {
+  artist?: SubsonicIndexArtist
+  album?: SubsonicAlbum
+  track?: SubsonicSong
+  podcastEpisode?: SubsonicPodcastEpisode
+}
+
+export async function play(playOptions: PlayOptions) {
+  if (playOptions.track) {
+    setCurrentlyPlayingTrack(playOptions.track)
     clearQueue()
   }
-  else if (album) {
-    const tracks = await fetchAlbum(album.id).then(fetchedAlbum => fetchedAlbum.song)
+  else if (playOptions.album) {
+    const tracks = await fetchAlbum(playOptions.album.id).then(fetchedAlbum => fetchedAlbum.song)
     setCurrentQueue(tracks)
   }
-  else if (artist) {
-    const tracks = await fetchArtistTopSongs(artist.id, 100)
+  else if (playOptions.artist) {
+    const tracks = await fetchArtistTopSongs(playOptions.artist.id, 100)
     setCurrentQueue(tracks)
   }
-  else if (podcastEpisode) {
-    setCurrentlyPlayingPodcastEpisode(podcastEpisode)
+  else if (playOptions.podcastEpisode) {
+    setCurrentlyPlayingPodcastEpisode(playOptions.podcastEpisode)
   }
 }
 
@@ -123,11 +140,11 @@ export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
       let randomIndex: number
       randomIndex = Math.floor(Math.random() * currentQueue.value.tracks.length)
       let whileCounter = 0
-      while (previousIndexes.value.includes(randomIndex) && whileCounter < 50) {
+      while (previousIndexes.includes(randomIndex) && whileCounter < 50) {
         randomIndex = Math.floor(Math.random() * currentQueue.value.tracks.length)
         whileCounter++
       }
-      previousIndexes.value.push(randomIndex)
+      previousIndexes.push(randomIndex)
       nextTrack = currentQueue.value.tracks[randomIndex]
       currentQueue.value.position = randomIndex
       if (nextTrack !== undefined) {
@@ -177,10 +194,10 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
     const currentIndex = currentQueue.value.position
     let prevTrack: SubsonicSong | undefined
     if (shuffleEnabled.value) {
-      if (previousIndexes.value.length) {
-        previousIndexes.value.pop()
+      if (previousIndexes.length) {
+        previousIndexes.pop()
       }
-      const previousIndex = previousIndexes.value[previousIndexes.value.length - 1]
+      const previousIndex = previousIndexes[previousIndexes.length - 1]
       const prevTrack = currentQueue.value.tracks[previousIndex]
       currentQueue.value.position = previousIndex
       if (prevTrack !== undefined) {
@@ -218,7 +235,7 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
   }
 }
 
-export async function togglePlayback() {
+export function togglePlayback() {
   if (!audioElement.value) {
     console.error('Audio element not found')
     return
@@ -226,7 +243,7 @@ export async function togglePlayback() {
   else if (!(currentQueue.value && currentQueue.value.tracks.length) && routeTracks.value.length) {
     setCurrentQueue(routeTracks.value)
   }
-  else if ((currentQueue.value && currentQueue.value.tracks.length) && !currentlyPlayingTrack.value) {
+  else if ((currentQueue.value && currentQueue.value.tracks.length) && !currentlyPlayingItem.value.track) {
     setCurrentQueue(currentQueue.value?.tracks)
   }
 
@@ -235,19 +252,19 @@ export async function togglePlayback() {
     isPlaying.value = false
   }
   else {
-    if (currentlyPlayingTrack.value || currentlyPlayingPodcastEpisode.value) {
-      await audioElement.value.play()
+    if (currentlyPlayingItem.value.track || currentlyPlayingItem.value.podcastEpisode) {
+      void audioElement.value.play()
       isPlaying.value = true
     }
   }
 }
 
-export async function stopPlayback() {
+export function stopPlayback() {
   if (audioElement.value) {
-    if (audioElement.value.currentTime < 1) {
-      currentlyPlayingTrack.value = undefined
-      currentlyPlayingPodcastEpisode.value = undefined
+    if (!isPlaying.value || audioElement.value.currentTime === 0) {
+      currentlyPlayingItem.value = {}
       audioElement.value.currentTime = 0
+      audioElement.value.removeAttribute('src')
       clearQueue()
     }
     audioElement.value.pause()
@@ -263,23 +280,23 @@ export function seek(seekSeconds: number) {
   }
 }
 
-export async function updateProgress() {
+export function updateProgress() {
   if (!audioElement.value) {
     return
   }
   currentTime.value = audioElement.value.currentTime
 
-  if (currentlyPlayingTrack.value && !playcountPosted.value) {
-    const halfwayPoint = currentlyPlayingTrack.value.duration / 2
+  if (currentlyPlayingItem.value.track && !playcountPosted.value) {
+    const halfwayPoint = currentlyPlayingItem.value.track.duration / 2
     if (currentTime.value >= halfwayPoint) {
-      await postPlaycount(currentlyPlayingTrack.value.musicBrainzId)
+      void postPlaycount(currentlyPlayingItem.value.track.musicBrainzId)
       playcountPosted.value = true
     }
   }
-  else if (currentlyPlayingPodcastEpisode.value && !playcountPosted.value) {
-    const halfwayPoint = Number(currentlyPlayingPodcastEpisode.value.duration) / 2
+  else if (currentlyPlayingItem.value.podcastEpisode && !playcountPosted.value) {
+    const halfwayPoint = Number(currentlyPlayingItem.value.podcastEpisode.duration) / 2
     if (currentTime.value >= halfwayPoint) {
-      await postPlaycount(currentlyPlayingPodcastEpisode.value.streamId)
+      void postPlaycount(currentlyPlayingItem.value.podcastEpisode.streamId)
       playcountPosted.value = true
     }
   }
@@ -296,7 +313,7 @@ export function createContextOnPlay() {
   if (!audio) {
     return
   }
-  if (!contextCreated.value && typeof window !== 'undefined') {
+  if (!contextCreated && typeof window !== 'undefined') {
     const extendedWindow = window as ExtendedWindow
     const AudioContextConstructor = extendedWindow.AudioContext || extendedWindow.webkitAudioContext
     if (AudioContextConstructor) {
@@ -305,7 +322,7 @@ export function createContextOnPlay() {
     if (audioContext.value) {
       audioNode.value = audioContext.value.createMediaElementSource(audio)
       audioNode.value.connect(audioContext.value.destination)
-      contextCreated.value = true
+      contextCreated = true
       debugLog('Audio context created')
     }
     else {

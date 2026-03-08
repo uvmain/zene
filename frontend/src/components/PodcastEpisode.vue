@@ -149,11 +149,7 @@ onBeforeMount(async () => {
           </div>
         </div>
       </div>
-      <PlayButton
-        :podcast="episode"
-        class="my-auto"
-        hover-text="Play episode"
-      />
+      <PlayButton :podcast-episode="episode" class="my-auto" />
     </div>
     <div class="line-clamp-4 overflow-hidden text-ellipsis whitespace-pre-line text-pretty">
       {{ descriptionLinesCleaned }}

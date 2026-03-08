@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import { audioElement, createContextOnPlay, currentlyPlayingTrack, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
+import { audioElement, createContextOnPlay, currentlyPlayingItem, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
 
 const audioRef = useTemplateRef('audioRef')
 
-watch(currentlyPlayingTrack, () => {
+watch(currentlyPlayingItem, () => {
   playcountPosted.value = false
 })
 
 watch(trackUrl, (newTrack, oldTrack) => {
   const audio = audioRef.value
   if (!audio || newTrack === oldTrack) {
-    return
-  }
-  if (!newTrack) {
-    audio.pause()
-    audio.removeAttribute('src')
-    audio.load()
-    audio.currentTime = 0
     return
   }
   if (audio) {

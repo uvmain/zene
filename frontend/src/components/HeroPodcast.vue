@@ -39,7 +39,7 @@ const coverArtUrl = computed(() => {
               <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="hidden lg:(block flex flex-nowrap justify-start gap-2 overflow-hidden)">
                 <GenreBottle v-for="genre in podcast.episode[0].genres.slice(0, 8)" :key="genre.name" :genre="genre.name" />
               </div>
-              <!-- <PlayButton class="flex justify-start" :podcast="podcast.episode[0]" /> -->
+              <!-- <PlayButton class="flex justify-start" :podcast-episode="podcast.episode[0]" /> -->
             </div>
           </div>
         </div>

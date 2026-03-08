@@ -57,7 +57,7 @@ function onCastTimeChanged() {
   debugLog(`Cast player time changed: currentTime=${castPlayer.value?.currentTime}`)
   if (castPlayer.value) {
     seek(castPlayer.value.currentTime)
-    void updateProgress()
+    updateProgress()
   }
 }
 

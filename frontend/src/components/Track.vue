@@ -2,9 +2,8 @@
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { postTrackStarred } from '~/logic/backendFetch'
 import { artSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
-import { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrack } from '~/logic/playbackQueue'
+import { currentlyPlayingItem, handlePlay } from '~/logic/playbackQueue'
 import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playerUtils'
-import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
 
 const props = defineProps({
   track: { type: Object as PropType<SubsonicSong>, required: true },
@@ -18,6 +17,7 @@ const route = useRoute()
 
 const trackElement = useTemplateRef('trackElement')
 const isStarred = ref<string | undefined>(props.track.starred)
+const playCount = ref(props.track.playCount ?? 0)
 
 const artistIsAlbumArtist = computed(() => {
   if (!props.primaryArtist) {
@@ -28,7 +28,7 @@ const artistIsAlbumArtist = computed(() => {
 })
 
 const isTrackPlaying = computed(() => {
-  const isPlaying = (currentlyPlayingTrack.value && currentlyPlayingTrack.value?.id === props.track.id) ?? false
+  const isPlaying = (currentlyPlayingItem.value.track && currentlyPlayingItem.value.track.id === props.track.id) ?? false
   if (isPlaying && props.autoScrolling) {
     trackElement.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
@@ -39,20 +39,6 @@ const trackGenres = computed(() => {
   const genres = props.track.genres.length ? props.track.genres.map(g => g.name.trim()) : []
   return genres
 })
-
-function handlePlay() {
-  if (currentQueue.value?.tracks.some(queueTrack => queueTrack.id === props.track.id)) {
-    setCurrentlyPlayingTrack(props.track)
-  }
-  else if (routeTracks.value?.some(queueTrack => queueTrack.musicBrainzId === props.track.musicBrainzId)) {
-    setCurrentlyPlayingTrackInRouteTracks(props.track)
-  }
-  else {
-    play(undefined, undefined, props.track)
-  }
-}
-
-const playCount = ref(props.track.playCount ?? 0)
 
 function toggleStarred() {
   if (isStarred.value) {
@@ -86,7 +72,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
       'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,
     }"
-    @click="handlePlay"
+    @click="handlePlay(track)"
   >
     <!-- track number and play button -->
     <div class="relative flex items-center justify-center">

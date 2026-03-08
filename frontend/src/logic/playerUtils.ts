@@ -8,7 +8,7 @@ export const playcountUpdatedMusicbrainzTrackId = ref<string | undefined>()
 export async function postPlaycount(musicbrainz_track_id: string): Promise<void> {
   const responseOk = await postScrobble(musicbrainz_track_id)
   if (!responseOk) {
-    throw new Error(`Failed to post playcount`)
+    debugLog(`Failed to post playcount for ${musicbrainz_track_id}`)
   }
   playcountUpdatedMusicbrainzTrackId.value = musicbrainz_track_id
 }

@@ -1,6 +1,7 @@
 import { castPlayerController, castSession, isCasting, savedLocalPosition } from './castRefs'
+import { getCoverArtUrl } from './common'
 import { debugLog } from './logger'
-import { audioElement, currentlyPlayingTrack, currentTime, trackArtUrl, trackUrl } from './playbackQueue'
+import { audioElement, currentlyPlayingItem, currentTime, trackUrl } from './playbackQueue'
 
 const castUrl = ref<string>('')
 
@@ -38,11 +39,13 @@ export async function castAudio() {
   const mediaInfo = new chrome.cast.media.MediaInfo(castUrl.value ?? '', 'audio/aac')
 
   // add metadata
-  if (currentlyPlayingTrack.value) {
+  if (currentlyPlayingItem.value.track) {
     mediaInfo.metadata = {
-      title: currentlyPlayingTrack.value.title,
-      artist: currentlyPlayingTrack.value.artist || currentlyPlayingTrack.value.artist || '',
-      images: [trackArtUrl.value],
+      title: currentlyPlayingItem.value.track.title,
+      artist: currentlyPlayingItem.value.track.artist || currentlyPlayingItem.value.track.artist || '',
+      images: [
+        getCoverArtUrl(currentlyPlayingItem.value.track?.musicBrainzId),
+      ],
     }
   }
 
