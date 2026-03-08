@@ -3,8 +3,9 @@ import type { Visualizer, VisualizerOptions } from 'butterchurn'
 import type { ButterchurnPreset } from '~/types'
 import { onKeyStroke } from '@vueuse/core'
 import butterchurn from 'butterchurn'
+import { audioContext, audioNode } from '~/logic/audioElement'
 import { getButterchurnPresets } from '~/logic/backendFetch'
-import { audioContext, audioNode, currentlyPlayingItem } from '~/logic/playbackQueue'
+import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
 const gridParent = useTemplateRef('grid') as Ref<HTMLDivElement>

@@ -4,9 +4,9 @@ import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { computedAsync } from '@vueuse/core'
+import { audioElement } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { getAuthenticatedTrackUrl } from '~/logic/common'
-import { debugLog } from '~/logic/logger'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
@@ -22,14 +22,8 @@ export const currentQueue = ref<Queue | undefined>()
 export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
 export const currentTime = ref(0)
-export const previousVolume = ref(1)
-export const currentVolume = ref(1)
-export const audioElement = ref<HTMLAudioElement | null>(null)
-export const audioNode = ref<AudioNode | null>(null)
-export const audioContext = ref<AudioContext | null>(null)
 
 let previousIndexes: number[] = []
-let contextCreated: boolean = false
 
 export const trackUrl = computedAsync(async () => {
   if (currentlyPlayingItem.value.track !== undefined) {
@@ -300,34 +294,4 @@ export function updateProgress() {
       playcountPosted.value = true
     }
   }
-}
-
-interface ExtendedWindow extends Window {
-  AudioContext?: typeof AudioContext
-  webkitAudioContext?: typeof AudioContext
-}
-
-// One-time play event to create AudioContext after user interaction
-export function createContextOnPlay() {
-  const audio = audioElement.value
-  if (!audio) {
-    return
-  }
-  if (!contextCreated && typeof window !== 'undefined') {
-    const extendedWindow = window as ExtendedWindow
-    const AudioContextConstructor = extendedWindow.AudioContext || extendedWindow.webkitAudioContext
-    if (AudioContextConstructor) {
-      audioContext.value = new AudioContextConstructor()
-    }
-    if (audioContext.value) {
-      audioNode.value = audioContext.value.createMediaElementSource(audio)
-      audioNode.value.connect(audioContext.value.destination)
-      contextCreated = true
-      debugLog('Audio context created')
-    }
-    else {
-      debugLog('Failed to create audio context')
-    }
-  }
-  audio.removeEventListener('play', createContextOnPlay)
 }

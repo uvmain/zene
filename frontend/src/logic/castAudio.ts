@@ -1,7 +1,8 @@
-import { castPlayerController, castSession, isCasting, savedLocalPosition } from './castRefs'
-import { getCoverArtUrl } from './common'
-import { debugLog } from './logger'
-import { audioElement, currentlyPlayingItem, currentTime, trackUrl } from './playbackQueue'
+import { audioElement } from '~/logic/audioElement'
+import { castPlayerController, castSession, isCasting, savedLocalPosition } from '~/logic/castRefs'
+import { getCoverArtUrl } from '~/logic/common'
+import { debugLog } from '~/logic/logger'
+import { currentlyPlayingItem, currentTime, trackUrl } from '~/logic/playbackQueue'
 
 const castUrl = ref<string>('')
 

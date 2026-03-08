@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { audioElement, createContextOnPlay, currentlyPlayingItem, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
+import { audioElement, createContextOnPlay } from '~/logic/audioElement'
+import { currentlyPlayingItem, handleNextTrack, isPlaying, playcountPosted, trackUrl, updateProgress } from '~/logic/playbackQueue'
 
 const audioRef = useTemplateRef('audioRef')
 

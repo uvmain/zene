@@ -1,4 +1,5 @@
-import { currentVolume, isPlaying, seek, updateProgress } from '~/logic/playbackQueue'
+import { isPlaying, seek, updateProgress } from '~/logic/playbackQueue'
+import { currentVolume } from '~/logic/volume'
 import { castContext, castPlayer, castPlayerController, castSession, chromecastAvailable, savedLocalPosition } from './castRefs'
 import { debugLog } from './logger'
 

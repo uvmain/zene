@@ -1,7 +1,6 @@
 import { postScrobble } from '~/logic/backendFetch'
-import { audioElement, currentVolume, previousVolume } from '~/logic/playbackQueue'
+import { debugLog } from '~/logic/logger'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
-import { debugLog } from './logger'
 
 export const playcountUpdatedMusicbrainzTrackId = ref<string | undefined>()
 
@@ -15,30 +14,6 @@ export async function postPlaycount(musicbrainz_track_id: string): Promise<void>
 
 export function toggleShuffle() {
   shuffleEnabled.value = !shuffleEnabled.value
-}
-
-export function toggleMute() {
-  if (audioElement.value) {
-    debugLog('Changing volume')
-    if (audioElement.value.volume !== 0) {
-      previousVolume.value = audioElement.value.volume
-      audioElement.value.volume = 0
-      currentVolume.value = 0
-    }
-    else {
-      audioElement.value.volume = previousVolume.value
-      currentVolume.value = previousVolume.value
-    }
-  }
-}
-
-export function changeVolume(volumeString: string) {
-  if (!audioElement.value) {
-    return
-  }
-  const volume = Number.parseFloat(volumeString)
-  audioElement.value.volume = volume
-  currentVolume.value = volume
 }
 
 export function toggleRepeat() {

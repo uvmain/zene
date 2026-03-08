@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { audioElement, currentVolume } from '~/logic/playbackQueue'
-import { changeVolume, toggleMute } from '~/logic/playerUtils'
+import { audioElement } from '~/logic/audioElement'
+import { changeVolume, currentVolume, toggleMute } from '~/logic/volume'
 
 function handleInput(e: Event) {
   const value = (e.target as HTMLInputElement).value
