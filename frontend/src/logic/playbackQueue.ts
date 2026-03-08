@@ -7,7 +7,7 @@ import { computedAsync } from '@vueuse/core'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { getAuthenticatedTrackUrl, getCoverArtUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
-import { postPlaycount } from '~/logic/playCounts'
+import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
@@ -218,25 +218,6 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
   }
 }
 
-export function toggleShuffle() {
-  shuffleEnabled.value = !shuffleEnabled.value
-}
-
-export function toggleMute() {
-  if (audioElement.value) {
-    debugLog('Changing volume')
-    if (audioElement.value.volume !== 0) {
-      previousVolume.value = audioElement.value.volume
-      audioElement.value.volume = 0
-      currentVolume.value = 0
-    }
-    else {
-      audioElement.value.volume = previousVolume.value
-      currentVolume.value = previousVolume.value
-    }
-  }
-}
-
 export async function togglePlayback() {
   if (!audioElement.value) {
     console.error('Audio element not found')
@@ -301,29 +282,6 @@ export async function updateProgress() {
       await postPlaycount(currentlyPlayingPodcastEpisode.value.streamId)
       playcountPosted.value = true
     }
-  }
-}
-
-export function volumeInput(volumeString: string) {
-  if (!audioElement.value) {
-    return
-  }
-  const volume = Number.parseFloat(volumeString)
-  audioElement.value.volume = volume
-  currentVolume.value = volume
-}
-
-export function toggleRepeat() {
-  switch (repeatStatus.value) {
-    case 'off':
-      repeatStatus.value = '1'
-      break
-    case '1':
-      repeatStatus.value = 'all'
-      break
-    case 'all':
-      repeatStatus.value = 'off'
-      break
   }
 }
 

@@ -1,18 +1,5 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
-import dayjs from 'dayjs'
 import { apiKey, streamQuality } from '~/logic/store'
-
-export function niceDate(dateString: string): string {
-  const date = dayjs(dateString)
-  return date.isValid() ? date.format('DD/MM/YYYY') : 'Invalid Date'
-}
-
-export function formatDate(dateString: string): string {
-  if (!dateString)
-    return 'N/A'
-  const date = new Date(dateString)
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-}
 
 export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)
@@ -34,7 +21,6 @@ export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = fal
   else {
     queryParams.append('raw', 'true')
   }
-  // const queryParamString = `v=1.6.0&maxBitRate=${streamQuality.value}&id=${musicbrainz_track_id}&format=aac`
   return `/rest/stream.view?${queryParams.toString()}`
 }
 

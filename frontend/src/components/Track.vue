@@ -3,7 +3,7 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { postTrackStarred } from '~/logic/backendFetch'
 import { artSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingTrack, currentQueue, play, setCurrentlyPlayingTrack } from '~/logic/playbackQueue'
-import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playCounts'
+import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playerUtils'
 import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
 
 const props = defineProps({

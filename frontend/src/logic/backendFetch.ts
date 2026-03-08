@@ -11,7 +11,7 @@ import { apiKey } from '~/logic/store'
 
 const concurrencyMap = new Map<string, Promise<any>>()
 
-export async function fetchNewApiKeyWithTokenAndSalt(username: string, token: string, salt: string): Promise<string> {
+export async function createNewApiKeyWithTokenAndSalt(username: string, token: string, salt: string): Promise<string> {
   try {
     const formData = new FormData()
     formData.append('u', username)
