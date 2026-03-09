@@ -1,6 +1,7 @@
 import type { SubsonicAlbum } from './subsonicAlbum'
 import type { SubsonicArtist } from './subsonicArtist'
 import type { SubsonicGenre } from './subsonicGenres'
+import type { SubsonicPodcastEpisode } from './subsonicPodcasts'
 import type { SubsonicSong } from './subsonicSong'
 
 export interface Queue {
@@ -15,4 +16,9 @@ export interface SearchResult { artists: SubsonicArtist[], albums: SubsonicAlbum
 export interface ButterchurnPreset {
   name: string
   preset: any
+}
+
+export interface PlayItem {
+  track?: SubsonicSong
+  podcastEpisode?: SubsonicPodcastEpisode
 }

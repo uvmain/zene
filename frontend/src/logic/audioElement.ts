@@ -1,8 +1,11 @@
+import type { PlayItem } from '~/types'
+
 import { debugLog } from '~/logic/logger'
 
 export const audioElement = ref<HTMLAudioElement | null>(null)
 export const audioNode = ref<AudioNode | null>(null)
 export const audioContext = ref<AudioContext | null>(null)
+const previousPlayItem = ref<PlayItem | null>(null)
 
 let contextCreated: boolean = false
 
@@ -34,4 +37,43 @@ export function createContextOnPlay() {
     }
   }
   audio.removeEventListener('play', createContextOnPlay)
+}
+
+export function playWhenReady(playItem: PlayItem) {
+  const audio = audioElement.value
+  if (!audio) {
+    return
+  }
+
+  if (previousPlayItem.value !== playItem) {
+    audio.pause()
+    audio.load()
+    audio.addEventListener(
+      'canplaythrough',
+      () => {
+        void audio.play()
+      },
+      { once: true },
+    )
+    previousPlayItem.value = playItem
+    return
+  }
+
+  if (audio.readyState >= 4) {
+    void audio.play()
+    previousPlayItem.value = playItem
+    return
+  }
+
+  // fallback
+  audio.addEventListener(
+    'canplaythrough',
+    () => {
+      void audio.play()
+    },
+    { once: true },
+  )
+  audio.pause()
+  audio.load()
+  previousPlayItem.value = playItem
 }

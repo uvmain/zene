@@ -1,21 +1,16 @@
-import type { Queue } from '~/types'
+import type { PlayItem, Queue } from '~/types'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { computedAsync } from '@vueuse/core'
-import { audioElement } from '~/logic/audioElement'
+import { audioElement, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
-import { routeTracks, setCurrentlyPlayingTrackInRouteTracks } from '~/logic/routeTracks'
+import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
-
-interface PlayItem {
-  track?: SubsonicSong
-  podcastEpisode?: SubsonicPodcastEpisode
-}
 
 export const currentlyPlayingItem = ref<PlayItem>({})
 export const currentQueue = ref<Queue | undefined>()
@@ -49,7 +44,8 @@ export function handlePlay(track: SubsonicSong) {
     setCurrentlyPlayingTrack(track)
   }
   else if (routeTracks.value?.some(queueTrack => queueTrack.musicBrainzId === track.musicBrainzId)) {
-    setCurrentlyPlayingTrackInRouteTracks(track)
+    setCurrentQueue(routeTracks.value)
+    setCurrentlyPlayingTrack(track)
   }
   else {
     void play({ track })
@@ -62,14 +58,11 @@ export function setCurrentlyPlayingTrack(track: SubsonicSong) {
     currentQueue.value.position = index
   }
   currentlyPlayingItem.value = { track }
+  playcountPosted.value = false
+  playWhenReady({ track })
 }
 
-export function setCurrentlyPlayingPodcastEpisode(episode: SubsonicPodcastEpisode) {
-  currentlyPlayingItem.value = { podcastEpisode: episode }
-  clearQueue()
-}
-
-export function setCurrentQueue(tracks: SubsonicSong[]) {
+function setCurrentQueue(tracks: SubsonicSong[]) {
   clearQueue()
   let index = 0
   if (shuffleEnabled.value && tracks.length > 0) {
@@ -116,7 +109,8 @@ export async function play(playOptions: PlayOptions) {
     setCurrentQueue(tracks)
   }
   else if (playOptions.podcastEpisode) {
-    setCurrentlyPlayingPodcastEpisode(playOptions.podcastEpisode)
+    currentlyPlayingItem.value = { podcastEpisode: playOptions.podcastEpisode }
+    clearQueue()
   }
 }
 
