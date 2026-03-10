@@ -66,4 +66,8 @@ export default defineConfig({
     ],
     exclude: [],
   },
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['ghost.ianbaron.com'],
+  },
 })

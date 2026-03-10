@@ -84,3 +84,9 @@ export async function castAudio() {
     // isTransitioningToCast.value = false
   }
 }
+
+export function togglePlayback() {
+  if (castPlayerController.value) {
+    castPlayerController.value.playOrPause()
+  }
+}

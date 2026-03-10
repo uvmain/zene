@@ -7,7 +7,7 @@ import { computedAsync } from '@vueuse/core'
 import { audioElement, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { castAudio } from '~/logic/castAudio'
-import { castPlayer, castSession } from '~/logic/castRefs'
+import { castPlayer, castPlayerController, castSession } from '~/logic/castRefs'
 import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
@@ -237,6 +237,11 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
 }
 
 export function togglePlayback() {
+  if (castPlayer.value && castPlayerController.value) {
+    castPlayerController.value.playOrPause()
+    return
+  }
+
   if (!audioElement.value) {
     console.error('Audio element not found')
     return
@@ -261,6 +266,11 @@ export function togglePlayback() {
 }
 
 export function stopPlayback() {
+  if (castPlayer.value && castPlayerController.value) {
+    castPlayerController.value.stop()
+    return
+  }
+
   if (audioElement.value) {
     if (!isPlaying.value || audioElement.value.currentTime === 0) {
       currentlyPlayingItem.value = {}

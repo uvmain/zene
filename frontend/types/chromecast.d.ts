@@ -208,7 +208,7 @@ declare namespace cast.framework {
     stop(): void
     seek(): void
     muteOrUnmute(): void
-    setVolumeLevel(): void
+    setVolumeLevel(volumeLevel: number): void
     getFormattedTime(timeInSec: number): string
     getSeekPosition(currentTime: number, duration: number): number
     getSeekTime(currentPosition: number, duration: number): number

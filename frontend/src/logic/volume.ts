@@ -1,4 +1,5 @@
 import { audioElement } from '~/logic/audioElement'
+import { castPlayer, castPlayerController } from '~/logic/castRefs'
 import { debugLog } from '~/logic/logger'
 
 export const previousVolume = ref(1)
@@ -20,6 +21,10 @@ export function toggleMute() {
 }
 
 export function changeVolume(volumeString: string) {
+  if (castPlayer.value && castPlayerController.value) {
+    castPlayerController.value.setVolumeLevel(Number.parseFloat(volumeString))
+    return
+  }
   if (!audioElement.value) {
     return
   }
