@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
@@ -189,11 +190,11 @@ func StartServer() *http.Server {
 
 	var serverAddress string
 	if config.IsLocalDevEnv() {
-		serverAddress = "localhost:8080"
-		logger.Println("Application running at http://localhost:8080")
+		serverAddress = fmt.Sprintf("localhost:%d", config.Port)
+		logger.Printf("Application running at %s", serverAddress)
 	} else {
-		serverAddress = ":8080"
-		logger.Println("Application running at :8080")
+		serverAddress = fmt.Sprintf(":%d", config.Port)
+		logger.Printf("Application running at %s", serverAddress)
 	}
 
 	server := &http.Server{
