@@ -4,7 +4,7 @@ import { getCoverArtUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
 import { currentlyPlayingItem, currentTime, trackUrl } from '~/logic/playbackQueue'
 
-const castUrl = ref<string>('')
+let castUrl = ''
 
 export async function castAudio() {
   if (!castSession.value) {
@@ -33,11 +33,11 @@ export async function castAudio() {
   if (typeof window !== 'undefined') {
     const protocol = window.location.protocol
     const host = window.location.host
-    castUrl.value = `${protocol}//${host}${trackUrl.value}`
+    castUrl = `${protocol}//${host}${trackUrl.value}`
   }
-  debugLog(`cast URL: ${castUrl.value}`)
+  debugLog(`cast URL: ${castUrl}`)
 
-  const mediaInfo = new chrome.cast.media.MediaInfo(castUrl.value ?? '', 'audio/aac')
+  const mediaInfo = new chrome.cast.media.MediaInfo(castUrl ?? '', 'audio/aac')
 
   // add metadata
   if (currentlyPlayingItem.value.track) {

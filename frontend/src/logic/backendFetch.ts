@@ -1,7 +1,7 @@
 import type { ButterchurnPreset, SearchResult } from '~/types'
 import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtist } from '~/types/subsonicArtist'
+import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'

@@ -1,5 +1,4 @@
 import type { PlayItem } from '~/types'
-
 import { debugLog } from '~/logic/logger'
 
 export const audioElement = ref<HTMLAudioElement | null>(null)
@@ -76,4 +75,10 @@ export function playWhenReady(playItem: PlayItem) {
   audio.pause()
   audio.load()
   previousPlayItem.value = playItem
+}
+
+export function seek(seekSeconds: number) {
+  if (audioElement.value) {
+    audioElement.value.currentTime = seekSeconds
+  }
 }

@@ -111,6 +111,7 @@ export async function play(playOptions: PlayOptions) {
   else if (playOptions.podcastEpisode) {
     currentlyPlayingItem.value = { podcastEpisode: playOptions.podcastEpisode }
     clearQueue()
+    playWhenReady({ podcastEpisode: playOptions.podcastEpisode })
   }
 }
 
@@ -260,12 +261,6 @@ export function stopPlayback() {
   }
 
   isPlaying.value = false
-}
-
-export function seek(seekSeconds: number) {
-  if (audioElement.value) {
-    audioElement.value.currentTime = seekSeconds
-  }
 }
 
 export function updateProgress() {

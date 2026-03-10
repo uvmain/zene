@@ -53,7 +53,7 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
         <NavLink route-name="Visualizer" route-prop="/visualizer" />
       </nav>
     </div>
-    <NavArt />
+    <NavArt class="max-w-50" />
   </aside>
 </template>
 

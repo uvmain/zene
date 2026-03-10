@@ -51,9 +51,9 @@ onBeforeMount(getRadioStations)
 
 <template>
   <div class="p-4 space-y-4">
-    <button class="z-button" @click="showModal = true">
-      Add New Radio Station
-    </button>
+    <ZButton @click="showModal = true">
+      <span class="text-nowrap">Add New Radio Station</span>
+    </ZButton>
 
     <div class="mt-8">
       <h2 class="mb-4 text-lg font-bold">

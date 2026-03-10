@@ -1,4 +1,5 @@
-import { isPlaying, seek, updateProgress } from '~/logic/playbackQueue'
+import { seek } from '~/logic/audioElement'
+import { isPlaying, updateProgress } from '~/logic/playbackQueue'
 import { currentVolume } from '~/logic/volume'
 import { castContext, castPlayer, castPlayerController, castSession, chromecastAvailable, savedLocalPosition } from './castRefs'
 import { debugLog } from './logger'
@@ -98,12 +99,6 @@ function onCastMediaInfoChanged() {
   const remoteMediaUrl = castPlayer.value.mediaInfo.contentId
   debugLog(`Remote media URL: ${remoteMediaUrl}`)
 }
-
-watch(currentVolume, (newValue) => {
-  if (castPlayer.value && castPlayer.value.volumeLevel !== newValue) {
-    castPlayer.value.volumeLevel = newValue
-  }
-})
 
 export function cleanupCastPlayer() {
   if (castPlayerController.value) {

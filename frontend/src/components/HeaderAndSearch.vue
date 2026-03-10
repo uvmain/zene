@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useDark } from '@vueuse/core'
-import { toggleMobileNav } from '~/logic/navbar'
+import { openMobileNav } from '~/logic/navbar'
 import { getSearchResults, searchInput } from '~/logic/search'
 
 const isDark = useDark()
@@ -23,7 +23,7 @@ function toggleDark() {
     <div class="flex gap-2 p-2 lg:gap-4">
       <!-- Mobile hamburger menu -->
       <div class="flex items-center justify-center lg:hidden">
-        <icon-nrk-list class="text-2xl" @click="toggleMobileNav()" />
+        <icon-nrk-list class="text-2xl" @click="openMobileNav()" />
       </div>
 
       <div class="flex flex-grow items-center justify-center">
