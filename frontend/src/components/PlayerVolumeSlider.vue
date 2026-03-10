@@ -10,13 +10,11 @@ function handleInput(e: Event) {
 
 <template>
   <div v-if="audioElement" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 lg:gap-2">
-    <abbr :title="currentVolume === 0 ? 'Unmute' : 'Mute'">
-      <button class="flex flex-row items-center" @click="toggleMute()">
-        <icon-nrk-media-volume-3 v-if="audioElement.volume > 0.66" class="text-sm text-muted sm:text-sm" />
-        <icon-nrk-media-volume-2 v-else-if="audioElement.volume > 0.33" class="text-sm text-muted sm:text-sm" />
-        <icon-nrk-media-volume-1 v-else class="text-sm text-muted sm:text-sm" />
-      </button>
-    </abbr>
+    <button :title="currentVolume === 0 ? 'Unmute' : 'Mute'" class="flex flex-row items-center" @click="toggleMute()">
+      <icon-nrk-media-volume-3 v-if="audioElement.volume > 0.66" class="text-sm text-muted sm:text-sm" />
+      <icon-nrk-media-volume-2 v-else-if="audioElement.volume > 0.33" class="text-sm text-muted sm:text-sm" />
+      <icon-nrk-media-volume-1 v-else class="text-sm text-muted sm:text-sm" />
+    </button>
     <input
       type="range"
       class="h-2 w-20 cursor-pointer background-1 accent-primary2 lg:w-30 sm:w-24 active:accent-primary1"

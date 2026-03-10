@@ -6,6 +6,8 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { computedAsync } from '@vueuse/core'
 import { audioElement, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
+import { castAudio } from '~/logic/castAudio'
+import { castPlayer, castSession } from '~/logic/castRefs'
 import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
@@ -59,7 +61,12 @@ export function setCurrentlyPlayingTrack(track: SubsonicSong) {
   }
   currentlyPlayingItem.value = { track }
   playcountPosted.value = false
-  playWhenReady({ track })
+  if (castSession.value && castPlayer.value && castPlayer.value.isConnected) {
+    void castAudio()
+  }
+  else {
+    playWhenReady({ track })
+  }
 }
 
 function setCurrentQueue(tracks: SubsonicSong[]) {
@@ -111,7 +118,12 @@ export async function play(playOptions: PlayOptions) {
   else if (playOptions.podcastEpisode) {
     currentlyPlayingItem.value = { podcastEpisode: playOptions.podcastEpisode }
     clearQueue()
-    playWhenReady({ podcastEpisode: playOptions.podcastEpisode })
+    if (castSession.value && castPlayer.value && castPlayer.value.isConnected) {
+      await castAudio()
+    }
+    else {
+      playWhenReady({ podcastEpisode: playOptions.podcastEpisode })
+    }
   }
 }
 
