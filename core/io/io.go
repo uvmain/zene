@@ -235,7 +235,7 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 }
 
 func PathWithoutTraversal(inputPath string) (string, error) {
-	if strings.Contains(inputPath, "..") {
+	if strings.Contains(inputPath, "../") || strings.Contains(inputPath, "..\\") {
 		return "", fmt.Errorf("path traversal detected")
 	}
 	cleanPath := filepath.Clean(inputPath)

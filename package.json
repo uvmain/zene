@@ -14,6 +14,7 @@
     "dev:backend": "air",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
+    "dev:noproxy": "concurrently npm:dev:backend npm:dev:frontend",
     "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && cpy zene . --rename=zene.exe",
     "build:frontend": "npm run build --workspace frontend",
     "build": "npm run build:frontend && npm run build:backend",

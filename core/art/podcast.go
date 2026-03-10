@@ -13,7 +13,7 @@ import (
 
 func GetArtForPodcast(ctx context.Context, coverArtId string, size int) ([]byte, time.Time, error) {
 	// prevent path traversal
-	if strings.Contains(coverArtId, "/") || strings.Contains(coverArtId, "\\") || strings.Contains(coverArtId, "..") {
+	if strings.Contains(coverArtId, "/") || strings.Contains(coverArtId, "\\") || strings.Contains(coverArtId, "../") {
 		return nil, time.Now(), fmt.Errorf("invalid podcast coverArtId")
 	}
 
