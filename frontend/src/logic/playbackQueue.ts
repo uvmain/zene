@@ -4,10 +4,10 @@ import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { computedAsync } from '@vueuse/core'
-import { audioElement, playWhenReady } from '~/logic/audioElement'
+import { audioElement, seek as elementSeek, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { castAudio } from '~/logic/castAudio'
-import { castPlayer, castPlayerController, castSession } from '~/logic/castRefs'
+import { castPlayer, castPlayerController, chromecastConnected } from '~/logic/castRefs'
 import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
@@ -61,7 +61,7 @@ export function setCurrentlyPlayingTrack(track: SubsonicSong) {
   }
   currentlyPlayingItem.value = { track }
   playcountPosted.value = false
-  if (castSession.value && castPlayer.value && castPlayer.value.isConnected) {
+  if (chromecastConnected.value) {
     void castAudio()
   }
   else {
@@ -118,7 +118,7 @@ export async function play(playOptions: PlayOptions) {
   else if (playOptions.podcastEpisode) {
     currentlyPlayingItem.value = { podcastEpisode: playOptions.podcastEpisode }
     clearQueue()
-    if (castSession.value && castPlayer.value && castPlayer.value.isConnected) {
+    if (chromecastConnected.value) {
       await castAudio()
     }
     else {
@@ -198,7 +198,7 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
       if (previousIndexes.length) {
         previousIndexes.pop()
       }
-      const previousIndex = previousIndexes[previousIndexes.length - 1]
+      const previousIndex = previousIndexes.at(-1) ?? 0
       const prevTrack = currentQueue.value.tracks[previousIndex]
       currentQueue.value.position = previousIndex
       if (prevTrack !== undefined) {
@@ -207,7 +207,7 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
       return prevTrack
     }
     if (repeatStatus.value === 'all') {
-      prevTrack = currentQueue.value.tracks[currentQueue.value.tracks.length - 1]
+      prevTrack = currentQueue.value.tracks.at(-1)
       currentQueue.value.position = currentQueue.value.tracks.length - 1
       return prevTrack
     }
@@ -221,7 +221,7 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
         currentQueue.value.position = currentIndex - 1
       }
       else {
-        prevTrack = currentQueue.value.tracks[currentQueue.value.tracks.length - 1]
+        prevTrack = currentQueue.value.tracks.at(-1)
         currentQueue.value.position = currentQueue.value.tracks.length - 1
       }
       if (prevTrack !== undefined) {
@@ -237,9 +237,8 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
 }
 
 export function togglePlayback() {
-  if (castPlayer.value && castPlayerController.value) {
+  if (chromecastConnected.value && castPlayerController.value) {
     castPlayerController.value.playOrPause()
-    return
   }
 
   if (!audioElement.value) {
@@ -266,9 +265,8 @@ export function togglePlayback() {
 }
 
 export function stopPlayback() {
-  if (castPlayer.value && castPlayerController.value) {
+  if (chromecastConnected.value && castPlayerController.value) {
     castPlayerController.value.stop()
-    return
   }
 
   if (audioElement.value) {
@@ -305,4 +303,12 @@ export function updateProgress() {
       playcountPosted.value = true
     }
   }
+}
+
+export function seek(seekSeconds: number) {
+  if (chromecastConnected.value && castPlayer.value !== null && castPlayerController.value) {
+    castPlayer.value.currentTime = castPlayer.value.currentTime + seekSeconds
+    castPlayerController.value.seek()
+  }
+  elementSeek(seekSeconds)
 }

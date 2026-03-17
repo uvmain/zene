@@ -1,4 +1,5 @@
 export const chromecastAvailable = ref<boolean>(false)
+export const chromecastConnected = ref<boolean>(false)
 export const castPlayer = ref<cast.framework.RemotePlayer | null>(null)
 export const castPlayerController = ref<cast.framework.RemotePlayerController | null>(null)
 export const castContext = ref<cast.framework.CastContext | null>(null)

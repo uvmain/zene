@@ -1,5 +1,5 @@
 import { audioElement } from '~/logic/audioElement'
-import { castPlayerController, castSession, isCasting, savedLocalPosition } from '~/logic/castRefs'
+import { castPlayerController, castSession, chromecastConnected, isCasting, savedLocalPosition } from '~/logic/castRefs'
 import { getCoverArtUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
 import { currentlyPlayingItem, currentTime, trackUrl } from '~/logic/playbackQueue'
@@ -7,7 +7,7 @@ import { currentlyPlayingItem, currentTime, trackUrl } from '~/logic/playbackQue
 let castUrl = ''
 
 export async function castAudio() {
-  if (!castSession.value) {
+  if (!castSession.value || !chromecastConnected.value) {
     console.error('No active cast session found')
     return
   }
@@ -86,7 +86,7 @@ export async function castAudio() {
 }
 
 export function togglePlayback() {
-  if (castPlayerController.value) {
+  if (chromecastConnected.value && castPlayerController.value) {
     castPlayerController.value.playOrPause()
   }
 }

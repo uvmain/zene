@@ -1,7 +1,7 @@
 import { seek } from '~/logic/audioElement'
 import { isPlaying, updateProgress } from '~/logic/playbackQueue'
 import { currentVolume } from '~/logic/volume'
-import { castContext, castPlayer, castPlayerController, castSession, chromecastAvailable, savedLocalPosition } from './castRefs'
+import { castContext, castPlayer, castPlayerController, castSession, chromecastAvailable, chromecastConnected, savedLocalPosition } from './castRefs'
 import { debugLog } from './logger'
 
 export function initializeCast() {
@@ -23,12 +23,22 @@ export function initializeCast() {
   castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.IS_CONNECTED_CHANGED, onCastConnectionChanged)
   castPlayerController.value.addEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onCastMediaInfoChanged)
 
+  castPlayerController.value.setVolumeLevel(currentVolume.value)
+
   debugLog('CastContext initialized')
 }
 
 function onCastStateChanged(event: cast.framework.CastStateEventData) {
   debugLog(`Cast state changed: ${event.castState}`)
   chromecastAvailable.value = event.castState !== cast.framework.CastState.NO_DEVICES_AVAILABLE
+  if (event.castState === cast.framework.CastState.NOT_CONNECTED) {
+    debugLog('Cast device disconnected')
+    chromecastConnected.value = false
+  }
+  else if (event.castState === cast.framework.CastState.CONNECTED) {
+    debugLog('Cast device connected')
+    chromecastConnected.value = true
+  }
 }
 
 function onSessionStateChanged(event: cast.framework.SessionStateEventData) {

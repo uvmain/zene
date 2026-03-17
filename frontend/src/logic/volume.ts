@@ -1,34 +1,28 @@
 import { audioElement } from '~/logic/audioElement'
-import { castPlayer, castPlayerController } from '~/logic/castRefs'
-import { debugLog } from '~/logic/logger'
+import { castPlayerController, chromecastConnected } from '~/logic/castRefs'
+import { debugLog } from './logger'
 
 export const previousVolume = ref(1)
 export const currentVolume = ref(1)
 
 export function toggleMute() {
-  if (audioElement.value) {
-    debugLog('Changing volume')
-    if (audioElement.value.volume !== 0) {
-      previousVolume.value = audioElement.value.volume
-      audioElement.value.volume = 0
-      currentVolume.value = 0
-    }
-    else {
-      audioElement.value.volume = previousVolume.value
-      currentVolume.value = previousVolume.value
-    }
+  if (currentVolume.value > 0) {
+    previousVolume.value = currentVolume.value
+    changeVolume('0')
+  }
+  else {
+    changeVolume(previousVolume.value.toString())
   }
 }
 
 export function changeVolume(volumeString: string) {
-  if (castPlayer.value && castPlayerController.value) {
-    castPlayerController.value.setVolumeLevel(Number.parseFloat(volumeString))
-    return
-  }
-  if (!audioElement.value) {
-    return
-  }
   const volume = Number.parseFloat(volumeString)
-  audioElement.value.volume = volume
+  debugLog(`Changing volume to ${volume}`)
   currentVolume.value = volume
+  if (chromecastConnected.value && castPlayerController.value) {
+    castPlayerController.value.setVolumeLevel(volume)
+  }
+  if (audioElement.value) {
+    audioElement.value.volume = volume
+  }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { cleanupCastPlayer, initializeCast } from '~/logic/castFunctions'
-import { castPlayer, chromecastAvailable } from '~/logic/castRefs'
+import { castPlayer, chromecastAvailable, chromecastConnected } from '~/logic/castRefs'
 import { debugLog } from '~/logic/logger'
 import { currentVolume } from '~/logic/volume'
 

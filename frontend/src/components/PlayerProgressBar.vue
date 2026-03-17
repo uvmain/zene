@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { seek } from '~/logic/audioElement'
 import { formatTimeFromSeconds } from '~/logic/common'
-import { currentlyPlayingItem, currentTime } from '~/logic/playbackQueue'
+import { currentlyPlayingItem, currentTime, seek } from '~/logic/playbackQueue'
 
 const currentTimeFormatted = computed(() => formatTimeFromSeconds(currentTime.value))
 

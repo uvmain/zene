@@ -55,7 +55,13 @@ export default defineConfig({
     exclude: [],
   },
   server: {
-    host: '0.0.0.0',
-    allowedHosts: ['ghost.ianbaron.com'],
+    host: true,
+    allowedHosts: true,
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/rest': { target: 'http://localhost:8080' },
+      '/share': { target: 'http://localhost:8080' },
+    },
   },
 })
