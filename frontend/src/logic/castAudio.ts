@@ -74,7 +74,7 @@ export async function castAudio() {
     // Automatically start cast playback if local audio was playing
     if (wasPlayingLocally && castPlayerController.value) {
       debugLog('Auto-starting cast playback since local audio was playing')
-      castPlayerController.value.playOrPause()
+      // castPlayerController.value.playOrPause()
     }
 
     // isTransitioningToCast.value = false

@@ -1,5 +1,14 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
 import { apiKey, streamQuality } from '~/logic/store'
+import { chromecastConnected } from './castRefs'
+
+const chromecastDevMode = computed(() => {
+  return chromecastConnected.value === true
+    && import.meta.env.MODE === 'development'
+    && import.meta.env.DEV === true
+    && import.meta.env.VITE_CHROMECAST_BASE_URL !== undefined
+    && import.meta.env.VITE_CHROMECAST_API_KEY !== undefined
+})
 
 export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)
@@ -9,11 +18,11 @@ export function formatTimeFromSeconds(time: number): string {
 
 export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = false): string {
   const queryParams = new URLSearchParams({
-    apiKey: apiKey.value,
+    apiKey: chromecastDevMode.value ? import.meta.env.VITE_CHROMECAST_API_KEY as string : apiKey.value,
     c: 'zene-frontend',
     v: '1.6.0',
     id: musicbrainz_track_id,
-    format: raw ? 'raw' : 'aac',
+    format: chromecastDevMode.value ? 'mp3' : 'aac',
   })
   if (!raw) {
     queryParams.append('maxBitRate', streamQuality.value.toString())
@@ -21,7 +30,7 @@ export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = fal
   else {
     queryParams.append('raw', 'true')
   }
-  return `/rest/stream.view?${queryParams.toString()}`
+  return chromecastDevMode.value ? `${import.meta.env.VITE_CHROMECAST_BASE_URL}/rest/stream.view?${queryParams.toString()}` : `/rest/stream.view?${queryParams.toString()}`
 }
 
 export function onImageError(event: Event) {
