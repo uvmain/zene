@@ -2,9 +2,9 @@ import { defineConfig, presetWind3, transformerDirectives, transformerVariantGro
 
 export default defineConfig({
   shortcuts: {
+    'corner-cut': 'rounded-none [@supports(corner-top-left-shape:bevel)]:rounded-tl-12px [@supports(corner-top-left-shape:bevel)]:[corner-top-left-shape:_bevel]',
+    'corner-cut-large': 'rounded-none [@supports(corner-top-left-shape:bevel)]:rounded-tl-36px [@supports(corner-top-left-shape:bevel)]:[corner-top-left-shape:_bevel]',
     'media-control-button': 'h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10',
-    'corner-cut': 'rounded-tl-12px [corner-top-left-shape:_bevel]',
-    'corner-cut-large': 'rounded-tl-36px [corner-top-left-shape:_bevel]',
     'text-primary': 'dark:text-zshade-100 text-zshade-900',
     'text-muted': 'dark:text-zshade-200 text-zshade-800',
     'border-muted': 'dark:border-zshade-700 border-zshade-200 border-solid border-1',

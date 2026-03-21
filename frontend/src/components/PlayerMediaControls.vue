@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
-import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback, toggleRepeat, toggleShuffle } from '~/logic/playbackQueue'
+import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback } from '~/logic/playbackQueue'
+import { toggleRepeat, toggleShuffle } from '~/logic/playerUtils'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 
 defineProps({

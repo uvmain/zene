@@ -160,7 +160,7 @@ func GetArtForTrack(ctx context.Context, musicBrainzTrackId string, size int) ([
 
 func GetArtForAlbum(ctx context.Context, musicBrainzAlbumId string, size int) ([]byte, time.Time, error) {
 	// prevent path traversal
-	if strings.Contains(musicBrainzAlbumId, "/") || strings.Contains(musicBrainzAlbumId, "\\") || strings.Contains(musicBrainzAlbumId, "..") {
+	if strings.Contains(musicBrainzAlbumId, "/") || strings.Contains(musicBrainzAlbumId, "\\") || strings.Contains(musicBrainzAlbumId, "../") {
 		return nil, time.Now(), fmt.Errorf("invalid album ID")
 	}
 	file_name := musicBrainzAlbumId + ".jpg"

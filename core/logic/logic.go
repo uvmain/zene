@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
 
@@ -200,7 +199,7 @@ func GetDefaultRoleValue(roleName string) bool {
 }
 
 func GetUnauthenticatedImageUrl(musicbrainzId string, size int) string {
-	url := fmt.Sprintf("%s/share/img/%s", config.BaseUrl, musicbrainzId)
+	url := fmt.Sprintf("/share/img/%s", musicbrainzId)
 	if size > 0 {
 		url = fmt.Sprintf("%s?size=%d", url, size)
 	}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import md5 from 'md5'
-import { fetchApiKeysWithTokenAndSalt, fetchNewApiKeyWithTokenAndSalt } from '~/logic/backendFetch'
+import { createNewApiKeyWithTokenAndSalt, fetchApiKeysWithTokenAndSalt } from '~/logic/backendFetch'
 import { apiKey } from '~/logic/store'
 
 const router = useRouter()
@@ -29,7 +29,7 @@ async function login() {
     }
 
     if (data.apiKeys.apiKey.length === 0) {
-      const newApiKey = await fetchNewApiKeyWithTokenAndSalt(username.value, token.value, salt.value)
+      const newApiKey = await createNewApiKeyWithTokenAndSalt(username.value, token.value, salt.value)
       apiKey.value = newApiKey
       router.push('/')
     }

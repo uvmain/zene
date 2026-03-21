@@ -59,9 +59,9 @@ onBeforeMount(getPlaylists)
 
 <template>
   <div class="p-4 space-y-4">
-    <button class="z-button" @click="showModal = true">
-      Create New Playlist
-    </button>
+    <ZButton @click="showModal = true">
+      <span class="text-nowrap">Create New Playlist</span>
+    </ZButton>
 
     <div class="mt-8">
       <div v-if="playlists.length === 0" class="text-primary">

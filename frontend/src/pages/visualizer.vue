@@ -3,8 +3,9 @@ import type { Visualizer, VisualizerOptions } from 'butterchurn'
 import type { ButterchurnPreset } from '~/types'
 import { onKeyStroke } from '@vueuse/core'
 import butterchurn from 'butterchurn'
+import { audioContext, audioNode } from '~/logic/audioElement'
 import { getButterchurnPresets } from '~/logic/backendFetch'
-import { audioContext, audioNode, currentlyPlayingTrack } from '~/logic/playbackQueue'
+import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
 const gridParent = useTemplateRef('grid') as Ref<HTMLDivElement>
@@ -23,6 +24,16 @@ let animationFrameId: number | null = null
 let presetInterval: NodeJS.Timeout | null = null
 const intervalSeconds = 25.0
 const blendSeconds = 0 // 2.7
+
+const newTrackTitle = computed(() => {
+  if (currentlyPlayingItem.value.track) {
+    return `${currentlyPlayingItem.value.track.artist}: ${currentlyPlayingItem.value.track.title}`
+  }
+  else if (currentlyPlayingItem.value.podcastEpisode) {
+    return currentlyPlayingItem.value.podcastEpisode.title
+  }
+  return 'No track playing'
+})
 
 function renderLoop() {
   if (visualizer.value != null) {
@@ -142,13 +153,10 @@ onKeyStroke(['F', 'f'], (e) => {
   toggleFullscreen()
 })
 
-watch(currentlyPlayingTrack, (newTrack, oldTrack) => {
+watch(currentlyPlayingItem, (newTrack, oldTrack) => {
   if (newTrack !== oldTrack) {
     loadRandomPreset()
-    const launchText = newTrack
-      ? `${newTrack.artist}: ${newTrack.title}`
-      : 'No track playing'
-    visualizer.value?.launchSongTitleAnim(launchText)
+    visualizer.value?.launchSongTitleAnim(newTrackTitle.value)
   }
 })
 

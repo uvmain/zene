@@ -1,7 +1,7 @@
 import type { ButterchurnPreset, SearchResult } from '~/types'
 import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import type { SubsonicArtist, SubsonicArtistInfo, SubsonicIndexArtist } from '~/types/subsonicArtist'
+import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
@@ -11,7 +11,7 @@ import { apiKey } from '~/logic/store'
 
 const concurrencyMap = new Map<string, Promise<any>>()
 
-export async function fetchNewApiKeyWithTokenAndSalt(username: string, token: string, salt: string): Promise<string> {
+export async function createNewApiKeyWithTokenAndSalt(username: string, token: string, salt: string): Promise<string> {
   try {
     const formData = new FormData()
     formData.append('u', username)
@@ -134,20 +134,6 @@ export async function openSubsonicFetchRequest<T>(path: string, options: Request
   return promiseInstance as Promise<T>
 }
 
-export function getStreamUrl(path: string, params: URLSearchParams = {} as URLSearchParams): string {
-  if (apiKey.value !== null && apiKey.value.length > 0) {
-    params.append('apiKey', apiKey.value)
-    params.append('f', 'json')
-    params.append('v', '1.16.0')
-    params.append('c', 'zene-frontend')
-  }
-  else {
-    return ''
-  }
-
-  return `/rest/${path}?${params.toString()}`
-}
-
 export async function fetchAlbum(musicbrainz_album_id: string): Promise<SubsonicAlbum> {
   const formData = new FormData()
   formData.append('id', musicbrainz_album_id)
@@ -208,21 +194,6 @@ export async function fetchArtistInfo(musicbrainz_artist_id: string, limit = 20)
     body: formData,
   })
   return response.artistInfo
-}
-
-export async function fetchArtists(limit = 0): Promise<SubsonicIndexArtist[]> {
-  const response = await openSubsonicFetchRequest<Types.SubsonicArtistsResponse>('getArtists')
-  const artists = response.artists
-  const artistArray: SubsonicIndexArtist[] = []
-  for (const index of artists.index) {
-    for (const artist of index.artist) {
-      artistArray.push(artist)
-    }
-  }
-  if (limit > 0) {
-    return artistArray.slice(0, limit)
-  }
-  return artistArray
 }
 
 export async function fetchArtistList(type: string, limit: number, offset: number, seed?: number): Promise<SubsonicArtist[]> {
@@ -286,20 +257,6 @@ export async function fetchLyrics(musicbrainz_song_id: string): Promise<Structur
   else {
     return null
   }
-}
-
-export async function fetchAlbumsForArtist(artistId: string): Promise<SubsonicAlbum[]> {
-  const formData = new FormData()
-  formData.append('id', artistId)
-  const response = await openSubsonicFetchRequest<Types.SubsonicArtistResponse>('getArtist', {
-    body: formData,
-  })
-  const albums: SubsonicAlbum[] = []
-  for (const album of response.artist.album) {
-    const albumWithSongs = await fetchAlbum(album.id)
-    albums.push(albumWithSongs)
-  }
-  return albums
 }
 
 export async function fetchSongsByGenre(genre: string, limit: number, offset: number): Promise<SubsonicSong[]> {

@@ -79,7 +79,6 @@ These tags are already set by Lidarr. Alternatively, you can use a program like 
 ### example
 > .env
 ```
-BASE_URL=https://zene.domain.tld
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=supersecretpassword
 ADMIN_EMAIL=admin@localhost

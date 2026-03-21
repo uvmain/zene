@@ -14,7 +14,7 @@ function navigateToVisualizer() {
   <abbr title="Visualizer">
     <button
       id="visualizer"
-      class="h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10"
+      class="flex cursor-pointer items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none"
       @click="navigateToVisualizer()"
     >
       <icon-nrk-media-soundwave

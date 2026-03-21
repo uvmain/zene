@@ -7,13 +7,14 @@
     "./frontend"
   ],
   "scripts": {
-    "setup": "go install github.com/air-verse/air@latest && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go mod download",
+    "setup": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go install golang.org/x/vuln/cmd/govulncheck@latest && go mod download",
     "clean:build": "rimraf -v -I zene zene.exe frontend/dist tmp",
     "clean:modules": "rimraf -v -I frontend/node_modules node_modules",
     "clean": "npm run clean:build && npm run clean:modules",
     "dev:backend": "air",
     "dev:frontend": "npm run dev --workspace frontend",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
+    "dev:noproxy": "concurrently npm:dev:backend npm:dev:frontend",
     "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && cpy zene . --rename=zene.exe",
     "build:frontend": "npm run build --workspace frontend",
     "build": "npm run build:frontend && npm run build:backend",
@@ -21,6 +22,7 @@
     "preview:go": "zene.exe",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
+    "audit": "npm audit && govulncheck ./...",
     "lint:frontend": "npm run lint --workspace frontend",
     "lint:backend": "golangci-lint run",
     "lint": "npm run lint:frontend && npm run lint:backend",
@@ -37,7 +39,7 @@
   },
   "homepage": "https://github.com/uvmain/zene#readme",
   "devDependencies": {
-    "caddy-baron": "^4.0.0",
+    "caddy-baron": "^5.0.1",
     "concurrently": "^9.2.1",
     "cpy-cli": "^7.0.0",
     "cross-env": "^10.1.0",

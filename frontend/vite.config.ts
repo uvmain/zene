@@ -1,8 +1,7 @@
-import path from 'node:path'
+import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import AutoImport from 'unplugin-auto-import/vite'
-import Unfonts from 'unplugin-fonts/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
@@ -23,21 +22,10 @@ export default defineConfig({
       viteOptimizeDeps: true,
     }),
     vue({
-      // template: {
-      //   compilerOptions: {
-      //     isCustomElement: tag => tag === 'google-cast-launcher',
-      //   },
-      // },
-    }),
-    Unfonts({
-      google: {
-        families: [
-          {
-            name: 'Jura',
-            styles: 'wght@300..700',
-            defer: true,
-          },
-        ],
+      template: {
+        compilerOptions: {
+          isCustomElement: tag => tag === 'google-cast-launcher',
+        },
       },
     }),
     Icons(),
@@ -55,7 +43,7 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '~/': `${path.resolve(__dirname, 'src')}/`,
+      '~': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
   optimizeDeps: {
@@ -65,5 +53,15 @@ export default defineConfig({
       '@vueuse/core',
     ],
     exclude: [],
+  },
+  server: {
+    host: true,
+    allowedHosts: true,
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/rest': { target: 'http://localhost:8080' },
+      '/share': { target: 'http://localhost:8080' },
+    },
   },
 })

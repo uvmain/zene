@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import type { StructuredLyricLine } from '~/types/subsonicLyrics'
 import { fetchLyrics } from '~/logic/backendFetch'
-import { currentlyPlayingTrack, currentTime } from '~/logic/playbackQueue'
+import { currentlyPlayingItem, currentTime } from '~/logic/playbackQueue'
 
 const showLyrics = ref(false)
 
 const lyricsRef = ref<StructuredLyricLine[]>([])
 
 async function getLyrics() {
-  if (currentlyPlayingTrack.value?.musicBrainzId === undefined) {
+  if (currentlyPlayingItem.value.track?.musicBrainzId === undefined) {
     lyricsRef.value = []
     return
   }
-  const lyrics = await fetchLyrics(currentlyPlayingTrack.value?.musicBrainzId)
+  const lyrics = await fetchLyrics(currentlyPlayingItem.value.track?.musicBrainzId)
   if (!lyrics) {
     lyricsRef.value = []
     return
@@ -23,7 +23,7 @@ async function getLyrics() {
   }))
 }
 
-watch(() => currentlyPlayingTrack.value?.musicBrainzId, async (newTrack, oldTrack) => {
+watch(() => currentlyPlayingItem.value.track?.musicBrainzId, async (newTrack, oldTrack) => {
   if (newTrack !== oldTrack) {
     await getLyrics()
   }
@@ -39,7 +39,7 @@ onMounted(async () => {
     <abbr :title="lyricsRef.length > 0 ? 'Show lyrics' : 'No Lyrics Available'">
       <button
         id="lyrics"
-        class="h-10 w-10 flex items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10"
+        class="flex items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none"
         :class="{
           'cursor-not-allowed': lyricsRef.length === 0,
           'cursor-pointer': lyricsRef.length > 0,
@@ -56,7 +56,7 @@ onMounted(async () => {
       </button>
     </abbr>
     <LyricsModal
-      v-if="showLyrics && currentlyPlayingTrack"
+      v-if="showLyrics && currentlyPlayingItem.track"
       :lyrics="lyricsRef"
       :current-seconds="currentTime"
       @close="showLyrics = false"

@@ -55,9 +55,9 @@ onBeforeMount(getPodcasts)
 
 <template>
   <div class="mx-auto p-4 lg:max-w-60dvw space-y-4">
-    <button class="z-button" @click="showAddPodcastModal = true">
-      Add New Podcast Channel
-    </button>
+    <ZButton @click="showAddPodcastModal = true">
+      <span class="text-nowrap">Add New Podcast Channel</span>
+    </ZButton>
 
     <div class="mt-8">
       <div v-if="podcasts.length === 0" class="text-primary">

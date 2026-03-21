@@ -12,7 +12,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var BaseUrl string
+var Port int
 var MusicDirs []string
 var PodcastDirectory string
 var DatabaseDirectory string
@@ -44,7 +44,12 @@ func LoadConfig() {
 		logger.Printf("no .env file found, using only environment variables")
 	}
 
-	BaseUrl = cmp.Or(os.Getenv("BASE_URL"), "http://localhost:8080")
+	portStr := cmp.Or(os.Getenv("PORT"), "8080")
+	Port, err = strconv.Atoi(portStr)
+	if err != nil {
+		logger.Printf("Invalid PORT environment variable, defaulting to 8080: %v", err)
+		Port = 8080
+	}
 
 	musicDirs := cmp.Or(os.Getenv("MUSIC_DIRS"), "./music")
 

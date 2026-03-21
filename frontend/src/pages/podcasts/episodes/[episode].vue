@@ -54,9 +54,8 @@ onBeforeMount(async () => {
             <ZInfo v-for="genre in episode.genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
           </div>
           <PlayButton
-            :podcast="episode"
+            :podcast-episode="episode"
             class="my-auto"
-            hover-text="Play episode"
           />
         </div>
       </div>
