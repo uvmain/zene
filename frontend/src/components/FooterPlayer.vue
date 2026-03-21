@@ -11,7 +11,7 @@
         <PlayerMediaControls />
       </div>
       <div class="flex flex-row items-center gap-4 lg:gap-6">
-        <GoogleCastButton />
+        <!-- <GoogleCastButton /> -->
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />
