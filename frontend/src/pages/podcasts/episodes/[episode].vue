@@ -36,12 +36,12 @@ onBeforeMount(async () => {
     <div v-if="!episode" class="text-primary">
       Podcast episode not found.
     </div>
-    <div v-else class="mx-auto max-w-60dvw flex flex-col gap-6">
+    <div v-else class="mx-auto flex flex-col gap-6 max-w-60dvw">
       <div class="flex flex-row gap-4">
         <img
           :src="coverArt"
           alt="Podcast Cover"
-          class="size-70 rounded-md object-cover"
+          class="rounded-md size-70 object-cover"
           width="280"
           height="280"
           loading="eager"
@@ -50,7 +50,7 @@ onBeforeMount(async () => {
           <div class="text-4xl font-bold">
             {{ episode.title }}
           </div>
-          <div v-if="episode.genres?.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
+          <div v-if="episode.genres?.length > 0" class="flex flex-wrap gap-2 justify-center lg:justify-start">
             <ZInfo v-for="genre in episode.genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
           </div>
           <PlayButton
@@ -60,7 +60,7 @@ onBeforeMount(async () => {
         </div>
       </div>
       <div
-        class="whitespace-pre-line text-pretty text-op-80"
+        class="text-op-80 whitespace-pre-line text-pretty"
         v-html="episode.description.replaceAll(/\n/g, '<br>')"
       />
     </div>

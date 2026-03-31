@@ -93,7 +93,7 @@ onKeyStroke('MediaStop', (e) => {
     <button id="forward" title="Next track" class="media-control-button" @click="handleNextTrack()">
       <icon-nrk-media-next class="footer-icon" />
     </button>
-    <button id="repeat" :title="repeatAbbreviation" class="relative media-control-button" @click="toggleRepeat">
+    <button id="repeat" :title="repeatAbbreviation" class="media-control-button relative" @click="toggleRepeat">
       <icon-nrk-media-jumpto
         :class="{
           'footer-icon': repeatStatus === 'off',
@@ -102,7 +102,7 @@ onKeyStroke('MediaStop', (e) => {
       />
       <span
         v-if="repeatStatus !== 'off'"
-        class="absolute top-0 w-4 text-left text-xs text-primary2 -right-1"
+        class="text-xs text-primary2 text-left w-4 top-0 absolute -right-1"
       >
         {{ repeatStatus }}
       </span>

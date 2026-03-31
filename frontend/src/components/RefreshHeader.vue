@@ -18,13 +18,13 @@ async function refresh() {
 </script>
 
 <template>
-  <div class="flex flex-row items-center justify-center gap-x-2 py-6 lg:justify-start">
+  <div class="py-6 flex flex-row gap-x-2 items-center justify-center lg:justify-start">
     <ZButton @click="emits('titleClick')">
       <span class="text-sm lg:text-base">{{ title }}</span>
     </ZButton>
     <abbr title="Refresh">
       <button class="flex items-center justify-center" @click="refresh()">
-        <icon-nrk-refresh class="cursor-pointer text-sm hover:text-primary2" :class="{ spin: refreshed }" />
+        <icon-nrk-refresh class="text-sm cursor-pointer hover:text-primary2" :class="{ spin: refreshed }" />
       </button>
     </abbr>
   </div>

@@ -61,7 +61,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 <template>
   <div
     ref="trackElement"
-    class="group grid max-w-100% cursor-pointer items-center gap-4 px-2 py-1 text-base transition-colors duration-300 ease-out"
+    class="group text-base px-2 py-1 gap-4 grid max-w-100% cursor-pointer transition-colors duration-300 ease-out items-center"
     :class="{
       'hover:bg-primary2/40': !isTrackPlaying,
       'dark:bg-zshade-700/60 bg-zshade-100/60': !isTrackPlaying && trackIndex % 2 === 0,
@@ -75,10 +75,10 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     @click="handlePlay(track)"
   >
     <!-- track number and play button -->
-    <div class="relative flex items-center justify-center">
-      <div class="relative translate-x-0 opacity-100 transition-all duration-300 group-hover:(translate-x-[1rem] opacity-0)">
+    <div class="flex items-center justify-center relative">
+      <div class="opacity-100 translate-x-0 transition-all duration-300 relative group-hover:(opacity-0 translate-x-[1rem])">
         <div v-if="!showAlbum">
-          <div v-if="track.discNumber > 1" class="absolute bottom-1px left--4 text-sm text-muted opacity-40">
+          <div v-if="track.discNumber > 1" class="text-sm text-muted opacity-40 bottom-1px left--4 absolute">
             {{ track.discNumber }}:
           </div>
           <div>{{ track.track }}</div>
@@ -86,11 +86,11 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         <span v-else>{{ trackIndex + 1 }}</span>
       </div>
       <icon-nrk-media-play
-        class="absolute m-auto translate-x-[-1rem] text-xl opacity-0 transition-all duration-300 group-hover:(translate-x-0 opacity-100)"
+        class="text-xl m-auto opacity-0 translate-x-[-1rem] transition-all duration-300 absolute group-hover:(opacity-100 translate-x-0)"
       />
     </div>
     <!-- album art, title and artist -->
-    <div class="min-h-60px min-w-0 flex flex-row items-center gap-4 overflow-hidden">
+    <div class="flex flex-row gap-4 min-h-60px min-w-0 items-center overflow-hidden">
       <div v-if="showAlbum" class="flex flex-shrink-0 items-center">
         <RouterLink
           :to="`/albums/${track.albumId}`"
@@ -98,7 +98,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
           @click.stop
         >
           <img
-            class="size-60px rounded-sm object-cover shadow-sm shadow-zshade-500 dark:shadow-zshade-900"
+            class="rounded-sm size-60px shadow-sm shadow-zshade-500 object-cover dark:shadow-zshade-900"
             :src="getCoverArtUrl(track.albumId, artSizes.size60)"
             alt="Album Cover"
             :loading="trackIndex < 20 ? 'eager' : 'lazy'"
@@ -108,16 +108,16 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
           />
         </RouterLink>
       </div>
-      <div class="min-w-0 flex flex-shrink-1 flex-col">
+      <div class="flex flex-shrink-1 flex-col min-w-0">
         <RouterLink
-          class="line-clamp-1 truncate text-lg text-primary no-underline hover:(underline underline-white)"
+          class="text-lg text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
           :to="`/tracks/${track.id}`"
           @click.stop
         >
           {{ track.title }}
         </RouterLink>
         <RouterLink
-          class="line-clamp-1 truncate text-sm text-muted no-underline hover:(underline underline-white)"
+          class="text-sm text-muted no-underline truncate line-clamp-1 hover:(underline underline-white)"
           :class="{ hidden: artistIsAlbumArtist }"
           :to="`/artists/${track.artistId}`"
           @click.stop
@@ -131,17 +131,17 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       {{ formatTimeFromSeconds(track.duration) }}
     </div>
     <!-- album -->
-    <div v-if="showAlbum" class="min-w-0 flex flex-shrink-1">
+    <div v-if="showAlbum" class="flex flex-shrink-1 min-w-0">
       <RouterLink
         :to="`/albums/${track.albumId}`"
-        class="line-clamp-1 truncate text-primary no-underline hover:(underline underline-white)"
+        class="text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
         @click.stop
       >
         {{ track.album }}
       </RouterLink>
     </div>
     <!-- track genres -->
-    <div class="fade-out line-clamp-1 min-w-0 gap-1 truncate">
+    <div class="fade-out gap-1 min-w-0 truncate line-clamp-1">
       <RouterLink
         v-for="genre in trackGenres"
         :key="genre"
@@ -153,7 +153,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       </RouterLink>
     </div>
     <!-- year -->
-    <div class="cursor-pointer text-center">
+    <div class="text-center cursor-pointer">
       {{ track.year }}
     </div>
     <!-- starred -->
@@ -162,7 +162,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       <icon-nrk-star v-else class="text-muted opacity-40 hover:opacity-100" />
     </div>
     <!-- play count -->
-    <div class="cursor-pointer text-center">
+    <div class="text-center cursor-pointer">
       {{ playCount ?? 0 }}
     </div>
   </div>

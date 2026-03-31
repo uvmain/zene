@@ -1,4 +1,4 @@
-import { defineConfig, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { defineConfig, presetWind4, transformerDirectives, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   shortcuts: {
@@ -38,7 +38,11 @@ export default defineConfig({
     },
   },
   presets: [
-    presetWind3(),
+    presetWind4({
+      preflights: {
+        reset: true,
+      },
+    }),
   ],
   transformers: [
     transformerDirectives(),

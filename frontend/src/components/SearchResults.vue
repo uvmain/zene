@@ -23,8 +23,8 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
 </script>
 
 <template>
-  <div v-if="searchInput.length >= 3" class="corner-cut-large mt-2 background-2 bg-gradient-to-br">
-    <div class="flex flex-col gap-2 p-4">
+  <div v-if="searchInput.length >= 3" class="mt-2 corner-cut-large background-2 bg-gradient-to-br">
+    <div class="p-4 flex flex-col gap-2">
       <div class="flex justify-between">
         <h3>
           Search results for "{{ searchInput }}":
@@ -40,9 +40,9 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
         <div
           v-for="track in searchResults?.songs"
           :key="track.path"
-          class="w-auto flex flex-none flex-col gap-y-1 overflow-hidden"
+          class="flex flex-none flex-col gap-y-1 w-auto overflow-hidden"
         >
-          <div class="overflow-hidden text-ellipsis whitespace-nowrap text-sm text-primary">
+          <div class="text-sm text-primary whitespace-nowrap text-ellipsis overflow-hidden">
             {{ track.title }}
           </div>
           <Album :album="trackToAlbum(track)" />
@@ -55,7 +55,7 @@ function trackToAlbum(track: SubsonicSong): SubsonicAlbum {
         <div
           v-for="album in searchResults?.albums"
           :key="album.name"
-          class="w-auto flex flex-none flex-col gap-y-1 overflow-hidden"
+          class="flex flex-none flex-col gap-y-1 w-auto overflow-hidden"
         >
           <Album :album="album" />
         </div>

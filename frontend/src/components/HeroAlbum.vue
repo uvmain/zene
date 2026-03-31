@@ -112,30 +112,30 @@ onBeforeMount(async () => {
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
-      <div class="h-full w-full flex items-center justify-between background-grad-2 backdrop-blur-md">
+      <div class="flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
         <div class="p-8">
-          <div class="h-30 flex flex-row gap-2 lg:h-52 lg:gap-6">
+          <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
             <img
               :src="coverArtUrl"
-              class="aspect-square h-30 cursor-pointer border-muted rounded-md shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
+              class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
               loading="lazy"
               @error="onImageError"
               @click="navigateAlbum"
             >
-            <div class="my-auto flex flex-col gap-1 text-left lg:gap-4">
-              <div class="line-clamp-1 cursor-pointer text-xl font-bold lg:text-4xl" @click="navigateAlbum">
+            <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
+              <div class="text-xl font-bold cursor-pointer line-clamp-1 lg:text-4xl" @click="navigateAlbum">
                 {{ currentAlbum.name }}
               </div>
-              <div class="cursor-pointer text-lg lg:text-xl" @click="navigateArtist()">
+              <div class="text-lg cursor-pointer lg:text-xl" @click="navigateArtist()">
                 {{ artistAndDate }}
               </div>
-              <div v-if="currentAlbum.genres?.length > 0" class="hidden lg:(block flex flex-nowrap justify-start gap-2 overflow-hidden)">
+              <div v-if="currentAlbum.genres?.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
                 <GenreBottle v-for="genre in currentAlbum.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
               </div>
               <PlayButton class="flex justify-start" :album="currentAlbum" />
             </div>
           </div>
-          <div class="absolute right-2 top-2 opacity-50 hover:opacity-100">
+          <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
             <!-- Change Album Art section -->
             <div v-if="props.album">
               <ZButton
@@ -153,18 +153,18 @@ onBeforeMount(async () => {
               />
             </div>
             <!-- Dice and navigation buttons -->
-            <div v-else class="corner-cut absolute right-0 top-0 flex gap-2 background-2 p-3 lg:p-2">
+            <div v-else class="p-3 corner-cut background-2 flex gap-2 right-0 top-0 absolute lg:p-2">
               <icon-nrk-chevron-left
-                class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
+                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-primary2 active:opacity-100 hover:scale-105"
                 @click="prevIndex"
               />
               <icon-nrk-dice-3
-                class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
+                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-primary2 active:opacity-100 hover:scale-105"
                 :class="{ shake: isShaking }"
                 @click="handleDiceClick()"
               />
               <icon-nrk-chevron-right
-                class="cursor-pointer text-2xl opacity-80 hover:scale-105 lg:text-3xl hover:text-primary2 active:opacity-100"
+                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-primary2 active:opacity-100 hover:scale-105"
                 @click="nextIndex"
               />
             </div>

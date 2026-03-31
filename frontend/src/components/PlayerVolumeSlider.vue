@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { audioElement } from '~/logic/audioElement'
 import { changeVolume, currentVolume, toggleMute } from '~/logic/volume'
 
 function handleInput(e: Event) {
@@ -9,16 +8,16 @@ function handleInput(e: Event) {
 </script>
 
 <template>
-  <div v-if="audioElement" id="volume-range-input" class="flex flex-row cursor-pointer items-center gap-2 lg:gap-2">
+  <div id="volume-range-input" class="flex flex-row gap-2 cursor-pointer items-center lg:gap-2">
     <button :title="currentVolume === 0 ? 'Unmute' : 'Mute'" class="flex flex-row items-center" @click="toggleMute()">
-      <icon-nrk-media-volume-3 v-if="audioElement.volume > 0.66" class="text-sm text-muted sm:text-sm" />
-      <icon-nrk-media-volume-2 v-else-if="audioElement.volume > 0.33" class="text-sm text-muted sm:text-sm" />
+      <icon-nrk-media-volume-3 v-if="currentVolume > 0.66" class="text-sm text-muted sm:text-sm" />
+      <icon-nrk-media-volume-2 v-else-if="currentVolume > 0.33" class="text-sm text-muted sm:text-sm" />
       <icon-nrk-media-volume-1 v-else class="text-sm text-muted sm:text-sm" />
     </button>
     <input
       type="range"
       :title="`Volume: ${Math.round(currentVolume * 100)}%`"
-      class="h-2 w-20 cursor-pointer background-1 accent-primary2 lg:w-30 sm:w-24 active:accent-primary1"
+      class="accent-primary2 background-1 h-2 w-20 cursor-pointer active:accent-primary1 lg:w-30 sm:w-24"
       max="1"
       step="0.01"
       :value="currentVolume"

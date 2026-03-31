@@ -81,15 +81,15 @@ watch(() => props.tracks, (newtracks) => {
 
 <template>
   <div class="corner-cut-large background-2">
-    <div class="h-full flex flex-col p-2 text-left lg:p-4">
+    <div class="p-2 text-left flex flex-col h-full lg:p-4">
       <div
-        class="grid mb-2 items-center gap-4 p-2 text-lg text-muted"
+        class="text-lg text-muted mb-2 p-2 gap-4 grid items-center"
         :class="{
           'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
           'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,
         }"
       >
-        <div class="cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
+        <div class="text-center cursor-pointer" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
           #
         </div>
         <div class="cursor-pointer" @click="currentSortOption === 'titleAsc' ? sorttracksBy('titleDesc') : sorttracksBy('titleAsc')">
@@ -104,13 +104,13 @@ watch(() => props.tracks, (newtracks) => {
         <div class="cursor-pointer">
           Genres
         </div>
-        <div class="cursor-pointer text-center">
+        <div class="text-center cursor-pointer">
           Year
         </div>
         <div class="mx-auto flex cursor-pointer items-center">
           <icon-nrk-star class="text-base" />
         </div>
-        <div class="cursor-pointer text-center" @click="sorttracksBy('playCount')">
+        <div class="text-center cursor-pointer" @click="sorttracksBy('playCount')">
           Plays
         </div>
       </div>
@@ -125,5 +125,5 @@ watch(() => props.tracks, (newtracks) => {
       />
     </div>
   </div>
-  <Loading v-if="observerEnabled" ref="observer" class="mb-6 text-center text-muted" />
+  <Loading v-if="observerEnabled" ref="observer" class="text-muted mb-6 text-center" />
 </template>

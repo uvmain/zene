@@ -56,22 +56,22 @@ onBeforeMount(getRadioStations)
     </ZButton>
 
     <div class="mt-8">
-      <h2 class="mb-4 text-lg font-bold">
+      <h2 class="text-lg font-bold mb-4">
         Internet Radio Stations
       </h2>
       <div v-if="radioStations.length === 0" class="text-primary">
         No radio stations found.
       </div>
       <ul v-else class="space-y-4">
-        <li v-for="station in radioStations" :key="station.id" class="border background-2 p-4 shadow">
+        <li v-for="station in radioStations" :key="station.id" class="p-4 border background-2 shadow">
           <div class="text-lg text-primary font-semibold">
             {{ station.name }}
           </div>
-          <div class="mt-1 text-sm">
+          <div class="text-sm mt-1">
             <span class="font-medium">Stream URL: </span>
             <a :href="station.streamUrl" target="_blank" class="text-muted hover:underline">{{ station.streamUrl }}</a>
           </div>
-          <div class="mt-1 text-sm">
+          <div class="text-sm mt-1">
             <span class="font-medium">Homepage: </span>
             <a :href="station.homepageUrl" target="_blank" class="text-muted hover:underline">{{ station.homepageUrl }}</a>
           </div>
@@ -80,26 +80,26 @@ onBeforeMount(getRadioStations)
     </div>
 
     <teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg">
-        <div class="relative max-w-md w-full background-3 p-6 shadow-lg">
-          <button class="z-button absolute right-2 top-2" aria-label="Close" @click="showModal = false">
+      <div v-if="showModal" class="flex items-center inset-0 justify-center fixed z-50 backdrop-blur-lg">
+        <div class="p-6 background-3 max-w-md w-full shadow-lg relative">
+          <button class="z-button right-2 top-2 absolute" aria-label="Close" @click="showModal = false">
             X
           </button>
-          <h2 class="mb-4 text-xl text-primary font-bold">
+          <h2 class="text-xl text-primary font-bold mb-4">
             Add New Radio Station
           </h2>
           <form class="space-y-4" @submit.prevent="createNewRadioStation">
             <div>
-              <label for="stream-url" class="mb-1 block text-muted font-medium">Stream URL</label>
-              <input id="stream-url" v-model="newStreamUrl" type="text" class="w-auto border px-3 py-2" placeholder="Enter stream URL" required />
+              <label for="stream-url" class="text-muted font-medium mb-1">Stream URL</label>
+              <input id="stream-url" v-model="newStreamUrl" type="text" class="px-3 py-2 border w-auto" placeholder="Enter stream URL" required />
             </div>
             <div>
-              <label for="stream-name" class="mb-1 block text-muted font-medium">Station Name</label>
-              <input id="stream-name" v-model="newStreamName" type="text" class="w-auto border px-3 py-2" placeholder="Enter station name" required />
+              <label for="stream-name" class="text-muted font-medium mb-1">Station Name</label>
+              <input id="stream-name" v-model="newStreamName" type="text" class="px-3 py-2 border w-auto" placeholder="Enter station name" required />
             </div>
             <div>
-              <label for="homepage-url" class="mb-1 block text-muted font-medium">Homepage URL</label>
-              <input id="homepage-url" v-model="newStreamHomepageUrl" type="text" class="w-auto border px-3 py-2" placeholder="Enter homepage URL" />
+              <label for="homepage-url" class="text-muted font-medium mb-1">Homepage URL</label>
+              <input id="homepage-url" v-model="newStreamHomepageUrl" type="text" class="px-3 py-2 border w-auto" placeholder="Enter homepage URL" />
             </div>
             <button
               type="submit"
@@ -108,11 +108,11 @@ onBeforeMount(getRadioStations)
             >
               <span v-if="isSubmitting && !showSuccess">Adding...</span>
               <span v-else-if="showSuccess">
-                <svg xmlns="http://www.w3.org/2000/svg" class="inline h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="text-green-600 h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
               </span>
               <span v-else>Add Radio Station</span>
             </button>
-            <div v-if="submitError" class="mt-2 text-sm text-red-600">
+            <div v-if="submitError" class="text-sm text-red-600 mt-2">
               {{ submitError }}
             </div>
           </form>

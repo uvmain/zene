@@ -1,10 +1,10 @@
 import type { PlayItem } from '~/types'
 import { debugLog } from '~/logic/logger'
 
-export const audioElement = ref<HTMLAudioElement | null>(null)
-export const audioNode = ref<AudioNode | null>(null)
-export const audioContext = ref<AudioContext | null>(null)
-const previousPlayItem = ref<PlayItem | null>(null)
+export const audioElement = { value: null as HTMLAudioElement | null }
+export const audioNode = { value: null as AudioNode | null }
+export const audioContext = { value: null as AudioContext | null }
+const previousPlayItem = { value: null as PlayItem | null }
 
 let contextCreated: boolean = false
 

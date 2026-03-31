@@ -14,7 +14,7 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex items-center align-middle">
+  <div class="align-middle flex items-center">
     <ZButton
       :primary="true"
       class="group/button"

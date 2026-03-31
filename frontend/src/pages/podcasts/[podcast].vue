@@ -105,11 +105,11 @@ onBeforeMount(async () => {
     <div v-if="!podcast" class="text-primary">
       Podcast not found.
     </div>
-    <div v-else class="mx-auto max-w-60dvw flex flex-col gap-6">
+    <div v-else class="mx-auto flex flex-col gap-6 max-w-60dvw">
       <!-- header -->
       <div>
-        <div class="group relative flex flex-row gap-4 align-top">
-          <div class="absolute right-0 flex flex-row gap-2 opacity-0 group-hover:opacity-100">
+        <div class="group align-top flex flex-row gap-4 relative">
+          <div class="opacity-0 flex flex-row gap-2 right-0 absolute group-hover:opacity-100">
             <ZButton @click="refreshPodcastEpisodes">
               Refresh episodes
             </ZButton>
@@ -120,7 +120,7 @@ onBeforeMount(async () => {
           <img
             :src="channelCoverArt"
             alt="Podcast Cover"
-            class="size-70 rounded-md object-cover"
+            class="rounded-md size-70 object-cover"
             width="280"
             height="280"
             loading="eager"
@@ -130,10 +130,10 @@ onBeforeMount(async () => {
               {{ podcast.title }}
             </div>
             <div
-              class="line-clamp-6 max-h-70 overflow-hidden text-ellipsis whitespace-pre-line text-pretty text-op-80"
+              class="text-op-80 max-h-70 whitespace-pre-line text-pretty text-ellipsis overflow-hidden line-clamp-6"
               v-html="descriptionLinesCleaned"
             />
-            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap justify-center gap-2 lg:justify-start">
+            <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="flex flex-wrap gap-2 justify-center lg:justify-start">
               <ZInfo v-for="genre in podcast.episode[0].genres?.filter(g => g.name !== '')" :key="genre.name" :text="genre.name" />
             </div>
             <div>

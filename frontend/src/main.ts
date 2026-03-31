@@ -1,4 +1,4 @@
-import type { RouteLocationNormalized, RouteRecordRaw, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
@@ -8,7 +8,6 @@ import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 
 import 'virtual:uno.css'
-import '@unocss/reset/tailwind.css'
 import '~/styles/themeTransition.css'
 
 createEpisodeStoreIfNotExists()
@@ -29,7 +28,7 @@ const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: routes as RouteRecordRaw[],
+  routes,
   scrollBehavior,
 })
 

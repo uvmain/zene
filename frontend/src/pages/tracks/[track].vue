@@ -36,7 +36,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="container mx-auto p-4">
+  <div class="mx-auto p-4 container">
     <div v-if="loading" class="text-center">
       Loading track details...
     </div>
@@ -52,25 +52,25 @@ onMounted(async () => {
         @error="onImageError"
       >
       <div class="flex flex-col lg:w-2/3">
-        <h1 class="mb-2 text-3xl text-primary font-bold">
+        <h1 class="text-3xl text-primary font-bold mb-2">
           {{ track.title }}
         </h1>
         <RouterLink
-          class="mb-1 cursor-pointer text-xl text-muted no-underline hover:underline hover:underline-white"
+          class="text-xl text-muted mb-1 no-underline cursor-pointer hover:underline hover:underline-white"
           :to="`/artists/${track.artistId}`"
         >
           Artist: {{ track.artist }}
         </RouterLink>
         <RouterLink
-          class="mb-1 cursor-pointer text-lg text-muted no-underline hover:underline hover:underline-white"
+          class="text-lg text-muted mb-1 no-underline cursor-pointer hover:underline hover:underline-white"
           :to="`/albums/${track.albumId}`"
         >
           Album: {{ track.album }}
         </RouterLink>
-        <p class="mb-1 text-muted">
+        <p class="text-muted mb-1">
           Duration: {{ formatTimeFromSeconds(track.duration) }}
         </p>
-        <p v-if="track" class="mb-4 text-muted">
+        <p v-if="track" class="text-muted mb-4">
           Released: {{ track.year }}
         </p>
 

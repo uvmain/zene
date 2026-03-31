@@ -93,20 +93,20 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="corner-cut max-w-60dvw flex flex-col gap-4 border-1 border-muted border-solid p-6 hover-background-grad-2">
-    <div class="flex flex-row justify-between gap-4">
-      <div class="flex flex-row justify-start gap-4">
+  <div class="p-6 border-1 border-muted corner-cut border-solid flex flex-col gap-4 max-w-60dvw hover-background-grad-2">
+    <div class="flex flex-row gap-4 justify-between">
+      <div class="flex flex-row gap-4 justify-start">
         <img
           :src="episodeArtUrl"
           alt="Podcast Cover"
           :loading="index < 20 ? 'eager' : 'lazy'"
-          class="z-1 col-span-full row-span-full my-auto size-34 cursor-pointer rounded-md object-cover"
+          class="my-auto rounded-md col-span-full row-span-full size-34 cursor-pointer z-1 object-cover"
           width="136"
           height="136"
           @click="navigatePodcastEpisode(episode.id)"
         />
         <div class="my-auto ml-1 flex flex-col gap-4">
-          <div class="cursor-pointer text-lg" @click="navigatePodcastEpisode(episode.id)">
+          <div class="text-lg cursor-pointer" @click="navigatePodcastEpisode(episode.id)">
             {{ episode.title }}
           </div>
           <div>
@@ -151,7 +151,7 @@ onBeforeMount(async () => {
       </div>
       <PlayButton :podcast-episode="episode" class="my-auto" />
     </div>
-    <div class="line-clamp-4 overflow-hidden text-ellipsis whitespace-pre-line text-pretty">
+    <div class="whitespace-pre-line text-pretty text-ellipsis overflow-hidden line-clamp-4">
       {{ descriptionLinesCleaned }}
     </div>
   </div>

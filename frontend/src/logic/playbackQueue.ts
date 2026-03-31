@@ -3,7 +3,6 @@ import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { computedAsync } from '@vueuse/core'
 import { audioElement, seek as elementSeek, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { castAudio } from '~/logic/castAudio'
@@ -19,27 +18,10 @@ export const currentQueue = ref<Queue | undefined>()
 export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
 export const currentTime = ref(0)
+export const trackUrl = ref('')
 
 let previousIndexes: number[] = []
-
-export const trackUrl = computedAsync(async () => {
-  if (currentlyPlayingItem.value.track !== undefined) {
-    return getAuthenticatedTrackUrl(currentlyPlayingItem.value.track.musicBrainzId)
-  }
-  else if (currentlyPlayingItem.value.podcastEpisode) {
-    return episodeIsStored(currentlyPlayingItem.value.podcastEpisode.streamId).then(async (stored) => {
-      if (!stored && currentlyPlayingItem.value.podcastEpisode) {
-        return getAuthenticatedTrackUrl(currentlyPlayingItem.value.podcastEpisode.streamId, true)
-      }
-      else if (currentlyPlayingItem.value.podcastEpisode) {
-        return getStoredEpisode(currentlyPlayingItem.value.podcastEpisode.streamId).then((blob) => {
-          return URL.createObjectURL(blob)
-        })
-      }
-    })
-  }
-  return ''
-})
+let currentHalfwayPoint: number = 0
 
 export function handlePlay(track: SubsonicSong) {
   if (currentQueue.value?.tracks.some(queueTrack => queueTrack.id === track.id)) {
@@ -60,12 +42,40 @@ export function setCurrentlyPlayingTrack(track: SubsonicSong) {
     currentQueue.value.position = index
   }
   currentlyPlayingItem.value = { track }
+  trackUrl.value = getAuthenticatedTrackUrl(track.musicBrainzId)
   playcountPosted.value = false
+  currentHalfwayPoint = track.duration / 2
   if (chromecastConnected.value) {
     void castAudio()
   }
   else {
     playWhenReady({ track })
+  }
+}
+
+export async function setCurrentlyPlayingPodcast(episode: SubsonicPodcastEpisode) {
+  currentlyPlayingItem.value = { podcastEpisode: episode }
+  playcountPosted.value = false
+  currentHalfwayPoint = Number.parseInt(episode.duration) / 2
+
+  if (currentlyPlayingItem.value.podcastEpisode) {
+    await episodeIsStored(currentlyPlayingItem.value.podcastEpisode.streamId).then(async (stored) => {
+      if (!stored && currentlyPlayingItem.value.podcastEpisode) {
+        trackUrl.value = getAuthenticatedTrackUrl(currentlyPlayingItem.value.podcastEpisode.streamId, true)
+      }
+      else if (currentlyPlayingItem.value.podcastEpisode) {
+        await getStoredEpisode(currentlyPlayingItem.value.podcastEpisode.streamId).then((blob) => {
+          trackUrl.value = URL.createObjectURL(blob)
+        })
+      }
+    })
+  }
+  clearQueue()
+  if (chromecastConnected.value) {
+    await castAudio()
+  }
+  else {
+    playWhenReady({ podcastEpisode: episode })
   }
 }
 
@@ -116,14 +126,7 @@ export async function play(playOptions: PlayOptions) {
     setCurrentQueue(tracks)
   }
   else if (playOptions.podcastEpisode) {
-    currentlyPlayingItem.value = { podcastEpisode: playOptions.podcastEpisode }
-    clearQueue()
-    if (chromecastConnected.value) {
-      await castAudio()
-    }
-    else {
-      playWhenReady({ podcastEpisode: playOptions.podcastEpisode })
-    }
+    await setCurrentlyPlayingPodcast(playOptions.podcastEpisode)
   }
 }
 
@@ -289,19 +292,9 @@ export function updateProgress() {
   }
   currentTime.value = audioElement.value.currentTime
 
-  if (currentlyPlayingItem.value.track && !playcountPosted.value) {
-    const halfwayPoint = currentlyPlayingItem.value.track.duration / 2
-    if (currentTime.value >= halfwayPoint) {
-      void postPlaycount(currentlyPlayingItem.value.track.musicBrainzId)
-      playcountPosted.value = true
-    }
-  }
-  else if (currentlyPlayingItem.value.podcastEpisode && !playcountPosted.value) {
-    const halfwayPoint = Number(currentlyPlayingItem.value.podcastEpisode.duration) / 2
-    if (currentTime.value >= halfwayPoint) {
-      void postPlaycount(currentlyPlayingItem.value.podcastEpisode.streamId)
-      playcountPosted.value = true
-    }
+  if (!playcountPosted.value && currentTime.value >= currentHalfwayPoint) {
+    void postPlaycount(currentlyPlayingItem.value.track?.musicBrainzId ?? currentlyPlayingItem.value.podcastEpisode?.streamId ?? '')
+    playcountPosted.value = true
   }
 }
 

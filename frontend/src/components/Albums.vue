@@ -152,7 +152,7 @@ onBeforeMount(async () => {
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
       v-if="albums.length > 0"
-      class="auto-grid-6 overflow-hidden pr-1"
+      class="pr-1 auto-grid-6 overflow-hidden"
       :style="heightStyle"
     >
       <Album

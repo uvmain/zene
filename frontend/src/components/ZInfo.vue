@@ -7,7 +7,7 @@ defineProps({
 
 <template>
   <button
-    class="corner-cut flex inline-flex cursor-default items-center justify-center border-1 border-solid background-1 px-3 py-1 align-middle text-sm text-muted font-semibold"
+    class="text-sm text-muted font-semibold px-3 py-1 align-middle border-1 corner-cut border-solid background-1 flex inline-flex cursor-default items-center justify-center"
     :class="{
       'border-primary2': primary,
       'border-zshade-600 dark:border-zshade-400': !primary,
