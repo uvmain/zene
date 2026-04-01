@@ -6,19 +6,11 @@ import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
 import { randomTracksSeed } from '~/logic/store'
 
 const tracks = ref<SubsonicSong[]>()
-const canLoadMore = ref<boolean>(true)
-const limit = ref<number>(100)
-const offset = ref<number>(0)
 
 async function getData() {
-  const randomTracks = await fetchRandomTracks(limit.value, offset.value, randomTracksSeed.value)
+  const randomTracks = await fetchRandomTracks({ seed: randomTracksSeed.value })
   tracks.value = tracks.value?.concat(randomTracks) ?? randomTracks
   routeTracks.value = tracks.value
-  offset.value += randomTracks.length
-
-  if (randomTracks.length < limit.value) {
-    canLoadMore.value = false
-  }
 }
 
 onMounted(async () => {
@@ -30,5 +22,5 @@ onUnmounted(() => clearRouteTracks())
 </script>
 
 <template>
-  <Tracks v-if="tracks" :tracks="tracks" :show-album="true" :observer-enabled="canLoadMore" @observer-visible="getData" />
+  <Tracks v-if="tracks" :tracks="tracks" :show-album="true" />
 </template>

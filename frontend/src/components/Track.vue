@@ -10,12 +10,10 @@ const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   primaryArtist: { type: String, required: false },
   trackIndex: { type: Number, required: true },
-  autoScrolling: { type: Boolean, default: true },
 })
 
 const route = useRoute()
 
-const trackElement = useTemplateRef('trackElement')
 const isStarred = ref<string | undefined>(props.track.starred)
 const playCount = ref(props.track.playCount ?? 0)
 
@@ -28,11 +26,7 @@ const artistIsAlbumArtist = computed(() => {
 })
 
 const isTrackPlaying = computed(() => {
-  const isPlaying = (currentlyPlayingItem.value.track && currentlyPlayingItem.value.track.id === props.track.id) ?? false
-  if (isPlaying && props.autoScrolling) {
-    trackElement.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
-  return isPlaying
+  return (currentlyPlayingItem.value.track && currentlyPlayingItem.value.track.id === props.track.id)
 })
 
 const trackGenres = computed(() => {
@@ -60,7 +54,6 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 
 <template>
   <div
-    ref="trackElement"
     class="group text-base px-2 py-1 gap-4 grid max-w-100% cursor-pointer transition-colors duration-300 ease-out items-center"
     :class="{
       'hover:bg-primary2/40': !isTrackPlaying,

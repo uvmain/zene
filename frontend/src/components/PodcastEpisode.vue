@@ -17,14 +17,17 @@ const router = useRouter()
 const episodeDownloadedLocal = ref(false)
 const localDownloadClicked = ref(false)
 
+const newlineRegex1 = /\r\n/g
+const newlineRegex2 = /\r/g
+
 const episodeArtUrl = computed(() => {
   return `/share/img/${props.episode.coverArt}?size=192`
 })
 
 const descriptionLinesCleaned = computed<string>(() => {
   return props.episode.description
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
+    .replace(newlineRegex1, '\n')
+    .replace(newlineRegex2, '\n')
     .split('\n')
     .filter(line => line.trim() !== '')
     .join('\n')

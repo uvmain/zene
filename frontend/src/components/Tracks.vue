@@ -1,26 +1,18 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useElementVisibility } from '@vueuse/core'
+import { RecycleScroller } from 'vue-virtual-scroller'
+import { currentlyPlayingItem, currentQueuePosition } from '~/logic/playbackQueue'
 import { routeTracks } from '~/logic/routeTracks'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   primaryArtist: { type: String, required: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
-  observerEnabled: { type: Boolean, default: false },
   autoScrolling: { type: Boolean, default: true },
 })
 
-const emits = defineEmits(['observerVisible'])
-
-const observer = useTemplateRef('observer')
-const observerIsVisible = useElementVisibility(observer)
-
-watch(observerIsVisible, (newValue) => {
-  if (newValue && props.observerEnabled) {
-    emits('observerVisible')
-  }
-})
+const scroller = useTemplateRef('scroller')
 
 type SortOptions = 'titleAsc' | 'titleDesc' | 'artistAsc' | 'artistDesc' | 'albumAsc' | 'albumDesc' | 'playCount' | 'durationAsc' | 'durationDesc' | 'trackNumberAsc' | 'trackNumberDesc'
 const currentSortOption = ref<SortOptions>('trackNumberAsc')
@@ -77,6 +69,14 @@ function sorttracksBy(sortOption: SortOptions) {
 watch(() => props.tracks, (newtracks) => {
   routeTracks.value = newtracks
 }, { immediate: true })
+
+if (props.autoScrolling) {
+  watch(() => currentlyPlayingItem.value, () => {
+    if (!scroller.value)
+      return
+    scroller.value.scrollToItem(currentQueuePosition.value, { smooth: true })
+  }, { deep: true })
+}
 </script>
 
 <template>
@@ -114,16 +114,27 @@ watch(() => props.tracks, (newtracks) => {
           Plays
         </div>
       </div>
-      <Track
-        v-for="(track, index) in routeTracks"
-        :key="track.id"
-        :track="track"
-        :track-index="index"
-        :primary-artist="primaryArtist"
-        :show-album="showAlbum"
-        :auto-scrolling="autoScrolling"
-      />
+      <RecycleScroller
+        v-slot="{ item, index }"
+        ref="scroller"
+        class="scroller"
+        :items="routeTracks"
+        :item-size="68"
+        key-field="id"
+      >
+        <Track
+          :track="item"
+          :track-index="index"
+          :primary-artist="primaryArtist"
+          :show-album="showAlbum"
+        />
+      </RecycleScroller>
     </div>
   </div>
-  <Loading v-if="observerEnabled" ref="observer" class="text-muted mb-6 text-center" />
 </template>
+
+<style scoped>
+.scroller {
+  height: calc(100vh - 324px);
+}
+</style>

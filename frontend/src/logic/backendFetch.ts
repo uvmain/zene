@@ -157,22 +157,21 @@ export async function fetchAlbums(type: string, size = 50, offset = 0, seed?: nu
   return response.albumList.album
 }
 
-export async function fetchRandomTracks(limit?: number, offset?: number, seed?: number): Promise<SubsonicSong[]> {
+export async function fetchRandomTracks({ limit, offset, seed }: { limit?: number, offset?: number, seed?: number }): Promise<SubsonicSong[]> {
   const options: RequestInit = {}
 
-  if (limit != null && limit > 0) {
-    const formData = new FormData()
-    if (offset !== undefined && offset > 0) {
-      formData.append('offset', offset.toString())
-    }
-    if (limit !== undefined && limit > 0) {
-      formData.append('size', limit.toString())
-    }
-    if (seed !== undefined && seed > 0) {
-      formData.append('seed', seed.toString())
-    }
-    options.body = formData
+  const formData = new FormData()
+  if (offset !== undefined && offset > 0) {
+    formData.append('offset', offset.toString())
   }
+  if (limit !== undefined && limit > 0) {
+    formData.append('size', limit.toString())
+  }
+  if (seed !== undefined && seed > 0) {
+    formData.append('seed', seed.toString())
+  }
+  options.body = formData
+
   const response = await openSubsonicFetchRequest<Types.SubsonicRandomSongsResponse>('getRandomSongs', options)
   return response.randomSongs.song
 }
@@ -259,11 +258,15 @@ export async function fetchLyrics(musicbrainz_song_id: string): Promise<Structur
   }
 }
 
-export async function fetchSongsByGenre(genre: string, limit: number, offset: number): Promise<SubsonicSong[]> {
+export async function fetchSongsByGenre(genre: string, limit?: number, offset?: number): Promise<SubsonicSong[]> {
   const formData = new FormData()
   formData.append('genre', genre)
-  formData.append('count', limit.toString())
-  formData.append('offset', offset.toString())
+  if (limit !== undefined) {
+    formData.append('count', limit.toString())
+  }
+  if (offset !== undefined) {
+    formData.append('offset', offset.toString())
+  }
   const response = await openSubsonicFetchRequest<Types.SubsonicSongsByGenreResponse>('getSongsByGenre', {
     body: formData,
   })

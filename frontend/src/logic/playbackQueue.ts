@@ -1,4 +1,4 @@
-import type { PlayItem, Queue } from '~/types'
+import type { PlayItem } from '~/types'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
@@ -14,7 +14,8 @@ import { repeatStatus, shuffleEnabled } from '~/logic/store'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
 
 export const currentlyPlayingItem = ref<PlayItem>({})
-export const currentQueue = ref<Queue | undefined>()
+export const currentQueue = ref<SubsonicSong[] | undefined>()
+export const currentQueuePosition = ref<number>(0)
 export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
 export const currentTime = ref(0)
@@ -24,7 +25,7 @@ let previousIndexes: number[] = []
 let currentHalfwayPoint: number = 0
 
 export function handlePlay(track: SubsonicSong) {
-  if (currentQueue.value?.tracks.some(queueTrack => queueTrack.id === track.id)) {
+  if (currentQueue.value?.some(queueTrack => queueTrack.id === track.id)) {
     setCurrentlyPlayingTrack(track)
   }
   else if (routeTracks.value?.some(queueTrack => queueTrack.musicBrainzId === track.musicBrainzId)) {
@@ -38,8 +39,8 @@ export function handlePlay(track: SubsonicSong) {
 
 export function setCurrentlyPlayingTrack(track: SubsonicSong) {
   if (currentQueue.value) {
-    const index = currentQueue.value.tracks.indexOf(track)
-    currentQueue.value.position = index
+    const index = currentQueue.value.indexOf(track)
+    currentQueuePosition.value = index
   }
   currentlyPlayingItem.value = { track }
   trackUrl.value = getAuthenticatedTrackUrl(track.musicBrainzId)
@@ -85,10 +86,8 @@ function setCurrentQueue(tracks: SubsonicSong[]) {
   if (shuffleEnabled.value && tracks.length > 0) {
     index = Math.floor(Math.random() * tracks.length)
   }
-  currentQueue.value = {
-    tracks,
-    position: index,
-  }
+  currentQueue.value = tracks
+  currentQueuePosition.value = index
   setCurrentlyPlayingTrack(tracks[index])
 }
 
@@ -98,7 +97,7 @@ export function clearQueue() {
 }
 
 async function getRandomTrack(): Promise<SubsonicSong> {
-  const randomTracks = await fetchRandomTracks(1)
+  const randomTracks = await fetchRandomTracks({ limit: 1 })
   const randomTrack = randomTracks[0]
   setCurrentlyPlayingTrack(randomTrack)
   clearQueue()
@@ -131,42 +130,42 @@ export async function play(playOptions: PlayOptions) {
 }
 
 export async function getRandomTracks(size: number = 10): Promise<SubsonicSong[]> {
-  const randomTracks = await fetchRandomTracks(size)
+  const randomTracks = await fetchRandomTracks({ limit: size })
   setCurrentQueue(randomTracks)
   return randomTracks
 }
 
 export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
-  if (currentQueue.value && currentQueue.value.tracks.length) {
-    const currentIndex = currentQueue.value.position
+  if (currentQueue.value && currentQueue.value.length) {
+    const currentIndex = currentQueuePosition.value
     let nextTrack: SubsonicSong | undefined
     if (shuffleEnabled.value) {
       let randomIndex: number
-      randomIndex = Math.floor(Math.random() * currentQueue.value.tracks.length)
+      randomIndex = Math.floor(Math.random() * currentQueue.value.length)
       let whileCounter = 0
       while (previousIndexes.includes(randomIndex) && whileCounter < 50) {
-        randomIndex = Math.floor(Math.random() * currentQueue.value.tracks.length)
+        randomIndex = Math.floor(Math.random() * currentQueue.value.length)
         whileCounter++
       }
       previousIndexes.push(randomIndex)
-      nextTrack = currentQueue.value.tracks[randomIndex]
-      currentQueue.value.position = randomIndex
+      nextTrack = currentQueue.value[randomIndex]
+      currentQueuePosition.value = randomIndex
       if (nextTrack !== undefined) {
         setCurrentlyPlayingTrack(nextTrack)
         return nextTrack
       }
     }
-    else if (repeatStatus.value === 'all' && currentIndex === currentQueue.value.tracks.length - 1) {
-      nextTrack = currentQueue.value.tracks[0]
-      currentQueue.value.position = 0
+    else if (repeatStatus.value === 'all' && currentIndex === currentQueue.value.length - 1) {
+      nextTrack = currentQueue.value[0]
+      currentQueuePosition.value = 0
       if (nextTrack !== undefined) {
         setCurrentlyPlayingTrack(nextTrack)
         return nextTrack
       }
     }
     else if (repeatStatus.value === '1') {
-      nextTrack = currentQueue.value.tracks[currentIndex]
-      currentQueue.value.position = currentIndex
+      nextTrack = currentQueue.value[currentIndex]
+      currentQueuePosition.value = currentIndex
       if (nextTrack !== undefined) {
         setCurrentlyPlayingTrack(nextTrack)
         if (audioElement.value) {
@@ -177,9 +176,9 @@ export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
       }
     }
     else {
-      if (currentIndex < currentQueue.value.tracks.length - 1) {
-        nextTrack = currentQueue.value.tracks[currentIndex + 1]
-        currentQueue.value.position = currentIndex + 1
+      if (currentIndex < currentQueue.value.length - 1) {
+        nextTrack = currentQueue.value[currentIndex + 1]
+        currentQueuePosition.value = currentIndex + 1
       }
       if (nextTrack !== undefined) {
         setCurrentlyPlayingTrack(nextTrack)
@@ -194,38 +193,38 @@ export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
 }
 
 export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
-  if (currentQueue.value && currentQueue.value.tracks.length) {
-    const currentIndex = currentQueue.value.position
+  if (currentQueue.value && currentQueue.value.length) {
+    const currentIndex = currentQueuePosition.value
     let prevTrack: SubsonicSong | undefined
     if (shuffleEnabled.value) {
       if (previousIndexes.length) {
         previousIndexes.pop()
       }
       const previousIndex = previousIndexes.at(-1) ?? 0
-      const prevTrack = currentQueue.value.tracks[previousIndex]
-      currentQueue.value.position = previousIndex
+      const prevTrack = currentQueue.value[previousIndex]
+      currentQueuePosition.value = previousIndex
       if (prevTrack !== undefined) {
         setCurrentlyPlayingTrack(prevTrack)
       }
       return prevTrack
     }
     if (repeatStatus.value === 'all') {
-      prevTrack = currentQueue.value.tracks.at(-1)
-      currentQueue.value.position = currentQueue.value.tracks.length - 1
+      prevTrack = currentQueue.value.at(-1)
+      currentQueuePosition.value = currentQueue.value.length - 1
       return prevTrack
     }
     else if (repeatStatus.value === '1') {
-      prevTrack = currentQueue.value.tracks[currentIndex]
+      prevTrack = currentQueue.value[currentIndex]
       return prevTrack
     }
     else {
       if (currentIndex > 0) {
-        prevTrack = currentQueue.value.tracks[currentIndex - 1]
-        currentQueue.value.position = currentIndex - 1
+        prevTrack = currentQueue.value[currentIndex - 1]
+        currentQueuePosition.value = currentIndex - 1
       }
       else {
-        prevTrack = currentQueue.value.tracks.at(-1)
-        currentQueue.value.position = currentQueue.value.tracks.length - 1
+        prevTrack = currentQueue.value.at(-1)
+        currentQueuePosition.value = currentQueue.value.length - 1
       }
       if (prevTrack !== undefined) {
         setCurrentlyPlayingTrack(prevTrack)
@@ -248,11 +247,11 @@ export function togglePlayback() {
     console.error('Audio element not found')
     return
   }
-  else if (!(currentQueue.value && currentQueue.value.tracks.length) && routeTracks.value.length) {
+  else if (!(currentQueue.value && currentQueue.value.length) && routeTracks.value.length) {
     setCurrentQueue(routeTracks.value)
   }
-  else if ((currentQueue.value && currentQueue.value.tracks.length) && !currentlyPlayingItem.value.track) {
-    setCurrentQueue(currentQueue.value?.tracks)
+  else if ((currentQueue.value && currentQueue.value.length) && !currentlyPlayingItem.value.track) {
+    setCurrentQueue(currentQueue.value)
   }
 
   if (isPlaying.value) {

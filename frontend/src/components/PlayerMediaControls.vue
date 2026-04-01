@@ -12,7 +12,7 @@ const router = useRouter()
 const route = useRoute()
 
 async function handleGetRandomTracks() {
-  await getRandomTracks(500)
+  await getRandomTracks(1000)
   if (route.path !== '/queue' && route.path !== '/visualizer') {
     router.push('/queue')
   }

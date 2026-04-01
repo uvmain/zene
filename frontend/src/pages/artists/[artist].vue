@@ -13,10 +13,6 @@ const albumArtistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const artistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const similarArtists = ref<SubsonicArtist[]>([])
 const artistGenres = ref<string[]>([])
-const canLoadMore = ref<boolean>(true)
-const isLoading = ref<boolean>(false)
-const limit = ref<number>(100)
-const offset = ref<number>(0)
 
 const musicbrainzArtistId = computed(() => `${route.params.artist}`)
 
@@ -49,35 +45,15 @@ async function getData() {
 }
 
 async function getTopSongs() {
-  if (isLoading.value || !canLoadMore.value)
-    return
-  isLoading.value = true
-
-  const newSongs = await fetchArtistTopSongs(musicbrainzArtistId.value, limit.value, offset.value)
-
-  if (newSongs.length === 0) {
-    canLoadMore.value = false
-  }
-  else {
-    tracks.value = tracks.value?.concat(newSongs) ?? newSongs
-    routeTracks.value = tracks.value
-    offset.value += newSongs.length
-
-    if (newSongs.length < limit.value) {
-      canLoadMore.value = false
-    }
-  }
-
-  isLoading.value = false
+  const newSongs = await fetchArtistTopSongs(musicbrainzArtistId.value)
+  tracks.value = newSongs
+  routeTracks.value = tracks.value
 }
 
 function resetRefs() {
   tracks.value = []
   routeTracks.value = []
   artistGenres.value = []
-  isLoading.value = false
-  offset.value = 0
-  canLoadMore.value = true
 }
 
 watch(musicbrainzArtistId, async () => {
@@ -129,8 +105,6 @@ onBeforeMount(async () => {
       :tracks="tracks"
       :show-album="true"
       :primary-artist="artist?.name"
-      :observer-enabled="canLoadMore"
-      @observer-visible="getTopSongs"
     />
   </div>
 </template>
