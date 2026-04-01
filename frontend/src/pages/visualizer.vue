@@ -2,7 +2,7 @@
 import type { Visualizer, VisualizerOptions } from 'butterchurn'
 import type { ButterchurnPreset } from '~/types'
 import { onKeyStroke } from '@vueuse/core'
-import butterchurn from 'butterchurn'
+import butterchurnModule from 'butterchurn'
 import { audioContext, audioNode } from '~/logic/audioElement'
 import { getButterchurnPresets } from '~/logic/backendFetch'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
@@ -16,6 +16,8 @@ const presetNameFadeIn = ref(true)
 const isFullScreen = ref(false)
 const fetchedPresets = ref<ButterchurnPreset[]>([])
 const presetNameFadeTimeout = ref<NodeJS.Timeout | null>(null)
+
+const butterchurn = (butterchurnModule as any).default || butterchurnModule
 
 let originalWidth = 800
 let originalHeight = 600
