@@ -14,7 +14,7 @@ function navigateToQueue() {
   <abbr title="Queue">
     <button
       id="queue"
-      class="flex cursor-pointer items-center justify-center border-none bg-white/0 text-muted font-semibold outline-none"
+      class="text-muted font-semibold outline-none border-none bg-white/0 flex cursor-pointer items-center justify-center"
       @click="navigateToQueue()"
     >
       <icon-nrk-media-playlist

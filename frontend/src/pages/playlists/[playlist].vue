@@ -24,12 +24,12 @@ onBeforeMount(getPlaylist)
 
 <template>
   <div class="p-4 space-y-4">
-    <div v-if="playlist" class="flex flex-wrap justify-center gap-6 lg:justify-start">
+    <div v-if="playlist" class="flex flex-wrap gap-6 justify-center lg:justify-start">
       <div>
         <img
           :src="playlist.coverArt"
           alt="Playlist Cover"
-          class="size-40 rounded-md object-cover"
+          class="rounded-md size-40 object-cover"
           loading="lazy"
           width="200"
           height="200"

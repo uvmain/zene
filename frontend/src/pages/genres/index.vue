@@ -13,11 +13,11 @@ onBeforeMount(async () => {
 
 <template>
   <div>
-    <h2 class="py-2 text-lg font-semibold">
+    <h2 class="text-lg font-semibold py-2">
       Genres
     </h2>
     <div class="flex flex-wrap gap-6">
-      <div v-if="genres" class="flex flex-wrap cursor-pointer gap-2">
+      <div v-if="genres" class="flex flex-wrap gap-2 cursor-pointer">
         <div v-for="genre in genres.filter(g => g.value !== '')" :key="genre.value">
           <GenreBottle :genre="genre.value" class="cursor-pointer" @click="() => router.push(`/genres/${genre.value}`)" />
         </div>

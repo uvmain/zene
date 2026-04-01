@@ -20,15 +20,15 @@ function toggleDark() {
 
 <template>
   <header>
-    <div class="flex gap-2 p-2 lg:gap-4">
+    <div class="p-2 flex gap-2 lg:gap-4">
       <!-- Mobile hamburger menu -->
       <div class="flex items-center justify-center lg:hidden">
         <icon-nrk-list class="text-2xl" @click="openMobileNav()" />
       </div>
 
       <div class="flex flex-grow items-center justify-center">
-        <div class="relative w-full lg:(max-w-md w-1/2)">
-          <span class="absolute inset-y-0 left-0 h-full flex items-center justify-center pl-3 text-muted">
+        <div class="w-full relative lg:(max-w-md w-1/2)">
+          <span class="text-muted pl-3 flex h-full items-center inset-y-0 left-0 justify-center absolute">
             <icon-nrk-search class="text-xl" />
           </span>
           <input
@@ -36,14 +36,14 @@ function toggleDark() {
             v-model="searchInput"
             placeholder="Type here to search"
             type="text"
-            class="border-1 border-primary2 background-2 py-2 pl-10 focus:border-primary2 dark:border-opacity-60 focus:border-solid lg:pr-full focus:shadow-primary2 hover:shadow-lg focus:outline-none"
+            class="py-2 pl-10 border-1 border-primary2 background-2 lg:pr-full focus:outline-none focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg"
             @change="getSearchResults()"
             @input="getSearchResults()"
             @keydown.escape="searchInput = ''"
           >
         </div>
       </div>
-      <div id="user-and-settings" class="flex items-center justify-center gap-4 text-muted">
+      <div id="user-and-settings" class="text-muted flex gap-4 items-center justify-center">
         <abbr :title="isDark ? 'Light mode' : 'Dark mode'" class="icon" @click="toggleDark()">
           <icon-fluent-dark-theme-24-regular class="text-2xl" />
         </abbr>
@@ -59,6 +59,6 @@ function toggleDark() {
 
 <style scoped lang="css">
 .icon {
-  @apply items-center justify-center hover:cursor-pointer hover:text-primary opacity-70 hover:opacity-100;
+  @apply flex items-center justify-center hover:cursor-pointer hover:text-primary opacity-70 hover:opacity-100;
 }
 </style>

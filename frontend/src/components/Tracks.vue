@@ -1,26 +1,18 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { useElementVisibility } from '@vueuse/core'
+import { RecycleScroller } from 'vue-virtual-scroller'
+import { currentlyPlayingItem, currentQueuePosition } from '~/logic/playbackQueue'
 import { routeTracks } from '~/logic/routeTracks'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   primaryArtist: { type: String, required: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
-  observerEnabled: { type: Boolean, default: false },
   autoScrolling: { type: Boolean, default: true },
 })
 
-const emits = defineEmits(['observerVisible'])
-
-const observer = useTemplateRef('observer')
-const observerIsVisible = useElementVisibility(observer)
-
-watch(observerIsVisible, (newValue) => {
-  if (newValue && props.observerEnabled) {
-    emits('observerVisible')
-  }
-})
+const scroller = useTemplateRef('scroller')
 
 type SortOptions = 'titleAsc' | 'titleDesc' | 'artistAsc' | 'artistDesc' | 'albumAsc' | 'albumDesc' | 'playCount' | 'durationAsc' | 'durationDesc' | 'trackNumberAsc' | 'trackNumberDesc'
 const currentSortOption = ref<SortOptions>('trackNumberAsc')
@@ -77,19 +69,27 @@ function sorttracksBy(sortOption: SortOptions) {
 watch(() => props.tracks, (newtracks) => {
   routeTracks.value = newtracks
 }, { immediate: true })
+
+if (props.autoScrolling) {
+  watch(() => currentlyPlayingItem.value, () => {
+    if (!scroller.value)
+      return
+    scroller.value.scrollToItem(currentQueuePosition.value, { smooth: true })
+  }, { deep: true })
+}
 </script>
 
 <template>
   <div class="corner-cut-large background-2">
-    <div class="h-full flex flex-col p-2 text-left lg:p-4">
+    <div class="p-2 text-left flex flex-col h-full lg:p-4">
       <div
-        class="grid mb-2 items-center gap-4 p-2 text-lg text-muted"
+        class="text-lg text-muted mb-2 p-2 gap-4 grid items-center"
         :class="{
           'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
           'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,
         }"
       >
-        <div class="cursor-pointer text-center" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
+        <div class="text-center cursor-pointer" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
           #
         </div>
         <div class="cursor-pointer" @click="currentSortOption === 'titleAsc' ? sorttracksBy('titleDesc') : sorttracksBy('titleAsc')">
@@ -104,26 +104,37 @@ watch(() => props.tracks, (newtracks) => {
         <div class="cursor-pointer">
           Genres
         </div>
-        <div class="cursor-pointer text-center">
+        <div class="text-center cursor-pointer">
           Year
         </div>
         <div class="mx-auto flex cursor-pointer items-center">
           <icon-nrk-star class="text-base" />
         </div>
-        <div class="cursor-pointer text-center" @click="sorttracksBy('playCount')">
+        <div class="text-center cursor-pointer" @click="sorttracksBy('playCount')">
           Plays
         </div>
       </div>
-      <Track
-        v-for="(track, index) in routeTracks"
-        :key="track.id"
-        :track="track"
-        :track-index="index"
-        :primary-artist="primaryArtist"
-        :show-album="showAlbum"
-        :auto-scrolling="autoScrolling"
-      />
+      <RecycleScroller
+        v-slot="{ item, index }"
+        ref="scroller"
+        class="scroller"
+        :items="routeTracks"
+        :item-size="68"
+        key-field="id"
+      >
+        <Track
+          :track="item"
+          :track-index="index"
+          :primary-artist="primaryArtist"
+          :show-album="showAlbum"
+        />
+      </RecycleScroller>
     </div>
   </div>
-  <Loading v-if="observerEnabled" ref="observer" class="mb-6 text-center text-muted" />
 </template>
+
+<style scoped>
+.scroller {
+  height: calc(100vh - 324px);
+}
+</style>

@@ -5,22 +5,19 @@ import { currentQueue } from '~/logic/playbackQueue'
 const tracks = ref<SubsonicSong[]>([])
 
 watch(currentQueue, async () => {
-  tracks.value = currentQueue?.value?.tracks ?? [] as SubsonicSong[]
+  tracks.value = currentQueue?.value ?? [] as SubsonicSong[]
 })
 
 onMounted(() => {
-  tracks.value = currentQueue?.value?.tracks ?? [] as SubsonicSong[]
+  tracks.value = currentQueue?.value ?? [] as SubsonicSong[]
 })
 </script>
 
 <template>
   <div>
-    <h2 v-if="tracks.length" class="px-2 text-lg font-semibold">
-      Queue
-    </h2>
-    <h2 v-else class="px-2 text-lg font-semibold">
+    <Tracks v-if="tracks.length" :tracks="tracks" :show-album="true" />
+    <h2 v-else class="text-lg font-semibold px-2">
       No tracks in queue..
     </h2>
-    <Tracks v-if="tracks.length" :tracks="tracks" :show-album="true" />
   </div>
 </template>

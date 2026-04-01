@@ -27,7 +27,7 @@ function navigateArtist() {
   <div>
     <div class="group grid cursor-pointer" @click="navigateArtist()">
       <img
-        class="z-1 col-span-full row-span-full rounded-full object-cover"
+        class="rounded-full col-span-full row-span-full z-1 object-cover"
         :src="coverArtUrl"
         :loading="loading"
         width="150"
@@ -36,11 +36,11 @@ function navigateArtist() {
       />
       <PlayButton
         :artist="artist"
-        class="z-2 col-span-full row-span-full m-auto scale-50 pr-1 opacity-0 duration-200 group-hover:scale-100 group-hover:opacity-100"
+        class="m-auto pr-1 opacity-0 col-span-full row-span-full scale-50 duration-200 z-2 group-hover:opacity-100 group-hover:scale-100"
       />
     </div>
     <div class="max-w-150px">
-      <div class="truncate text-center text-nowrap text-sm text-primary lg:text-base">
+      <div class="text-sm text-primary text-center text-nowrap truncate lg:text-base">
         {{ artist.name }}
       </div>
     </div>

@@ -25,26 +25,26 @@ const coverArtUrl = computed(() => {
       class="h-full w-full bg-cover bg-center"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
-      <div class="h-full w-full flex items-center justify-between background-grad-2 backdrop-blur-md">
+      <div class="flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
         <div class="p-8">
-          <div class="h-30 flex flex-row gap-2 lg:h-52 lg:gap-6">
+          <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
             <img
               :src="coverArtUrl"
-              class="aspect-square h-30 cursor-pointer border-muted rounded-md shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
+              class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
               loading="lazy"
               @error="onImageError"
             >
-            <div class="my-auto flex flex-col gap-1 text-left lg:gap-4">
-              <div class="line-clamp-1 cursor-pointer text-xl font-bold lg:text-4xl">
+            <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
+              <div class="text-xl font-bold cursor-pointer line-clamp-1 lg:text-4xl">
                 {{ artist.name }}
               </div>
-              <div v-if="genres.length > 0" class="hidden lg:(block flex flex-nowrap justify-start gap-2 overflow-hidden)">
+              <div v-if="genres.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
                 <GenreBottle v-for="genre in genres.slice(0, 8)" :key="genre" :genre="genre" />
               </div>
               <PlayButton class="flex justify-start" :artist="artist" />
             </div>
           </div>
-          <div class="absolute right-2 top-2 opacity-50 hover:opacity-100">
+          <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
             <!-- Change Album Art section -->
             <ZButton
               :disabled="true"

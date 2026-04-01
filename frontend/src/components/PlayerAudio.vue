@@ -4,26 +4,43 @@ import { handleNextTrack, isPlaying, trackUrl, updateProgress } from '~/logic/pl
 
 const audioRef = useTemplateRef('audioRef')
 
+function onPlay() {
+  isPlaying.value = true
+}
+
+function onPause() {
+  isPlaying.value = false
+}
+
+function onTimeUpdate() {
+  updateProgress()
+}
+
+function onEnded() {
+  handleNextTrack()
+}
+
 onMounted(() => {
-  const audio = audioElement.value = audioRef.value
-  if (!audio) {
+  if (!audioRef.value)
     return
-  }
-  audio.addEventListener('play', () => createContextOnPlay())
-  audio.addEventListener('play', () => isPlaying.value = true)
-  audio.addEventListener('pause', () => isPlaying.value = false)
-  audio.addEventListener('timeupdate', () => updateProgress())
-  audio.addEventListener('ended', () => handleNextTrack())
+  audioElement.value = audioRef.value
+  const audio = audioRef.value
+  audio.addEventListener('play', createContextOnPlay)
+  audio.addEventListener('play', onPlay)
+  audio.addEventListener('pause', onPause)
+  audio.addEventListener('timeupdate', onTimeUpdate)
+  audio.addEventListener('ended', onEnded)
 })
 
 onUnmounted(() => {
+  if (!audioRef.value)
+    return
   const audio = audioRef.value
-  if (audio) {
-    audio.replaceWith(audio.cloneNode(true))
-    audio.pause()
-    audio.removeAttribute('src')
-    audio.load()
-  }
+  audio.removeEventListener('play', createContextOnPlay)
+  audio.removeEventListener('play', onPlay)
+  audio.removeEventListener('pause', onPause)
+  audio.removeEventListener('timeupdate', onTimeUpdate)
+  audio.removeEventListener('ended', onEnded)
 })
 </script>
 

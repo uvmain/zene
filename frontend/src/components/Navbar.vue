@@ -6,13 +6,13 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
   <!-- Mobile overlay backdrop -->
   <div
     v-if="isMobileNavOpen"
-    class="fixed inset-0 z-40 lg:hidden"
+    class="inset-0 fixed z-40 lg:hidden"
     @click="closeMobileNav"
   />
 
   <!-- Navbar -->
   <aside
-    class="fixed inset-y-0 left-0 z-50 w-full flex flex-col background-2 p-4 transition-transform duration-300 ease-in-out lg:relative lg:w-auto lg:flex"
+    class="p-4 background-2 flex flex-col w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 lg:flex lg:w-auto lg:relative"
     :class="{
       'translate-x-0': isMobileNavOpen,
       '-translate-x-full lg:translate-x-0': !isMobileNavOpen,
@@ -30,9 +30,9 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
     </div>
 
     <div class="flex flex-col space-y-6">
-      <RouterLink class="flex items-center gap-x-2 px-2" to="/">
+      <RouterLink class="px-2 flex gap-x-2 items-center" to="/">
         <img
-          class="size-20 opacity-90 lg:size-12"
+          class="opacity-90 size-20 lg:size-12"
           src="/minidisk.svg"
           alt="Logo"
         />
@@ -40,7 +40,7 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
           Zene
         </div>
       </RouterLink>
-      <nav class="flex flex-col gap-y-4 px-2">
+      <nav class="px-2 flex flex-col gap-y-4">
         <NavLink route-name="Home" route-prop="/" />
         <NavLink route-name="Albums" route-prop="/albums" />
         <NavLink route-name="Artists" route-prop="/artists" />

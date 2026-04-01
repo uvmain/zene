@@ -49,9 +49,9 @@ async function login() {
 </script>
 
 <template>
-  <div class="my-auto flex flex-col items-center justify-center gap-6 background-1 p-4 lg:(flex-row gap-12)">
+  <div class="my-auto p-4 background-1 flex flex-col gap-6 items-center justify-center lg:(flex-row gap-12)">
     <img
-      class="size-full max-w-400px opacity-90"
+      class="opacity-90 size-full max-w-400px"
       src="/minidisk.svg"
       alt="Logo"
       width="200"
@@ -59,7 +59,7 @@ async function login() {
     />
     <div class="text-muted">
       <h1>Login to Zene</h1>
-      <form class="grid w-400px gap-2" @submit.prevent="login">
+      <form class="gap-2 grid w-400px" @submit.prevent="login">
         <label for="username">
           Username
         </label>
@@ -67,7 +67,7 @@ async function login() {
           id="username"
           v-model="username"
           type="text"
-          class="border-1 border-primary2 rounded background-2 py-2 pl-10 font-semibold focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg focus:outline-none"
+          class="font-semibold py-2 pl-10 border-1 border-primary2 rounded background-2 focus:outline-none focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg"
           autocomplete="username"
           required
           @input="error = null"
@@ -79,7 +79,7 @@ async function login() {
           id="password"
           v-model="password"
           type="password"
-          class="border-1 border-primary2 rounded background-2 py-2 pl-10 font-semibold opacity-100 focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg focus:outline-none"
+          class="font-semibold py-2 pl-10 border-1 border-primary2 rounded background-2 opacity-100 focus:outline-none focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg"
           autocomplete="current-password"
           required
           @input="error = null"
@@ -88,8 +88,8 @@ async function login() {
           {{ loading ? 'Signing in…' : 'Sign in' }}
         </ZButton>
       </form>
-      <div v-if="error" class="corner-cut my-4 flex justify-center background-2 p-2">
-        <p class="mt-4 text-red-500">
+      <div v-if="error" class="my-4 p-2 corner-cut background-2 flex justify-center">
+        <p class="text-red-500 mt-4">
           {{ error }}
         </p>
       </div>

@@ -11,9 +11,9 @@ defineEmits(['click'])
 </script>
 
 <template>
-  <abbr :title="hoverText" class="flex items-center align-middle">
+  <abbr :title="hoverText" class="align-middle flex items-center">
     <button
-      class="group z-button relative inline-flex items-center align-middle"
+      class="group z-button align-middle inline-flex items-center relative"
       :disabled="disabled"
       :class="{
         'size-10': size10,

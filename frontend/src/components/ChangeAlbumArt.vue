@@ -70,7 +70,7 @@ onMounted(() => {
   <Modal :show-modal="true" modal-title="Change Album Art" @close="$emit('close')">
     <template #content>
       <Loading v-if="loading" class="h-56" />
-      <div v-else class="flex flex-wrap justify-center gap-4">
+      <div v-else class="flex flex-wrap gap-4 justify-center">
         <ImageSelectorImage
           v-if="deezerArtUrl"
           :image-url="deezerArtUrl"

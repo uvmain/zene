@@ -13,10 +13,6 @@ const albumArtistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const artistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const similarArtists = ref<SubsonicArtist[]>([])
 const artistGenres = ref<string[]>([])
-const canLoadMore = ref<boolean>(true)
-const isLoading = ref<boolean>(false)
-const limit = ref<number>(100)
-const offset = ref<number>(0)
 
 const musicbrainzArtistId = computed(() => `${route.params.artist}`)
 
@@ -49,35 +45,15 @@ async function getData() {
 }
 
 async function getTopSongs() {
-  if (isLoading.value || !canLoadMore.value)
-    return
-  isLoading.value = true
-
-  const newSongs = await fetchArtistTopSongs(musicbrainzArtistId.value, limit.value, offset.value)
-
-  if (newSongs.length === 0) {
-    canLoadMore.value = false
-  }
-  else {
-    tracks.value = tracks.value?.concat(newSongs) ?? newSongs
-    routeTracks.value = tracks.value
-    offset.value += newSongs.length
-
-    if (newSongs.length < limit.value) {
-      canLoadMore.value = false
-    }
-  }
-
-  isLoading.value = false
+  const newSongs = await fetchArtistTopSongs(musicbrainzArtistId.value)
+  tracks.value = newSongs
+  routeTracks.value = tracks.value
 }
 
 function resetRefs() {
   tracks.value = []
   routeTracks.value = []
   artistGenres.value = []
-  isLoading.value = false
-  offset.value = 0
-  canLoadMore.value = true
 }
 
 watch(musicbrainzArtistId, async () => {
@@ -94,31 +70,31 @@ onBeforeMount(async () => {
   <div class="flex flex-col gap-6">
     <HeroArtist v-if="artist" :artist="artist" :genres="artistGenres" />
     <div v-if="artistAlbums.length > 0">
-      <div class="mb-2 text-lg font-semibold">
+      <div class="text-lg font-semibold mb-2">
         Albums
       </div>
       <div class="flex flex-wrap gap-6">
-        <div v-for="album in artistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+        <div v-for="album in artistAlbums" :key="album.id" class="flex flex-col gap-y-1 transition duration-200 overflow-hidden hover:scale-110">
           <Album :album="album" :show-artist="false" :show-date="false" />
         </div>
       </div>
     </div>
     <div v-if="albumArtistAlbums.length > 0">
-      <div class="mb-2 text-lg font-semibold">
+      <div class="text-lg font-semibold mb-2">
         Appears on albums
       </div>
       <div class="flex flex-wrap gap-6">
-        <div v-for="album in albumArtistAlbums" :key="album.id" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+        <div v-for="album in albumArtistAlbums" :key="album.id" class="flex flex-col gap-y-1 transition duration-200 overflow-hidden hover:scale-110">
           <Album :album="album" />
         </div>
       </div>
     </div>
     <div v-if="similarArtists.length > 0">
-      <div class="mb-2 text-lg font-semibold">
+      <div class="text-lg font-semibold mb-2">
         Similar Artists
       </div>
       <div class="flex flex-wrap gap-6">
-        <div v-for="similarArtist in similarArtists" :key="similarArtist.musicBrainzId" class="flex flex-col gap-y-1 overflow-hidden transition duration-200 hover:scale-110">
+        <div v-for="similarArtist in similarArtists" :key="similarArtist.musicBrainzId" class="flex flex-col gap-y-1 transition duration-200 overflow-hidden hover:scale-110">
           <ArtistThumb :artist="similarArtist" />
         </div>
       </div>
@@ -129,8 +105,6 @@ onBeforeMount(async () => {
       :tracks="tracks"
       :show-album="true"
       :primary-artist="artist?.name"
-      :observer-enabled="canLoadMore"
-      @observer-visible="getTopSongs"
     />
   </div>
 </template>

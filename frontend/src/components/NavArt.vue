@@ -44,7 +44,7 @@ watch(currentlyPlayingItem, (newItem) => {
 <template>
   <div
     v-if="currentlyPlayingItem.track || currentlyPlayingItem.podcastEpisode"
-    class="mt-auto hidden flex flex-col lg:block space-y-2"
+    class="hidden lg:(mt-auto flex flex-col space-y-2)"
   >
     <div class="flex flex-col space-y-1">
       <RouterLink
@@ -74,7 +74,7 @@ watch(currentlyPlayingItem, (newItem) => {
     >
       <img
         :src="coverArtUrl"
-        class="aspect-square size-full cursor-pointer rounded-md"
+        class="rounded-md size-full aspect-square cursor-pointer"
         @error="onImageError"
       />
     </RouterLink>

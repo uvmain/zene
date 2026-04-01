@@ -29,7 +29,7 @@ function handleLinkClick() {
     @click="handleLinkClick"
   >
     <icon-nrk-media-ffw
-      class="size-8 opacity-0 transition-all duration-300"
+      class="opacity-0 size-8 transition-all duration-300"
       :class="{
         'opacity-100 text-primary1': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
         'group-hover/navlink:opacity-50 text-secondary1': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
@@ -41,6 +41,6 @@ function handleLinkClick() {
 
 <style scoped lang="css">
 .navlink {
-  @apply block flex  text-muted font-semibold no-underline transition-all duration-100 uppercase flex items-center;
+  @apply text-muted font-semibold no-underline transition-all duration-100 uppercase flex items-center;
 }
 </style>

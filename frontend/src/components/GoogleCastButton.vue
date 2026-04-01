@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { cleanupCastPlayer, initializeCast } from '~/logic/castFunctions'
-import { castPlayer, chromecastAvailable, chromecastConnected } from '~/logic/castRefs'
+import { castPlayer, chromecastAvailable } from '~/logic/castRefs'
 import { debugLog } from '~/logic/logger'
 import { currentVolume } from '~/logic/volume'
 
@@ -51,7 +51,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="chromecastAvailable" class="flex cursor-pointer items-center justify-center border-none">
+  <div v-if="chromecastAvailable" class="border-none flex cursor-pointer items-center justify-center">
     <google-cast-launcher ref="castButton" class="size-7" />
   </div>
 </template>

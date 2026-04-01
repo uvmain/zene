@@ -12,10 +12,10 @@ defineEmits(['close'])
 <template>
   <div>
     <teleport to="body">
-      <div class="fixed inset-0 z-50 overflow-y-scroll bg-white/40 p-4 backdrop-blur-xl dark:bg-black/40">
+      <div class="p-4 bg-white/40 inset-0 fixed z-50 overflow-y-scroll backdrop-blur-xl dark:bg-black/40">
         <div class="flex justify-center">
           <div v-if="lyrics.length > 0">
-            <div class="flex flex-col gap-2 text-center text-lg text-muted lg:text-base">
+            <div class="text-lg text-muted text-center flex flex-col gap-2 lg:text-base">
               <div
                 v-for="(line, index) in lyrics" :key="index"
                 :class="{
@@ -30,14 +30,14 @@ defineEmits(['close'])
               </div>
             </div>
           </div>
-          <p v-else class="flex flex-col gap-2 text-center">
+          <p v-else class="text-center flex flex-col gap-2">
             'No lyrics available.'
           </p>
         </div>
       </div>
     </teleport>
     <teleport to="body">
-      <div class="absolute right-4 top-4 z-51 lg:right-8">
+      <div class="right-4 top-4 absolute z-51 lg:right-8">
         <ZButton class="" @click="$emit('close')">
           Close
         </ZButton>
