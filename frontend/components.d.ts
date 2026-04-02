@@ -16,6 +16,7 @@ declare module 'vue' {
     Artists: typeof import('./src/components/Artists.vue')['default']
     ArtistThumb: typeof import('./src/components/ArtistThumb.vue')['default']
     ChangeAlbumArt: typeof import('./src/components/ChangeAlbumArt.vue')['default']
+    DefaultLayout: typeof import('./src/components/layouts/DefaultLayout.vue')['default']
     FooterPlayer: typeof import('./src/components/FooterPlayer.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     GoogleCastButton: typeof import('./src/components/GoogleCastButton.vue')['default']
@@ -81,6 +82,7 @@ declare module 'vue' {
     Track: typeof import('./src/components/Track.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']
     UserManagement: typeof import('./src/components/UserManagement.vue')['default']
+    VisualizerLayout: typeof import('./src/components/layouts/VisualizerLayout.vue')['default']
     ZButton: typeof import('./src/components/ZButton.vue')['default']
     ZInfo: typeof import('./src/components/ZInfo.vue')['default']
   }

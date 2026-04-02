@@ -3,14 +3,19 @@ import { fetchPodcastChannel } from '~/logic/backendFetch'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
+const props = defineProps({
+  large: { type: Boolean, default: false },
+})
+
 const podcastChannelName = ref<string>('')
 
 const coverArtUrl = computed(() => {
+  const artSize = props.large ? artSizes.size400 : artSizes.size200
   if (currentlyPlayingItem.value.track) {
-    return getCoverArtUrl(currentlyPlayingItem.value.track.albumId, artSizes.size200)
+    return getCoverArtUrl(currentlyPlayingItem.value.track.albumId, artSize)
   }
   else if (currentlyPlayingItem.value.podcastEpisode) {
-    return getCoverArtUrl(currentlyPlayingItem.value.podcastEpisode.coverArt, artSizes.size200)
+    return getCoverArtUrl(currentlyPlayingItem.value.podcastEpisode.coverArt, artSize)
   }
   else {
     return '/default-square.png'

@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="mt-auto border-0 border-t-1 border-zshade-600 border-solid background-2 w-full bottom-0 sticky"
+    class="border-0 border-t-1 border-zshade-600 border-solid background-2 w-full bottom-0 sticky"
   >
     <div class="px-8 py-4 flex flex-col items-center lg:flex-row">
       <div

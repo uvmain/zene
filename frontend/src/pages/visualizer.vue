@@ -8,7 +8,7 @@ import { getButterchurnPresets } from '~/logic/backendFetch'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
-const gridParent = useTemplateRef('grid') as Ref<HTMLDivElement>
+const gridParent = useTemplateRef('grid-parent') as Ref<HTMLDivElement>
 const visualizer = ref<Visualizer | null>(null)
 const currentVisualizerIndex = ref(0)
 const initialFadeIn = ref(true)
@@ -147,7 +147,7 @@ async function loadRandomPreset(blendTimeSeconds = blendSeconds) {
   await visualizer.value.loadPreset(preset.preset, blendTimeSeconds)
   presetNameFadeTimeout.value = setTimeout(() => {
     presetNameFadeIn.value = false
-  }, Math.max(blendTimeSeconds * 1000, blendSeconds * 1000))
+  }, 1000)
 }
 
 function onFullScreenChangeListener() {
@@ -201,7 +201,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="grid" class="group grid h-100dvh w-full">
+  <div ref="grid-parent" class="group grid h-full w-full">
     <div v-if="!audioContext" class="text-sm px-4 py-2 corner-cut bg-zshade-300/60 flex col-span-full row-span-full items-center justify-center z-2 backdrop-blur-xl dark:bg-zshade-900/60">
       No audio context available yet. Play a track to see the visualizer.
     </div>
@@ -218,7 +218,7 @@ onUnmounted(() => {
       <!-- info panel -->
       <div class="px-4 py-2 corner-cut bg-zshade-300/60 flex flex-col z-3 backdrop-blur-xl dark:bg-zshade-900/60">
         <div v-if="isFullScreen" class="flex flex-col gap-2">
-          <NavArt />
+          <NavArt :large="true" />
           <PlayerProgressBar />
           <PlayerMediaControls :compact="true" />
         </div>

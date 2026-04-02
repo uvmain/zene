@@ -1,14 +1,14 @@
 <template>
-  <div class="text-muted background-1 flex h-screen lg:grid lg:grid-cols-[200px_1fr]">
+  <main class="text-muted background-1 flex h-screen lg:grid lg:grid-cols-[200px_1fr]">
     <Navbar />
-    <main class="flex flex-1 flex-col overflow-y-auto">
-      <div class="p-3 flex flex-col overflow-y-auto space-y-4 lg:p-6 lg:space-y-6">
-        <HeaderAndSearch />
-        <RouterView />
+    <div class="flex flex-1 flex-col h-screen min-h-0">
+      <div class="p-3 flex flex-1 flex-col min-h-0 overflow-y-auto space-y-4 lg:p-6 lg:space-y-6">
+        <HeaderAndSearch class="flex-shrink-0" />
+        <RouterView class="flex-1 min-h-0" />
       </div>
-      <FooterPlayer />
-    </main>
-  </div>
+      <FooterPlayer class="flex-shrink-0" />
+    </div>
+  </main>
 </template>
 
 <style>

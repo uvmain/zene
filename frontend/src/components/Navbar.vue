@@ -12,7 +12,7 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
 
   <!-- Navbar -->
   <aside
-    class="p-4 background-2 flex flex-col w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 lg:flex lg:w-auto lg:relative"
+    class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 lg:(flex w-auto relative)"
     :class="{
       'translate-x-0': isMobileNavOpen,
       '-translate-x-full lg:translate-x-0': !isMobileNavOpen,
