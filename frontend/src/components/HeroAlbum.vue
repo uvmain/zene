@@ -40,7 +40,7 @@ function prevIndex() {
 }
 
 async function getRandomAlbums(limit: number) {
-  albumArray.value = await fetchAlbums('random', limit)
+  albumArray.value = await fetchAlbums({ type: 'random', size: limit })
   index.value = 0
 }
 

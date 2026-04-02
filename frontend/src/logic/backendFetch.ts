@@ -143,11 +143,18 @@ export async function fetchAlbum(musicbrainz_album_id: string): Promise<Subsonic
   return response.album
 }
 
-export async function fetchAlbums(type: string, size = 50, offset = 0, seed?: number): Promise<SubsonicAlbum[]> {
+export async function fetchAlbums({ type, size, offset, seed }: { type: string, size?: number, offset?: number, seed?: number }): Promise<SubsonicAlbum[]> {
   const formData = new FormData()
   formData.append('type', type)
-  formData.append('size', size.toString())
-  formData.append('offset', offset.toString())
+  if (size !== undefined && size > 0) {
+    formData.append('size', size.toString())
+  }
+  else {
+    formData.append('size', '1000000')
+  }
+  if (offset !== undefined && offset > 0) {
+    formData.append('offset', offset.toString())
+  }
   if (type === 'random' && seed !== undefined && seed > 0) {
     formData.append('seed', seed.toString())
   }
@@ -195,11 +202,15 @@ export async function fetchArtistInfo(musicbrainz_artist_id: string, limit = 20)
   return response.artistInfo
 }
 
-export async function fetchArtistList(type: string, limit: number, offset: number, seed?: number): Promise<SubsonicArtist[]> {
+export async function fetchArtistList({ type, limit, offset, seed }: { type: string, limit?: number, offset?: number, seed?: number }): Promise<SubsonicArtist[]> {
   const formData = new FormData()
   formData.append('type', type)
-  formData.append('size', limit.toString())
-  formData.append('offset', offset.toString())
+  if (limit !== undefined && limit > 0) {
+    formData.append('size', limit.toString())
+  }
+  if (offset !== undefined && offset > 0) {
+    formData.append('offset', offset.toString())
+  }
   if (seed !== undefined && seed > 0) {
     formData.append('seed', seed.toString())
   }

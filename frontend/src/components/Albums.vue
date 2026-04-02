@@ -1,25 +1,15 @@
 <script setup lang="ts">
 import type { AlbumOrder } from '~/logic/store'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { useElementSize, useElementVisibility } from '@vueuse/core'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
 import { albumOrder, albumOrders, albumSeed } from '~/logic/store'
 
 const props = defineProps({
-  limit: { type: Number, default: 30 },
-  offset: { type: Number, default: 0 },
-  scrollable: { type: Boolean, default: false },
   limitRows: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
-const loading = ref(false)
-const currentOffset = ref<number>(0)
-const canLoadMore = ref(true)
-const observer = useTemplateRef('observer')
-const firstAlbumElement = ref<HTMLElement | null>(null)
-const observerIsVisible = useElementVisibility(observer)
 const albums = ref<SubsonicAlbum[]>([])
 const showOrderOptions = ref(false)
 
@@ -31,30 +21,11 @@ const sortOptions = [
   { label: 'Release Date', emitValue: 'releaseDate' },
 ]
 
-const { height: firstAlbumHeight } = useElementSize(firstAlbumElement)
-
-const heightStyle = computed(() => {
-  if (props.limitRows && firstAlbumHeight.value > 0) {
-    const smHeight = (firstAlbumHeight.value * 3) + 24
-    const lgHeight = (firstAlbumHeight.value * 2) + 24
-    return {
-      'maxHeight': `${smHeight}px`,
-      '--albums-lg-max-height': `${lgHeight}px`,
-    }
-  }
-  return {}
-})
-
 let fetchType: string
 
 watchEffect(() => {
   if (!albumOrders.includes(albumOrder.value as AlbumOrder)) {
     albumOrder.value = 'recentlyUpdated'
-  }
-})
-
-watch(observerIsVisible, (newValue) => {
-  if (newValue && props.scrollable) {
     getAlbums()
   }
 })
@@ -83,25 +54,10 @@ function setOrder(order: AlbumOrder) {
   }
   albumOrder.value = order
   showOrderOptions.value = false
-  resetAlbumsArray()
   getAlbums()
 }
 
-function resetAlbumsArray() {
-  canLoadMore.value = true
-  loading.value = false
-  currentOffset.value = props.offset
-  albums.value = [] as SubsonicAlbum[]
-}
-
 async function getAlbums() {
-  if (loading.value) {
-    return
-  }
-  loading.value = true
-  if (!canLoadMore.value) {
-    return
-  }
   switch (albumOrder.value) {
     case 'recentlyUpdated':
       fetchType = 'newest'
@@ -119,25 +75,19 @@ async function getAlbums() {
       fetchType = 'recent'
       break
   }
-  const albumsResponse = await fetchAlbums(fetchType, props.limit, currentOffset.value, albumSeed.value)
-  if (albumsResponse.length > 0) {
-    currentOffset.value += albumsResponse.length
-    albums.value?.push(...albumsResponse)
+
+  const fetchOptions = {
+    type: fetchType,
+    seed: albumSeed.value,
+    limit: props.limitRows ? 50 : undefined,
   }
-  if (albumsResponse.length < props.limit) {
-    canLoadMore.value = false
-  }
-  loading.value = false
-  if (observerIsVisible.value) {
-    getAlbums()
-  }
+  albums.value = await fetchAlbums(fetchOptions)
 }
 
 async function refresh() {
   if (fetchType === 'random') {
     albumSeed.value = generateSeed()
   }
-  resetAlbumsArray()
   await getAlbums()
 }
 
@@ -152,12 +102,11 @@ onBeforeMount(async () => {
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
       v-if="albums.length > 0"
-      class="pr-1 auto-grid-6 overflow-hidden"
-      :style="heightStyle"
+      class="auto-grid overflow-hidden"
+      :class="{ 'limit-rows': limitRows }"
     >
       <Album
         v-for="(album, index) in albums" :key="album.id"
-        :ref="index === 0 ? (el => firstAlbumElement = el as HTMLElement) : undefined"
         :album="album"
         :index="index"
         size="sm"
@@ -165,16 +114,26 @@ onBeforeMount(async () => {
         :show-date="false"
       />
     </div>
-    <div v-if="canLoadMore && props.scrollable" ref="observer" class="h-16px">
-      Loading more albums...
-    </div>
+    <Loading v-else />
   </div>
 </template>
 
-<style scoped lang="css">
-@media (min-width: 1024px) {
-  .auto-grid-6 {
-    max-height: var(--albums-lg-max-height, none) !important;
-  }
+<style scoped>
+.auto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: calc(var(--spacing) * 4);
+}
+
+.auto-grid.limit-rows {
+  grid-template-rows: repeat(3, auto);
+  grid-auto-rows: 0;
+  row-gap: 0;
+  overflow: hidden;
+}
+
+.auto-grid.limit-rows > * {
+  margin-bottom: calc(var(--spacing) * 4);
+  overflow: hidden;
 }
 </style>

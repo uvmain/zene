@@ -1,25 +1,16 @@
 <script setup lang="ts">
 import type { ArtistOrder } from '~/logic/store'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
-import { useElementVisibility } from '@vueuse/core'
 import { fetchArtistList } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
 import { artistOrder, artistSeed } from '~/logic/store'
 
 const props = defineProps({
-  limit: { type: Number, default: 30 },
-  offset: { type: Number, default: 0 },
-  scrollable: { type: Boolean, default: false },
   limitRows: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
-const loading = ref(false)
 const router = useRouter()
-const currentOffset = ref<number>(0)
-const canLoadMore = ref(true)
-const observer = useTemplateRef<HTMLDivElement>('observer')
-const observerIsVisible = useElementVisibility(observer)
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
 const showOrderOptions = ref(false)
 
@@ -30,24 +21,6 @@ const sortOptions = [
   { label: 'Alphabetical', emitValue: 'alphabetical' },
   { label: 'Starred', emitValue: 'starred' },
 ]
-
-const heightStyle = computed(() => {
-  if (props.limitRows) {
-    const smHeight = (174 * 3) + 48
-    const lgHeight = (174 * 2) + 24
-    return {
-      'maxHeight': `${smHeight}px`,
-      '--albums-lg-max-height': `${lgHeight}px`,
-    }
-  }
-  return {}
-})
-
-watch(observerIsVisible, (newValue) => {
-  if (newValue && props.scrollable) {
-    getArtists()
-  }
-})
 
 const headerTitle = computed(() => {
   switch (artistOrder.value) {
@@ -73,49 +46,27 @@ function setOrder(order: ArtistOrder) {
   }
   artistOrder.value = order
   showOrderOptions.value = false
-  resetArtistsArray()
   getArtists()
 }
 
-function resetArtistsArray() {
-  canLoadMore.value = true
-  loading.value = false
-  currentOffset.value = props.offset
-  artists.value = [] as SubsonicArtist[]
-}
-
 async function getArtists() {
-  if (loading.value) {
-    return
+  const fetchOptions = {
+    type: artistOrder.value,
+    offset: artists.value.length,
+    seed: artistSeed.value,
+    limit: props.limitRows ? 50 : undefined,
   }
-  loading.value = true
-  if (!canLoadMore.value) {
-    return
-  }
-  const artistsResponse = await fetchArtistList(artistOrder.value, props.limit, currentOffset.value, artistSeed.value)
-  if (artistsResponse.length > 0) {
-    currentOffset.value += artistsResponse.length
-    artists.value?.push(...artistsResponse)
-  }
-  if (artistsResponse.length < props.limit) {
-    canLoadMore.value = false
-  }
-  loading.value = false
-  if (observerIsVisible.value) {
-    getArtists()
-  }
+  artists.value = await fetchArtistList(fetchOptions)
 }
 
 async function refresh() {
   if (artistOrder.value === 'random') {
     artistSeed.value = generateSeed()
   }
-  resetArtistsArray()
   getArtists()
 }
 
 onBeforeMount(async () => {
-  resetArtistsArray()
   await getArtists()
 })
 </script>
@@ -126,8 +77,8 @@ onBeforeMount(async () => {
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
       v-if="artists.length > 0"
-      class="auto-grid-6 overflow-hidden"
-      :style="heightStyle"
+      class="auto-grid overflow-hidden"
+      :class="{ 'limit-rows': limitRows }"
     >
       <ArtistThumb
         v-for="(artist, index) in artists"
@@ -138,16 +89,26 @@ onBeforeMount(async () => {
         @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
       />
     </div>
-    <div v-if="canLoadMore && props.scrollable" ref="observer" class="h-16">
-      Loading more artists...
-    </div>
+    <Loading v-else />
   </div>
 </template>
 
-<style scoped lang="css">
-@media (min-width: 1024px) {
-  .auto-grid-6 {
-    max-height: var(--albums-lg-max-height, none) !important;
-  }
+<style scoped>
+.auto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: calc(var(--spacing) * 4);
+}
+
+.auto-grid.limit-rows {
+  grid-template-rows: repeat(3, auto);
+  grid-auto-rows: 0;
+  row-gap: 0;
+  overflow: hidden;
+}
+
+.auto-grid.limit-rows > * {
+  margin-bottom: calc(var(--spacing) * 4);
+  overflow: hidden;
 }
 </style>
