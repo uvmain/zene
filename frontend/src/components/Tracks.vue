@@ -66,17 +66,26 @@ function sorttracksBy(sortOption: SortOptions) {
   }
 }
 
+function scrollToActiveTrack() {
+  if (!props.autoScrolling || !scroller.value)
+    return
+  scroller.value.scrollToItem(currentQueuePosition.value, { smooth: true })
+}
+
 watch(() => props.tracks, (newtracks) => {
   routeTracks.value = newtracks
 }, { immediate: true })
 
 if (props.autoScrolling) {
   watch(() => currentlyPlayingItem.value, () => {
-    if (!scroller.value)
-      return
-    scroller.value.scrollToItem(currentQueuePosition.value, { smooth: true })
+    scrollToActiveTrack()
   }, { deep: true })
 }
+
+onMounted(() => {
+  if (props.autoScrolling)
+    scrollToActiveTrack()
+})
 </script>
 
 <template>
@@ -117,7 +126,7 @@ if (props.autoScrolling) {
       <RecycleScroller
         v-slot="{ item, index }"
         ref="scroller"
-        class="scroller"
+        class="h-[calc(100vh-324px)]"
         :items="routeTracks"
         :item-size="68"
         key-field="id"
@@ -132,9 +141,3 @@ if (props.autoScrolling) {
     </div>
   </div>
 </template>
-
-<style scoped>
-.scroller {
-  height: calc(100vh - 324px);
-}
-</style>

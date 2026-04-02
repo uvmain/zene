@@ -4,7 +4,7 @@ export default defineConfig({
   shortcuts: {
     'corner-cut': 'rounded-none [@supports(corner-top-left-shape:bevel)]:rounded-tl-12px [@supports(corner-top-left-shape:bevel)]:[corner-top-left-shape:_bevel]',
     'corner-cut-large': 'rounded-none [@supports(corner-top-left-shape:bevel)]:rounded-tl-36px [@supports(corner-top-left-shape:bevel)]:[corner-top-left-shape:_bevel]',
-    'media-control-button': 'h-10 w-10 flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:h-12 lg:w-12 sm:h-10 sm:w-10',
+    'media-control-button': 'flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:size-12 size-10',
     'text-primary': 'dark:text-zshade-100 text-zshade-900',
     'text-muted': 'dark:text-zshade-200 text-zshade-800',
     'border-muted': 'dark:border-zshade-700 border-zshade-200 border-solid border-1',
@@ -13,9 +13,9 @@ export default defineConfig({
     'background-3': 'dark:bg-zshade-700 bg-zshade-100',
     'background-grad-2': 'dark:from-zshade-800 from-zshade-200 bg-gradient-to-r',
     'z-button': 'border-1 border-solid relative font-semibold corner-cut flex cursor-pointer items-center justify-center cursor-pointer px-3 py-1 text-sm outline-none transition-all duration-200 text-muted background-2 hover:from-primary2 hover:text-primary hover:bg-gradient-to-br',
-    'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl sm:text-lg active:text-primary1',
-    'footer-icon-disabled': 'scale-100 text-lg text-muted lg:text-xl sm:text-lg opacity-50',
-    'footer-icon-on': 'scale-110 text-lg text-primary1 transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl sm:text-lg',
+    'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl active:text-primary1',
+    'footer-icon-disabled': 'scale-100 text-lg text-muted lg:text-xl opacity-50',
+    'footer-icon-on': 'scale-110 text-lg text-primary1 transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl',
     'auto-grid-6': '[grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))] grid gap-6',
   },
   theme: {
