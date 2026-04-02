@@ -174,6 +174,9 @@ export async function fetchRandomTracks({ limit, offset, seed }: { limit?: numbe
   if (limit !== undefined && limit > 0) {
     formData.append('size', limit.toString())
   }
+  else {
+    formData.append('size', '1000000')
+  }
   if (seed !== undefined && seed > 0) {
     formData.append('seed', seed.toString())
   }

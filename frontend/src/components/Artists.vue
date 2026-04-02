@@ -3,7 +3,7 @@ import type { ArtistOrder } from '~/logic/store'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import { fetchArtistList } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { artistOrder, artistSeed } from '~/logic/store'
+import { artistOrder, artistSeed, artistsStore } from '~/logic/store'
 
 const props = defineProps({
   limitRows: { type: Boolean, default: false },
@@ -50,13 +50,16 @@ function setOrder(order: ArtistOrder) {
 }
 
 async function getArtists() {
+  if (artistsStore.value.length > 0) {
+    artists.value = artistsStore.value
+  }
   const fetchOptions = {
     type: artistOrder.value,
-    offset: artists.value.length,
     seed: artistSeed.value,
     limit: props.limitRows ? 50 : undefined,
   }
   artists.value = await fetchArtistList(fetchOptions)
+  artistsStore.value = artists.value
 }
 
 async function refresh() {

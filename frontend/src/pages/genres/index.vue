@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import { fetchGenres } from '~/logic/backendFetch'
+import { genresStore } from '~/logic/store'
 
 const router = useRouter()
 
 const genres = ref<SubsonicGenre[]>()
 
-onBeforeMount(async () => {
+async function getGenres() {
+  if (genresStore.value.length > 0) {
+    genres.value = genresStore.value
+  }
   genres.value = await fetchGenres()
+  genresStore.value = genres.value
+}
+
+onBeforeMount(async () => {
+  await getGenres()
 })
 </script>
 

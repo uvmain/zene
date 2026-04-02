@@ -12,57 +12,50 @@ const showChangeArtModal = ref(false)
 const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
 })
-
-// function actOnUpdatedArt() {
-//   showChangeArtModal.value = false
-//   cacheBustAlbumArt(`${props.artist.id}`)
-// }
 </script>
 
 <template>
-  <section class="corner-cut-large overflow-hidden">
-    <div
-      class="h-full w-full bg-cover bg-center"
-      :style="{ backgroundImage: `url(${coverArtUrl})` }"
-    >
-      <div class="flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
-        <div class="p-8">
-          <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
-            <img
-              :src="coverArtUrl"
-              class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
-              loading="lazy"
-              @error="onImageError"
-            >
-            <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
-              <div class="text-xl font-bold cursor-pointer line-clamp-1 lg:text-4xl">
-                {{ artist.name }}
-              </div>
-              <div v-if="genres.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
-                <GenreBottle v-for="genre in genres.slice(0, 8)" :key="genre" :genre="genre" />
-              </div>
-              <PlayButton class="flex justify-start" :artist="artist" />
+  <div
+    class="dark:shadow-zshade-950 corner-cut-large h-full w-full shadow-md shadow-zshade-500 bg-cover bg-center"
+    :style="{ backgroundImage: `url(${coverArtUrl})` }"
+  >
+    <div class="corner-cut-large flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
+      <div class="p-8">
+        <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
+          <img
+            :src="coverArtUrl"
+            class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
+            loading="lazy"
+            @error="onImageError"
+          >
+          <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
+            <div class="text-xl font-bold cursor-pointer line-clamp-1 lg:text-4xl">
+              {{ artist.name }}
             </div>
+            <div v-if="genres.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
+              <GenreBottle v-for="genre in genres.slice(0, 8)" :key="genre" :genre="genre" />
+            </div>
+            <PlayButton class="flex justify-start" :artist="artist" />
           </div>
-          <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
-            <!-- Change Album Art section -->
-            <ZButton
-              :disabled="true"
-              @click="showChangeArtModal = true"
-            >
-              <div>
-                Change Art
-              </div>
-            </ZButton>
-            <!-- <ChangeAlbumArt
+        </div>
+        <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
+          <!-- Change Album Art section -->
+          <ZButton
+            :disabled="true"
+            @click="showChangeArtModal = true"
+          >
+            <div>
+              Change Art
+            </div>
+          </ZButton>
+          <!-- <ChangeAlbumArt
               v-if="showChangeArtModal"
               :album="albumArray[index]"
               @close="showChangeArtModal = false"
               @art-updated="actOnUpdatedArt"
             /> -->
-          </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </template>

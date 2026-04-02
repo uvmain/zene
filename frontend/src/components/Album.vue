@@ -62,7 +62,7 @@ function navigateArtist() {
   <div>
     <div class="group max-w-150px">
       <img
-        class="border-muted rounded-md aspect-square cursor-pointer shadow-sm shadow-zshade-500 dark:shadow-zshade-900"
+        class="border-muted rounded-md aspect-square cursor-pointer shadow-md shadow-zshade-500 dark:shadow-zshade-900"
         :src="coverArtUrl"
         alt="Album Cover"
         :loading="loading"

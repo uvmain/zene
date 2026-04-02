@@ -107,12 +107,12 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="albumArray.length" class="corner-cut-large overflow-hidden">
+  <section v-if="albumArray.length">
     <div
-      class="h-full w-full bg-cover bg-center"
+      class="dark:shadow-zshade-950 corner-cut-large h-full w-full shadow-md shadow-zshade-500 overflow-hidden bg-cover bg-center"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
-      <div class="flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
+      <div class="corner-cut-large flex h-full w-full items-center justify-between overflow-hidden background-grad-2 backdrop-blur-md">
         <div class="p-8">
           <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
             <img

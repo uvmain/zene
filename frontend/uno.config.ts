@@ -33,6 +33,7 @@ export default defineConfig({
         700: 'hsl(37 7% 30%)',
         800: 'hsl(37 7% 20%)',
         900: 'hsl(37 7% 10%)',
+        950: 'hsl(37 7% 5%)',
       },
       zgreen: 'hsl(105.63 100% 27.84%) ',
     },

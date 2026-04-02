@@ -3,7 +3,7 @@ import type { AlbumOrder } from '~/logic/store'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { albumOrder, albumOrders, albumSeed } from '~/logic/store'
+import { albumOrder, albumOrders, albumSeed, albumsStore } from '~/logic/store'
 
 const props = defineProps({
   limitRows: { type: Boolean, default: false },
@@ -58,6 +58,9 @@ function setOrder(order: AlbumOrder) {
 }
 
 async function getAlbums() {
+  if (albumsStore.value.length > 0) {
+    albums.value = albumsStore.value
+  }
   switch (albumOrder.value) {
     case 'recentlyUpdated':
       fetchType = 'newest'
@@ -82,6 +85,7 @@ async function getAlbums() {
     limit: props.limitRows ? 50 : undefined,
   }
   albums.value = await fetchAlbums(fetchOptions)
+  albumsStore.value = albums.value
 }
 
 async function refresh() {

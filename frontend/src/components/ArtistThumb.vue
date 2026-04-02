@@ -27,7 +27,7 @@ function navigateArtist() {
   <div>
     <div class="group grid cursor-pointer" @click="navigateArtist()">
       <img
-        class="rounded-full col-span-full row-span-full z-1 object-cover"
+        class="rounded-full col-span-full row-span-full size-150px z-1 object-cover"
         :src="coverArtUrl"
         :loading="loading"
         width="150"
