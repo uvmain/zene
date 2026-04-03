@@ -58,8 +58,11 @@ async function getArtists() {
     seed: artistSeed.value,
     limit: props.limitRows ? 50 : undefined,
   }
-  artists.value = await fetchArtistList(fetchOptions)
-  artistsStore.value = artists.value
+  const fetchedArtists = await fetchArtistList(fetchOptions)
+  if (fetchedArtists && fetchedArtists.length > 0 && JSON.stringify(fetchedArtists) !== JSON.stringify(artists.value)) {
+    artists.value = fetchedArtists
+    artistsStore.value = artists.value
+  }
 }
 
 async function refresh() {

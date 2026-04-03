@@ -2,6 +2,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
+import { albumsStore } from '~/logic/store'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: false },
@@ -40,6 +41,12 @@ function prevIndex() {
 }
 
 async function getRandomAlbums(limit: number) {
+  if (albumsStore.value.length > 0) {
+    const randomAlbums = albumsStore.value.sort(() => 0.5 - Math.random()).slice(0, limit)
+    albumArray.value = randomAlbums
+    index.value = 0
+    return
+  }
   albumArray.value = await fetchAlbums({ type: 'random', size: limit })
   index.value = 0
 }
@@ -109,7 +116,7 @@ onBeforeMount(async () => {
 <template>
   <section v-if="albumArray.length">
     <div
-      class="dark:shadow-zshade-950 corner-cut-large h-full w-full shadow-md shadow-zshade-500 overflow-hidden bg-cover bg-center"
+      class="corner-cut-large h-full w-full shadow-md shadow-zshade-500 overflow-hidden bg-cover bg-center dark:shadow-zshade-950"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
       <div class="corner-cut-large flex h-full w-full items-center justify-between overflow-hidden background-grad-2 backdrop-blur-md">

@@ -11,8 +11,11 @@ async function getGenres() {
   if (genresStore.value.length > 0) {
     genres.value = genresStore.value
   }
-  genres.value = await fetchGenres()
-  genresStore.value = genres.value
+  const fetchedGenres = await fetchGenres()
+  if (fetchedGenres && fetchedGenres.length > 0 && JSON.stringify(fetchedGenres) !== JSON.stringify(genres.value)) {
+    genres.value = fetchedGenres
+    genresStore.value = genres.value
+  }
 }
 
 onBeforeMount(async () => {

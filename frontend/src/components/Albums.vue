@@ -84,8 +84,11 @@ async function getAlbums() {
     seed: albumSeed.value,
     limit: props.limitRows ? 50 : undefined,
   }
-  albums.value = await fetchAlbums(fetchOptions)
-  albumsStore.value = albums.value
+  const fetchedAlbums = await fetchAlbums(fetchOptions)
+  if (fetchedAlbums && fetchedAlbums.length > 0 && JSON.stringify(fetchedAlbums) !== JSON.stringify(albums.value)) {
+    albums.value = fetchedAlbums
+    albumsStore.value = albums.value
+  }
 }
 
 async function refresh() {
