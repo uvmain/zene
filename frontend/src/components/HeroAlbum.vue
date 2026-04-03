@@ -42,8 +42,7 @@ function prevIndex() {
 
 async function getRandomAlbums(limit: number) {
   if (albumsStore.value.length > 0) {
-    const randomAlbums = albumsStore.value.sort(() => 0.5 - Math.random()).slice(0, limit)
-    albumArray.value = randomAlbums
+    albumArray.value = albumsStore.value.toSorted(() => 0.5 - Math.random()).slice(0, limit)
     index.value = 0
     return
   }

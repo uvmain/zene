@@ -10,7 +10,7 @@ const props = defineProps({
   sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
-const albums = ref<SubsonicAlbum[]>([])
+const albums = ref<SubsonicAlbum[]>(albumsStore.value)
 const showOrderOptions = ref(false)
 
 const sortOptions = [
@@ -58,9 +58,6 @@ function setOrder(order: AlbumOrder) {
 }
 
 async function getAlbums() {
-  if (albumsStore.value.length > 0) {
-    albums.value = albumsStore.value
-  }
   switch (albumOrder.value) {
     case 'recentlyUpdated':
       fetchType = 'newest'
@@ -87,7 +84,7 @@ async function getAlbums() {
   const fetchedAlbums = await fetchAlbums(fetchOptions)
   if (fetchedAlbums && fetchedAlbums.length > 0 && JSON.stringify(fetchedAlbums) !== JSON.stringify(albums.value)) {
     albums.value = fetchedAlbums
-    albumsStore.value = albums.value
+    albumsStore.value = fetchedAlbums
   }
 }
 
