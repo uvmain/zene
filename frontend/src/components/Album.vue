@@ -59,40 +59,38 @@ function navigateArtist() {
 </script>
 
 <template>
-  <div>
-    <div class="group max-w-150px">
-      <img
-        class="border-muted rounded-md aspect-square cursor-pointer shadow-md shadow-zshade-500 dark:shadow-zshade-900"
-        :src="coverArtUrl"
-        alt="Album Cover"
-        :loading="loading"
-        width="150"
-        height="150"
-        @error="onImageError"
-        @click="navigateAlbum()"
+  <div class="group max-w-150px">
+    <img
+      class="border-muted rounded-md aspect-square cursor-pointer shadow-md shadow-zshade-500 dark:shadow-zshade-900"
+      :src="coverArtUrl"
+      alt="Album Cover"
+      :loading="loading"
+      width="150"
+      height="150"
+      @error="onImageError"
+      @click="navigateAlbum()"
+    />
+    <div class="relative">
+      <PlayButton
+        :album="album"
+        class="opacity-0 scale-50 transition-all duration-200 bottom-2 right-1 absolute z-10 group-hover:opacity-100 group-hover:scale-100"
       />
-      <div class="relative">
-        <PlayButton
-          :album="album"
-          class="opacity-0 scale-50 transition-all duration-200 bottom-2 right-1 absolute z-10 group-hover:opacity-100 group-hover:scale-100"
-        />
+    </div>
+    <div>
+      <div v-if="showArtist" class="text-lg text-primary text-nowrap truncate lg:text-base">
+        {{ album.title || album.name }}
       </div>
-      <div>
-        <div v-if="showArtist" class="text-lg text-primary text-nowrap truncate lg:text-base">
-          {{ album.title || album.name }}
-        </div>
-        <div v-if="showArtist && showDate" class="text-sm cursor-pointer text-nowrap truncate" @click="navigateArtist()">
-          {{ artistAndDate }}
-        </div>
-        <div v-else-if="showArtist && !showDate" class="text-sm cursor-pointer text-nowrap truncate" @click="navigateArtist()">
-          {{ artist }}
-        </div>
-        <div v-if="!showArtist && showDate" class="text-sm cursor-pointer text-nowrap truncate lg:text-base" @click="navigateArtist()">
-          {{ albumAndDate }}
-        </div>
-        <div v-else-if="!showArtist && !showDate" class="text-sm cursor-pointer text-nowrap truncate lg:text-base" @click="navigateArtist()">
-          {{ album.title }}
-        </div>
+      <div v-if="showArtist && showDate" class="text-sm cursor-pointer text-nowrap truncate" @click="navigateArtist()">
+        {{ artistAndDate }}
+      </div>
+      <div v-else-if="showArtist && !showDate" class="text-sm cursor-pointer text-nowrap truncate" @click="navigateArtist()">
+        {{ artist }}
+      </div>
+      <div v-if="!showArtist && showDate" class="text-sm cursor-pointer text-nowrap truncate lg:text-base" @click="navigateArtist()">
+        {{ albumAndDate }}
+      </div>
+      <div v-else-if="!showArtist && !showDate" class="text-sm cursor-pointer text-nowrap truncate lg:text-base" @click="navigateArtist()">
+        {{ album.title }}
       </div>
     </div>
   </div>

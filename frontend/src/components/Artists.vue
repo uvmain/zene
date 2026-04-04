@@ -101,20 +101,16 @@ onBeforeMount(async () => {
 
 <style scoped>
 .auto-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
-  gap: calc(var(--spacing) * 4);
+  @apply grid gap-1rem ;
+  @apply grid-cols-[repeat(auto-fit,minmax(min(130px,100%),1fr))];
+  @apply md:grid-cols-[repeat(auto-fit,minmax(min(150px,100%),1fr))];
 }
 
-.auto-grid.limit-rows {
-  grid-template-rows: repeat(3, auto);
-  grid-auto-rows: 0;
-  row-gap: 0;
-  overflow: hidden;
+.limit-rows {
+  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-1rem;
 }
 
-.auto-grid.limit-rows > * {
-  margin-bottom: calc(var(--spacing) * 4);
-  overflow: hidden;
+.limit-rows > * {
+  @apply mb-1rem overflow-hidden;
 }
 </style>

@@ -278,6 +278,9 @@ export async function fetchSongsByGenre(genre: string, limit?: number, offset?: 
   if (limit !== undefined) {
     formData.append('count', limit.toString())
   }
+  else {
+    formData.append('count', '1000000')
+  }
   if (offset !== undefined) {
     formData.append('offset', offset.toString())
   }
