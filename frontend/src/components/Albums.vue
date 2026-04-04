@@ -101,7 +101,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="relative">
+  <div>
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
@@ -110,12 +110,11 @@ onBeforeMount(async () => {
       :class="{ 'limit-rows': limitRows }"
     >
       <Album
-        v-for="(album, index) in albums" :key="album.id"
+        v-for="(album, index) in albums"
+        :key="album.id"
         :album="album"
         :index="index"
-        size="sm"
-        class="transition duration-200 overflow-hidden hover:scale-100 lg:(scale-95)"
-        :show-date="false"
+        class="transition duration-200 hover:scale-100 lg:(scale-95)"
       />
     </div>
     <Loading v-else />
@@ -125,8 +124,8 @@ onBeforeMount(async () => {
 <style scoped>
 .auto-grid {
   @apply grid gap-1rem mx-auto lg:mx-0;
-  @apply grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
-  @apply md:grid-cols-[repeat(auto-fit,minmax(min(9rem,100%),1fr))];
+  @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
+  @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
   @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
 }
 

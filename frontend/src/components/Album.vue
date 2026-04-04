@@ -59,24 +59,22 @@ function navigateArtist() {
 </script>
 
 <template>
-  <div class="group max-w-150px">
-    <img
-      class="border-muted rounded-md aspect-square cursor-pointer shadow-md shadow-zshade-500 dark:shadow-zshade-900"
-      :src="coverArtUrl"
-      alt="Album Cover"
-      :loading="loading"
-      width="150"
-      height="150"
-      @error="onImageError"
-      @click="navigateAlbum()"
-    />
-    <div class="relative">
+  <div class="flex flex-col gap-2">
+    <div class="group grid max-w-150px cursor-pointer" @click="navigateAlbum()">
+      <img
+        class="col-span-full row-span-full aspect-square shadow-md shadow-zshade-500 z-1 object-cover dark:shadow-zshade-950"
+        :src="coverArtUrl"
+        :loading="loading"
+        width="150"
+        height="150"
+        @error="onImageError"
+      />
       <PlayButton
         :album="album"
-        class="opacity-0 scale-50 transition-all duration-200 bottom-2 right-1 absolute z-10 group-hover:opacity-100 group-hover:scale-100"
+        class="m-auto pr-1 opacity-0 col-span-full row-span-full scale-50 duration-200 z-2 group-hover:opacity-100 group-hover:scale-100"
       />
     </div>
-    <div>
+    <div class="max-w-150px">
       <div v-if="showArtist" class="text-lg text-primary text-nowrap truncate lg:text-base">
         {{ album.title || album.name }}
       </div>

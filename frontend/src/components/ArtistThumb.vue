@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { LoadingAttribute } from '~/types'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
-import { getCoverArtUrl, onImageError } from '~/logic/common'
+import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({
   artist: { type: Object as PropType<SubsonicIndexArtist>, required: true },
@@ -11,7 +11,7 @@ const props = defineProps({
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.artist.coverArt, 120)
+  return getCoverArtUrl(props.artist.coverArt, artSizes.size120)
 })
 
 const loading = computed<LoadingAttribute>(() => {
@@ -24,10 +24,10 @@ function navigateArtist() {
 </script>
 
 <template>
-  <div>
-    <div class="group grid cursor-pointer" @click="navigateArtist()">
+  <div class="flex flex-col gap-2">
+    <div class="group grid max-w-150px cursor-pointer" @click="navigateArtist()">
       <img
-        class="rounded-full col-span-full row-span-full size-150px z-1 object-cover"
+        class="rounded-full col-span-full row-span-full aspect-square shadow-md shadow-zshade-500 z-1 object-cover dark:shadow-zshade-950"
         :src="coverArtUrl"
         :loading="loading"
         width="150"

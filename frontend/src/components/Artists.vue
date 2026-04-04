@@ -10,7 +10,6 @@ const props = defineProps({
   sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
-const router = useRouter()
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
 const showOrderOptions = ref(false)
 
@@ -78,7 +77,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="relative">
+  <div>
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
@@ -92,7 +91,6 @@ onBeforeMount(async () => {
         :artist="artist"
         :index="index"
         class="transition duration-200 hover:scale-100 lg:(scale-95)"
-        @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
       />
     </div>
     <Loading v-else />
@@ -102,8 +100,8 @@ onBeforeMount(async () => {
 <style scoped>
 .auto-grid {
   @apply grid gap-1rem mx-auto lg:mx-0;
-  @apply grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
-  @apply md:grid-cols-[repeat(auto-fit,minmax(min(9rem,100%),1fr))];
+  @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
+  @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
   @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
 }
 
