@@ -4,6 +4,6 @@
 
 <template>
   <div>
-    <Albums :limit="100" :scrollable="true" sort-key="albumsPageAlbums" />
+    <Albums sort-key="albumsPageAlbums" />
   </div>
 </template>

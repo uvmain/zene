@@ -1,3 +1,6 @@
+import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
+import type { SubsonicGenre } from '~/types/subsonicGenres'
 import { useLocalStorage } from '@vueuse/core'
 
 export const albumOrders = ['recentlyUpdated', 'random', 'alphabetical', 'releaseDate', 'recentlyPlayed'] as const
@@ -19,3 +22,7 @@ export const shuffleEnabled = useLocalStorage<boolean>('shuffleEnabled', false)
 export const repeatStatus = useLocalStorage<'off' | '1' | 'all'>('repeatStatus', 'off')
 export const streamQuality = useLocalStorage<StreamQuality>('streamQuality', 160)
 export const randomTracksSeed = useLocalStorage<number>('randomTracksSeed', 0)
+
+export const albumsStore = useLocalStorage<SubsonicAlbum[]>('albumsStore', [])
+export const artistsStore = useLocalStorage<SubsonicArtist[]>('artistsStore', [])
+export const genresStore = useLocalStorage<SubsonicGenre[]>('genresStore', [])

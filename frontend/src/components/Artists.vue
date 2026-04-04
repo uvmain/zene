@@ -1,25 +1,15 @@
 <script setup lang="ts">
 import type { ArtistOrder } from '~/logic/store'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
-import { useElementVisibility } from '@vueuse/core'
 import { fetchArtistList } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { artistOrder, artistSeed } from '~/logic/store'
+import { artistOrder, artistSeed, artistsStore } from '~/logic/store'
 
 const props = defineProps({
-  limit: { type: Number, default: 30 },
-  offset: { type: Number, default: 0 },
-  scrollable: { type: Boolean, default: false },
   limitRows: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
-const loading = ref(false)
-const router = useRouter()
-const currentOffset = ref<number>(0)
-const canLoadMore = ref(true)
-const observer = useTemplateRef<HTMLDivElement>('observer')
-const observerIsVisible = useElementVisibility(observer)
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
 const showOrderOptions = ref(false)
 
@@ -30,24 +20,6 @@ const sortOptions = [
   { label: 'Alphabetical', emitValue: 'alphabetical' },
   { label: 'Starred', emitValue: 'starred' },
 ]
-
-const heightStyle = computed(() => {
-  if (props.limitRows) {
-    const smHeight = (174 * 3) + 48
-    const lgHeight = (174 * 2) + 24
-    return {
-      'maxHeight': `${smHeight}px`,
-      '--albums-lg-max-height': `${lgHeight}px`,
-    }
-  }
-  return {}
-})
-
-watch(observerIsVisible, (newValue) => {
-  if (newValue && props.scrollable) {
-    getArtists()
-  }
-})
 
 const headerTitle = computed(() => {
   switch (artistOrder.value) {
@@ -73,36 +45,22 @@ function setOrder(order: ArtistOrder) {
   }
   artistOrder.value = order
   showOrderOptions.value = false
-  resetArtistsArray()
   getArtists()
 }
 
-function resetArtistsArray() {
-  canLoadMore.value = true
-  loading.value = false
-  currentOffset.value = props.offset
-  artists.value = [] as SubsonicArtist[]
-}
-
 async function getArtists() {
-  if (loading.value) {
-    return
+  if (artistsStore.value.length > 0) {
+    artists.value = artistsStore.value
   }
-  loading.value = true
-  if (!canLoadMore.value) {
-    return
+  const fetchOptions = {
+    type: artistOrder.value,
+    seed: artistSeed.value,
+    limit: props.limitRows ? 50 : undefined,
   }
-  const artistsResponse = await fetchArtistList(artistOrder.value, props.limit, currentOffset.value, artistSeed.value)
-  if (artistsResponse.length > 0) {
-    currentOffset.value += artistsResponse.length
-    artists.value?.push(...artistsResponse)
-  }
-  if (artistsResponse.length < props.limit) {
-    canLoadMore.value = false
-  }
-  loading.value = false
-  if (observerIsVisible.value) {
-    getArtists()
+  const fetchedArtists = await fetchArtistList(fetchOptions)
+  if (fetchedArtists && fetchedArtists.length > 0 && JSON.stringify(fetchedArtists) !== JSON.stringify(artists.value)) {
+    artists.value = fetchedArtists
+    artistsStore.value = artists.value
   }
 }
 
@@ -110,44 +68,49 @@ async function refresh() {
   if (artistOrder.value === 'random') {
     artistSeed.value = generateSeed()
   }
-  resetArtistsArray()
   getArtists()
 }
 
 onBeforeMount(async () => {
-  resetArtistsArray()
   await getArtists()
 })
 </script>
 
 <template>
-  <div class="relative">
+  <div>
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
       v-if="artists.length > 0"
-      class="auto-grid-6 overflow-hidden"
-      :style="heightStyle"
+      class="auto-grid overflow-hidden"
+      :class="{ 'limit-rows': limitRows }"
     >
       <ArtistThumb
         v-for="(artist, index) in artists"
         :key="artist.musicBrainzId"
         :artist="artist"
         :index="index"
-        class="lg:mx-none mx-auto transition duration-200 hover:scale-100 lg:(scale-95)"
-        @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
+        class="transition duration-200 hover:scale-100 lg:(scale-95)"
       />
     </div>
-    <div v-if="canLoadMore && props.scrollable" ref="observer" class="h-16">
-      Loading more artists...
-    </div>
+    <Loading v-else />
   </div>
 </template>
 
-<style scoped lang="css">
-@media (min-width: 1024px) {
-  .auto-grid-6 {
-    max-height: var(--albums-lg-max-height, none) !important;
-  }
+<style scoped>
+.auto-grid {
+  @apply grid gap-1rem mx-auto lg:mx-0;
+  @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
+  @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
+  @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
+}
+
+.limit-rows {
+  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-1rem;
+  @apply lg:grid-rows-[repeat(2,auto)] auto-rows-0 gap-y-0 -mb-1rem;
+}
+
+.limit-rows > * {
+  @apply mb-1rem overflow-hidden;
 }
 </style>

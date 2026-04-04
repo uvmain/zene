@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import { closeSearch } from '~/logic/search'
 import { apiKey } from '~/logic/store'
+import GenericIndexedDbStore from '~/stores/genericIndexedDbStore'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 
@@ -11,6 +12,9 @@ import 'virtual:uno.css'
 import '~/styles/themeTransition.css'
 
 createEpisodeStoreIfNotExists()
+GenericIndexedDbStore.openDb().catch((error) => {
+  console.error('Failed to open IndexedDB:', error)
+})
 
 const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => {
   if (to.hash) {

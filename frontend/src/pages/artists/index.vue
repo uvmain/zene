@@ -1,3 +1,3 @@
 <template>
-  <Artists :limit="100" :scrollable="true" sort-key="artistsPageArtists" />
+  <Artists sort-key="artistsPageArtists" />
 </template>
