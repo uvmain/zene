@@ -91,7 +91,7 @@ onBeforeMount(async () => {
         :key="artist.musicBrainzId"
         :artist="artist"
         :index="index"
-        class="lg:mx-none mx-auto transition duration-200 hover:scale-100 lg:(scale-95)"
+        class="transition duration-200 hover:scale-100 lg:(scale-95)"
         @click="() => router.push(`/artists/${artist.musicBrainzId}`)"
       />
     </div>
@@ -101,13 +101,15 @@ onBeforeMount(async () => {
 
 <style scoped>
 .auto-grid {
-  @apply grid gap-1rem ;
-  @apply grid-cols-[repeat(auto-fit,minmax(min(130px,100%),1fr))];
-  @apply md:grid-cols-[repeat(auto-fit,minmax(min(150px,100%),1fr))];
+  @apply grid gap-1rem mx-auto lg:mx-0;
+  @apply grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
+  @apply md:grid-cols-[repeat(auto-fit,minmax(min(9rem,100%),1fr))];
+  @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
 }
 
 .limit-rows {
   @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-1rem;
+  @apply lg:grid-rows-[repeat(2,auto)] auto-rows-0 gap-y-0 -mb-1rem;
 }
 
 .limit-rows > * {
