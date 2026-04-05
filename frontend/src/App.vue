@@ -21,11 +21,21 @@ html, body, #app {
   font-weight: 600;
   scrollbar-color: var(--colors-zshade-600) var(--colors-zshade-200);
   .dark & {
-    scrollbar-color: var(--colors-zshade-200) var(--colors-zshade-800);
+    scrollbar-color: var(--colors-zshade-800) var(--colors-zshade-600);
   }
 }
 
 button, input, select, textarea {
   font-family: inherit;
+}
+
+input, textarea {
+  @apply text-muted;
+  border: 1px solid var(--colors-zshade-300);
+  background: var(--colors-zshade-100);
+  .dark & {
+    border: 1px solid var(--colors-zshade-700);
+    background: var(--colors-zshade-800);
+  }
 }
 </style>

@@ -101,7 +101,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="relative">
     <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div

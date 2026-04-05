@@ -68,7 +68,7 @@ watch(image, () => {
     />
     <label
       for="fileInput"
-      class="text-sm text-gray-700 p-2 text-center border-1 border-gray-300 border-solid bg-gray-50 w-28rem cursor-pointer focus:outline-none hover:bg-gray-200"
+      class="text-sm text-muted p-2 text-center border-1 border-gray-300 corner-cut border-solid bg-zshade-200 w-28rem cursor-pointer focus:outline-none dark-border-zshade-700 dark:bg-zshade-600"
     >
       Browse
     </label>
