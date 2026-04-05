@@ -141,3 +141,12 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style lang="css" scoped>
+.vue-recycle-scroller {
+  scrollbar-color: var(--colors-zshade-600) var(--colors-zshade-100);
+  .dark & {
+    scrollbar-color: var(--colors-zshade-200) var(--colors-zshade-900);
+  }
+}
+</style>

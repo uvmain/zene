@@ -11,7 +11,6 @@ function toggleDark() {
     isDark.value = !isDark.value
     return
   }
-
   document.startViewTransition(() => {
     isDark.value = !isDark.value
   })
@@ -21,15 +20,14 @@ function toggleDark() {
 <template>
   <header>
     <div class="p-2 flex gap-2 lg:gap-4">
-      <!-- Mobile hamburger menu -->
       <div class="flex items-center justify-center lg:hidden">
-        <icon-nrk-list class="text-2xl" @click="openMobileNav()" />
+        <icon-nrk-list class="lg:text-2xl" @click="openMobileNav()" />
       </div>
 
-      <div class="flex flex-grow items-center justify-center">
-        <div class="w-full relative lg:(max-w-md w-1/2)">
+      <div class="flex items-center justify-center lg:flex-grow">
+        <div class="relative lg:(max-w-md w-1/2)">
           <span class="text-muted pl-3 flex h-full items-center inset-y-0 left-0 justify-center absolute">
-            <icon-nrk-search class="text-xl" />
+            <icon-nrk-search class="lg:text-xl" />
           </span>
           <input
             id="search-input"
@@ -43,13 +41,13 @@ function toggleDark() {
           >
         </div>
       </div>
-      <div id="user-and-settings" class="text-muted flex gap-4 items-center justify-center">
+      <div id="user-and-settings" class="text-muted flex gap-2 items-center justify-center lg:gap-4">
         <abbr :title="isDark ? 'Light mode' : 'Dark mode'" class="icon" @click="toggleDark()">
-          <icon-fluent-dark-theme-24-regular class="text-2xl" />
+          <icon-fluent-dark-theme-24-regular class="lg:text-2xl" />
         </abbr>
         <SettingsDropDown class="icon" />
         <abbr title="User" class="icon">
-          <icon-nrk-user-loggedin class="text-2xl" />
+          <icon-nrk-user-loggedin class="lg:text-2xl" />
         </abbr>
       </div>
     </div>
