@@ -1,16 +1,23 @@
 <script setup>
 import { useDark, useToggle } from '@vueuse/core'
 import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { clearApiKey } from '~/logic/common'
 import { debugLog, toggleDebug } from '~/logic/logger'
 import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
+const router = useRouter()
 
 async function runScan() {
   const response = await openSubsonicFetchRequest('startScan.view')
   const json = await response.json()
   debugLog(JSON.stringify(json))
+}
+
+async function logOut() {
+  clearApiKey()
+  router.push('/login')
 }
 </script>
 
@@ -24,6 +31,9 @@ async function runScan() {
     </ZButton>
     <ZButton :primary="isDark" @click="toggleDark()">
       <span class="text-nowrap">Dark Mode: {{ isDark ? 'On' : 'Off' }}</span>
+    </ZButton>
+    <ZButton @click="logOut()">
+      <span class="text-nowrap">Logout</span>
     </ZButton>
     <div class="px-4 py-3 lg:py-2">
       <label class="text-base text-gray-500 mb-2 block lg:text-sm lg:mb-1">Stream Quality</label>
