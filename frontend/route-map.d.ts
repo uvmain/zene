@@ -146,6 +146,20 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/search': RouteRecordInfo<
+      '/search',
+      '/search',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/settings': RouteRecordInfo<
+      '/settings',
+      '/settings',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/tracks/': RouteRecordInfo<
       '/tracks/',
       '/tracks',
@@ -279,6 +293,18 @@ declare module 'vue-router/auto-routes' {
     'src/pages/radio.vue': {
       routes:
         | '/radio'
+      views:
+        | never
+    }
+    'src/pages/search.vue': {
+      routes:
+        | '/search'
+      views:
+        | never
+    }
+    'src/pages/settings.vue': {
+      routes:
+        | '/settings'
       views:
         | never
     }

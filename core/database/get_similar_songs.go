@@ -12,7 +12,7 @@ import (
 )
 
 func GetSimilarSongs(ctx context.Context, count int, musicbrainzId string) ([]types.SubsonicChild, error) {
-	valid, metadataRow, err := IsValidMetadataId(ctx, musicbrainzId)
+	valid, metadataType, err := IsValidMetadataId(ctx, musicbrainzId)
 	if err != nil || !valid {
 		return []types.SubsonicChild{}, fmt.Errorf("invalid musicbrainz id '%s': %v", musicbrainzId, err)
 	}
@@ -20,13 +20,14 @@ func GetSimilarSongs(ctx context.Context, count int, musicbrainzId string) ([]ty
 	var query string
 	var artistId string
 
-	if metadataRow.MusicbrainzTrackId {
+	switch metadataType {
+	case MetadataTrack:
 		query = `select musicbrainz_artist_id from metadata where musicbrainz_track_id = ? limit 1`
-	} else if metadataRow.MusicbrainzAlbumId {
+	case MetadataAlbum:
 		query = `select musicbrainz_artist_id from metadata where musicbrainz_album_id = ? limit 1`
 	}
 
-	if !metadataRow.MusicbrainzArtistId {
+	if metadataType != MetadataArtist {
 		err := DB.QueryRow(query, musicbrainzId).Scan(&artistId)
 		if err == sql.ErrNoRows {
 			return []types.SubsonicChild{}, fmt.Errorf("no artist found for musicbrainz ID: %s", musicbrainzId)

@@ -20,7 +20,7 @@ function handleLinkClick() {
 <template>
   <RouterLink
     :to="routeProp"
-    class="navlink group/navlink"
+    class="group/navlink text-muted font-semibold no-underline flex uppercase transition-all duration-100 items-center"
     :class="{
       'translate-x--8': currentRoute !== routeProp,
       'hover:translate-x-0': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
@@ -38,9 +38,3 @@ function handleLinkClick() {
     <span class="text-2xl lg:text-lg">{{ routeName }}</span>
   </RouterLink>
 </template>
-
-<style scoped lang="css">
-.navlink {
-  @apply text-muted font-semibold no-underline transition-all duration-100 uppercase flex items-center;
-}
-</style>

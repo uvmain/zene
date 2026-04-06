@@ -14,7 +14,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div>
+  <div class="flex flex-col gap-4">
     <RefreshHeader title="Top Genres" @refreshed="getGenres()" />
     <div class="mb-2 flex flex-wrap gap-2 justify-center overflow-hidden lg:justify-start" :style="`max-height: calc(${(28 * 2) + 12}px);`">
       <GenreBottle v-for="genre in genres?.filter(g => g.value !== '')" :key="genre.value" :genre="genre.value" />

@@ -11,7 +11,7 @@ const props = defineProps({
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.artist.coverArt, artSizes.size120)
+  return getCoverArtUrl(props.artist.coverArt, artSizes.size150)
 })
 
 const loading = computed<LoadingAttribute>(() => {

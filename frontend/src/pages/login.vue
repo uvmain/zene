@@ -11,6 +11,7 @@ const salt = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
+const passwordRef = useTemplateRef('passwordRef')
 
 const signInDisabled = computed(() => {
   return username.value.length < 1 || password.value.length < 1 || loading.value
@@ -57,8 +58,10 @@ async function login() {
       width="200"
       height="200"
     />
-    <div class="text-muted">
-      <h1>Login to Zene</h1>
+    <div class="text-muted flex flex-col gap-6">
+      <div class="text-xl font-bold">
+        Login to Zene
+      </div>
       <form class="gap-2 grid w-400px" @submit.prevent="login">
         <label for="username">
           Username
@@ -67,27 +70,30 @@ async function login() {
           id="username"
           v-model="username"
           type="text"
-          class="font-semibold py-2 pl-10 border-1 border-primary2 rounded background-2 focus:outline-none focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg"
+          class="input"
           autocomplete="username"
           required
           @input="error = null"
+          @keydown.enter.prevent="passwordRef?.focus()"
         />
         <label for="password">
           Password
         </label>
         <input
           id="password"
+          ref="passwordRef"
           v-model="password"
           type="password"
-          class="font-semibold py-2 pl-10 border-1 border-primary2 rounded background-2 opacity-100 focus:outline-none focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg"
+          class="input"
           autocomplete="current-password"
           required
           @input="error = null"
+          @keydown.enter.prevent="login()"
         />
-        <ZButton class="mx-auto mt-4" :disabled="signInDisabled">
-          {{ loading ? 'Signing in…' : 'Sign in' }}
-        </ZButton>
       </form>
+      <ZButton :disabled="signInDisabled" @click="login()">
+        {{ loading ? 'Signing in…' : 'Sign in' }}
+      </ZButton>
       <div v-if="error" class="my-4 p-2 corner-cut background-2 flex justify-center">
         <p class="text-red-500 mt-4">
           {{ error }}
@@ -96,3 +102,10 @@ async function login() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.input {
+  @apply text-muted p-2 border-1 border-zshade-300 corner-cut border-solid focus:outline-none focus:ring-2 focus:ring-primary1;
+  @apply bg-zshade-100 dark:bg-zshade-800;
+}
+</style>

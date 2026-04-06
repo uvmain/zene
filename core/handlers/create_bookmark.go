@@ -46,12 +46,12 @@ func HandleCreateBookmark(w http.ResponseWriter, r *http.Request) {
 
 	comment = html.EscapeString(comment)
 
-	validMusicbrainzId, validMetadata, err := database.IsValidMetadataId(ctx, id)
+	validMusicbrainzId, validMetadataType, err := database.IsValidMetadataId(ctx, id)
 	if err != nil {
 		logger.Printf("Error checking metadata ID: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Failed to check metadata ID", "")
 		return
-	} else if !validMusicbrainzId || !validMetadata.MusicbrainzTrackId {
+	} else if !validMusicbrainzId || validMetadataType != database.MetadataTrack {
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "id is not a valid musicbrainz track ID", "")
 		return
 	}

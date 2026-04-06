@@ -184,36 +184,50 @@ func DeleteMetadataRows(ctx context.Context, filepaths []string) error {
 	return nil
 }
 
-type isValidMetadataResponse struct {
-	MusicbrainzTrackId  bool `json:"track_valid"`
-	MusicbrainzAlbumId  bool `json:"album_valid"`
-	MusicbrainzArtistId bool `json:"artist_valid"`
-}
+type MetadataResponse string
 
-func IsValidMetadataId(ctx context.Context, metadataId string) (bool, isValidMetadataResponse, error) {
-	query := `SELECT musicbrainz_track_id, musicbrainz_album_id, musicbrainz_artist_id
-		FROM metadata
-		WHERE musicbrainz_track_id = ?
-		OR musicbrainz_album_id = ?
-		OR musicbrainz_artist_id = ?
-		limit 1`
-	row := DB.QueryRowContext(ctx, query, metadataId, metadataId, metadataId)
+const (
+	MetadataArtist         MetadataResponse = "artist"
+	MetadataAlbum          MetadataResponse = "album"
+	MetadataTrack          MetadataResponse = "track"
+	MetadataPodcastEpisode MetadataResponse = "podcast_episode"
+	MetadataPodcastChannel MetadataResponse = "podcast_channel"
+)
 
-	var response isValidMetadataResponse
+func IsValidMetadataId(ctx context.Context, metadataId string) (bool, MetadataResponse, error) {
+	query := `select 'track' as type
+		where exists (
+			select 1 from metadata where musicbrainz_track_id = ?
+		)
+		union all
+		select 'album'
+		where exists (
+			select 1 from metadata where musicbrainz_album_id = ?
+		)
+		union all
+		select 'artist'
+		where exists (
+			select 1 from metadata where musicbrainz_artist_id = ?
+		)
+		union all
+		select 'podcast_channel'
+		where exists (
+			select 1 from podcast_channels where cover_art = ?
+		)
+		union all
+		select 'podcast_episode'
+		where exists (
+			select 1 from podcast_episodes where cover_art = ?
+		)
+		limit 1;`
+	row := DB.QueryRowContext(ctx, query, metadataId, metadataId, metadataId, metadataId, metadataId)
 
-	var musicbrainzTrackId string
-	var musicbrainzAlbumId string
-	var musicbrainzArtistId string
-	if err := row.Scan(&musicbrainzTrackId, &musicbrainzAlbumId, &musicbrainzArtistId); err != nil {
-		return false, isValidMetadataResponse{}, fmt.Errorf("checking metadata ID validity: %v", err)
+	var metadataType MetadataResponse
+	if err := row.Scan(&metadataType); err != nil {
+		return false, "", fmt.Errorf("checking metadata ID validity: %v", err)
 	}
-	response.MusicbrainzAlbumId = musicbrainzAlbumId == metadataId
-	response.MusicbrainzArtistId = musicbrainzArtistId == metadataId
-	response.MusicbrainzTrackId = musicbrainzTrackId == metadataId
 
-	isValid := response.MusicbrainzTrackId || response.MusicbrainzAlbumId || response.MusicbrainzArtistId
-
-	return isValid, response, nil
+	return true, metadataType, nil
 }
 
 type GetFileAndFolderCountsResponse struct {

@@ -18,7 +18,7 @@ async function refresh() {
 </script>
 
 <template>
-  <div class="py-6 flex flex-row gap-x-2 items-center justify-center lg:justify-start">
+  <div class="flex flex-row gap-x-2 items-center justify-center lg:justify-start">
     <ZButton @click="emits('titleClick')">
       <span class="text-sm lg:text-base">{{ title }}</span>
     </ZButton>

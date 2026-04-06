@@ -16,6 +16,10 @@ export function formatTimeFromSeconds(time: number): string {
   return `${minutes}:${seconds}`
 }
 
+export async function clearApiKey() {
+  apiKey.value = ''
+}
+
 export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = false): string {
   const queryParams = new URLSearchParams({
     apiKey: chromecastDevMode.value ? import.meta.env.VITE_CHROMECAST_API_KEY as string : apiKey.value,

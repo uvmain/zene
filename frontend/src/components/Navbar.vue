@@ -42,6 +42,7 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
       </RouterLink>
       <nav class="px-2 flex flex-col gap-y-4">
         <NavLink route-name="Home" route-prop="/" />
+        <NavLink route-name="Search" route-prop="/search" />
         <NavLink route-name="Albums" route-prop="/albums" />
         <NavLink route-name="Artists" route-prop="/artists" />
         <NavLink route-name="Genres" route-prop="/genres" />
@@ -51,6 +52,7 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
         <NavLink route-name="Podcasts" route-prop="/podcasts" />
         <NavLink route-name="Queue" route-prop="/queue" />
         <NavLink route-name="Visualizer" route-prop="/visualizer" />
+        <NavLink route-name="Settings" route-prop="/settings" />
       </nav>
     </div>
     <NavArt class="max-w-50" />
