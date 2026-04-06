@@ -79,11 +79,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="p-4 lg:p-6">
+  <div v-if="!currentUser?.adminRole" class="text-red-500">
+    You do not have permission to manage users.
+  </div>
+  <div v-else class="p-4 lg:p-6">
     <h1 class="text-2xl font-semibold mb-6">
       Manage Users
     </h1>
-    <div v-if="currentUser?.adminRole">
+    <div>
       <div>
         <div class="mb-4">
           <button

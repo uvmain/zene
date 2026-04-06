@@ -20,6 +20,7 @@ declare module 'vue' {
     FooterPlayer: typeof import('./src/components/FooterPlayer.vue')['default']
     GenreBottle: typeof import('./src/components/GenreBottle.vue')['default']
     GoogleCastButton: typeof import('./src/components/GoogleCastButton.vue')['default']
+    Header: typeof import('./src/components/Header.vue')['default']
     HeaderAndSearch: typeof import('./src/components/HeaderAndSearch.vue')['default']
     HeroAlbum: typeof import('./src/components/HeroAlbum.vue')['default']
     HeroArtist: typeof import('./src/components/HeroArtist.vue')['default']

@@ -7,6 +7,7 @@ const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: true },
   showArtist: { type: Boolean, default: true },
   showDate: { type: Boolean, default: true },
+  trackTitle: { type: String, required: false },
   index: { type: Number, default: 0 },
 })
 
@@ -75,6 +76,9 @@ function navigateArtist() {
       />
     </div>
     <div class="max-w-150px">
+      <div v-if="trackTitle" class="text-lg text-primary text-nowrap truncate">
+        {{ trackTitle }}
+      </div>
       <div v-if="showArtist" class="text-lg text-primary text-nowrap truncate lg:text-base">
         {{ album.title || album.name }}
       </div>

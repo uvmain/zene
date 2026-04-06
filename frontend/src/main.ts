@@ -1,15 +1,16 @@
 import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
+import { useDark } from '@vueuse/core'
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
-import { closeSearch } from '~/logic/search'
 import { apiKey } from '~/logic/store'
 import GenericIndexedDbStore from '~/stores/genericIndexedDbStore'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 import App from './App.vue'
 
 import 'virtual:uno.css'
-import '~/styles/themeTransition.css'
+
+useDark()
 
 createEpisodeStoreIfNotExists()
 GenericIndexedDbStore.openDb().catch((error) => {
@@ -37,7 +38,6 @@ const router = createRouter({
 })
 
 router.beforeEach((to: RouteLocationNormalized) => {
-  closeSearch()
   if ((apiKey.value == null || apiKey.value.length === 0) && to.path !== '/login') {
     return { path: '/login', replace: true }
   }

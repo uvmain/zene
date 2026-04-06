@@ -82,7 +82,7 @@ onBeforeMount(async () => {
     <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
     <div
       v-if="artists.length > 0"
-      class="auto-grid overflow-hidden"
+      class="auto-grid mt-4 overflow-hidden"
       :class="{ 'limit-rows': limitRows }"
     >
       <ArtistThumb
