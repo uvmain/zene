@@ -83,8 +83,7 @@ if (props.autoScrolling) {
 }
 
 onMounted(() => {
-  if (props.autoScrolling)
-    scrollToActiveTrack()
+  scrollToActiveTrack()
 })
 </script>
 
@@ -92,9 +91,9 @@ onMounted(() => {
   <div class="corner-cut-large background-2">
     <div class="p-2 text-left flex flex-col h-full lg:p-4">
       <div
-        class="text-lg text-muted mb-2 p-2 gap-4 grid items-center"
+        class="text-lg text-muted mb-2 px-2 py-1 gap-4 grid items-center"
         :class="{
-          'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
+          'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px_2px]': showAlbum,
           'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,
         }"
       >
@@ -104,7 +103,7 @@ onMounted(() => {
         <div class="cursor-pointer" @click="currentSortOption === 'titleAsc' ? sorttracksBy('titleDesc') : sorttracksBy('titleAsc')">
           Title
         </div>
-        <div class="mx-auto flex cursor-pointer items-center" @click="currentSortOption === 'durationAsc' ? sorttracksBy('durationDesc') : sorttracksBy('durationAsc')">
+        <div class="flex cursor-pointer items-center justify-center" @click="currentSortOption === 'durationAsc' ? sorttracksBy('durationDesc') : sorttracksBy('durationAsc')">
           <icon-nrk-clock class="text-base" />
         </div>
         <div v-if="showAlbum" class="cursor-pointer" @click="currentSortOption === 'albumAsc' ? sorttracksBy('albumDesc') : sorttracksBy('albumAsc')">
@@ -116,17 +115,17 @@ onMounted(() => {
         <div class="text-center cursor-pointer">
           Year
         </div>
-        <div class="mx-auto flex cursor-pointer items-center">
+        <div class="flex cursor-pointer cursor-pointer items-center justify-center">
           <icon-nrk-star class="text-base" />
         </div>
-        <div class="text-center cursor-pointer" @click="sorttracksBy('playCount')">
+        <div class="cursor-pointer" @click="sorttracksBy('playCount')">
           Plays
         </div>
       </div>
       <RecycleScroller
         v-slot="{ item, index }"
         ref="scroller"
-        class="h-[calc(100vh-324px)]"
+        class="h-full"
         :items="routeTracks"
         :item-size="68"
         key-field="id"

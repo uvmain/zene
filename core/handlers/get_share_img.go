@@ -52,7 +52,9 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, imageId, sizeInt)
 	case "artist":
 		imageBlob, lastModified, err = art.GetArtForArtist(ctx, imageId, sizeInt)
-	case "podcast":
+	case "podcast_channel":
+		imageBlob, lastModified, err = art.GetArtForPodcast(ctx, imageId, sizeInt)
+	case "podcast_episode":
 		imageBlob, lastModified, err = art.GetArtForPodcast(ctx, imageId, sizeInt)
 	default:
 		logger.Printf("Error getting cover art for %s: %v", imageId, err)

@@ -54,7 +54,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 
 <template>
   <div
-    class="group text-base px-2 py-1 gap-4 grid max-w-100% cursor-pointer transition-colors duration-300 ease-out items-center"
+    class="group text-base px-2 py-1 gap-4 grid cursor-pointer transition-colors duration-300 ease-out items-center"
     :class="{
       'hover:bg-primary2/40': !isTrackPlaying,
       'dark:bg-zshade-700/60 bg-zshade-100/60': !isTrackPlaying && trackIndex % 2 === 0,
@@ -124,7 +124,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       {{ formatTimeFromSeconds(track.duration) }}
     </div>
     <!-- album -->
-    <div v-if="showAlbum" class="flex flex-shrink-1 min-w-0">
+    <div v-if="showAlbum" class="min-w-0">
       <RouterLink
         :to="`/albums/${track.albumId}`"
         class="text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"

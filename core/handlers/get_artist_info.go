@@ -60,8 +60,8 @@ func HandleGetArtistInfo(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	valid, row, err := database.IsValidMetadataId(ctx, musicBrainzArtistId)
-	if err != nil || !valid || !row.MusicbrainzArtistId {
+	valid, metadataType, err := database.IsValidMetadataId(ctx, musicBrainzArtistId)
+	if err != nil || !valid || metadataType != database.MetadataArtist {
 		logger.Printf("artist id is invalid: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "artist id is invalid", "")
 		return

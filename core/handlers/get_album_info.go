@@ -53,8 +53,8 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	valid, row, err := database.IsValidMetadataId(ctx, musicbrainzAlbumId)
-	if err != nil || !valid || !row.MusicbrainzAlbumId {
+	valid, metadataType, err := database.IsValidMetadataId(ctx, musicbrainzAlbumId)
+	if err != nil || !valid || metadataType != database.MetadataAlbum {
 		logger.Printf("album id is invalid: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album id is invalid", "")
 		return
