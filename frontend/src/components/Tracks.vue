@@ -81,10 +81,6 @@ if (props.autoScrolling) {
     scrollToActiveTrack()
   }, { deep: true })
 }
-
-onMounted(() => {
-  scrollToActiveTrack()
-})
 </script>
 
 <template>
@@ -129,6 +125,7 @@ onMounted(() => {
         :items="routeTracks"
         :item-size="68"
         key-field="id"
+        @visible="scrollToActiveTrack()"
       >
         <Track
           :track="item"

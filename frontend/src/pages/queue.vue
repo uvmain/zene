@@ -8,16 +8,11 @@ watch(currentQueue, async () => {
   tracks.value = currentQueue?.value ?? [] as SubsonicSong[]
 })
 
-onMounted(() => {
+onBeforeMount(() => {
   tracks.value = currentQueue?.value ?? [] as SubsonicSong[]
 })
 </script>
 
 <template>
-  <div>
-    <Tracks v-if="tracks.length" :tracks="tracks" :show-album="true" />
-    <h2 v-else class="text-lg font-semibold px-2">
-      No tracks in queue..
-    </h2>
-  </div>
+  <Tracks v-if="tracks.length" :tracks="tracks" :show-album="true" />
 </template>

@@ -10,32 +10,3 @@
     </div>
   </main>
 </template>
-
-<style>
-html, body, #app {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-family: 'Jura', sans-serif;
-  min-height: 100dvh;
-  font-weight: 600;
-  scrollbar-color: var(--colors-zshade-600) var(--colors-zshade-200);
-  .dark & {
-    scrollbar-color: var(--colors-zshade-300) var(--colors-zshade-800);
-  }
-}
-
-button, input, select, textarea {
-  font-family: inherit;
-}
-
-input, textarea {
-  @apply text-muted;
-  border: 1px solid var(--colors-zshade-300);
-  background: var(--colors-zshade-100);
-  .dark & {
-    border: 1px solid var(--colors-zshade-700);
-    background: var(--colors-zshade-800);
-  }
-}
-</style>
