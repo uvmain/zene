@@ -69,7 +69,7 @@ function sorttracksBy(sortOption: SortOptions) {
 function scrollToActiveTrack() {
   if (!props.autoScrolling || !scroller.value)
     return
-  scroller.value.scrollToItem(currentQueuePosition.value, { smooth: true, align: 'start' })
+  scroller.value.scrollToItem(currentQueuePosition.value - 1, { smooth: true, align: 'start' })
 }
 
 watch(() => props.tracks, (newtracks) => {

@@ -10,6 +10,7 @@ const props = defineProps({
   showAlbum: { type: Boolean, default: false },
   primaryArtist: { type: String, required: false },
   trackIndex: { type: Number, required: true },
+  cornerCut: { type: Boolean, default: false },
 })
 
 const route = useRoute()
@@ -60,7 +61,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
       'dark:bg-background-700/20 bg-background-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
       'bg-accent-500/40': isTrackPlaying,
-      'corner-cut': trackIndex === 0,
+      'corner-cut': trackIndex === 0 || cornerCut,
       // grid-cols-[200px_1fr]
       'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
       'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,

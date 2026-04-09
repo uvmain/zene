@@ -37,7 +37,7 @@ export function handlePlay(track: SubsonicSong) {
   }
 }
 
-export function setCurrentlyPlayingTrack(track: SubsonicSong) {
+export function setCurrentlyPlayingTrack(track: SubsonicSong, autoPlay: boolean = true) {
   if (currentQueue.value) {
     const index = currentQueue.value.indexOf(track)
     currentQueuePosition.value = index
@@ -49,7 +49,7 @@ export function setCurrentlyPlayingTrack(track: SubsonicSong) {
   if (chromecastConnected.value) {
     void castAudio()
   }
-  else {
+  else if (autoPlay) {
     playWhenReady({ track })
   }
 }
@@ -135,7 +135,7 @@ export async function getRandomTracks(size: number = 10): Promise<SubsonicSong[]
   return randomTracks
 }
 
-export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
+export function handleNextTrack() {
   if (currentQueue.value && currentQueue.value.length) {
     const currentIndex = currentQueuePosition.value
     let nextTrack: SubsonicSong | undefined
@@ -152,7 +152,6 @@ export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
       currentQueuePosition.value = randomIndex
       if (nextTrack !== undefined) {
         setCurrentlyPlayingTrack(nextTrack)
-        return nextTrack
       }
     }
     else if (repeatStatus.value === 'all' && currentIndex === currentQueue.value.length - 1) {
@@ -160,7 +159,6 @@ export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
       currentQueuePosition.value = 0
       if (nextTrack !== undefined) {
         setCurrentlyPlayingTrack(nextTrack)
-        return nextTrack
       }
     }
     else if (repeatStatus.value === '1') {
@@ -170,9 +168,8 @@ export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
         setCurrentlyPlayingTrack(nextTrack)
         if (audioElement.value) {
           audioElement.value.currentTime = 0
-          await audioElement.value.play()
+          void audioElement.value.play()
         }
-        return nextTrack
       }
     }
     else {
@@ -185,10 +182,6 @@ export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
         return nextTrack
       }
     }
-  }
-  else {
-    const randomTrack = await getRandomTrack()
-    return randomTrack
   }
 }
 

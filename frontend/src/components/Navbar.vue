@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
+import { closeMobileNav, isMobileNavOpen, openMobileNav } from '~/logic/navbar'
 </script>
 
 <template>
@@ -7,12 +7,15 @@ import { closeMobileNav, isMobileNavOpen } from '~/logic/navbar'
   <div
     v-if="isMobileNavOpen"
     class="inset-0 fixed z-40 lg:hidden"
-    @click="closeMobileNav"
+    @click="closeMobileNav()"
   />
+  <ZButton v-else size10 class="left-1 top-1 absolute z-100 lg:hidden" @click="openMobileNav()">
+    <icon-nrk-list class="text-primary size-full" />
+  </ZButton>
 
   <!-- Navbar -->
   <aside
-    class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 lg:(flex w-auto relative)"
+    class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 lg:(flex max-w-200px relative)"
     :class="{
       'translate-x-0': isMobileNavOpen,
       '-translate-x-full lg:translate-x-0': !isMobileNavOpen,

@@ -7,6 +7,7 @@ export default defineConfig({
     'media-control-button': 'flex cursor-pointer items-center justify-center border-none bg-white/0 font-semibold outline-none lg:size-12 size-10',
     'text-primary': 'dark:text-text-100 text-text-900',
     'text-muted': 'dark:text-text-200 text-text-800',
+    'border-primary': 'dark:border-background-600 border-background-300 border-solid border-1',
     'border-muted': 'dark:border-background-700 border-background-200 border-solid border-1',
     'background-1': 'dark:bg-background-900 bg-background-100',
     'background-2': 'dark:bg-background-800 bg-background-200',
