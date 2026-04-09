@@ -19,8 +19,8 @@ defineEmits(['click'])
         'size-10': size10,
         'size-12': size12,
         'cursor-not-allowed opacity-50': disabled,
-        'border-primary2': primary,
-        'border-zshade-600 dark:border-zshade-400': !primary,
+        'border-primary-400': primary,
+        'border-background-600 dark:border-background-400': !primary,
       }"
       @click="$emit('click')"
     >

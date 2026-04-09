@@ -56,10 +56,10 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
   <div
     class="group text-base px-2 py-1 gap-4 grid cursor-pointer transition-colors duration-300 ease-out items-center"
     :class="{
-      'hover:bg-primary2/40': !isTrackPlaying,
-      'dark:bg-zshade-700/60 bg-zshade-100/60': !isTrackPlaying && trackIndex % 2 === 0,
-      'dark:bg-zshade-700/20 bg-zshade-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
-      'bg-primary1/40': isTrackPlaying,
+      'hover:bg-secondary-500/40': !isTrackPlaying,
+      'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
+      'dark:bg-background-700/20 bg-background-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
+      'bg-accent-500/40': isTrackPlaying,
       'corner-cut': trackIndex === 0,
       // grid-cols-[200px_1fr]
       'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
@@ -91,7 +91,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
           @click.stop
         >
           <img
-            class="rounded-sm size-60px shadow-sm shadow-zshade-500 object-cover dark:shadow-zshade-900"
+            class="rounded-sm size-60px shadow-background-500 shadow-sm object-cover dark:shadow-background-900"
             :src="getCoverArtUrl(track.albumId, artSizes.size60)"
             alt="Album Cover"
             :loading="trackIndex < 20 ? 'eager' : 'lazy'"

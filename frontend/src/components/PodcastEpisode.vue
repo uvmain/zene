@@ -131,8 +131,8 @@ onBeforeMount(async () => {
                 v-else
                 class="size-8"
                 :class="{
-                  'text-secondary1': episode.status === 'completed' && !episodeDownloadedLocal,
-                  'text-zgreen': episode.status === 'completed' && episodeDownloadedLocal,
+                  'text-secondary-500': episode.status === 'completed' && !episodeDownloadedLocal,
+                  'text-green-500': episode.status === 'completed' && episodeDownloadedLocal,
                 }"
               />
             </ZButton>

@@ -22,7 +22,7 @@ const coverArtUrl = computed(() => {
           <div class="flex flex-row gap-2 h-auto lg:gap-6">
             <img
               :src="coverArtUrl"
-              class="my-auto border-muted rounded-md aspect-square cursor-pointer shadow-md shadow-zshade-500 dark:shadow-zshade-900"
+              class="my-auto border-muted rounded-md aspect-square cursor-pointer shadow-md shadow-background-500 dark:shadow-background-900"
               loading="lazy"
               width="200"
               height="200"

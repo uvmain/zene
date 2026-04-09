@@ -17,7 +17,7 @@ function handleInput(e: Event) {
     <input
       type="range"
       :title="`Volume: ${Math.round(currentVolume * 100)}%`"
-      class="accent-primary2 background-1 h-2 w-20 cursor-pointer active:accent-primary1 lg:w-30 sm:w-24"
+      class="accent-primary-500 background-1 h-2 w-20 cursor-pointer active:accent-accent-500 lg:w-30 sm:w-24"
       max="1"
       step="0.01"
       :value="currentVolume"

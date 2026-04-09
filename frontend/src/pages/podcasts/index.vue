@@ -102,7 +102,7 @@ onBeforeMount(getPodcasts)
         >
           <span v-if="isSubmitting && !showSuccess">Adding...</span>
           <span v-else-if="showSuccess">
-            <svg xmlns="http://www.w3.org/2000/svg" class="text-primary1 h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="text-primary-500 h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.5 7.5a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 111.414-1.414L8 11.086l6.793-6.793a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
           </span>
           <span v-else>Add Podcast</span>
         </ZButton>
