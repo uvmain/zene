@@ -69,7 +69,7 @@ function sorttracksBy(sortOption: SortOptions) {
 function scrollToActiveTrack() {
   if (!props.autoScrolling || !scroller.value)
     return
-  scroller.value.scrollToItem(currentQueuePosition.value, { smooth: true, align: 'start' })
+  scroller.value.scrollToItem(currentQueuePosition.value - 1, { smooth: true, align: 'start' })
 }
 
 watch(() => props.tracks, (newtracks) => {
@@ -140,9 +140,9 @@ if (props.autoScrolling) {
 
 <style lang="css" scoped>
 .vue-recycle-scroller {
-  scrollbar-color: var(--colors-zshade-600) var(--colors-zshade-100);
+  scrollbar-color: var(--colors-background-600) var(--colors-background-100);
   .dark & {
-    scrollbar-color: var(--colors-zshade-800) var(--colors-zshade-600);
+    scrollbar-color: var(--colors-background-800) var(--colors-background-600);
   }
 }
 </style>

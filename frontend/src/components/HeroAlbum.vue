@@ -115,7 +115,7 @@ onBeforeMount(async () => {
 <template>
   <section v-if="albumArray.length">
     <div
-      class="corner-cut-large h-full w-full shadow-md shadow-zshade-500 overflow-hidden bg-cover bg-center dark:shadow-zshade-950"
+      class="corner-cut-large h-full w-full shadow-background-500 shadow-md overflow-hidden bg-cover bg-center dark:shadow-background-950"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
       <div class="corner-cut-large flex h-full w-full items-center justify-between overflow-hidden background-grad-2 backdrop-blur-md">
@@ -123,7 +123,7 @@ onBeforeMount(async () => {
           <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
             <img
               :src="coverArtUrl"
-              class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
+              class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
               loading="lazy"
               @error="onImageError"
               @click="navigateAlbum"
@@ -161,16 +161,16 @@ onBeforeMount(async () => {
             <!-- Dice and navigation buttons -->
             <div v-else class="p-3 corner-cut background-2 flex gap-2 right-0 top-0 absolute lg:p-2">
               <icon-nrk-chevron-left
-                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-primary2 active:opacity-100 hover:scale-105"
+                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-secondary-500 active:opacity-100 hover:scale-105"
                 @click="prevIndex"
               />
               <icon-nrk-dice-3
-                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-primary2 active:opacity-100 hover:scale-105"
+                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-secondary-500 active:opacity-100 hover:scale-105"
                 :class="{ shake: isShaking }"
                 @click="handleDiceClick()"
               />
               <icon-nrk-chevron-right
-                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-primary2 active:opacity-100 hover:scale-105"
+                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-secondary-500 active:opacity-100 hover:scale-105"
                 @click="nextIndex"
               />
             </div>

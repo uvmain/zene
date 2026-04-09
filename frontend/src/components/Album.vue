@@ -63,7 +63,7 @@ function navigateArtist() {
   <div class="flex flex-col gap-2">
     <div class="group grid max-w-150px cursor-pointer" @click="navigateAlbum()">
       <img
-        class="col-span-full row-span-full aspect-square shadow-md shadow-zshade-500 z-1 object-cover dark:shadow-zshade-950"
+        class="col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"
         :src="coverArtUrl"
         :loading="loading"
         width="150"

@@ -38,7 +38,7 @@ function handleSeek(event: Event) {
     </span>
     <input
       type="range"
-      class="accent-primary1 background-2 h-2 w-full cursor-pointer lg:h-1"
+      class="accent-primary-500 background-2 h-2 w-full cursor-pointer lg:h-1"
       :max="maxDuration"
       :value="currentTime"
       @input="handleSeek($event)"

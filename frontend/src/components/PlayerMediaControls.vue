@@ -102,7 +102,7 @@ onKeyStroke('MediaStop', (e) => {
       />
       <span
         v-if="repeatStatus !== 'off'"
-        class="text-xs text-primary2 text-left w-4 top-0 absolute -right-1"
+        class="text-xs text-secondary-500 text-left w-4 top-0 absolute -right-1"
       >
         {{ repeatStatus }}
       </span>

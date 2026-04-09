@@ -48,7 +48,7 @@ onMounted(() => {
         v-model="searchInput"
         placeholder="Type here to search"
         type="text"
-        class="py-2 pl-10 border-1 border-primary2 background-2 lg:pr-full focus:outline-none focus:border-primary2 dark:border-opacity-60 focus:border-solid focus:shadow-primary2 hover:shadow-lg"
+        class="py-2 pl-10 border-1 border-secondary-500 background-2 lg:pr-full focus:outline-none focus:border-secondary-500 dark:border-opacity-60 focus:border-solid focus:shadow-secondary-500 hover:shadow-lg"
         @change="getSearchResults()"
         @input="getSearchResults()"
         @keydown.escape="searchInput = ''"
@@ -64,7 +64,7 @@ onMounted(() => {
             <Album v-for="track in searchResults?.songs" :key="track.path" :album="trackToAlbum(track)" :track-title="track.title" :show-artist="true" :show-date="false" />
           </div>
         </div>
-        <hr class="border-primary2 opacity-50" />
+        <hr class="border-secondary-500 opacity-50" />
         <div aria-label="Search results for albums" class="flex flex-col gap-2">
           <div class="text-lg font-bold">
             Albums: {{ searchResults?.albums?.length ?? 0 }}
@@ -73,7 +73,7 @@ onMounted(() => {
             <Album v-for="album in searchResults?.albums" :key="album.name" :album="album" />
           </div>
         </div>
-        <hr class="border-primary2 opacity-50" />
+        <hr class="border-secondary-500 opacity-50" />
         <div aria-label="Search results for artists" class="flex flex-col gap-2">
           <div class="text-lg font-bold">
             Artists: {{ searchResults?.artists?.length ?? 0 }}
@@ -82,7 +82,7 @@ onMounted(() => {
             <ArtistThumb v-for="artist in searchResults?.artists" :key="artist.id" :artist="artist" />
           </div>
         </div>
-        <hr class="border-primary2 opacity-50" />
+        <hr class="border-secondary-500 opacity-50" />
         <div aria-label="Search results for genres" class="flex flex-col gap-2">
           <div class="text-lg font-bold">
             Genres: {{ searchResults?.genres?.length ?? 0 }}

@@ -202,7 +202,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="grid-parent" class="group grid h-full w-full">
-    <div v-if="!audioContext" class="text-sm px-4 py-2 corner-cut bg-zshade-300/60 flex col-span-full row-span-full items-center justify-center z-2 backdrop-blur-xl dark:bg-zshade-900/60">
+    <div v-if="!audioContext" class="text-sm px-4 py-2 corner-cut bg-background-300/60 flex col-span-full row-span-full items-center justify-center z-2 backdrop-blur-xl dark:bg-background-900/60">
       No audio context available yet. Play a track to see the visualizer.
     </div>
     <canvas ref="canvas" class="col-span-full row-span-full h-full w-full z-1" />
@@ -216,7 +216,7 @@ onUnmounted(() => {
       }"
     >
       <!-- info panel -->
-      <div class="px-4 py-2 corner-cut bg-zshade-300/60 flex flex-col z-3 backdrop-blur-xl dark:bg-zshade-900/60">
+      <div class="px-4 py-2 corner-cut bg-background-300/60 flex flex-col z-3 backdrop-blur-xl dark:bg-background-900/60">
         <div v-if="isFullScreen" class="flex flex-col gap-2">
           <NavArt :large="true" />
           <PlayerProgressBar />
@@ -231,14 +231,14 @@ onUnmounted(() => {
               Next preset
             </p>
           </div>
-          <icon-nrk-media-ffw class="text-muted size-10 min-w-10 group-hover/next:text-primary1" />
+          <icon-nrk-media-ffw class="text-muted size-10 min-w-10 group-hover/next:text-primary-500" />
         </div>
       </div>
     </div>
     <!-- preset name -->
     <div
       v-if="fetchedPresets && fetchedPresets.length > 0 && visualizer"
-      class="text-sm mx-auto mb-auto mt-2 px-4 py-2 corner-cut corner-cut bg-zshade-300/60 col-span-full row-span-full whitespace-nowrap text-ellipsis transition-opacity duration-500 z-2 z-4 overflow-hidden backdrop-blur-xl dark:bg-zshade-900/60"
+      class="text-sm mx-auto mb-auto mt-2 px-4 py-2 corner-cut corner-cut bg-background-300/60 col-span-full row-span-full whitespace-nowrap text-ellipsis transition-opacity duration-500 z-2 z-4 overflow-hidden backdrop-blur-xl dark:bg-background-900/60"
       :class="{
         'opacity-100': presetNameFadeIn,
         'opacity-0': !presetNameFadeIn,

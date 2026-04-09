@@ -16,7 +16,7 @@ const coverArtUrl = computed(() => {
 
 <template>
   <div
-    class="dark:shadow-zshade-950 corner-cut-large h-full w-full shadow-md shadow-zshade-500 bg-cover bg-center"
+    class="dark:shadow-background-950 corner-cut-large h-full w-full shadow-md shadow-background-500 bg-cover bg-center"
     :style="{ backgroundImage: `url(${coverArtUrl})` }"
   >
     <div class="corner-cut-large flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
@@ -24,7 +24,7 @@ const coverArtUrl = computed(() => {
         <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
           <img
             :src="coverArtUrl"
-            class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-zshade-500 lg:h-52 dark:shadow-zshade-900"
+            class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-background-500 lg:h-52 dark:shadow-background-900"
             loading="lazy"
             @error="onImageError"
           >

@@ -105,7 +105,7 @@ async function login() {
 
 <style scoped>
 .input {
-  @apply text-muted p-2 border-1 border-zshade-300 corner-cut border-solid focus:outline-none focus:ring-2 focus:ring-primary1;
-  @apply bg-zshade-100 dark:bg-zshade-800;
+  @apply text-muted p-2 border-1 border-background-300 corner-cut border-solid focus:outline-none focus:ring-2 focus:ring-primary-500;
+  @apply bg-background-100 dark:bg-background-800;
 }
 </style>

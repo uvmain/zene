@@ -24,7 +24,7 @@ async function refresh() {
     </ZButton>
     <abbr title="Refresh">
       <button class="flex items-center justify-center" @click="refresh()">
-        <icon-nrk-refresh class="text-sm cursor-pointer hover:text-primary2" :class="{ spin: refreshed }" />
+        <icon-nrk-refresh class="text-sm cursor-pointer hover:text-secondary-500" :class="{ spin: refreshed }" />
       </button>
     </abbr>
   </div>
