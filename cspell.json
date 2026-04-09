@@ -21,6 +21,7 @@
         "ALBUMID",
         "ARTISTID",
         "AVG",
+        "background",
         "brainz",
         "bygenre",
         "byyear",
@@ -39,6 +40,7 @@
         "gofeed",
         "Guids",
         "hsl",
+        "iconify",
         "IDB",
         "ifmodifiedsince",
         "IFNULL",
@@ -78,8 +80,7 @@
         "wal",
         "WEBP",
         "zene",
-        "zeneclient",
-        "background"
+        "zeneclient"
     ],
     "ignoreWords": [],
     "import": []

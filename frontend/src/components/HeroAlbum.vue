@@ -10,9 +10,6 @@ const props = defineProps({
 
 const router = useRouter()
 
-const METADATA_COUNT = 20
-
-const isShaking = ref(false)
 const albumArray = ref<SubsonicAlbum[]>([])
 const index = ref(0)
 const showChangeArtModal = ref(false)
@@ -31,16 +28,8 @@ function nextIndex() {
   }
 }
 
-function prevIndex() {
-  if (index.value > 0) {
-    index.value -= 1
-  }
-  else {
-    index.value = albumArray.value.length - 1
-  }
-}
-
-async function getRandomAlbums(limit: number) {
+async function getRandomAlbums() {
+  const limit = 100
   if (albumsStore.value.length > 0) {
     albumArray.value = albumsStore.value.toSorted(() => 0.5 - Math.random()).slice(0, limit)
     index.value = 0
@@ -78,14 +67,6 @@ function navigateArtist() {
   router.push(`/artists/${currentAlbum.value.artistId}`)
 }
 
-function handleDiceClick() {
-  isShaking.value = true
-  setTimeout(() => {
-    isShaking.value = false
-  }, 200)
-  getRandomAlbums(METADATA_COUNT)
-}
-
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
   cacheBustAlbumArt(`${currentAlbum.value.id}`)
@@ -97,13 +78,13 @@ watch(() => props.album, (newAlbum) => {
     albumArray.value = [newAlbum]
   }
   else {
-    getRandomAlbums(METADATA_COUNT)
+    getRandomAlbums()
   }
 }, { immediate: true })
 
 onBeforeMount(async () => {
   if (!props.album) {
-    await getRandomAlbums(METADATA_COUNT)
+    await getRandomAlbums()
     index.value = 0
   }
   else {
@@ -159,48 +140,12 @@ onBeforeMount(async () => {
               />
             </div>
             <!-- Dice and navigation buttons -->
-            <div v-else class="p-3 corner-cut background-2 flex gap-2 right-0 top-0 absolute lg:p-2">
-              <icon-nrk-chevron-left
-                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-secondary-500 active:opacity-100 hover:scale-105"
-                @click="prevIndex"
-              />
-              <icon-nrk-dice-3
-                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-secondary-500 active:opacity-100 hover:scale-105"
-                :class="{ shake: isShaking }"
-                @click="handleDiceClick()"
-              />
-              <icon-nrk-chevron-right
-                class="text-2xl opacity-80 cursor-pointer lg:text-3xl hover:text-secondary-500 active:opacity-100 hover:scale-105"
-                @click="nextIndex"
-              />
-            </div>
+            <ZButton v-else size12 class="right-0 top-0 absolute" @click="nextIndex()">
+              <icon-nrk-media-next class="footer-icon" />
+            </ZButton>
           </div>
         </div>
       </div>
     </div>
   </section>
 </template>
-
-<style scoped lang="css">
-@keyframes shake {
-  0% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-15deg);
-  }
-  50% {
-    transform: rotate(15deg);
-  }
-  75% {
-    transform: rotate(-15deg);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
-}
-
-.shake {
-  animation: shake 0.2s ease-in-out;
-}
-</style>
