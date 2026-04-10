@@ -7,7 +7,8 @@ import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { debugLog } from '~/logic/logger'
-import { apiKey } from '~/logic/store'
+import { albumSeed, apiKey, artistSeed } from '~/logic/store'
+import { generateSeed } from './common'
 
 const concurrencyMap = new Map<string, Promise<any>>()
 
@@ -156,8 +157,11 @@ export async function fetchAlbums({ type, size, offset, seed }: { type: string, 
     if (offset !== undefined && offset > 0) {
       formData.append('offset', offset.toString())
     }
-    if (type === 'random' && seed !== undefined && seed > 0) {
-      formData.append('seed', seed.toString())
+    if (type === 'random') {
+      if (seed === undefined || seed <= 0) {
+        albumSeed.value = generateSeed()
+      }
+      formData.append('seed', albumSeed.value.toString())
     }
     const response = await openSubsonicFetchRequest<Types.SubsonicAlbumListResponse>('getAlbumList', {
       body: formData,
@@ -221,8 +225,11 @@ export async function fetchArtistList({ type, limit, offset, seed }: { type: str
     if (offset !== undefined && offset > 0) {
       formData.append('offset', offset.toString())
     }
-    if (seed !== undefined && seed > 0) {
-      formData.append('seed', seed.toString())
+    if (type === 'random') {
+      if (seed === undefined || seed <= 0) {
+        artistSeed.value = generateSeed()
+      }
+      formData.append('seed', artistSeed.value.toString())
     }
     const response = await openSubsonicFetchRequest<Types.SubsonicArtistListResponse>('getArtistList', {
       body: formData,

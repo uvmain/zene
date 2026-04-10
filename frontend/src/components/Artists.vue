@@ -108,6 +108,7 @@ onBeforeMount(async () => {
         :index="index"
         class="scale-100 transition duration-200 hover:scale-105"
       />
+      <div v-for="index in 30" id="push-non-full-grid-left" :key="index" aria-none class="size-full" />
     </div>
     <Loading v-else />
   </div>
@@ -115,7 +116,7 @@ onBeforeMount(async () => {
 
 <style scoped>
 .auto-grid {
-  @apply grid gap-x-4 lg:gap-x-6 mx-auto lg:mx-0;
+  @apply grid gap-4 lg:gap-6 mx-auto;
   @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
   @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
   @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
