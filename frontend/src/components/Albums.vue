@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AlbumOrder } from '~/logic/store'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
+import { set } from '@vueuse/core'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
 import { albumOrder, AlbumOrders, albumSeed, albumsStore } from '~/logic/store'
@@ -26,6 +27,11 @@ function setOrder(order: AlbumOrder) {
     return
   }
   albumOrder.value = order
+  setFetchType(order)
+  getAlbums()
+}
+
+function setFetchType(order: AlbumOrder) {
   switch (order) {
     case AlbumOrders.RecentlyUpdated:
       fetchType = 'newest'
@@ -43,7 +49,6 @@ function setOrder(order: AlbumOrder) {
       fetchType = 'recent'
       break
   }
-  getAlbums()
 }
 
 async function getAlbums() {
@@ -67,6 +72,7 @@ async function refresh() {
 }
 
 onBeforeMount(async () => {
+  setFetchType(albumOrder.value)
   await getAlbums()
 })
 </script>

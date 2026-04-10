@@ -26,8 +26,11 @@ function setOrder(order: ArtistOrder) {
     return
   }
   artistOrder.value = order
-  // typeParam != "starred"  && typeParam != "highest" &&
-  // typeParam != "frequent" && typeParam != "recent"
+  setFetchType(order)
+  getArtists()
+}
+
+function setFetchType(order: ArtistOrder) {
   switch (order) {
     case ArtistOrders.RecentlyUpdated:
       fetchType = 'newest'
@@ -45,7 +48,6 @@ function setOrder(order: ArtistOrder) {
       fetchType = 'recent'
       break
   }
-  getArtists()
 }
 
 async function getArtists() {
@@ -72,6 +74,7 @@ async function refresh() {
 }
 
 onBeforeMount(async () => {
+  setFetchType(artistOrder.value)
   await getArtists()
 })
 </script>
