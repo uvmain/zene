@@ -21,18 +21,18 @@ const sortOptions = [
   { label: 'Starred', emitValue: 'starred' },
 ]
 
-const headerTitle = computed(() => {
+const dropDownTitle = computed(() => {
   switch (artistOrder.value) {
     case 'newest':
-      return 'Artists: Recently Updated'
+      return 'Recently Updated'
     case 'random':
-      return 'Artists: Random'
+      return 'Random'
     case 'alphabetical':
-      return 'Artists: Alphabetical'
+      return 'Alphabetical'
     case 'starred':
-      return 'Artists: Starred'
+      return 'Starred'
     case 'recent':
-      return 'Artists: Recently Played'
+      return 'Recently Played'
     default:
       return 'Artists'
   }
@@ -77,9 +77,21 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="relative">
-    <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
-    <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
+  <div>
+    <div class="flex flex-row gap-x-4 items-center justify-between">
+      <div class="flex flex-row gap-x-2 items-center">
+        <h2 class="text-lg font-semibold lg:text-xl">
+          Artists
+        </h2>
+        <Refresher @refreshed="refresh" />
+      </div>
+      <DropdownMenu
+        :title="dropDownTitle"
+        :options="sortOptions"
+        align="right"
+        @select="setOrder"
+      />
+    </div>
     <div
       v-if="artists.length > 0"
       class="auto-grid mt-4 overflow-hidden"

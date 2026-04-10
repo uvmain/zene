@@ -4,6 +4,7 @@ import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
 import { albumOrder, albumOrders, albumSeed, albumsStore } from '~/logic/store'
+import DropdownMenu from './DropdownMenu.vue'
 
 const props = defineProps({
   limitRows: { type: Boolean, default: false },
@@ -30,18 +31,18 @@ watchEffect(() => {
   }
 })
 
-const headerTitle = computed(() => {
+const dropDownTitle = computed(() => {
   switch (albumOrder.value) {
     case 'recentlyUpdated':
-      return 'Albums: Recently Updated'
+      return 'Recently Updated'
     case 'random':
-      return 'Albums: Random'
+      return 'Random'
     case 'alphabetical':
-      return 'Albums: Alphabetical'
+      return 'Alphabetical'
     case 'releaseDate':
-      return 'Albums: Release Date'
+      return 'Release Date'
     case 'recentlyPlayed':
-      return 'Albums: Recently Played'
+      return 'Recently Played'
     default:
       return 'Albums'
   }
@@ -101,9 +102,21 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="relative">
-    <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
-    <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
+  <div>
+    <div class="flex flex-row gap-x-4 items-center justify-between">
+      <div class="flex flex-row gap-x-2 items-center">
+        <h2 class="text-lg font-semibold lg:text-xl">
+          Albums
+        </h2>
+        <Refresher @refreshed="refresh" />
+      </div>
+      <DropdownMenu
+        :title="dropDownTitle"
+        :options="sortOptions"
+        align="right"
+        @select="setOrder"
+      />
+    </div>
     <div
       v-if="albums.length > 0"
       class="auto-grid mt-4 overflow-hidden"
