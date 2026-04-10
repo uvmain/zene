@@ -143,25 +143,31 @@ export async function fetchAlbum(musicbrainz_album_id: string): Promise<Subsonic
   return response.album
 }
 
-export async function fetchAlbums({ type, size, offset, seed }: { type: string, size?: number, offset?: number, seed?: number }): Promise<SubsonicAlbum[]> {
-  const formData = new FormData()
-  formData.append('type', type)
-  if (size !== undefined && size > 0) {
-    formData.append('size', size.toString())
+export async function fetchAlbums({ type, size, offset, seed }: { type: string, size?: number, offset?: number, seed?: number }): Promise<SubsonicAlbum[] | null> {
+  try {
+    const formData = new FormData()
+    formData.append('type', type)
+    if (size !== undefined && size > 0) {
+      formData.append('size', size.toString())
+    }
+    else {
+      formData.append('size', '1000000')
+    }
+    if (offset !== undefined && offset > 0) {
+      formData.append('offset', offset.toString())
+    }
+    if (type === 'random' && seed !== undefined && seed > 0) {
+      formData.append('seed', seed.toString())
+    }
+    const response = await openSubsonicFetchRequest<Types.SubsonicAlbumListResponse>('getAlbumList', {
+      body: formData,
+    })
+    return response.albumList.album
   }
-  else {
-    formData.append('size', '1000000')
+  catch (error) {
+    debugLog(error as string)
+    return null
   }
-  if (offset !== undefined && offset > 0) {
-    formData.append('offset', offset.toString())
-  }
-  if (type === 'random' && seed !== undefined && seed > 0) {
-    formData.append('seed', seed.toString())
-  }
-  const response = await openSubsonicFetchRequest<Types.SubsonicAlbumListResponse>('getAlbumList', {
-    body: formData,
-  })
-  return response.albumList.album
 }
 
 export async function fetchRandomTracks({ limit, offset, seed }: { limit?: number, offset?: number, seed?: number }): Promise<SubsonicSong[]> {
@@ -205,23 +211,29 @@ export async function fetchArtistInfo(musicbrainz_artist_id: string, limit = 20)
   return response.artistInfo
 }
 
-export async function fetchArtistList({ type, limit, offset, seed }: { type: string, limit?: number, offset?: number, seed?: number }): Promise<SubsonicArtist[]> {
-  const formData = new FormData()
-  formData.append('type', type)
-  if (limit !== undefined && limit > 0) {
-    formData.append('size', limit.toString())
+export async function fetchArtistList({ type, limit, offset, seed }: { type: string, limit?: number, offset?: number, seed?: number }): Promise<SubsonicArtist[] | null> {
+  try {
+    const formData = new FormData()
+    formData.append('type', type)
+    if (limit !== undefined && limit > 0) {
+      formData.append('size', limit.toString())
+    }
+    if (offset !== undefined && offset > 0) {
+      formData.append('offset', offset.toString())
+    }
+    if (seed !== undefined && seed > 0) {
+      formData.append('seed', seed.toString())
+    }
+    const response = await openSubsonicFetchRequest<Types.SubsonicArtistListResponse>('getArtistList', {
+      body: formData,
+    })
+    const artists = response.artistList.artist
+    return artists
   }
-  if (offset !== undefined && offset > 0) {
-    formData.append('offset', offset.toString())
+  catch (error) {
+    debugLog(error as string)
+    return null
   }
-  if (seed !== undefined && seed > 0) {
-    formData.append('seed', seed.toString())
-  }
-  const response = await openSubsonicFetchRequest<Types.SubsonicArtistListResponse>('getArtistList', {
-    body: formData,
-  })
-  const artists = response.artistList.artist
-  return artists
 }
 
 export async function fetchArtistTopSongs(musicbrainz_artist_id: string, limit = 50, offset = 0): Promise<SubsonicSong[]> {
@@ -413,9 +425,9 @@ export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
   return blob
 }
 
-export async function postTrackStarred(musicbrainz_track_id: string, starred: boolean): Promise<Types.SubsonicResponse> {
+export async function postStarToggle(musicbrainz_id: string, starred: boolean): Promise<Types.SubsonicResponse> {
   const formData = new FormData()
-  formData.append('id', musicbrainz_track_id)
+  formData.append('id', musicbrainz_id)
 
   if (starred) {
     return openSubsonicFetchRequest<Types.SubsonicResponse>('star', {

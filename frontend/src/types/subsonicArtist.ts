@@ -32,6 +32,7 @@ export interface SubsonicArtist {
   sortName: string
   userRating: number
   averageRating: number
+  starred?: string
 }
 
 export interface SubsonicArtistInfo {

@@ -32,7 +32,7 @@ function handleLinkClick() {
       class="opacity-0 size-8 transition-all duration-300"
       :class="{
         'opacity-100 text-primary-500': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
-        'group-hover/navlink:opacity-50 text-secondary-500': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
+        'group-hover/navlink:opacity-50 text-accent-400': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
       }"
     />
     <span class="text-2xl lg:text-lg">{{ routeName }}</span>

@@ -81,10 +81,17 @@ if (props.autoScrolling) {
     scrollToActiveTrack()
   }, { deep: true })
 }
+
+onMounted(() => {
+  if (props.tracks && props.tracks.length > 0) {
+    routeTracks.value = props.tracks
+  }
+  scrollToActiveTrack()
+})
 </script>
 
 <template>
-  <div class="corner-cut-large background-2">
+  <div v-if="routeTracks && routeTracks.length > 0" class="corner-cut-large background-2">
     <div class="p-2 text-left flex flex-col h-full lg:p-4">
       <div
         class="text-lg text-muted mb-2 px-2 py-1 gap-4 grid items-center"
@@ -135,6 +142,9 @@ if (props.autoScrolling) {
         />
       </RecycleScroller>
     </div>
+  </div>
+  <div v-else class="text-muted flex h-48 items-center justify-center">
+    No tracks found
   </div>
 </template>
 

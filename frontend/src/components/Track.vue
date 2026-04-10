@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { postTrackStarred } from '~/logic/backendFetch'
 import { artSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingItem, handlePlay } from '~/logic/playbackQueue'
 import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playerUtils'
@@ -35,17 +34,6 @@ const trackGenres = computed(() => {
   return genres
 })
 
-function toggleStarred() {
-  if (isStarred.value) {
-    postTrackStarred(props.track.id, false)
-    isStarred.value = undefined
-  }
-  else {
-    postTrackStarred(props.track.id, true)
-    isStarred.value = new Date().toDateString()
-  }
-}
-
 watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
   if (props.track.musicBrainzId === newtrack) {
     playCount.value = (playCount.value ?? 0) + 1
@@ -57,10 +45,10 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
   <div
     class="group text-base px-2 py-1 gap-4 grid cursor-pointer transition-colors duration-300 ease-out items-center"
     :class="{
-      'hover:bg-secondary-500/40': !isTrackPlaying,
+      'hover:bg-accent-500/30': !isTrackPlaying,
       'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
       'dark:bg-background-700/20 bg-background-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
-      'bg-accent-500/40': isTrackPlaying,
+      'bg-primary-500/30': isTrackPlaying,
       'corner-cut': trackIndex === 0 || cornerCut,
       // grid-cols-[200px_1fr]
       'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
@@ -151,10 +139,8 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       {{ track.year }}
     </div>
     <!-- starred -->
-    <div class="flex cursor-pointer items-center justify-center" @click="toggleStarred" @click.stop>
-      <icon-nrk-star-active v-if="isStarred" class="text-muted" />
-      <icon-nrk-star v-else class="text-muted opacity-40 hover:opacity-100" />
-    </div>
+    <Starred v-model="isStarred" :musicbrainz-id="track.id" />
+
     <!-- play count -->
     <div class="text-center cursor-pointer">
       {{ playCount ?? 0 }}

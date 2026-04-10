@@ -3,86 +3,61 @@ import type { AlbumOrder } from '~/logic/store'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { albumOrder, albumOrders, albumSeed, albumsStore } from '~/logic/store'
+import { albumOrder, AlbumOrders, albumSeed, albumsStore } from '~/logic/store'
+import DropdownMenu from './DropdownMenu.vue'
 
 const props = defineProps({
   limitRows: { type: Boolean, default: false },
-  sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
 const albums = ref<SubsonicAlbum[]>(albumsStore.value)
-const showOrderOptions = ref(false)
-
-const sortOptions = [
-  { label: 'Recently Updated', emitValue: 'recentlyUpdated' },
-  { label: 'Recently Played', emitValue: 'recentlyPlayed' },
-  { label: 'Random', emitValue: 'random' },
-  { label: 'Alphabetical', emitValue: 'alphabetical' },
-  { label: 'Release Date', emitValue: 'releaseDate' },
-]
 
 let fetchType: string
 
 watchEffect(() => {
-  if (!albumOrders.includes(albumOrder.value as AlbumOrder)) {
-    albumOrder.value = 'recentlyUpdated'
+  if (!Object.values(AlbumOrders).includes(albumOrder.value as AlbumOrder)) {
+    albumOrder.value = AlbumOrders.RecentlyUpdated
     getAlbums()
-  }
-})
-
-const headerTitle = computed(() => {
-  switch (albumOrder.value) {
-    case 'recentlyUpdated':
-      return 'Albums: Recently Updated'
-    case 'random':
-      return 'Albums: Random'
-    case 'alphabetical':
-      return 'Albums: Alphabetical'
-    case 'releaseDate':
-      return 'Albums: Release Date'
-    case 'recentlyPlayed':
-      return 'Albums: Recently Played'
-    default:
-      return 'Albums'
   }
 })
 
 function setOrder(order: AlbumOrder) {
   if (albumOrder.value === order) {
-    showOrderOptions.value = false
     return
   }
   albumOrder.value = order
-  showOrderOptions.value = false
+  setFetchType(order)
   getAlbums()
 }
 
-async function getAlbums() {
-  switch (albumOrder.value) {
-    case 'recentlyUpdated':
+function setFetchType(order: AlbumOrder) {
+  switch (order) {
+    case AlbumOrders.RecentlyUpdated:
       fetchType = 'newest'
       break
-    case 'random':
+    case AlbumOrders.Random:
       fetchType = 'random'
       break
-    case 'alphabetical':
+    case AlbumOrders.Alphabetical:
       fetchType = 'alphabeticalbyname'
       break
-    case 'releaseDate':
+    case AlbumOrders.ReleaseDate:
       fetchType = 'release'
       break
-    case 'recentlyPlayed':
+    case AlbumOrders.RecentlyPlayed:
       fetchType = 'recent'
       break
   }
+}
 
+async function getAlbums() {
   const fetchOptions = {
     type: fetchType,
     seed: albumSeed.value,
     limit: props.limitRows ? 50 : undefined,
   }
   const fetchedAlbums = await fetchAlbums(fetchOptions)
-  if (fetchedAlbums && fetchedAlbums.length > 0 && JSON.stringify(fetchedAlbums) !== JSON.stringify(albums.value)) {
+  if (fetchedAlbums && JSON.stringify(fetchedAlbums) !== JSON.stringify(albums.value)) {
     albums.value = fetchedAlbums
     albumsStore.value = fetchedAlbums
   }
@@ -96,17 +71,31 @@ async function refresh() {
 }
 
 onBeforeMount(async () => {
+  setFetchType(albumOrder.value)
   await getAlbums()
 })
 </script>
 
 <template>
-  <div class="relative">
-    <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
-    <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
+  <div class="flex flex-col gap-y-4">
+    <div class="mx-auto flex flex-row gap-x-4 items-center justify-between lg:mx-0">
+      <div class="flex flex-row gap-x-2 items-center">
+        <h2 class="text-lg font-semibold lg:text-xl">
+          Albums
+        </h2>
+        <Refresher @refreshed="refresh" />
+      </div>
+      <hr class="mx-4 border-t border-primary-400/20 flex-1" />
+      <DropdownMenu
+        :title="albumOrder"
+        :options="Object.values(AlbumOrders)"
+        align="right"
+        @select="setOrder"
+      />
+    </div>
     <div
       v-if="albums.length > 0"
-      class="auto-grid mt-4 overflow-hidden"
+      class="auto-grid w-full"
       :class="{ 'limit-rows': limitRows }"
     >
       <Album
@@ -114,7 +103,7 @@ onBeforeMount(async () => {
         :key="album.id"
         :album="album"
         :index="index"
-        class="transition duration-200 hover:scale-100 lg:(scale-95)"
+        class="scale-100 transition duration-200 hover:scale-105"
       />
     </div>
     <Loading v-else />
@@ -123,18 +112,18 @@ onBeforeMount(async () => {
 
 <style scoped>
 .auto-grid {
-  @apply grid gap-1rem mx-auto lg:mx-0;
+  @apply grid gap-x-4 lg:gap-x-6 mx-auto lg:mx-0;
   @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
   @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
   @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
 }
 
 .limit-rows {
-  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-1rem;
-  @apply lg:grid-rows-[repeat(2,auto)] auto-rows-0 gap-y-0 -mb-1rem;
+  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-4 lg:-mb-6;
+  @apply lg:grid-rows-[repeat(2,auto)];
 }
 
 .limit-rows > * {
-  @apply mb-1rem overflow-hidden;
+  @apply mb-4 lg:mb-6 overflow-hidden;
 }
 </style>

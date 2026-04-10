@@ -3,7 +3,7 @@ import type { ArtistOrder } from '~/logic/store'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import { fetchArtistList } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { artistOrder, artistSeed, artistsStore } from '~/logic/store'
+import { artistOrder, ArtistOrders, artistSeed, artistsStore } from '~/logic/store'
 
 const props = defineProps({
   limitRows: { type: Boolean, default: false },
@@ -11,41 +11,43 @@ const props = defineProps({
 })
 
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
-const showOrderOptions = ref(false)
 
-const sortOptions = [
-  { label: 'Recently Updated', emitValue: 'newest' },
-  { label: 'Recently Played', emitValue: 'recent' },
-  { label: 'Random', emitValue: 'random' },
-  { label: 'Alphabetical', emitValue: 'alphabetical' },
-  { label: 'Starred', emitValue: 'starred' },
-]
+let fetchType: string
 
-const headerTitle = computed(() => {
-  switch (artistOrder.value) {
-    case 'newest':
-      return 'Artists: Recently Updated'
-    case 'random':
-      return 'Artists: Random'
-    case 'alphabetical':
-      return 'Artists: Alphabetical'
-    case 'starred':
-      return 'Artists: Starred'
-    case 'recent':
-      return 'Artists: Recently Played'
-    default:
-      return 'Artists'
+watchEffect(() => {
+  if (!Object.values(ArtistOrders).includes(artistOrder.value as ArtistOrder)) {
+    artistOrder.value = ArtistOrders.RecentlyUpdated
+    getArtists()
   }
 })
 
 function setOrder(order: ArtistOrder) {
   if (artistOrder.value === order) {
-    showOrderOptions.value = false
     return
   }
   artistOrder.value = order
-  showOrderOptions.value = false
+  setFetchType(order)
   getArtists()
+}
+
+function setFetchType(order: ArtistOrder) {
+  switch (order) {
+    case ArtistOrders.RecentlyUpdated:
+      fetchType = 'newest'
+      break
+    case ArtistOrders.Random:
+      fetchType = 'random'
+      break
+    case ArtistOrders.Alphabetical:
+      fetchType = 'alphabetical'
+      break
+    case ArtistOrders.Starred:
+      fetchType = 'starred'
+      break
+    case ArtistOrders.RecentlyPlayed:
+      fetchType = 'recent'
+      break
+  }
 }
 
 async function getArtists() {
@@ -53,44 +55,58 @@ async function getArtists() {
     artists.value = artistsStore.value
   }
   const fetchOptions = {
-    type: artistOrder.value,
+    type: fetchType,
     seed: artistSeed.value,
     limit: props.limitRows ? 50 : undefined,
   }
   const fetchedArtists = await fetchArtistList(fetchOptions)
-  if (fetchedArtists && fetchedArtists.length > 0 && JSON.stringify(fetchedArtists) !== JSON.stringify(artists.value)) {
+  if (fetchedArtists && JSON.stringify(fetchedArtists) !== JSON.stringify(artists.value)) {
     artists.value = fetchedArtists
     artistsStore.value = artists.value
   }
 }
 
 async function refresh() {
-  if (artistOrder.value === 'random') {
+  if (fetchType === 'random') {
     artistSeed.value = generateSeed()
   }
   getArtists()
 }
 
 onBeforeMount(async () => {
+  setFetchType(artistOrder.value)
   await getArtists()
 })
 </script>
 
 <template>
-  <div class="relative">
-    <RefreshHeader :title="headerTitle" @refreshed="refresh()" @title-click="showOrderOptions = !showOrderOptions" />
-    <RefreshOptions v-if="showOrderOptions" :options="sortOptions" @set-order="setOrder" />
+  <div class="flex flex-col gap-y-4">
+    <div class="mx-auto flex flex-row gap-x-4 items-center justify-between lg:mx-0">
+      <div class="flex flex-row gap-x-2 items-center">
+        <h2 class="text-lg font-semibold lg:text-xl">
+          Artists
+        </h2>
+        <Refresher @refreshed="refresh" />
+      </div>
+      <hr class="mx-4 border-t border-primary-400/20 flex-1" />
+      <DropdownMenu
+        :title="artistOrder"
+        :options="Object.values(ArtistOrders)"
+        align="right"
+        @select="setOrder"
+      />
+    </div>
     <div
       v-if="artists.length > 0"
-      class="auto-grid mt-4 overflow-hidden"
+      class="auto-grid w-full"
       :class="{ 'limit-rows': limitRows }"
     >
       <ArtistThumb
         v-for="(artist, index) in artists"
-        :key="artist.musicBrainzId"
+        :key="artist.id"
         :artist="artist"
         :index="index"
-        class="transition duration-200 hover:scale-100 lg:(scale-95)"
+        class="scale-100 transition duration-200 hover:scale-105"
       />
     </div>
     <Loading v-else />
@@ -99,18 +115,18 @@ onBeforeMount(async () => {
 
 <style scoped>
 .auto-grid {
-  @apply grid gap-1rem mx-auto lg:mx-0;
+  @apply grid gap-x-4 lg:gap-x-6 mx-auto lg:mx-0;
   @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
   @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
   @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
 }
 
 .limit-rows {
-  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-1rem;
-  @apply lg:grid-rows-[repeat(2,auto)] auto-rows-0 gap-y-0 -mb-1rem;
+  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-4 lg:-mb-6;
+  @apply lg:grid-rows-[repeat(2,auto)];
 }
 
 .limit-rows > * {
-  @apply mb-1rem overflow-hidden;
+  @apply mb-4 lg:mb-6 overflow-hidden;
 }
 </style>

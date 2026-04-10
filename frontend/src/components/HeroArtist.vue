@@ -8,6 +8,7 @@ const props = defineProps({
 })
 
 const showChangeArtModal = ref(false)
+const isStarred = ref<string | undefined>(props.artist.starred)
 
 const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
@@ -16,7 +17,7 @@ const coverArtUrl = computed(() => {
 
 <template>
   <div
-    class="dark:shadow-background-950 corner-cut-large h-full w-full shadow-md shadow-background-500 bg-cover bg-center"
+    class="corner-cut-large w-full shadow-background-500 shadow-md bg-cover bg-center dark:shadow-background-950"
     :style="{ backgroundImage: `url(${coverArtUrl})` }"
   >
     <div class="corner-cut-large flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
@@ -24,7 +25,7 @@ const coverArtUrl = computed(() => {
         <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
           <img
             :src="coverArtUrl"
-            class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-md shadow-background-500 lg:h-52 dark:shadow-background-900"
+            class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
             loading="lazy"
             @error="onImageError"
           >
@@ -35,7 +36,10 @@ const coverArtUrl = computed(() => {
             <div v-if="genres.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
               <GenreBottle v-for="genre in genres.slice(0, 8)" :key="genre" :genre="genre" />
             </div>
-            <PlayButton class="flex justify-start" :artist="artist" />
+            <div class="mt-2 flex flex-row gap-8">
+              <PlayButton class="flex justify-start" :artist="artist" />
+              <Starred v-model="isStarred" :musicbrainz-id="artist.id" />
+            </div>
           </div>
         </div>
         <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">

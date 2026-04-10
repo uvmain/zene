@@ -11,7 +11,7 @@ const props = defineProps({
 const router = useRouter()
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.artist.coverArt, artSizes.size150)
+  return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
 })
 
 const loading = computed<LoadingAttribute>(() => {
@@ -25,13 +25,13 @@ function navigateArtist() {
 
 <template>
   <div class="flex flex-col gap-2">
-    <div class="group grid max-w-150px cursor-pointer" @click="navigateArtist()">
+    <div class="group grid cursor-pointer" @click="navigateArtist()">
       <img
-        class="rounded-full col-span-full row-span-full aspect-square shadow-md shadow-background-500 z-1 object-cover dark:shadow-background-950"
+        class="rounded-full col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"
         :src="coverArtUrl"
         :loading="loading"
-        width="150"
-        height="150"
+        width="200"
+        height="200"
         @error="onImageError"
       />
       <PlayButton
@@ -39,7 +39,7 @@ function navigateArtist() {
         class="m-auto pr-1 opacity-0 col-span-full row-span-full scale-50 duration-200 z-2 group-hover:opacity-100 group-hover:scale-100"
       />
     </div>
-    <div class="max-w-150px">
+    <div>
       <div class="text-sm text-primary text-center text-nowrap truncate lg:text-base">
         {{ artist.name }}
       </div>

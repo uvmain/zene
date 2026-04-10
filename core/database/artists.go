@@ -48,6 +48,8 @@ func SelectArtistByMusicBrainzArtistId(ctx context.Context, musicbrainzArtistId 
 
 	if starred.Valid {
 		result.Starred = starred.String
+	} else {
+		result.Starred = ""
 	}
 
 	albums, err := GetArtistChildren(ctx, musicbrainzArtistId)

@@ -11,7 +11,7 @@ export interface SubsonicAlbum {
   duration: number
   playCount: number
   created: string
-  starred: string
+  starred?: string
   year: number
   genre: string
   userRating: number
