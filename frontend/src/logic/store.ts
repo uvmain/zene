@@ -38,7 +38,5 @@ export const streamQuality = useLocalStorage<StreamQuality>('streamQuality', 160
 export const randomTracksSeed = useLocalStorage<number>('randomTracksSeed', 0)
 
 export const albumsStore = useLocalStorage<SubsonicAlbum[]>('albumsStore', [])
-export const heroAlbumsStore = useSessionStorage<SubsonicAlbum[]>('heroAlbumsStore', [])
-export const heroAlbumsIndex = useSessionStorage<number>('heroAlbumsIndex', 0)
 export const artistsStore = useLocalStorage<SubsonicArtist[]>('artistsStore', [])
 export const genresStore = useLocalStorage<SubsonicGenre[]>('genresStore', [])

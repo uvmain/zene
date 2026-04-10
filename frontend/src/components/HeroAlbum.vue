@@ -2,7 +2,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
-import { albumsStore, heroAlbumsIndex, heroAlbumsStore } from '~/logic/store'
+import { albumsStore } from '~/logic/store'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: false },
@@ -13,36 +13,33 @@ const router = useRouter()
 const albumArray = ref<SubsonicAlbum[]>([])
 const showChangeArtModal = ref(false)
 const artUpdatedTime = ref<string | undefined>(undefined)
+const index = ref(0)
 
 const currentAlbum = computed(() => {
-  return albumArray.value[heroAlbumsIndex.value]
+  return albumArray.value[index.value]
 })
 
 function nextIndex() {
-  if (heroAlbumsIndex.value < albumArray.value.length - 1) {
-    heroAlbumsIndex.value += 1
+  if (index.value < albumArray.value.length - 1) {
+    index.value += 1
   }
   else {
-    heroAlbumsIndex.value = 0
+    index.value = 0
   }
 }
 
 async function getRandomAlbums() {
   const limit = 100
-  if (heroAlbumsStore.value.length > 0) {
-    albumArray.value = heroAlbumsStore.value
-    return
-  }
   if (albumsStore.value.length > 0) {
-    heroAlbumsStore.value = albumsStore.value.toSorted(() => 0.5 - Math.random()).slice(0, limit)
-    albumArray.value = heroAlbumsStore.value
+    albumArray.value = albumsStore.value.toSorted(() => 0.5 - Math.random()).slice(0, limit)
+    index.value = 0
     return
   }
   const response = await fetchAlbums({ type: 'random', size: limit })
   if (response) {
     albumArray.value = response
-    heroAlbumsStore.value = response
-    heroAlbumsIndex.value = 0
+    albumsStore.value = response
+    index.value = 0
   }
 }
 
@@ -143,7 +140,7 @@ onBeforeMount(async () => {
               </ZButton>
               <ChangeAlbumArt
                 v-if="showChangeArtModal"
-                :album="albumArray[heroAlbumsIndex]"
+                :album="albumArray[index]"
                 @close="showChangeArtModal = false"
                 @art-updated="actOnUpdatedArt"
               />
