@@ -157,7 +157,7 @@ onBeforeMount(async () => {
               </ZButton>
               <ChangeAlbumArt
                 v-if="showChangeArtModal"
-                :album="albumArray[index]"
+                :album="albumArray[heroAlbumsIndex]"
                 @close="showChangeArtModal = false"
                 @art-updated="actOnUpdatedArt"
               />
