@@ -1,7 +1,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, useSessionStorage } from '@vueuse/core'
 
 export enum AlbumOrders {
   RecentlyUpdated = 'Recently Updated',
@@ -38,5 +38,7 @@ export const streamQuality = useLocalStorage<StreamQuality>('streamQuality', 160
 export const randomTracksSeed = useLocalStorage<number>('randomTracksSeed', 0)
 
 export const albumsStore = useLocalStorage<SubsonicAlbum[]>('albumsStore', [])
+export const heroAlbumsStore = useSessionStorage<SubsonicAlbum[]>('heroAlbumsStore', [])
+export const heroAlbumsIndex = useSessionStorage<number>('heroAlbumsIndex', 0)
 export const artistsStore = useLocalStorage<SubsonicArtist[]>('artistsStore', [])
 export const genresStore = useLocalStorage<SubsonicGenre[]>('genresStore', [])

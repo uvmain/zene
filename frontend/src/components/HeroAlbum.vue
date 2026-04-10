@@ -2,7 +2,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums, postStarToggle } from '~/logic/backendFetch'
 import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
-import { albumsStore } from '~/logic/store'
+import { albumsStore, heroAlbumsIndex, heroAlbumsStore } from '~/logic/store'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: false },
@@ -11,35 +11,38 @@ const props = defineProps({
 const router = useRouter()
 
 const albumArray = ref<SubsonicAlbum[]>([])
-const index = ref(0)
 const showChangeArtModal = ref(false)
 const artUpdatedTime = ref<string | undefined>(undefined)
 
 const currentAlbum = computed(() => {
-  return albumArray.value[index.value]
+  return albumArray.value[heroAlbumsIndex.value]
 })
 
 function nextIndex() {
-  if (index.value < albumArray.value.length - 1) {
-    index.value += 1
+  if (heroAlbumsIndex.value < albumArray.value.length - 1) {
+    heroAlbumsIndex.value += 1
   }
   else {
-    index.value = 0
+    heroAlbumsIndex.value = 0
   }
 }
 
 async function getRandomAlbums() {
   const limit = 100
+  if (heroAlbumsStore.value.length > 0) {
+    albumArray.value = heroAlbumsStore.value
+    return
+  }
   if (albumsStore.value.length > 0) {
-    albumArray.value = albumsStore.value.toSorted(() => 0.5 - Math.random()).slice(0, limit)
-    index.value = 0
+    heroAlbumsStore.value = albumsStore.value.toSorted(() => 0.5 - Math.random()).slice(0, limit)
+    albumArray.value = heroAlbumsStore.value
     return
   }
   const response = await fetchAlbums({ type: 'random', size: limit })
   if (response) {
     albumArray.value = response
-    albumsStore.value = response
-    index.value = 0
+    heroAlbumsStore.value = response
+    heroAlbumsIndex.value = 0
   }
 }
 
@@ -100,7 +103,6 @@ watch(() => props.album, (newAlbum) => {
 onBeforeMount(async () => {
   if (!props.album) {
     await getRandomAlbums()
-    index.value = 0
   }
   else {
     albumArray.value = [props.album]
