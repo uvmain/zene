@@ -1,7 +1,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
-import { useLocalStorage, useSessionStorage } from '@vueuse/core'
+import { useLocalStorage } from '@vueuse/core'
 
 export enum AlbumOrders {
   RecentlyUpdated = 'Recently Updated',
