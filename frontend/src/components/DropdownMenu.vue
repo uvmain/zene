@@ -1,14 +1,9 @@
 <script setup lang="ts">
-interface Option {
-  label: string
-  emitValue: string
-}
-
 type Alignment = 'left' | 'right'
 
 defineProps({
   title: { type: String, required: true },
-  options: { type: Array as PropType<Option[]>, required: true },
+  options: { type: Array as PropType<string[]>, required: true },
   align: { type: String as PropType<Alignment>, default: 'left' },
 })
 
@@ -48,11 +43,11 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     >
       <div
         v-for="item in options"
-        :key="item.label"
+        :key="item"
         class="p-2 border-l-4 border-transparent block cursor-pointer group-hover:border-blue-600 hover:bg-accent-500/50"
-        @click="handleSelect(item.emitValue)"
+        @click="handleSelect(item)"
       >
-        {{ item.label }}
+        {{ item }}
       </div>
     </div>
   </div>

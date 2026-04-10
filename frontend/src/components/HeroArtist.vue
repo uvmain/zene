@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicArtist } from '~/types/subsonicArtist'
+import { postStarToggle } from '~/logic/backendFetch'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({
@@ -8,15 +9,27 @@ const props = defineProps({
 })
 
 const showChangeArtModal = ref(false)
+const isStarred = ref<string | undefined>(props.artist.starred)
 
 const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
 })
+
+function toggleStarred() {
+  if (isStarred.value) {
+    postStarToggle(props.artist.id, false)
+    isStarred.value = undefined
+  }
+  else {
+    postStarToggle(props.artist.id, true)
+    isStarred.value = new Date().toDateString()
+  }
+}
 </script>
 
 <template>
   <div
-    class="corner-cut-large h-full w-full shadow-background-500 shadow-md bg-cover bg-center dark:shadow-background-950"
+    class="corner-cut-large w-full shadow-background-500 shadow-md bg-cover bg-center dark:shadow-background-950"
     :style="{ backgroundImage: `url(${coverArtUrl})` }"
   >
     <div class="corner-cut-large flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
@@ -35,7 +48,13 @@ const coverArtUrl = computed(() => {
             <div v-if="genres.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
               <GenreBottle v-for="genre in genres.slice(0, 8)" :key="genre" :genre="genre" />
             </div>
-            <PlayButton class="flex justify-start" :artist="artist" />
+            <div class="mt-2 flex flex-row gap-8">
+              <PlayButton class="flex justify-start" :artist="artist" />
+              <div class="flex cursor-pointer items-center justify-center" @click="toggleStarred" @click.stop>
+                <icon-nrk-star-active v-if="isStarred" class="text-primary-400" />
+                <icon-nrk-star v-else class="text-muted opacity-70 hover:opacity-100" />
+              </div>
+            </div>
           </div>
         </div>
         <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">

@@ -3,7 +3,7 @@ import type { ArtistOrder } from '~/logic/store'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import { fetchArtistList } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { artistOrder, artistSeed, artistsStore } from '~/logic/store'
+import { artistOrder, ArtistOrders, artistSeed, artistsStore } from '~/logic/store'
 
 const props = defineProps({
   limitRows: { type: Boolean, default: false },
@@ -11,40 +11,40 @@ const props = defineProps({
 })
 
 const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
-const showOrderOptions = ref(false)
 
-const sortOptions = [
-  { label: 'Recently Updated', emitValue: 'newest' },
-  { label: 'Recently Played', emitValue: 'recent' },
-  { label: 'Random', emitValue: 'random' },
-  { label: 'Alphabetical', emitValue: 'alphabetical' },
-  { label: 'Starred', emitValue: 'starred' },
-]
+let fetchType: string
 
-const dropDownTitle = computed(() => {
-  switch (artistOrder.value) {
-    case 'newest':
-      return 'Recently Updated'
-    case 'random':
-      return 'Random'
-    case 'alphabetical':
-      return 'Alphabetical'
-    case 'starred':
-      return 'Starred'
-    case 'recent':
-      return 'Recently Played'
-    default:
-      return 'Artists'
+watchEffect(() => {
+  if (!Object.values(ArtistOrders).includes(artistOrder.value as ArtistOrder)) {
+    artistOrder.value = ArtistOrders.RecentlyUpdated
+    getArtists()
   }
 })
 
 function setOrder(order: ArtistOrder) {
   if (artistOrder.value === order) {
-    showOrderOptions.value = false
     return
   }
   artistOrder.value = order
-  showOrderOptions.value = false
+  // typeParam != "starred"  && typeParam != "highest" &&
+  // typeParam != "frequent" && typeParam != "recent"
+  switch (order) {
+    case ArtistOrders.RecentlyUpdated:
+      fetchType = 'newest'
+      break
+    case ArtistOrders.Random:
+      fetchType = 'random'
+      break
+    case ArtistOrders.Alphabetical:
+      fetchType = 'alphabetical'
+      break
+    case ArtistOrders.Starred:
+      fetchType = 'starred'
+      break
+    case ArtistOrders.RecentlyPlayed:
+      fetchType = 'recent'
+      break
+  }
   getArtists()
 }
 
@@ -53,19 +53,19 @@ async function getArtists() {
     artists.value = artistsStore.value
   }
   const fetchOptions = {
-    type: artistOrder.value,
+    type: fetchType,
     seed: artistSeed.value,
     limit: props.limitRows ? 50 : undefined,
   }
   const fetchedArtists = await fetchArtistList(fetchOptions)
-  if (fetchedArtists && fetchedArtists.length > 0 && JSON.stringify(fetchedArtists) !== JSON.stringify(artists.value)) {
+  if (fetchedArtists && JSON.stringify(fetchedArtists) !== JSON.stringify(artists.value)) {
     artists.value = fetchedArtists
     artistsStore.value = artists.value
   }
 }
 
 async function refresh() {
-  if (artistOrder.value === 'random') {
+  if (fetchType === 'random') {
     artistSeed.value = generateSeed()
   }
   getArtists()
@@ -85,9 +85,10 @@ onBeforeMount(async () => {
         </h2>
         <Refresher @refreshed="refresh" />
       </div>
+      <hr class="mx-4 border-t border-primary-400/20 flex-1" />
       <DropdownMenu
-        :title="dropDownTitle"
-        :options="sortOptions"
+        :title="artistOrder"
+        :options="Object.values(ArtistOrders)"
         align="right"
         @select="setOrder"
       />

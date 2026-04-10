@@ -3,87 +3,57 @@ import type { AlbumOrder } from '~/logic/store'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { albumOrder, albumOrders, albumSeed, albumsStore } from '~/logic/store'
+import { albumOrder, AlbumOrders, albumSeed, albumsStore } from '~/logic/store'
 import DropdownMenu from './DropdownMenu.vue'
 
 const props = defineProps({
   limitRows: { type: Boolean, default: false },
-  sortKey: { type: String, default: 'currentAlbumOrder' },
 })
 
 const albums = ref<SubsonicAlbum[]>(albumsStore.value)
-const showOrderOptions = ref(false)
-
-const sortOptions = [
-  { label: 'Recently Updated', emitValue: 'recentlyUpdated' },
-  { label: 'Recently Played', emitValue: 'recentlyPlayed' },
-  { label: 'Random', emitValue: 'random' },
-  { label: 'Alphabetical', emitValue: 'alphabetical' },
-  { label: 'Release Date', emitValue: 'releaseDate' },
-]
 
 let fetchType: string
 
 watchEffect(() => {
-  if (!albumOrders.includes(albumOrder.value as AlbumOrder)) {
-    albumOrder.value = 'recentlyUpdated'
+  if (!Object.values(AlbumOrders).includes(albumOrder.value as AlbumOrder)) {
+    albumOrder.value = AlbumOrders.RecentlyUpdated
     getAlbums()
-  }
-})
-
-const dropDownTitle = computed(() => {
-  switch (albumOrder.value) {
-    case 'recentlyUpdated':
-      return 'Recently Updated'
-    case 'random':
-      return 'Random'
-    case 'alphabetical':
-      return 'Alphabetical'
-    case 'releaseDate':
-      return 'Release Date'
-    case 'recentlyPlayed':
-      return 'Recently Played'
-    default:
-      return 'Albums'
   }
 })
 
 function setOrder(order: AlbumOrder) {
   if (albumOrder.value === order) {
-    showOrderOptions.value = false
     return
   }
   albumOrder.value = order
-  showOrderOptions.value = false
+  switch (order) {
+    case AlbumOrders.RecentlyUpdated:
+      fetchType = 'newest'
+      break
+    case AlbumOrders.Random:
+      fetchType = 'random'
+      break
+    case AlbumOrders.Alphabetical:
+      fetchType = 'alphabeticalbyname'
+      break
+    case AlbumOrders.ReleaseDate:
+      fetchType = 'release'
+      break
+    case AlbumOrders.RecentlyPlayed:
+      fetchType = 'recent'
+      break
+  }
   getAlbums()
 }
 
 async function getAlbums() {
-  switch (albumOrder.value) {
-    case 'recentlyUpdated':
-      fetchType = 'newest'
-      break
-    case 'random':
-      fetchType = 'random'
-      break
-    case 'alphabetical':
-      fetchType = 'alphabeticalbyname'
-      break
-    case 'releaseDate':
-      fetchType = 'release'
-      break
-    case 'recentlyPlayed':
-      fetchType = 'recent'
-      break
-  }
-
   const fetchOptions = {
     type: fetchType,
     seed: albumSeed.value,
     limit: props.limitRows ? 50 : undefined,
   }
   const fetchedAlbums = await fetchAlbums(fetchOptions)
-  if (fetchedAlbums && fetchedAlbums.length > 0 && JSON.stringify(fetchedAlbums) !== JSON.stringify(albums.value)) {
+  if (fetchedAlbums && JSON.stringify(fetchedAlbums) !== JSON.stringify(albums.value)) {
     albums.value = fetchedAlbums
     albumsStore.value = fetchedAlbums
   }
@@ -110,9 +80,10 @@ onBeforeMount(async () => {
         </h2>
         <Refresher @refreshed="refresh" />
       </div>
+      <hr class="mx-4 border-t border-primary-400/20 flex-1" />
       <DropdownMenu
-        :title="dropDownTitle"
-        :options="sortOptions"
+        :title="albumOrder"
+        :options="Object.values(AlbumOrders)"
         align="right"
         @select="setOrder"
       />

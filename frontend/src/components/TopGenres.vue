@@ -15,7 +15,18 @@ onBeforeMount(async () => {
 
 <template>
   <div class="flex flex-col gap-4">
-    <RefreshHeader title="Top Genres" @refreshed="getGenres()" />
+    <div class="flex flex-row gap-x-4 items-center justify-between">
+      <div class="flex flex-row gap-x-2 items-center">
+        <h2 class="text-lg font-semibold lg:text-xl">
+          Genres
+        </h2>
+        <Refresher @refreshed="getGenres()" />
+      </div>
+      <hr class="mx-4 border-t border-primary-400/20 flex-1" />
+      <ZButton>
+        Top Genres
+      </ZButton>
+    </div>
     <div class="mb-2 flex flex-wrap gap-2 justify-center overflow-hidden lg:justify-start" :style="`max-height: calc(${(28 * 2) + 12}px);`">
       <GenreBottle v-for="genre in genres?.filter(g => g.value !== '')" :key="genre.value" :genre="genre.value" />
     </div>

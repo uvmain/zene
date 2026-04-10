@@ -15,7 +15,7 @@ async function refresh() {
 
 <template>
   <abbr title="Refresh">
-    <button class="flex items-center justify-center" @click="refresh()">
+    <button class="flex rotate-30 items-center justify-center" @click="refresh()">
       <icon-nrk-refresh class="text-sm cursor-pointer hover:text-secondary-500" :class="{ spin: refreshed }" />
     </button>
   </abbr>

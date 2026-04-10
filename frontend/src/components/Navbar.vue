@@ -9,7 +9,7 @@ import { closeMobileNav, isMobileNavOpen, openMobileNav } from '~/logic/navbar'
     class="inset-0 fixed z-40 lg:hidden"
     @click="closeMobileNav()"
   />
-  <ZButton v-else size10 class="left-1 top-1 absolute z-100 lg:hidden" @click="openMobileNav()">
+  <ZButton v-else size10 class="bottom-3 left-3 absolute z-100 lg:hidden" @click="openMobileNav()">
     <icon-nrk-list class="text-primary size-full" />
   </ZButton>
 

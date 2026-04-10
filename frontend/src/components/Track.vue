@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { postTrackStarred } from '~/logic/backendFetch'
+import { postStarToggle } from '~/logic/backendFetch'
 import { artSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingItem, handlePlay } from '~/logic/playbackQueue'
 import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playerUtils'
@@ -37,11 +37,11 @@ const trackGenres = computed(() => {
 
 function toggleStarred() {
   if (isStarred.value) {
-    postTrackStarred(props.track.id, false)
+    postStarToggle(props.track.id, false)
     isStarred.value = undefined
   }
   else {
-    postTrackStarred(props.track.id, true)
+    postStarToggle(props.track.id, true)
     isStarred.value = new Date().toDateString()
   }
 }
