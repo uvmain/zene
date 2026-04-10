@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { fetchAlbums } from '~/logic/backendFetch'
+import { fetchAlbums, postStarToggle } from '~/logic/backendFetch'
 import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 import { albumsStore } from '~/logic/store'
 
@@ -35,8 +35,12 @@ async function getRandomAlbums() {
     index.value = 0
     return
   }
-  albumArray.value = await fetchAlbums({ type: 'random', size: limit })
-  index.value = 0
+  const response = await fetchAlbums({ type: 'random', size: limit })
+  if (response) {
+    albumArray.value = response
+    albumsStore.value = response
+    index.value = 0
+  }
 }
 
 const coverArtUrl = computed(() => {
@@ -71,6 +75,17 @@ function actOnUpdatedArt() {
   showChangeArtModal.value = false
   cacheBustAlbumArt(`${currentAlbum.value.id}`)
   artUpdatedTime.value = Date.now().toString()
+}
+
+function toggleStarred(album: SubsonicAlbum) {
+  if (album.starred) {
+    postStarToggle(album.id, false)
+    album.starred = undefined
+  }
+  else {
+    postStarToggle(album.id, true)
+    album.starred = new Date().toDateString()
+  }
 }
 
 watch(() => props.album, (newAlbum) => {
@@ -119,7 +134,13 @@ onBeforeMount(async () => {
               <div v-if="currentAlbum.genres?.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
                 <GenreBottle v-for="genre in currentAlbum.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
               </div>
-              <PlayButton class="flex justify-start" :album="currentAlbum" />
+              <div class="mt-2 flex flex-row gap-8">
+                <PlayButton class="flex justify-start" :album="currentAlbum" />
+                <div class="flex cursor-pointer items-center justify-center" @click="toggleStarred(currentAlbum)" @click.stop>
+                  <icon-nrk-star-active v-if="currentAlbum.starred" class="text-primary-400" />
+                  <icon-nrk-star v-else class="text-muted opacity-70 hover:opacity-100" />
+                </div>
+              </div>
             </div>
           </div>
           <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
