@@ -77,8 +77,8 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div>
-    <div class="flex flex-row gap-x-4 items-center justify-between">
+  <div class="flex flex-col gap-y-4">
+    <div class="mx-auto flex flex-row gap-x-4 items-center justify-between lg:mx-0">
       <div class="flex flex-row gap-x-2 items-center">
         <h2 class="text-lg font-semibold lg:text-xl">
           Albums
@@ -95,7 +95,7 @@ onBeforeMount(async () => {
     </div>
     <div
       v-if="albums.length > 0"
-      class="auto-grid mt-4 overflow-hidden"
+      class="auto-grid w-full"
       :class="{ 'limit-rows': limitRows }"
     >
       <Album
@@ -103,7 +103,7 @@ onBeforeMount(async () => {
         :key="album.id"
         :album="album"
         :index="index"
-        class="transition duration-200 hover:scale-100 lg:(scale-95)"
+        class="scale-100 transition duration-200 hover:scale-105"
       />
     </div>
     <Loading v-else />
@@ -112,18 +112,18 @@ onBeforeMount(async () => {
 
 <style scoped>
 .auto-grid {
-  @apply grid gap-1rem mx-auto lg:mx-0;
+  @apply grid gap-x-4 lg:gap-x-6 mx-auto lg:mx-0;
   @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
   @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
   @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
 }
 
 .limit-rows {
-  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-1rem;
-  @apply lg:grid-rows-[repeat(2,auto)] auto-rows-0 gap-y-0 -mb-1rem;
+  @apply grid-rows-[repeat(3,auto)] auto-rows-0 gap-y-0 -mb-4 lg:-mb-6;
+  @apply lg:grid-rows-[repeat(2,auto)];
 }
 
 .limit-rows > * {
-  @apply mb-1rem overflow-hidden;
+  @apply mb-4 lg:mb-6 overflow-hidden;
 }
 </style>

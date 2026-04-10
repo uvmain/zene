@@ -47,7 +47,7 @@ const loading = computed<LoadingAttribute>(() => {
 })
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(`${props.album.id}`, artSizes.size150)
+  return getCoverArtUrl(`${props.album.id}`, artSizes.size200)
 })
 
 function navigateAlbum() {
@@ -61,13 +61,13 @@ function navigateArtist() {
 
 <template>
   <div class="flex flex-col gap-2">
-    <div class="group grid max-w-150px cursor-pointer" @click="navigateAlbum()">
+    <div class="group grid cursor-pointer" @click="navigateAlbum()">
       <img
         class="col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"
         :src="coverArtUrl"
         :loading="loading"
-        width="150"
-        height="150"
+        width="200"
+        height="200"
         @error="onImageError"
       />
       <PlayButton
@@ -75,7 +75,7 @@ function navigateArtist() {
         class="m-auto pr-1 opacity-0 col-span-full row-span-full scale-50 duration-200 z-2 group-hover:opacity-100 group-hover:scale-100"
       />
     </div>
-    <div class="max-w-150px">
+    <div>
       <div v-if="trackTitle" class="text-lg text-primary text-nowrap truncate">
         {{ trackTitle }}
       </div>

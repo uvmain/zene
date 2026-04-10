@@ -6,6 +6,7 @@ html, body, #app {
   min-height: 100dvh;
   font-weight: 600;
   scrollbar-color: var(--colors-background-600) var(--colors-background-200);
+  overflow-x: hidden;
   .dark & {
     scrollbar-color: var(--colors-background-300) var(--colors-background-800);
   }

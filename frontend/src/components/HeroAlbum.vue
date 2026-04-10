@@ -111,7 +111,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <section v-if="albumArray.length">
+  <section v-if="albumArray.length > 0">
     <div
       class="corner-cut-large h-full w-full shadow-background-500 shadow-md overflow-hidden bg-cover bg-center dark:shadow-background-950"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
@@ -146,7 +146,7 @@ onBeforeMount(async () => {
             </div>
           </div>
           <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
-            <!-- Change Album Art section -->
+            <!-- Change Album Art -->
             <div v-if="props.album">
               <ZButton
                 @click="showChangeArtModal = true"
@@ -162,7 +162,7 @@ onBeforeMount(async () => {
                 @art-updated="actOnUpdatedArt"
               />
             </div>
-            <!-- Dice and navigation buttons -->
+            <!-- next hero album button -->
             <ZButton v-else size12 class="right-0 top-0 absolute" @click="nextIndex()">
               <icon-nrk-media-next class="footer-icon" />
             </ZButton>

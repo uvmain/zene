@@ -14,5 +14,5 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <Tracks v-if="tracks.length" :tracks="tracks" :show-album="true" />
+  <Tracks :tracks="tracks" :show-album="true" />
 </template>
