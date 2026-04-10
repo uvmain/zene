@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { AlbumOrder } from '~/logic/store'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { set } from '@vueuse/core'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
 import { albumOrder, AlbumOrders, albumSeed, albumsStore } from '~/logic/store'
