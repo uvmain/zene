@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { SubsonicArtist } from '~/types/subsonicArtist'
-import { postStarToggle } from '~/logic/backendFetch'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({
@@ -14,17 +13,6 @@ const isStarred = ref<string | undefined>(props.artist.starred)
 const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
 })
-
-function toggleStarred() {
-  if (isStarred.value) {
-    postStarToggle(props.artist.id, false)
-    isStarred.value = undefined
-  }
-  else {
-    postStarToggle(props.artist.id, true)
-    isStarred.value = new Date().toDateString()
-  }
-}
 </script>
 
 <template>
@@ -50,10 +38,7 @@ function toggleStarred() {
             </div>
             <div class="mt-2 flex flex-row gap-8">
               <PlayButton class="flex justify-start" :artist="artist" />
-              <div class="flex cursor-pointer items-center justify-center" @click="toggleStarred" @click.stop>
-                <icon-nrk-star-active v-if="isStarred" class="text-primary-400" />
-                <icon-nrk-star v-else class="text-muted opacity-70 hover:opacity-100" />
-              </div>
+              <Starred v-model="isStarred" :musicbrainz-id="artist.id" />
             </div>
           </div>
         </div>

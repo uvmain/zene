@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { postStarToggle } from '~/logic/backendFetch'
 import { artSizes, formatTimeFromSeconds, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingItem, handlePlay } from '~/logic/playbackQueue'
 import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playerUtils'
@@ -34,17 +33,6 @@ const trackGenres = computed(() => {
   const genres = props.track.genres.length ? props.track.genres.map(g => g.name.trim()) : []
   return genres
 })
-
-function toggleStarred() {
-  if (isStarred.value) {
-    postStarToggle(props.track.id, false)
-    isStarred.value = undefined
-  }
-  else {
-    postStarToggle(props.track.id, true)
-    isStarred.value = new Date().toDateString()
-  }
-}
 
 watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
   if (props.track.musicBrainzId === newtrack) {
@@ -151,10 +139,8 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       {{ track.year }}
     </div>
     <!-- starred -->
-    <div class="flex cursor-pointer items-center justify-center" @click="toggleStarred" @click.stop>
-      <icon-nrk-star-active v-if="isStarred" class="text-muted" />
-      <icon-nrk-star v-else class="text-muted opacity-40 hover:opacity-100" />
-    </div>
+    <Starred v-model="isStarred" :musicbrainz-id="track.id" />
+
     <!-- play count -->
     <div class="text-center cursor-pointer">
       {{ playCount ?? 0 }}

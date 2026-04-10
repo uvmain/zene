@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { fetchAlbums, postStarToggle } from '~/logic/backendFetch'
+import { fetchAlbums } from '~/logic/backendFetch'
 import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 import { albumsStore, heroAlbumsIndex, heroAlbumsStore } from '~/logic/store'
 
@@ -80,17 +80,6 @@ function actOnUpdatedArt() {
   artUpdatedTime.value = Date.now().toString()
 }
 
-function toggleStarred(album: SubsonicAlbum) {
-  if (album.starred) {
-    postStarToggle(album.id, false)
-    album.starred = undefined
-  }
-  else {
-    postStarToggle(album.id, true)
-    album.starred = new Date().toDateString()
-  }
-}
-
 watch(() => props.album, (newAlbum) => {
   if (newAlbum) {
     albumArray.value = [newAlbum]
@@ -138,10 +127,7 @@ onBeforeMount(async () => {
               </div>
               <div class="mt-2 flex flex-row gap-8">
                 <PlayButton class="flex justify-start" :album="currentAlbum" />
-                <div class="flex cursor-pointer items-center justify-center" @click="toggleStarred(currentAlbum)" @click.stop>
-                  <icon-nrk-star-active v-if="currentAlbum.starred" class="text-primary-400" />
-                  <icon-nrk-star v-else class="text-muted opacity-70 hover:opacity-100" />
-                </div>
+                <Starred v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
               </div>
             </div>
           </div>

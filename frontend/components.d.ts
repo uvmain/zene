@@ -76,6 +76,8 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SettingsDropDown: typeof import('./src/components/SettingsDropDown.vue')['default']
+    Star: typeof import('./src/components/Star.vue')['default']
+    Starred: typeof import('./src/components/Starred.vue')['default']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
     Track: typeof import('./src/components/Track.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']

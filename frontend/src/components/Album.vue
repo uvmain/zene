@@ -61,7 +61,7 @@ function navigateArtist() {
 
 <template>
   <div class="flex flex-col gap-2">
-    <div class="group grid cursor-pointer" @click="navigateAlbum()">
+    <div class="group grid cursor-pointer relative" @click="navigateAlbum()">
       <img
         class="col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"
         :src="coverArtUrl"
