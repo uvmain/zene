@@ -81,14 +81,14 @@ onBeforeMount(async () => {
 
 <template>
   <div class="flex flex-col gap-y-4">
-    <div class="mx-auto flex flex-row gap-x-4 items-center justify-between lg:mx-0">
+    <div class="flex flex-row gap-x-4 items-center justify-between">
       <div class="flex flex-row gap-x-2 items-center">
         <h2 class="text-lg font-semibold lg:text-xl">
           Albums
         </h2>
         <Refresher @refreshed="refresh" />
       </div>
-      <hr class="mx-4 border-t border-primary-400/20 flex-1" />
+      <hr class="mx-2 border-t border-primary-400/20 flex-1 lg:mx-4" />
       <DropdownMenu
         :title="albumOrder"
         :options="Object.values(AlbumOrders)"

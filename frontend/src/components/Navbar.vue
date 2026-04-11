@@ -7,16 +7,17 @@ import { apiKey } from '~/logic/store'
   <div v-if="apiKey" class="flex flex-row">
     <!-- Mobile overlay backdrop -->
     <icon-nrk-media-ffw
-      class="text-primary size-8 rotate-0 transition-all duration-300 bottom-3 left-3 absolute z-100 lg:hidden"
+      class="size-10 rotate-y-0 transition-all duration-300 bottom-3 left-3 absolute z-100 lg:hidden"
       :class="{
-        '-rotate-180': isMobileNavOpen,
+        'rotate-y-180 text-accent-400 translate-x-2': isMobileNavOpen,
+        'text-primary': !isMobileNavOpen,
       }"
       @click="toggleMobileNav()"
     />
 
     <!-- Navbar -->
     <aside
-      class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 lg:(flex max-w-200px relative)"
+      class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 overflow-y-auto lg:(flex max-w-200px relative)"
       :class="{
         'translate-x-0': isMobileNavOpen,
         '-translate-x-full lg:translate-x-0': !isMobileNavOpen,
@@ -33,7 +34,7 @@ import { apiKey } from '~/logic/store'
             Zene
           </div>
         </RouterLink>
-        <nav class="px-2 flex flex-col gap-y-4">
+        <nav class="px-2 flex flex-col gap-y-4 lg:gap-y-4 md:gap-y-2">
           <NavLink route-name="Home" route-prop="/" />
           <NavLink route-name="Search" route-prop="/search" />
           <NavLink route-name="Albums" route-prop="/albums" />
