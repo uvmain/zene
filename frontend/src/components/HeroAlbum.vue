@@ -99,12 +99,12 @@ onBeforeMount(async () => {
 <template>
   <section v-if="albumArray.length > 0">
     <div
-      class="corner-cut-large h-full w-full shadow-background-500 shadow-md overflow-hidden bg-cover bg-center dark:shadow-background-950"
+      class="corner-cut h-full w-full shadow-background-500 shadow-md overflow-hidden bg-cover bg-center lg:(corner-cut-large) dark:shadow-background-950"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
-      <div class="corner-cut-large flex h-full w-full items-center justify-between overflow-hidden background-grad-2 backdrop-blur-md">
-        <div class="p-8">
-          <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
+      <div class="corner-cut flex h-full w-full items-center justify-between overflow-hidden background-grad-2 backdrop-blur-md lg:(corner-cut-large)">
+        <div class="p-4 lg:p-8">
+          <div class="flex flex-row gap-4 h-30 lg:(gap-6 h-52)">
             <img
               :src="coverArtUrl"
               class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
@@ -132,6 +132,7 @@ onBeforeMount(async () => {
             <!-- Change Album Art -->
             <div v-if="props.album">
               <ZButton
+                class="hidden lg:block"
                 @click="showChangeArtModal = true"
               >
                 <div>

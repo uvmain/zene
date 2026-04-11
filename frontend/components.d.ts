@@ -25,6 +25,7 @@ declare module 'vue' {
     HeroPodcast: typeof import('./src/components/HeroPodcast.vue')['default']
     HRule: typeof import('./src/components/HRule.vue')['default']
     IconIonShuffleSharp: typeof import('~icons/ion/shuffle-sharp')['default']
+    IconNrkArrowRight: typeof import('~icons/nrk/arrow-right')['default']
     IconNrkChevronDown: typeof import('~icons/nrk/chevron-down')['default']
     IconNrkClock: typeof import('~icons/nrk/clock')['default']
     IconNrkClose: typeof import('~icons/nrk/close')['default']

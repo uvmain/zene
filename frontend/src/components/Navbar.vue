@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { closeMobileNav, isMobileNavOpen, openMobileNav } from '~/logic/navbar'
+import { isMobileNavOpen, toggleMobileNav } from '~/logic/navbar'
 import { apiKey } from '~/logic/store'
 </script>
 
 <template>
   <div v-if="apiKey" class="flex flex-row">
     <!-- Mobile overlay backdrop -->
-    <div
-      v-if="isMobileNavOpen"
-      class="inset-0 fixed z-40 lg:hidden"
-      @click="closeMobileNav()"
+    <icon-nrk-media-ffw
+      class="text-primary size-8 rotate-0 transition-all duration-300 bottom-3 left-3 absolute z-100 lg:hidden"
+      :class="{
+        '-rotate-180': isMobileNavOpen,
+      }"
+      @click="toggleMobileNav()"
     />
-    <ZButton v-else size10 class="bottom-3 left-3 absolute z-100 lg:hidden" @click="openMobileNav()">
-      <icon-nrk-list class="text-primary size-full" />
-    </ZButton>
 
     <!-- Navbar -->
     <aside
@@ -23,17 +22,6 @@ import { apiKey } from '~/logic/store'
         '-translate-x-full lg:translate-x-0': !isMobileNavOpen,
       }"
     >
-      <!-- Mobile close button -->
-      <div class="mb-4 flex justify-start lg:hidden">
-        <ZButton
-          :size12="true"
-          hover-text="Close Menu"
-          @click="closeMobileNav()"
-        >
-          <icon-nrk-close class="text-2xl" />
-        </ZButton>
-      </div>
-
       <div class="flex flex-col space-y-6">
         <RouterLink class="px-2 flex gap-x-2 items-center" to="/">
           <img
