@@ -99,7 +99,7 @@ onBeforeMount(async () => {
 <template>
   <section v-if="albumArray.length > 0">
     <div
-      class="corner-cut h-full w-full shadow-background-500 shadow-md overflow-hidden bg-cover bg-center lg:(corner-cut-large) dark:shadow-background-950"
+      class="corner-cut shadow-background-500 shadow-md bg-cover bg-center lg:(corner-cut-large) dark:shadow-background-950"
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
       <div class="corner-cut background-grad-2 backdrop-blur-md lg:(corner-cut-large)">
@@ -112,17 +112,20 @@ onBeforeMount(async () => {
               @error="onImageError"
               @click="navigateAlbum"
             >
-            <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
-              <div class="text-xl font-bold cursor-pointer line-clamp-1 lg:text-4xl" @click="navigateAlbum">
+            <div class="text-left flex flex-col gap-1 justify-center lg:gap-4">
+              <div class="text-2xl font-bold cursor-pointer line-clamp-1 lg:text-4xl" @click="navigateAlbum">
                 {{ currentAlbum.name }}
               </div>
-              <div class="text-lg cursor-pointer lg:text-xl" @click="navigateArtist()">
+              <div class="text-xl hidden cursor-pointer lg:block" @click="navigateArtist()">
                 {{ artistAndDate }}
+              </div>
+              <div class="text-lg cursor-pointer line-clamp-1 lg:hidden" @click="navigateArtist()">
+                {{ artist }}
               </div>
               <div v-if="currentAlbum.genres?.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
                 <GenreBottle v-for="genre in currentAlbum.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
               </div>
-              <div class="mt-2 flex flex-row gap-8">
+              <div class="flex flex-row gap-4 lg:gap-8">
                 <PlayButton class="flex justify-start" :album="currentAlbum" />
                 <Starred v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
               </div>

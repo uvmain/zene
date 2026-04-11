@@ -7,7 +7,7 @@ import { apiKey } from '~/logic/store'
   <div v-if="apiKey" class="flex flex-row">
     <!-- Mobile overlay backdrop -->
     <icon-nrk-media-ffw
-      class="size-10 rotate-y-0 transition-all duration-300 bottom-3 left-3 absolute z-100 lg:hidden"
+      class="size-10 rotate-y-0 transition-all duration-300 bottom-4 left-2 absolute z-100 lg:hidden"
       :class="{
         'rotate-y-180 text-accent-400 translate-x-2': isMobileNavOpen,
         'text-primary': !isMobileNavOpen,

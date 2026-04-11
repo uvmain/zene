@@ -69,7 +69,17 @@ function sorttracksBy(sortOption: SortOptions) {
 function scrollToActiveTrack() {
   if (!props.autoScrolling || !scroller.value)
     return
-  scroller.value.scrollToItem(currentQueuePosition.value - 1, { smooth: true, align: 'start' })
+
+  const index = currentQueuePosition.value - 1
+  const scrollerEl = scroller.value.el as HTMLElement
+  const itemTop = index * 68
+  const itemBottom = itemTop + 68
+  const scrollTop = scrollerEl.scrollTop
+  const scrollBottom = scrollTop + scrollerEl.clientHeight
+
+  if (itemTop < scrollTop || itemBottom > scrollBottom) {
+    scroller.value.scrollToItem(index, { smooth: true, align: 'start' })
+  }
 }
 
 watch(() => props.tracks, (newtracks) => {
@@ -91,13 +101,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="routeTracks && routeTracks.length > 0" class="corner-cut-large background-2">
+  <div v-if="routeTracks && routeTracks.length > 0" class="corner-cut background-2 lg:corner-cut-large">
     <div class="p-2 text-left flex flex-col h-full lg:p-4">
       <div
-        class="text-lg text-muted mb-2 px-2 py-1 gap-4 grid items-center"
+        class="text-lg text-muted mb-2 px-2 py-1 gap-4 hidden items-center lg:grid"
         :class="{
-          'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px_2px]': showAlbum,
-          'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,
+          'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
+          'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px]': !showAlbum,
         }"
       >
         <div class="text-center cursor-pointer" @click="currentSortOption === 'trackNumberAsc' ? sorttracksBy('trackNumberDesc') : sorttracksBy('trackNumberAsc')">
@@ -112,10 +122,10 @@ onMounted(() => {
         <div v-if="showAlbum" class="cursor-pointer" @click="currentSortOption === 'albumAsc' ? sorttracksBy('albumDesc') : sorttracksBy('albumAsc')">
           Album
         </div>
-        <div class="cursor-pointer">
+        <div class="hidden cursor-pointer lg:block">
           Genres
         </div>
-        <div class="text-center cursor-pointer">
+        <div class="text-center cursor-pointer" :class="{ 'hidden lg:inline-block': showAlbum, 'hidden': !showAlbum }">
           Year
         </div>
         <div class="flex cursor-pointer cursor-pointer items-center justify-center">
@@ -128,13 +138,29 @@ onMounted(() => {
       <RecycleScroller
         v-slot="{ item, index }"
         ref="scroller"
-        class="h-full"
+        class="h-full hidden lg:block"
         :items="routeTracks"
         :item-size="68"
         key-field="id"
         @visible="scrollToActiveTrack()"
       >
         <Track
+          :track="item"
+          :track-index="index"
+          :primary-artist="primaryArtist"
+          :show-album="showAlbum"
+        />
+      </RecycleScroller>
+      <RecycleScroller
+        v-slot="{ item, index }"
+        ref="scroller"
+        class="h-full block lg:hidden"
+        :items="routeTracks"
+        :item-size="68"
+        key-field="id"
+        @visible="scrollToActiveTrack()"
+      >
+        <TrackSmall
           :track="item"
           :track-index="index"
           :primary-artist="primaryArtist"

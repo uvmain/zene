@@ -14,7 +14,6 @@ const props = defineProps({
 
 const route = useRoute()
 
-const isStarred = ref<string | undefined>(props.track.starred)
 const playCount = ref(props.track.playCount ?? 0)
 
 const artistIsAlbumArtist = computed(() => {
@@ -29,11 +28,6 @@ const isTrackPlaying = computed(() => {
   return (currentlyPlayingItem.value.track && currentlyPlayingItem.value.track.id === props.track.id)
 })
 
-const trackGenres = computed(() => {
-  const genres = props.track.genres.length ? props.track.genres.map(g => g.name.trim()) : []
-  return genres
-})
-
 watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
   if (props.track.musicBrainzId === newtrack) {
     playCount.value = (playCount.value ?? 0) + 1
@@ -43,17 +37,13 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 
 <template>
   <div
-    class="group text-base px-2 py-1 gap-4 grid cursor-pointer transition-colors duration-300 ease-out items-center"
+    class="group text-base px-2 py-1 gap-4 grid grid-cols-[40px_minmax(0,_1fr)_40px_20px] cursor-pointer transition-colors duration-300 ease-out items-center"
     :class="{
       'hover:bg-accent-500/30': !isTrackPlaying,
       'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
       'dark:bg-background-700/20 bg-background-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
       'bg-primary-500/30 corner-cut': isTrackPlaying,
       'corner-cut': trackIndex === 0 || cornerCut,
-      'grid-cols-[30px_minmax(0,_1.2fr)_30px_minmax(0,_0.9fr)_30px_30px_30px]': showAlbum,
-      'grid-cols-[30px_minmax(0,_1fr)_30px_30px_30px]': !showAlbum,
-      'lg:grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
-      'lg:grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px]': !showAlbum,
     }"
     @click="handlePlay(track)"
   >
@@ -113,45 +103,9 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <div class="text-center">
       {{ formatTimeFromSeconds(track.duration) }}
     </div>
-    <!-- album -->
-    <div v-if="showAlbum" class="min-w-0">
-      <RouterLink
-        :to="`/albums/${track.albumId}`"
-        class="text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
-        @click.stop
-      >
-        {{ track.album }}
-      </RouterLink>
-    </div>
-    <!-- track genres -->
-    <div class="fade-out gap-1 min-w-0 hidden truncate lg:line-clamp-1">
-      <RouterLink
-        v-for="genre in trackGenres"
-        :key="genre"
-        :to="`/genres/${genre}`"
-        class="text-primary no-underline hover:(underline underline-white)"
-        @click.stop
-      >
-        {{ genre }}<span v-if="genre !== trackGenres[trackGenres.length - 1]" class="text-muted">, </span>
-      </RouterLink>
-    </div>
-    <!-- year -->
-    <div class="text-center cursor-pointer" :class="{ 'hidden lg:inline-block': showAlbum, 'hidden': !showAlbum }">
-      {{ track.year }}
-    </div>
-    <!-- starred -->
-    <Starred v-model="isStarred" :musicbrainz-id="track.id" />
 
-    <!-- play count -->
-    <div class="text-center cursor-pointer">
-      {{ playCount ?? 0 }}
+    <div class="text-center">
+      <icon-nrk-more />
     </div>
   </div>
 </template>
-
-<style lang="css" scoped>
-.fade-out {
-  mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
-  -webkit-mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
-}
-</style>
