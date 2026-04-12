@@ -24,7 +24,7 @@ function navigateArtist() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2 max-w-200px">
     <div class="group grid cursor-pointer" @click="navigateArtist()">
       <img
         class="rounded-full col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"

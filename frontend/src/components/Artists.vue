@@ -6,13 +6,22 @@ import { generateSeed } from '~/logic/common'
 import { artistOrder, ArtistOrders, artistSeed, artistsStore } from '~/logic/store'
 
 const props = defineProps({
+  title: { type: String, default: 'Artists' },
+  artists: { type: Array as PropType<SubsonicArtist[]>, required: false },
+  orderDisabled: { type: Boolean, default: false },
   limitRows: { type: Boolean, default: false },
   sortKey: { type: String, default: 'currentArtistOrder' },
 })
 
-const artists = ref<SubsonicArtist[]>([] as SubsonicArtist[])
+const artists = ref<SubsonicArtist[]>(props.artists || [] as SubsonicArtist[])
 
 let fetchType: string
+
+watch(() => props.artists, (newArtists) => {
+  if (newArtists) {
+    artists.value = newArtists
+  }
+})
 
 watchEffect(() => {
   if (!Object.values(ArtistOrders).includes(artistOrder.value as ArtistOrder)) {
@@ -74,8 +83,12 @@ async function refresh() {
 }
 
 onBeforeMount(async () => {
-  setFetchType(artistOrder.value)
-  await getArtists()
+  if (!props.orderDisabled) {
+    setFetchType(artistOrder.value)
+  }
+  if (!props.artists) {
+    await getArtists()
+  }
 })
 </script>
 
@@ -84,12 +97,13 @@ onBeforeMount(async () => {
     <div class="flex flex-row gap-x-4 items-center justify-between">
       <div class="flex flex-row gap-x-2 items-center">
         <h2 class="text-lg font-semibold lg:text-xl">
-          Artists
+          {{ title }}
         </h2>
         <Refresher @refreshed="refresh" />
       </div>
-      <hr class="mx-2 border-t border-primary-400/20 flex-1 lg:mx-4" />
+      <hr v-if="!props.orderDisabled" class="mx-2 border-t border-primary-400/20 flex-1 lg:mx-4" />
       <DropdownMenu
+        v-if="!props.orderDisabled"
         :title="artistOrder"
         :options="Object.values(ArtistOrders)"
         align="right"
@@ -108,7 +122,7 @@ onBeforeMount(async () => {
         :index="index"
         class="scale-100 transition duration-200 hover:scale-105"
       />
-      <div v-for="index in 30" id="push-non-full-grid-left" :key="index" aria-none class="size-full" />
+      <!-- <div v-for="index in 30" id="push-non-full-grid-left" :key="index" aria-none class="size-full" /> -->
     </div>
     <Loading v-else />
   </div>
@@ -117,9 +131,9 @@ onBeforeMount(async () => {
 <style scoped>
 .auto-grid {
   @apply grid gap-4 lg:gap-6 mx-auto;
-  @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
-  @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
-  @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
+  @apply grid-cols-[repeat(auto-fill,minmax(min(6rem,100%),1fr))];
+  @apply md:grid-cols-[repeat(auto-fill,minmax(min(8rem,100%),1fr))];
+  @apply lg:grid-cols-[repeat(auto-fill,minmax(min(10rem,100%),1fr))];
 }
 
 .limit-rows {
