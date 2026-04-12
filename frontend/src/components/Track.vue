@@ -41,7 +41,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 
 <template>
   <div
-    class="group autogrid text-base px-2 py-1 cursor-pointer transition-colors duration-300 ease-out"
+    class="group track-grid text-base px-2 py-1 cursor-pointer transition-colors duration-300 ease-out"
     :class="{
       'hover:bg-accent-500/30': !isTrackPlaying,
       'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
@@ -118,7 +118,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     </div>
 
     <!-- album -->
-    <div class="hidden lg:(min-w-0 block)">
+    <div class="hidden md:(min-w-0 block)">
       <RouterLink
         :to="`/albums/${track.albumId}`"
         class="text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
@@ -129,7 +129,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     </div>
 
     <!-- track genres -->
-    <div class="lg:fade-out hidden lg:(gap-1 min-w-0 hidden truncate line-clamp-1)">
+    <div class="lg:fadeout hidden lg:(gap-1 min-w-0 truncate line-clamp-1)">
       <RouterLink
         v-for="genre in trackGenres"
         :key="genre"
@@ -142,26 +142,26 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     </div>
 
     <!-- year -->
-    <div class="hidden lg:(text-center block cursor-pointer)">
+    <div class="hidden md:(text-center block cursor-pointer)">
       {{ track.year }}
     </div>
     <!-- starred -->
-    <Starred v-model="isStarred" class="hidden lg:(block)" :musicbrainz-id="track.id" />
+    <Starred v-model="isStarred" class="hidden xl:(block)" :musicbrainz-id="track.id" />
 
     <!-- play count -->
-    <div class="hidden lg:(text-center block cursor-pointer)">
+    <div class="hidden xl:(text-center block cursor-pointer)">
       {{ playCount ?? 0 }}
     </div>
 
-    <div class="text-center block lg:hidden">
+    <div class="text-center">
       <icon-nrk-more />
     </div>
   </div>
 </template>
 
 <style lang="css" scoped>
-.autogrid {
-  @apply gap-4 grid grid-cols-[40px_minmax(0,_1fr)_40px_20px];
-  @apply items-center lg:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_40px_40px];
+.fadeout {
+  mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
+  -webkit-mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
 }
 </style>

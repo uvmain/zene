@@ -18,7 +18,7 @@ export default defineConfig({
     'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl active:text-primary-500',
     'footer-icon-disabled': 'scale-100 text-lg text-muted lg:text-xl opacity-50',
     'footer-icon-on': 'scale-110 text-lg text-secondary-400 transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl',
-    'auto-grid-6': '[grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr))] grid gap-6',
+    'track-grid': 'items-center gap-4 grid grid-cols-[40px_minmax(0,_1fr)_40px_20px] md:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_60px_20px] lg:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_20px] xl:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_40px_40px_20px]',
   },
   theme: {
     colors: {
