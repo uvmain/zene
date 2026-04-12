@@ -6,7 +6,6 @@ import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playerUtils'
 
 const props = defineProps({
   track: { type: Object as PropType<SubsonicSong>, required: true },
-  showAlbum: { type: Boolean, default: false },
   primaryArtist: { type: String, required: false },
   trackIndex: { type: Number, required: true },
   cornerCut: { type: Boolean, default: false },
@@ -50,7 +49,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <!-- track number and play button -->
     <div class="flex items-center justify-center relative">
       <div class="opacity-100 translate-x-0 transition-all duration-300 relative group-hover:(opacity-0 translate-x-[1rem])">
-        <div v-if="!showAlbum">
+        <div v-if="!route.path.startsWith('/artists/')">
           <div v-if="track.discNumber > 1" class="text-sm text-muted opacity-40 bottom-1px left--4 absolute">
             {{ track.discNumber }}:
           </div>
@@ -64,7 +63,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     </div>
     <!-- album art, title and artist -->
     <div class="flex flex-row gap-4 min-h-60px min-w-0 items-center overflow-hidden">
-      <div v-if="showAlbum" class="flex flex-shrink-0 items-center">
+      <div class="flex flex-shrink-0 items-center">
         <RouterLink
           :to="`/albums/${track.albumId}`"
           class="flex items-center"
@@ -90,12 +89,21 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
           {{ track.title }}
         </RouterLink>
         <RouterLink
+          v-if="!route.path.startsWith('/artists/')"
           class="text-sm text-muted no-underline truncate line-clamp-1 hover:(underline underline-white)"
           :class="{ hidden: artistIsAlbumArtist }"
           :to="`/artists/${track.artistId}`"
           @click.stop
         >
           {{ track.artist }}
+        </RouterLink>
+        <RouterLink
+          v-else
+          class="text-sm text-muted no-underline truncate line-clamp-1 hover:(underline underline-white)"
+          :to="`/albums/${track.albumId}`"
+          @click.stop
+        >
+          {{ track.album }}
         </RouterLink>
       </div>
     </div>
