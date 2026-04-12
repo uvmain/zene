@@ -41,7 +41,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 
 <template>
   <div
-    class="group track-grid text-base px-2 py-1 cursor-pointer transition-colors duration-300 ease-out"
+    class="group text-base px-2 py-1 track-grid cursor-pointer transition-colors duration-300 ease-out"
     :class="{
       'hover:bg-accent-500/30': !isTrackPlaying,
       'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
@@ -86,16 +86,16 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         </RouterLink>
       </div>
       <div class="flex flex-shrink-1 flex-col min-w-0">
-        <RouterLink
-          class="text-lg text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
-          :to="`/tracks/${track.id}`"
+        <button
+          class="text-lg text-primary text-left outline-none link no-underline truncate line-clamp-1"
+          command="show-modal" :commandfor="`track-modal-${track.id}`"
           @click.stop
         >
           {{ track.title }}
-        </RouterLink>
+        </button>
         <RouterLink
           v-if="!route.path.startsWith('/artists/')"
-          class="text-sm text-muted no-underline truncate line-clamp-1 hover:(underline underline-white)"
+          class="text-sm text-muted link no-underline truncate line-clamp-1"
           :class="{ hidden: artistIsAlbumArtist }"
           :to="`/artists/${track.artistId}`"
           @click.stop
@@ -104,7 +104,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         </RouterLink>
         <RouterLink
           v-else
-          class="text-sm text-muted no-underline truncate line-clamp-1 hover:(underline underline-white)"
+          class="text-sm text-muted link no-underline truncate line-clamp-1"
           :to="`/albums/${track.albumId}`"
           @click.stop
         >
@@ -121,7 +121,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <div class="hidden md:(min-w-0 block)">
       <RouterLink
         :to="`/albums/${track.albumId}`"
-        class="text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
+        class="text-primary link no-underline truncate line-clamp-1"
         @click.stop
       >
         {{ track.album }}
@@ -134,7 +134,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         v-for="genre in trackGenres"
         :key="genre"
         :to="`/genres/${genre}`"
-        class="text-primary no-underline hover:(underline underline-white)"
+        class="text-primary link no-underline"
         @click.stop
       >
         {{ genre }}<span v-if="genre !== trackGenres[trackGenres.length - 1]" class="text-muted">, </span>
@@ -156,6 +156,8 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <div class="text-center">
       <icon-nrk-more />
     </div>
+
+    <TrackInfo :id="`track-modal-${track.id}`" :track="track" @click.stop />
   </div>
 </template>
 

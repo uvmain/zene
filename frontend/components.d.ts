@@ -77,6 +77,7 @@ declare module 'vue' {
     Starred: typeof import('./src/components/Starred.vue')['default']
     TopGenres: typeof import('./src/components/TopGenres.vue')['default']
     Track: typeof import('./src/components/Track.vue')['default']
+    TrackInfo: typeof import('./src/components/TrackInfo.vue')['default']
     Tracks: typeof import('./src/components/Tracks.vue')['default']
     TracksHeader: typeof import('./src/components/TracksHeader.vue')['default']
     TrackSmall: typeof import('./src/components/Track.vue')['default']

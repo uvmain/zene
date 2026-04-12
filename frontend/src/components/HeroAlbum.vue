@@ -113,13 +113,13 @@ onBeforeMount(async () => {
               @click="navigateAlbum"
             >
             <div class="text-left flex flex-col gap-1 justify-center lg:gap-4">
-              <div class="link text-2xl font-bold line-clamp-1 lg:text-4xl" @click="navigateAlbum()">
+              <div class="text-2xl font-bold link line-clamp-1 lg:text-4xl" @click="navigateAlbum()">
                 {{ currentAlbum.name }}
               </div>
-              <div class="link text-xl hidden lg:block" @click="navigateArtist()">
+              <div class="text-xl link hidden lg:block" @click="navigateArtist()">
                 {{ artistAndDate }}
               </div>
-              <div class="link text-lg line-clamp-1 lg:hidden" @click="navigateArtist()">
+              <div class="text-lg link line-clamp-1 lg:hidden" @click="navigateArtist()">
                 {{ artist }}
               </div>
               <div v-if="currentAlbum.genres?.length > 0" class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
@@ -134,11 +134,11 @@ onBeforeMount(async () => {
               </div>
             </div>
           </div>
-          <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
+          <div class="opacity-50 right-1 top-1 absolute hover:opacity-100 lg:(right-2 top-2)">
             <!-- Change Album Art -->
             <div v-if="props.album">
               <ZButton
-                class="hidden lg:block"
+                class=""
                 @click="showChangeArtModal = true"
               >
                 <div>
@@ -153,9 +153,8 @@ onBeforeMount(async () => {
               />
             </div>
             <!-- next hero album button -->
-            <ZButton v-else size12 class="right-0 top-0 absolute" @click="nextIndex()">
-              <icon-nrk-media-next class="footer-icon" />
-            </ZButton>
+            <icon-nrk-media-next v-else class="footer-icon right-0 top-16 absolute" @click="nextIndex()">
+            </icon-nrk-media-next>
           </div>
         </div>
       </div>
