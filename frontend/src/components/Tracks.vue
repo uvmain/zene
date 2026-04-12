@@ -138,7 +138,7 @@ onMounted(() => {
       <RecycleScroller
         v-slot="{ item, index }"
         ref="scroller"
-        class="h-full hidden lg:block"
+        class="h-full"
         :items="routeTracks"
         :item-size="68"
         key-field="id"
@@ -148,25 +148,8 @@ onMounted(() => {
           :track="item"
           :track-index="index"
           :primary-artist="primaryArtist"
-          :show-album="showAlbum"
         />
-      </RecycleScroller>
-      <RecycleScroller
-        v-slot="{ item, index }"
-        ref="scroller"
-        class="h-full block lg:hidden"
-        :items="routeTracks"
-        :item-size="68"
-        key-field="id"
-        @visible="scrollToActiveTrack()"
-      >
-        <TrackSmall
-          :track="item"
-          :track-index="index"
-          :primary-artist="primaryArtist"
-          :show-album="showAlbum"
-        />
-      </RecycleScroller>
+      </RecycleScroller>``
     </div>
   </div>
   <div v-else class="text-muted flex h-48 items-center justify-center">

@@ -74,9 +74,8 @@ onBeforeMount(async () => {
     <Artists v-if="similarArtists.length > 0" :artists="similarArtists" title="Similar Artists" :order-disabled="true" />
     <Tracks
       v-if="tracks"
-      :auto-scrolling="false"
+      :auto-scrolling="true"
       :tracks="tracks"
-      :show-album="true"
       :primary-artist="artist?.name"
     />
   </div>

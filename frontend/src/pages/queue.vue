@@ -14,5 +14,5 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <Tracks :tracks="tracks" :show-album="true" />
+  <Tracks :tracks="tracks" />
 </template>
