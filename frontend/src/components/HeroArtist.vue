@@ -20,21 +20,24 @@ const coverArtUrl = computed(() => {
     class="corner-cut-large w-full shadow-background-500 shadow-md bg-cover bg-center dark:shadow-background-950"
     :style="{ backgroundImage: `url(${coverArtUrl})` }"
   >
-    <div class="corner-cut-large flex h-full w-full items-center justify-between background-grad-2 backdrop-blur-md">
-      <div class="p-8">
-        <div class="flex flex-row gap-2 h-30 lg:gap-6 lg:h-52">
+    <div class="corner-cut background-grad-2 backdrop-blur-md lg:(corner-cut-large)">
+      <div class="p-4 lg:p-8">
+        <div class="flex flex-row gap-4 items-center">
           <img
             :src="coverArtUrl"
-            class="border-muted rounded-md h-30 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
+            class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
             loading="lazy"
             @error="onImageError"
           >
           <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
-            <div class="text-xl font-bold cursor-pointer line-clamp-1 lg:text-4xl">
+            <div class="text-xl font-bold line-clamp-1 lg:text-4xl">
               {{ artist.name }}
             </div>
-            <div v-if="genres.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
-              <GenreBottle v-for="genre in genres.slice(0, 8)" :key="genre" :genre="genre" />
+            <div v-if="genres.length > 0" class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
+              <GenreBottle v-for="genre in genres.slice(0, 3)" :key="genre" :genre="genre" class="hidden md:block lg:hidden" />
+              <GenreBottle v-for="genre in genres.slice(0, 6)" :key="genre" :genre="genre" class="hidden lg:block xl:hidden" />
+              <GenreBottle v-for="genre in genres.slice(0, 9)" :key="genre" :genre="genre" class="hidden xl:block 2xl:hidden" />
+              <GenreBottle v-for="genre in genres" :key="genre" :genre="genre" class="hidden 2xl:block" />
             </div>
             <div class="mt-2 flex flex-row gap-8">
               <PlayButton class="flex justify-start" :artist="artist" />

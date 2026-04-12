@@ -67,7 +67,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-4 lg:gap-6">
     <HeroArtist v-if="artist" :artist="artist" :genres="artistGenres" />
     <Albums v-if="artistAlbums.length > 0" :albums="artistAlbums" :order-disabled="true" />
     <Albums v-if="albumArtistAlbums.length > 0" :albums="albumArtistAlbums" title="Appears on albums" :order-disabled="true" />

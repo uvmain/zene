@@ -93,7 +93,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-4">
+  <div class="flex flex-col gap-y-2 lg:gap-y-4">
     <div class="flex flex-row gap-x-4 items-center justify-between">
       <div class="flex flex-row gap-x-2 items-center">
         <h2 class="text-lg font-semibold lg:text-xl">

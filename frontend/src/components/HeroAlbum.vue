@@ -104,7 +104,7 @@ onBeforeMount(async () => {
     >
       <div class="corner-cut background-grad-2 backdrop-blur-md lg:(corner-cut-large)">
         <div class="p-4 lg:p-8">
-          <div class="flex flex-row gap-4">
+          <div class="flex flex-row gap-4 items-center">
             <img
               :src="coverArtUrl"
               class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
@@ -113,17 +113,20 @@ onBeforeMount(async () => {
               @click="navigateAlbum"
             >
             <div class="text-left flex flex-col gap-1 justify-center lg:gap-4">
-              <div class="text-2xl font-bold cursor-pointer line-clamp-1 lg:text-4xl" @click="navigateAlbum">
+              <div class="link text-2xl font-bold line-clamp-1 lg:text-4xl" @click="navigateAlbum()">
                 {{ currentAlbum.name }}
               </div>
-              <div class="text-xl hidden cursor-pointer lg:block" @click="navigateArtist()">
+              <div class="link text-xl hidden lg:block" @click="navigateArtist()">
                 {{ artistAndDate }}
               </div>
-              <div class="text-lg cursor-pointer line-clamp-1 lg:hidden" @click="navigateArtist()">
+              <div class="link text-lg line-clamp-1 lg:hidden" @click="navigateArtist()">
                 {{ artist }}
               </div>
-              <div v-if="currentAlbum.genres?.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
-                <GenreBottle v-for="genre in currentAlbum.genres.filter(g => g.name !== '').slice(0, 8)" :key="genre.name" :genre="genre.name" />
+              <div v-if="currentAlbum.genres?.length > 0" class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
+                <GenreBottle v-for="genre in currentAlbum.genres.slice(0, 3)" :key="genre.name" :genre="genre.name" class="hidden md:block lg:hidden" />
+                <GenreBottle v-for="genre in currentAlbum.genres.slice(0, 6)" :key="genre.name" :genre="genre.name" class="hidden lg:block xl:hidden" />
+                <GenreBottle v-for="genre in currentAlbum.genres.slice(0, 9)" :key="genre.name" :genre="genre.name" class="hidden xl:block 2xl:hidden" />
+                <GenreBottle v-for="genre in currentAlbum.genres" :key="genre.name" :genre="genre.name" class="hidden 2xl:block" />
               </div>
               <div class="flex flex-row gap-4 lg:gap-8">
                 <PlayButton class="flex justify-start" :album="currentAlbum" />
