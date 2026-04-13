@@ -51,15 +51,15 @@ const artist = computed(() => {
   return currentAlbum.value.displayAlbumArtist ?? currentAlbum.value.artist ?? currentAlbum.value.displayArtist ?? 'Unknown Artist'
 })
 
-const artistAndDate = computed(() => {
+const date = computed(() => {
   if (currentAlbum.value.releaseDate) {
-    return `${artist.value} • ${parseReleaseDate(currentAlbum.value.releaseDate)}`
+    return parseReleaseDate(currentAlbum.value.releaseDate)
   }
   else if (currentAlbum.value.year) {
-    return `${artist.value} • ${currentAlbum.value.year}`
+    return currentAlbum.value.year.toString()
   }
   else {
-    return artist.value
+    return ''
   }
 })
 
@@ -116,9 +116,9 @@ onBeforeMount(async () => {
               <div class="text-2xl font-bold link line-clamp-1 lg:text-4xl" @click="navigateAlbum()">
                 {{ currentAlbum.name }}
               </div>
-              <div class="text-xl link hidden lg:block" @click="navigateArtist()">
-                {{ artistAndDate }}
-              </div>
+              <span class="text-xl link hidden lg:block" @click="navigateArtist()">
+                {{ artist }} | {{ date }}
+              </span>
               <div class="text-lg link line-clamp-1 lg:hidden" @click="navigateArtist()">
                 {{ artist }}
               </div>
@@ -130,7 +130,8 @@ onBeforeMount(async () => {
               </div>
               <div class="flex flex-row gap-4 lg:gap-8">
                 <PlayButton class="flex justify-start" :album="currentAlbum" />
-                <Starred v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
+                <Fave v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
+                <Rating v-model="currentAlbum.userRating" :musicbrainz-id="currentAlbum.id" />
               </div>
             </div>
           </div>

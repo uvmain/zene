@@ -9,6 +9,9 @@ const props = defineProps({
 
 const showChangeArtModal = ref(false)
 const isStarred = ref<string | undefined>(props.artist.starred)
+const modelArtist = computed(() => {
+  return props.artist
+})
 
 const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
@@ -40,8 +43,9 @@ const coverArtUrl = computed(() => {
               <GenreBottle v-for="genre in genres" :key="genre" :genre="genre" class="hidden 2xl:block" />
             </div>
             <div class="mt-2 flex flex-row gap-8">
-              <PlayButton class="flex justify-start" :artist="artist" />
-              <Starred v-model="isStarred" :musicbrainz-id="artist.id" />
+              <PlayButton class="flex justify-start" :artist="modelArtist" />
+              <Fave v-model="isStarred" :musicbrainz-id="modelArtist.id" />
+              <Rating v-model="modelArtist.userRating" :musicbrainz-id="modelArtist.id" />
             </div>
           </div>
         </div>

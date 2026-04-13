@@ -1,16 +1,34 @@
 <script setup lang="ts">
+import { onKeyStroke } from '@vueuse/core'
+
 defineProps({
   showModal: { type: Boolean, required: true },
   modalTitle: { type: String, required: true },
 })
 
-defineEmits(['close'])
+const emits = defineEmits(['close'])
+
+const modalContainer = useTemplateRef('modal-container')
+
+onKeyStroke('Escape', (e) => {
+  e.preventDefault()
+  emits('close')
+})
+
+function handleClickOutside(event: MouseEvent) {
+  if (modalContainer.value && !modalContainer.value.contains(event.target as Node)) {
+    emits('close')
+  }
+}
+
+onMounted(() => document.addEventListener('mousedown', handleClickOutside))
+onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 </script>
 
 <template>
   <teleport to="body">
     <div v-if="showModal" class="bg-gray/5 flex items-center inset-0 justify-center fixed z-50 backdrop-blur-lg">
-      <div class="p-6 text-center align-middle border-muted corner-cut-large background-1 flex flex-col gap-4 max-w-lg w-full items-center justify-center relative">
+      <div ref="modal-container" class="m-auto p-6 text-center align-middle border-muted corner-cut-large background-1 flex flex-col gap-4 items-center justify-center relative">
         <div class="text-lg text-muted font-semibold mb-4 max-w-80%">
           {{ modalTitle }}
         </div>

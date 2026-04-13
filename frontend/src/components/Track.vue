@@ -14,6 +14,7 @@ const route = useRoute()
 
 const playCount = ref(props.track.playCount ?? 0)
 const isStarred = ref<string | undefined>(props.track.starred)
+const showTrackModal = ref(false)
 
 const artistIsAlbumArtist = computed(() => {
   if (!props.primaryArtist) {
@@ -86,13 +87,13 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         </RouterLink>
       </div>
       <div class="flex flex-shrink-1 flex-col min-w-0">
-        <button
+        <div
           class="text-lg text-primary text-left outline-none link no-underline truncate line-clamp-1"
-          command="show-modal" :commandfor="`track-modal-${track.id}`"
+          @click="showTrackModal = true"
           @click.stop
         >
           {{ track.title }}
-        </button>
+        </div>
         <RouterLink
           v-if="!route.path.startsWith('/artists/')"
           class="text-sm text-muted link no-underline truncate line-clamp-1"
@@ -145,8 +146,9 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <div class="hidden md:(text-center block cursor-pointer)">
       {{ track.year }}
     </div>
-    <!-- starred -->
-    <Starred v-model="isStarred" class="hidden xl:(block)" :musicbrainz-id="track.id" />
+
+    <!-- fave -->
+    <Fave v-model="isStarred" class="hidden xl:(block)" :musicbrainz-id="track.id" />
 
     <!-- play count -->
     <div class="hidden xl:(text-center block cursor-pointer)">
@@ -157,7 +159,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       <icon-nrk-more />
     </div>
 
-    <TrackInfo :id="`track-modal-${track.id}`" :track="track" @click.stop />
+    <TrackInfo v-model="showTrackModal" :track="track" @click.stop />
   </div>
 </template>
 

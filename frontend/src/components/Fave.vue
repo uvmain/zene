@@ -20,8 +20,8 @@ function toggleStarred() {
 </script>
 
 <template>
-  <div class="flex cursor-pointer transition-all duration-200 items-center justify-center hover:scale-105" @click="toggleStarred" @click.stop>
-    <icon-nrk-star-active v-if="model" class="text-primary-400" />
-    <icon-nrk-star v-else class="text-muted opacity-70 hover:(text-accent-400)" />
+  <div class="flex cursor-pointer transition-all duration-200 items-center justify-center hover:scale-115" @click="toggleStarred" @click.stop>
+    <icon-nrk-heart-active v-if="model" class="text-primary-400" />
+    <icon-nrk-heart v-else class="text-muted opacity-70" />
   </div>
 </template>
