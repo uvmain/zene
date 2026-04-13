@@ -15,6 +15,9 @@ const loggedIn = computed(() => {
       <div
         class="flex flex-grow flex-col h-full w-full items-center justify-center"
       >
+        <FooterTrack
+          class="mb-3 flex max-w-xs w-full items-center lg:max-w-200 sm:max-w-md lg:hidden"
+        />
         <PlayerAudio />
         <PlayerProgressBar />
         <PlayerMediaControls />

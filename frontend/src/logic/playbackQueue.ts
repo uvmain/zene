@@ -114,7 +114,6 @@ interface PlayOptions {
 export async function play(playOptions: PlayOptions) {
   if (playOptions.track) {
     setCurrentlyPlayingTrack(playOptions.track)
-    clearQueue()
   }
   else if (playOptions.album) {
     const tracks = await fetchAlbum(playOptions.album.id).then(fetchedAlbum => fetchedAlbum.song)

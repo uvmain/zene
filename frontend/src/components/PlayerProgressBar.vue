@@ -32,7 +32,7 @@ function handleSeek(event: Event) {
 </script>
 
 <template>
-  <div v-if="currentlyPlayingItem.track || currentlyPlayingItem.podcastEpisode" class="mb-2 flex flex-row gap-2 max-w-xs w-full items-center lg:gap-2 lg:max-w-200 lg:max-w-lg sm:max-w-md">
+  <div v-if="currentlyPlayingItem.track || currentlyPlayingItem.podcastEpisode" class="mb-2 flex flex-row gap-2 max-w-xs w-full items-center lg:gap-2 lg:max-w-200 sm:max-w-md">
     <span id="currentTime" class="text-sm text-muted text-right w-10 sm:text-sm lg:w-12 sm:w-10">
       {{ currentTimeFormatted }}
     </span>

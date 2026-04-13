@@ -16,6 +16,7 @@ export interface SubsonicSong {
   channelCount: number
   path: string
   discNumber: number
+  trackNumber?: number
   created: string
   albumId: string
   artistId: string

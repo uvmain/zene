@@ -65,7 +65,7 @@ onMounted(() => {
           :track-index="index"
           :primary-artist="primaryArtist"
         />
-      </RecycleScroller>``
+      </RecycleScroller>
     </div>
   </div>
   <div v-else class="text-muted flex h-48 items-center justify-center">

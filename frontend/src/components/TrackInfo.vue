@@ -27,19 +27,19 @@ function navigateAlbum() {
 </script>
 
 <template>
-  <Modal :show-modal="showModal" modal-title="Track info" @close="showModal = false">
+  <Modal :show-modal="showModal" @close="showModal = false">
     <template #content>
       <div class="m-auto p-4 corner-cut background-1 lg:p-8">
-        <div class="flex flex-row gap-8 lg:flex-row">
+        <div class="flex flex-col gap-8 lg:flex-row">
           <img
             v-if="coverArtUrl"
             :src="coverArtUrl"
             alt="Album Art"
-            class="h-auto max-w-30vw w-full cursor-pointer shadow-lg"
+            class="mx-auto h-auto max-w-30vw w-full cursor-pointer shadow-lg"
             @error="onImageError"
             @click="navigateAlbum"
           />
-          <div class="flex flex-col lg:w-2/3">
+          <div class="flex flex-col gap-4 lg:w-2/3">
             <h1 class="text-3xl text-primary font-bold mb-2">
               {{ track.title }}
             </h1>
@@ -61,7 +61,7 @@ function navigateAlbum() {
             <p v-if="track" class="text-muted mb-4">
               Released: {{ track.year }}
             </p>
-            <div class="flex flex-row gap-4 lg:gap-8">
+            <div class="flex flex-row gap-4 items-center justify-center lg:gap-8">
               <PlayButton class="flex justify-start" :track="modelTrack" />
               <Fave v-model="modelTrack.starred" :musicbrainz-id="modelTrack.musicBrainzId" />
               <Rating v-model="modelTrack.userRating" :musicbrainz-id="modelTrack.musicBrainzId" />

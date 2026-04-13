@@ -3,7 +3,7 @@ import { onKeyStroke } from '@vueuse/core'
 
 defineProps({
   showModal: { type: Boolean, required: true },
-  modalTitle: { type: String, required: true },
+  modalTitle: { type: String, required: false },
 })
 
 const emits = defineEmits(['close'])
@@ -27,9 +27,9 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 <template>
   <teleport to="body">
-    <div v-if="showModal" class="bg-gray/5 flex items-center inset-0 justify-center fixed z-50 backdrop-blur-lg">
+    <div v-if="showModal" class="p-2 bg-gray/5 flex items-center inset-0 justify-center fixed z-50 backdrop-blur-lg lg:p-4">
       <div ref="modal-container" class="m-auto p-6 text-center align-middle border-muted corner-cut-large background-1 flex flex-col gap-4 items-center justify-center relative">
-        <div class="text-lg text-muted font-semibold mb-4 max-w-80%">
+        <div v-if="modalTitle" class="text-lg text-muted font-semibold mb-4 max-w-80%">
           {{ modalTitle }}
         </div>
         <ZButton :size10="true" aria-label="Close" hover-text="Close" class="right-4 top-4 absolute" @click="$emit('close')">
