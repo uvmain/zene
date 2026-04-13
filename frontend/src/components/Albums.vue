@@ -7,12 +7,21 @@ import { albumOrder, AlbumOrders, albumSeed, albumsStore } from '~/logic/store'
 import DropdownMenu from './DropdownMenu.vue'
 
 const props = defineProps({
+  title: { type: String, default: 'Albums' },
+  orderDisabled: { type: Boolean, default: false },
+  albums: { type: Array as PropType<SubsonicAlbum[]>, required: false },
   limitRows: { type: Boolean, default: false },
 })
 
-const albums = ref<SubsonicAlbum[]>(albumsStore.value)
+const albums = ref<SubsonicAlbum[]>(props.albums || albumsStore.value)
 
 let fetchType: string
+
+watch(() => props.albums, (newAlbums) => {
+  if (newAlbums) {
+    albums.value = newAlbums
+  }
+})
 
 watchEffect(() => {
   if (!Object.values(AlbumOrders).includes(albumOrder.value as AlbumOrder)) {
@@ -74,22 +83,27 @@ async function refresh() {
 }
 
 onBeforeMount(async () => {
-  setFetchType(albumOrder.value)
-  await getAlbums()
+  if (!props.orderDisabled) {
+    setFetchType(albumOrder.value)
+  }
+  if (!props.albums) {
+    await getAlbums()
+  }
 })
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-4">
-    <div class="mx-auto flex flex-row gap-x-4 items-center justify-between lg:mx-0">
+  <div class="flex flex-col gap-y-2 lg:gap-y-4">
+    <div class="flex flex-row gap-x-4 items-center justify-between">
       <div class="flex flex-row gap-x-2 items-center">
         <h2 class="text-lg font-semibold lg:text-xl">
-          Albums
+          {{ title }}
         </h2>
         <Refresher @refreshed="refresh" />
       </div>
-      <hr class="mx-4 border-t border-primary-400/20 flex-1" />
+      <hr v-if="!props.orderDisabled" class="mx-2 border-t border-primary-400/20 flex-1 lg:mx-4" />
       <DropdownMenu
+        v-if="!props.orderDisabled"
         :title="albumOrder"
         :options="Object.values(AlbumOrders)"
         align="right"
@@ -108,7 +122,7 @@ onBeforeMount(async () => {
         :index="index"
         class="scale-100 transition duration-200 hover:scale-105"
       />
-      <div v-for="index in 30" id="push-non-full-grid-left" :key="index" aria-none class="size-full" />
+      <!-- <div v-for="index in 30" id="push-non-full-grid-left" :key="index" aria-none class="size-full" /> -->
     </div>
     <Loading v-else />
   </div>
@@ -117,9 +131,9 @@ onBeforeMount(async () => {
 <style scoped>
 .auto-grid {
   @apply grid gap-4 lg:gap-6 mx-auto lg:mx-0;
-  @apply grid-cols-[repeat(auto-fit,minmax(min(6rem,100%),1fr))];
-  @apply md:grid-cols-[repeat(auto-fit,minmax(min(8rem,100%),1fr))];
-  @apply lg:grid-cols-[repeat(auto-fit,minmax(min(10rem,100%),1fr))];
+  @apply grid-cols-[repeat(auto-fill,minmax(min(6rem,100%),1fr))];
+  @apply md:grid-cols-[repeat(auto-fill,minmax(min(8rem,100%),1fr))];
+  @apply lg:grid-cols-[repeat(auto-fill,minmax(min(10rem,100%),1fr))];
 }
 
 .limit-rows {

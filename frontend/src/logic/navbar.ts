@@ -7,7 +7,3 @@ export function toggleMobileNav() {
 export function closeMobileNav() {
   isMobileNavOpen.value = false
 }
-
-export function openMobileNav() {
-  isMobileNavOpen.value = true
-}

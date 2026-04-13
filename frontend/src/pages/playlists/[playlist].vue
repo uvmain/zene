@@ -41,7 +41,7 @@ onBeforeMount(getPlaylist)
           </div>
         </div>
       </div>
-      <Tracks :show-album="true" :tracks="playlist.entry" />
+      <Tracks :tracks="playlist.entry" />
     </div>
   </div>
 </template>

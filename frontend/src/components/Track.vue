@@ -6,16 +6,15 @@ import { playcountUpdatedMusicbrainzTrackId } from '~/logic/playerUtils'
 
 const props = defineProps({
   track: { type: Object as PropType<SubsonicSong>, required: true },
-  showAlbum: { type: Boolean, default: false },
   primaryArtist: { type: String, required: false },
   trackIndex: { type: Number, required: true },
-  cornerCut: { type: Boolean, default: false },
 })
 
 const route = useRoute()
 
-const isStarred = ref<string | undefined>(props.track.starred)
 const playCount = ref(props.track.playCount ?? 0)
+const isStarred = ref<string | undefined>(props.track.starred)
+const showTrackModal = ref(false)
 
 const artistIsAlbumArtist = computed(() => {
   if (!props.primaryArtist) {
@@ -43,23 +42,20 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
 
 <template>
   <div
-    class="group text-base px-2 py-1 gap-4 grid cursor-pointer transition-colors duration-300 ease-out items-center"
+    class="group text-base px-2 py-1 track-grid cursor-pointer transition-colors duration-300 ease-out"
     :class="{
       'hover:bg-accent-500/30': !isTrackPlaying,
       'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
       'dark:bg-background-700/20 bg-background-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
-      'bg-primary-500/30': isTrackPlaying,
-      'corner-cut': trackIndex === 0 || cornerCut,
-      // grid-cols-[200px_1fr]
-      'grid-cols-[60px_minmax(0,_1.2fr)_60px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_60px_60px]': showAlbum,
-      'grid-cols-[60px_minmax(0,_1fr)_60px_minmax(0,_1fr)_60px_60px_60px]': !showAlbum,
+      'bg-primary-500/30 corner-cut': isTrackPlaying,
+      'corner-cut': trackIndex === 0,
     }"
     @click="handlePlay(track)"
   >
     <!-- track number and play button -->
     <div class="flex items-center justify-center relative">
       <div class="opacity-100 translate-x-0 transition-all duration-300 relative group-hover:(opacity-0 translate-x-[1rem])">
-        <div v-if="!showAlbum">
+        <div v-if="!route.path.startsWith('/artists/')">
           <div v-if="track.discNumber > 1" class="text-sm text-muted opacity-40 bottom-1px left--4 absolute">
             {{ track.discNumber }}:
           </div>
@@ -73,7 +69,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     </div>
     <!-- album art, title and artist -->
     <div class="flex flex-row gap-4 min-h-60px min-w-0 items-center overflow-hidden">
-      <div v-if="showAlbum" class="flex flex-shrink-0 items-center">
+      <div class="flex flex-shrink-0 items-center">
         <RouterLink
           :to="`/albums/${track.albumId}`"
           class="flex items-center"
@@ -91,20 +87,29 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         </RouterLink>
       </div>
       <div class="flex flex-shrink-1 flex-col min-w-0">
-        <RouterLink
-          class="text-lg text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
-          :to="`/tracks/${track.id}`"
+        <div
+          class="text-lg text-primary text-left outline-none link no-underline truncate line-clamp-1"
+          @click="showTrackModal = true"
           @click.stop
         >
           {{ track.title }}
-        </RouterLink>
+        </div>
         <RouterLink
-          class="text-sm text-muted no-underline truncate line-clamp-1 hover:(underline underline-white)"
+          v-if="!route.path.startsWith('/artists/')"
+          class="text-sm text-muted link no-underline truncate line-clamp-1"
           :class="{ hidden: artistIsAlbumArtist }"
           :to="`/artists/${track.artistId}`"
           @click.stop
         >
           {{ track.artist }}
+        </RouterLink>
+        <RouterLink
+          v-else
+          class="text-sm text-muted link no-underline truncate line-clamp-1"
+          :to="`/albums/${track.albumId}`"
+          @click.stop
+        >
+          {{ track.album }}
         </RouterLink>
       </div>
     </div>
@@ -112,44 +117,54 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <div class="text-center">
       {{ formatTimeFromSeconds(track.duration) }}
     </div>
+
     <!-- album -->
-    <div v-if="showAlbum" class="min-w-0">
+    <div class="hidden md:(min-w-0 block)">
       <RouterLink
         :to="`/albums/${track.albumId}`"
-        class="text-primary no-underline truncate line-clamp-1 hover:(underline underline-white)"
+        class="text-primary link no-underline truncate line-clamp-1"
         @click.stop
       >
         {{ track.album }}
       </RouterLink>
     </div>
+
     <!-- track genres -->
-    <div class="fade-out gap-1 min-w-0 truncate line-clamp-1">
+    <div class="lg:fadeout hidden lg:(gap-1 min-w-0 truncate line-clamp-1)">
       <RouterLink
         v-for="genre in trackGenres"
         :key="genre"
         :to="`/genres/${genre}`"
-        class="text-primary no-underline hover:(underline underline-white)"
+        class="text-primary link no-underline"
         @click.stop
       >
         {{ genre }}<span v-if="genre !== trackGenres[trackGenres.length - 1]" class="text-muted">, </span>
       </RouterLink>
     </div>
+
     <!-- year -->
-    <div class="text-center cursor-pointer">
+    <div class="hidden md:(text-center block cursor-pointer)">
       {{ track.year }}
     </div>
-    <!-- starred -->
-    <Starred v-model="isStarred" :musicbrainz-id="track.id" />
+
+    <!-- fave -->
+    <Fave v-model="isStarred" class="hidden xl:(block)" :musicbrainz-id="track.id" />
 
     <!-- play count -->
-    <div class="text-center cursor-pointer">
+    <div class="hidden xl:(text-center block cursor-pointer)">
       {{ playCount ?? 0 }}
     </div>
+
+    <div class="text-center">
+      <icon-nrk-more />
+    </div>
+
+    <TrackInfo v-model="showTrackModal" :track="track" @click.stop />
   </div>
 </template>
 
 <style lang="css" scoped>
-.fade-out {
+.fadeout {
   mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
   -webkit-mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
 }

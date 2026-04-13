@@ -16,7 +16,7 @@ import (
 	"zene/core/logic"
 	"zene/core/net"
 
-	"github.com/go-swiss/compress"
+	"github.com/NYTimes/gziphandler"
 	"github.com/rs/cors"
 )
 
@@ -174,9 +174,15 @@ func StartServer() *http.Server {
 	frontendMux.HandleFunc("/", handleFrontend)
 
 	// main handler
+	gzippedApiRouter := gziphandler.GzipHandler(apiRouter)
 	mainHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		lowerPath := strings.ToLower(r.URL.Path)
 		// backend routes (case-insensitive)
-		if strings.HasPrefix(strings.ToLower(r.URL.Path), "/rest/") || strings.HasPrefix(strings.ToLower(r.URL.Path), "/share/") {
+		if strings.HasPrefix(lowerPath, "/rest/") {
+			gzippedApiRouter.ServeHTTP(w, r)
+			return
+		}
+		if strings.HasPrefix(lowerPath, "/share/") {
 			apiRouter.ServeHTTP(w, r)
 			return
 		}
@@ -184,9 +190,7 @@ func StartServer() *http.Server {
 		frontendMux.ServeHTTP(w, r)
 	})
 
-	handler := cors.AllowAll().Handler(
-		compress.Middleware(mainHandler),
-	)
+	handler := cors.AllowAll().Handler(mainHandler)
 
 	var serverAddress string
 	if config.IsLocalDevEnv() {

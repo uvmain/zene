@@ -448,6 +448,20 @@ export async function postStarToggle(musicbrainz_id: string, starred: boolean): 
   }
 }
 
+export async function setRating(musicbrainz_id: string, rating: number): Promise<Types.SubsonicResponse> {
+  const ratingInt = Number.parseInt(rating.toString(), 10)
+  if (Number.isNaN(ratingInt) || ratingInt < 0 || ratingInt > 5) {
+    throw new Error('Rating must be an integer between 0 and 5')
+  }
+  const formData = new FormData()
+  formData.append('id', musicbrainz_id)
+  formData.append('rating', rating.toString())
+
+  return openSubsonicFetchRequest<Types.SubsonicResponse>('setRating', {
+    body: formData,
+  })
+}
+
 export async function fetchPodcastChannel(podcastChannelId: string): Promise<Types.SubsonicPodcastChannelsResponse> {
   const formData = new FormData()
   formData.append('id', podcastChannelId)

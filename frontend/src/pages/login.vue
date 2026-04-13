@@ -50,7 +50,7 @@ async function login() {
 </script>
 
 <template>
-  <div class="my-auto p-4 background-1 flex flex-col gap-6 items-center justify-center lg:(flex-row gap-12)">
+  <div class="my-auto p-4 background-1 flex flex-col gap-6 max-w-screen items-center justify-center lg:(flex-row gap-12)">
     <img
       class="opacity-90 size-full max-w-400px"
       src="/minidisk.svg"
@@ -58,7 +58,7 @@ async function login() {
       width="200"
       height="200"
     />
-    <div class="text-muted flex flex-col gap-6">
+    <div class="text-muted flex flex-col gap-6 items-center justify-center lg:justify-start">
       <div class="text-xl font-bold">
         Login to Zene
       </div>
@@ -92,7 +92,9 @@ async function login() {
         />
       </form>
       <ZButton :disabled="signInDisabled" @click="login()">
-        {{ loading ? 'Signing in…' : 'Sign in' }}
+        <div class="text-xl lg:text-base">
+          {{ loading ? 'Signing in…' : 'Sign in' }}
+        </div>
       </ZButton>
       <div v-if="error" class="my-4 p-2 corner-cut background-2 flex justify-center">
         <p class="text-red-500 mt-4">

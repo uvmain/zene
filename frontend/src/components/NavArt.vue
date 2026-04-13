@@ -7,7 +7,9 @@ const props = defineProps({
   large: { type: Boolean, default: false },
 })
 
+const router = useRouter()
 const podcastChannelName = ref<string>('')
+const showTrackModal = ref(false)
 
 const coverArtUrl = computed(() => {
   const artSize = props.large ? artSizes.size400 : artSizes.size200
@@ -20,10 +22,6 @@ const coverArtUrl = computed(() => {
   else {
     return '/default-square.png'
   }
-})
-
-const trackTarget = computed(() => {
-  return currentlyPlayingItem.value.track ? `/tracks/${currentlyPlayingItem.value.track.id}` : `/podcasts/${currentlyPlayingItem.value.podcastEpisode?.id}`
 })
 
 const artistTarget = computed(() => {
@@ -39,6 +37,15 @@ async function fetchPodcastChannelName(channelId: string) {
   podcastChannelName.value = response?.podcasts.channel[0].title || ''
 }
 
+function handleTrackClick() {
+  if (currentlyPlayingItem.value.track) {
+    showTrackModal.value = true
+  }
+  else if (currentlyPlayingItem.value.podcastEpisode) {
+    router.push(`/podcasts/${currentlyPlayingItem.value.podcastEpisode.id}`)
+  }
+}
+
 watch(currentlyPlayingItem, (newItem) => {
   if (newItem && newItem.podcastEpisode) {
     fetchPodcastChannelName(newItem.podcastEpisode.channelId)
@@ -52,13 +59,13 @@ watch(currentlyPlayingItem, (newItem) => {
     class="hidden lg:(mt-auto flex flex-col space-y-2)"
   >
     <div class="flex flex-col space-y-1">
-      <RouterLink
+      <div
         class="text-lg text-primary"
-        :class="{ 'router-link': currentlyPlayingItem.track, 'podcast-link': currentlyPlayingItem.podcastEpisode }"
-        :to="trackTarget"
+        :class="{ 'link': currentlyPlayingItem.track, 'podcast-link': currentlyPlayingItem.podcastEpisode }"
+        @click="handleTrackClick"
       >
         {{ currentlyPlayingItem.track?.title || currentlyPlayingItem.podcastEpisode?.title }}
-      </RouterLink>
+      </div>
       <RouterLink
         class="router-link text-sm text-muted"
         :to="artistTarget"
@@ -83,6 +90,7 @@ watch(currentlyPlayingItem, (newItem) => {
         @error="onImageError"
       />
     </RouterLink>
+    <TrackInfo v-if="currentlyPlayingItem.track" v-model="showTrackModal" :track="currentlyPlayingItem.track" @click.stop />
   </div>
 </template>
 

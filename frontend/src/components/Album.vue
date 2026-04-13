@@ -60,7 +60,7 @@ function navigateArtist() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2 max-w-200px">
     <div class="group grid cursor-pointer relative" @click="navigateAlbum()">
       <img
         class="col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"
@@ -79,19 +79,19 @@ function navigateArtist() {
       <div v-if="trackTitle" class="text-lg text-primary text-nowrap truncate">
         {{ trackTitle }}
       </div>
-      <div v-if="showArtist" class="text-lg text-primary text-nowrap truncate lg:text-base">
+      <div v-if="showArtist" class="link text-lg text-primary text-nowrap truncate lg:text-base" @click="navigateAlbum()">
         {{ album.title || album.name }}
       </div>
-      <div v-if="showArtist && showDate" class="text-sm cursor-pointer text-nowrap truncate" @click="navigateArtist()">
+      <div v-if="showArtist && showDate" class="link text-sm text-nowrap truncate" @click="navigateArtist()">
         {{ artistAndDate }}
       </div>
-      <div v-else-if="showArtist && !showDate" class="text-sm cursor-pointer text-nowrap truncate" @click="navigateArtist()">
+      <div v-else-if="showArtist && !showDate" class="link text-sm text-nowrap truncate" @click="navigateArtist()">
         {{ artist }}
       </div>
-      <div v-if="!showArtist && showDate" class="text-sm cursor-pointer text-nowrap truncate lg:text-base" @click="navigateArtist()">
+      <div v-if="!showArtist && showDate" class="link text-sm text-nowrap truncate lg:text-base" @click="navigateArtist()">
         {{ albumAndDate }}
       </div>
-      <div v-else-if="!showArtist && !showDate" class="text-sm cursor-pointer text-nowrap truncate lg:text-base" @click="navigateArtist()">
+      <div v-else-if="!showArtist && !showDate" class="link text-sm text-nowrap truncate lg:text-base" @click="navigateArtist()">
         {{ album.title }}
       </div>
     </div>

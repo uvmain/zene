@@ -22,5 +22,5 @@ onUnmounted(() => clearRouteTracks())
 </script>
 
 <template>
-  <Tracks v-if="tracks" :tracks="tracks" :show-album="true" />
+  <Tracks v-if="tracks" :tracks="tracks" />
 </template>
