@@ -356,26 +356,9 @@ func UpsertPodcastEpisode(ctx context.Context, episode types.PodcastEpisodeRow) 
 func InsertPodcastEpisodes(episodes []types.PodcastEpisodeRow) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	tx, err := DB.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("beginning transaction: %v", err)
-	}
-
-	errOccurred := false
 	for _, episode := range episodes {
 		if err := UpsertPodcastEpisode(ctx, episode); err != nil {
-			errOccurred = true
 			return fmt.Errorf("upserting podcast episode: %v", err)
-		}
-	}
-
-	if errOccurred {
-		if err := tx.Rollback(); err != nil {
-			logger.Printf("Error rolling back transaction: %v", err)
-		}
-	} else {
-		if err := tx.Commit(); err != nil {
-			return fmt.Errorf("committing transaction: %v", err)
 		}
 	}
 
