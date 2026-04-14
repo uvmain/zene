@@ -19,6 +19,10 @@ const currentAlbum = computed(() => {
   return albumArray.value[index.value]
 })
 
+const albumGenres = computed(() => {
+  return currentAlbum.value.genres.filter(genre => genre.name.length > 0).map(genre => genre.name)
+})
+
 function nextIndex() {
   if (index.value < albumArray.value.length - 1) {
     index.value += 1
@@ -122,11 +126,11 @@ onBeforeMount(async () => {
               <div class="text-lg link line-clamp-1 lg:hidden" @click="navigateArtist()">
                 {{ artist }}
               </div>
-              <div v-if="currentAlbum.genres?.length > 0" class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
-                <GenreBottle v-for="genre in currentAlbum.genres.slice(0, 3)" :key="genre.name" :genre="genre.name" class="hidden md:block lg:hidden" />
-                <GenreBottle v-for="genre in currentAlbum.genres.slice(0, 6)" :key="genre.name" :genre="genre.name" class="hidden lg:block xl:hidden" />
-                <GenreBottle v-for="genre in currentAlbum.genres.slice(0, 9)" :key="genre.name" :genre="genre.name" class="hidden xl:block 2xl:hidden" />
-                <GenreBottle v-for="genre in currentAlbum.genres" :key="genre.name" :genre="genre.name" class="hidden 2xl:block" />
+              <div v-if="albumGenres.length > 0" class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
+                <GenreBottle v-for="genre in albumGenres.slice(0, 3)" :key="genre" :genre="genre" class="hidden md:block lg:hidden" />
+                <GenreBottle v-for="genre in albumGenres.slice(0, 6)" :key="genre" :genre="genre" class="hidden lg:block xl:hidden" />
+                <GenreBottle v-for="genre in albumGenres.slice(0, 9)" :key="genre" :genre="genre" class="hidden xl:block 2xl:hidden" />
+                <GenreBottle v-for="genre in albumGenres" :key="genre" :genre="genre" class="hidden 2xl:block" />
               </div>
               <div class="flex flex-row gap-4 lg:gap-8">
                 <PlayButton class="flex justify-start" :album="currentAlbum" />
@@ -153,9 +157,9 @@ onBeforeMount(async () => {
                 @art-updated="actOnUpdatedArt"
               />
             </div>
-            <!-- next hero album button -->
-            <icon-nrk-media-next v-else class="footer-icon right-0 top-16 absolute" @click="nextIndex()">
-            </icon-nrk-media-next>
+            <ZButton v-else size-10 @click="nextIndex()">
+              <icon-nrk-media-next />
+            </ZButton>
           </div>
         </div>
       </div>

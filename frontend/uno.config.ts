@@ -14,7 +14,7 @@ export default defineConfig({
     'background-2': 'dark:bg-background-800 bg-background-200',
     'background-3': 'dark:bg-background-700 bg-background-300',
     'background-grad-2': 'dark:from-background-800 from-background-200 bg-gradient-to-r',
-    'z-button': 'border-1 border-solid relative font-semibold corner-cut flex cursor-pointer items-center justify-center cursor-pointer px-3 py-1 text-sm outline-none transition-all duration-200 text-muted background-2 hover:from-primary-200 hover:text-primary-100 hover:bg-gradient-to-br',
+    'z-button': 'border-1 border-solid border-muted relative font-semibold corner-cut flex cursor-pointer items-center justify-center cursor-pointer px-3 py-1 text-sm outline-none transition-all duration-200 text-muted background-2 hover:(from-primary-200 text-primary bg-gradient-to-br border-primary)',
     'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl active:text-primary-500',
     'footer-icon-disabled': 'scale-100 text-lg text-muted lg:text-xl opacity-50',
     'footer-icon-on': 'scale-110 text-lg text-secondary-400 transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl',

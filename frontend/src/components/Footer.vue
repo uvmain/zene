@@ -18,16 +18,16 @@ const loggedIn = computed(() => {
         <FooterTrack
           class="mb-3 flex max-w-xs w-full items-center lg:max-w-200 sm:max-w-md lg:hidden"
         />
-        <PlayerAudio />
         <PlayerProgressBar />
         <PlayerMediaControls />
       </div>
       <div class="flex flex-row gap-4 items-center lg:gap-6">
         <!-- <GoogleCastButton /> -->
+        <NavOpenerMobile class="relative lg:hidden" />
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />
-        <PlayerVolumeSlider />
+        <PlayerVolumeSlider class="hidden lg:flex" />
       </div>
     </div>
   </footer>

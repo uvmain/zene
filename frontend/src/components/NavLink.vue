@@ -35,6 +35,6 @@ function handleLinkClick() {
         'group-hover/navlink:opacity-50 text-accent-400': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
       }"
     />
-    <span class="text-2xl md:text-lg">{{ routeName }}</span>
+    <span class="text-xl lg:text-lg">{{ routeName }}</span>
   </RouterLink>
 </template>

@@ -1,23 +1,13 @@
 <script setup lang="ts">
-import { isMobileNavOpen, toggleMobileNav } from '~/logic/navbar'
+import { isMobileNavOpen } from '~/logic/navbar'
 import { apiKey } from '~/logic/store'
+import NavOpenerMobile from './NavOpenerMobile.vue'
 </script>
 
 <template>
   <div v-if="apiKey" class="flex flex-row">
-    <!-- Mobile overlay backdrop -->
-    <icon-nrk-media-ffw
-      class="size-10 rotate-y-0 transition-all duration-300 bottom-4 left-2 absolute z-100 lg:hidden"
-      :class="{
-        'rotate-y-180 text-accent-400 translate-x-2': isMobileNavOpen,
-        'text-primary': !isMobileNavOpen,
-      }"
-      @click="toggleMobileNav()"
-    />
-
-    <!-- Navbar -->
     <aside
-      class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 overflow-y-auto lg:(flex max-w-200px relative)"
+      class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 overflow-y-auto lg:(flex w-200px relative)"
       :class="{
         'translate-x-0': isMobileNavOpen,
         '-translate-x-full lg:translate-x-0': !isMobileNavOpen,
@@ -34,7 +24,7 @@ import { apiKey } from '~/logic/store'
             Zene
           </div>
         </RouterLink>
-        <nav class="px-2 flex flex-col gap-y-4 lg:gap-y-4 md:gap-y-2">
+        <nav class="px-2 flex flex-col gap-y-2 lg:gap-y-4 md:gap-y-2">
           <NavLink route-name="Home" route-prop="/" />
           <NavLink route-name="Search" route-prop="/search" />
           <NavLink route-name="Albums" route-prop="/albums" />
@@ -49,7 +39,8 @@ import { apiKey } from '~/logic/store'
           <NavLink route-name="Settings" route-prop="/settings" />
         </nav>
       </div>
-      <NavArt class="max-w-200px" />
+      <NavOpenerMobile class="mt-auto relative lg:hidden" />
+      <NavArt class="max-w-200px hidden lg:block" />
     </aside>
   </div>
 </template>
