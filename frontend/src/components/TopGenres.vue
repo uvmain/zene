@@ -17,7 +17,7 @@ onBeforeMount(async () => {
   <div class="flex flex-col gap-4">
     <div class="flex flex-row gap-x-4 items-center justify-between">
       <div class="flex flex-row gap-x-2 items-center">
-        <h2 class="text-lg font-semibold lg:text-xl">
+        <h2 class="text-lg font-semibold uppercase lg:text-xl">
           Genres
         </h2>
         <Refresher @refreshed="getGenres()" />

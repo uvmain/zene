@@ -11,7 +11,7 @@ const loggedIn = computed(() => {
     v-if="loggedIn"
     class="border-0 border-t-1 border-background-600 border-solid background-2 w-full bottom-0 sticky"
   >
-    <div class="px-8 py-4 flex flex-col gap-6 items-center lg:flex-row">
+    <div class="px-8 py-4 flex flex-col gap-2 items-center lg:flex-row lg:gap-6">
       <div
         class="flex flex-grow flex-col h-full w-full items-center justify-center"
       >
@@ -22,8 +22,8 @@ const loggedIn = computed(() => {
         <PlayerMediaControls />
       </div>
       <div class="flex flex-row gap-4 items-center lg:gap-6">
-        <!-- <GoogleCastButton /> -->
         <NavOpenerMobile class="relative lg:hidden" />
+        <!-- <GoogleCastButton /> -->
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />

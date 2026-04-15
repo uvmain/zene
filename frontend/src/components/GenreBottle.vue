@@ -11,9 +11,7 @@ function navigateToGenre(genre: string) {
 </script>
 
 <template>
-  <ZButton
-    @click="navigateToGenre(genre)"
-  >
+  <ZButton @click="navigateToGenre(genre)">
     <span class="text-nowrap">{{ genre }}</span>
   </ZButton>
 </template>

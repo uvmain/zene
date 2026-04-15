@@ -79,19 +79,19 @@ function navigateArtist() {
       <div v-if="trackTitle" class="text-lg text-primary text-nowrap truncate">
         {{ trackTitle }}
       </div>
-      <div v-if="showArtist" class="link text-lg text-primary text-nowrap truncate lg:text-base" @click="navigateAlbum()">
+      <div v-if="showArtist" class="text-lg text-primary link text-nowrap truncate lg:text-base" @click="navigateAlbum()">
         {{ album.title || album.name }}
       </div>
-      <div v-if="showArtist && showDate" class="link text-sm text-nowrap truncate" @click="navigateArtist()">
+      <div v-if="showArtist && showDate" class="text-sm link text-nowrap truncate" @click="navigateArtist()">
         {{ artistAndDate }}
       </div>
-      <div v-else-if="showArtist && !showDate" class="link text-sm text-nowrap truncate" @click="navigateArtist()">
+      <div v-else-if="showArtist && !showDate" class="text-sm link text-nowrap truncate" @click="navigateArtist()">
         {{ artist }}
       </div>
-      <div v-if="!showArtist && showDate" class="link text-sm text-nowrap truncate lg:text-base" @click="navigateArtist()">
+      <div v-if="!showArtist && showDate" class="text-sm link text-nowrap truncate lg:text-base" @click="navigateArtist()">
         {{ albumAndDate }}
       </div>
-      <div v-else-if="!showArtist && !showDate" class="link text-sm text-nowrap truncate lg:text-base" @click="navigateArtist()">
+      <div v-else-if="!showArtist && !showDate" class="text-sm link text-nowrap truncate lg:text-base" @click="navigateArtist()">
         {{ album.title }}
       </div>
     </div>

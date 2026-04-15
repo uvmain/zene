@@ -37,7 +37,7 @@ function navigateAlbum() {
             alt="Album Art"
             class="mx-auto h-auto max-w-30vw w-full cursor-pointer shadow-lg"
             @error="onImageError"
-            @click="navigateAlbum"
+            @click="navigateAlbum()"
           />
           <div class="flex flex-col gap-4 lg:w-2/3">
             <h1 class="text-3xl text-primary font-bold mb-2">

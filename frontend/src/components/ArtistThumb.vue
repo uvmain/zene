@@ -40,7 +40,7 @@ function navigateArtist() {
       />
     </div>
     <div>
-      <div class="link text-sm text-primary text-center text-nowrap truncate lg:text-base">
+      <div class="text-sm text-primary text-center link text-nowrap truncate lg:text-base">
         {{ artist.name }}
       </div>
     </div>
