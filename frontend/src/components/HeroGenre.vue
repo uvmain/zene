@@ -2,22 +2,26 @@
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 
-// TODO - prefetch next image so it loads instantly when the index changes
-
 const props = defineProps({
   genre: { type: String, required: true },
   tracks: { type: Array as PropType<SubsonicSong[]>, required: true },
 })
 
-const randomIndex = ref<number>(0)
+const current = ref<number>(0)
+const nextIndex = ref<number>(0)
 const intervalId = ref<NodeJS.Timeout | null>(null)
 
 function updateRandomIndex() {
-  randomIndex.value = Math.floor(Math.random() * props.tracks.length)
+  current.value = nextIndex.value
+  nextIndex.value = Math.floor(Math.random() * props.tracks.length)
+  // prefetch the next image to ensure it's loaded when we switch to it
+  const nextTrack = props.tracks[nextIndex.value]
+  const img = new Image()
+  img.src = getCoverArtUrl(nextTrack.coverArt, artSizes.size200)
 }
 
 const coverArtUrl = computed(() => {
-  const track = props.tracks[randomIndex.value]
+  const track = props.tracks[current.value]
   return getCoverArtUrl(track.coverArt, artSizes.size200)
 })
 
