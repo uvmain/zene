@@ -3,7 +3,7 @@ html, body, #app {
   padding: 0;
   border: 0;
   font-family: 'Jura', sans-serif;
-  min-height: 100dvh;
+  min-height: 100svh;
   font-weight: 600;
   scrollbar-color: var(--colors-background-600) var(--colors-background-200);
   overflow-x: hidden;

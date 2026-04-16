@@ -126,6 +126,9 @@ export async function play(playOptions: PlayOptions) {
   else if (playOptions.podcastEpisode) {
     await setCurrentlyPlayingPodcast(playOptions.podcastEpisode)
   }
+  else {
+    setCurrentQueue(routeTracks.value ?? [])
+  }
 }
 
 export async function getRandomTracks(size: number = 10): Promise<SubsonicSong[]> {

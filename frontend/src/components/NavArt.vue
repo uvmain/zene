@@ -56,7 +56,7 @@ watch(currentlyPlayingItem, (newItem) => {
 <template>
   <div
     v-if="currentlyPlayingItem.track || currentlyPlayingItem.podcastEpisode"
-    class="hidden lg:(mt-auto flex flex-col space-y-2)"
+    class="mt-auto flex flex-col space-y-2"
   >
     <div class="flex flex-col space-y-1">
       <div

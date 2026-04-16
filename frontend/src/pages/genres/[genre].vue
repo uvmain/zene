@@ -31,5 +31,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Tracks v-if="tracks" :tracks="tracks" />
+  <div class="flex flex-col gap-4 lg:gap-6">
+    <HeroGenre v-if="tracks && tracks.length > 0" :genre="genre" :tracks="tracks" />
+    <Tracks v-if="tracks && tracks.length > 0" class="h-full" :tracks="tracks" />
+  </div>
 </template>
