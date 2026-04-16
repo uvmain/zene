@@ -120,9 +120,9 @@ onBeforeMount(async () => {
               <div class="text-2xl font-bold link line-clamp-1 lg:text-4xl" @click="navigateAlbum()">
                 {{ currentAlbum.name }}
               </div>
-              <span class="text-xl link hidden lg:block" @click="navigateArtist()">
-                {{ artist }} | {{ date }}
-              </span>
+              <div class="text-xl hidden lg:block">
+                <span class="link" @click="navigateArtist()">{{ artist }}</span> | {{ date }}
+              </div>
               <div class="text-lg link line-clamp-1 lg:hidden" @click="navigateArtist()">
                 {{ artist }}
               </div>
