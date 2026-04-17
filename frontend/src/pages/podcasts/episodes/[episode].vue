@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastEpisodesResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
-import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { getServerUrl, openSubsonicFetchRequest } from '~/logic/backendFetch'
 
 const route = useRoute('/podcasts/episodes/[episode]')
 
@@ -23,7 +23,7 @@ async function getEpisode() {
 const coverArt = computed(() => {
   if (!episode.value)
     return ''
-  return `/share/img/${episode.value.coverArt}?size=400`
+  return getServerUrl(`/share/img/${episode.value.coverArt}?size=400`)
 })
 
 onBeforeMount(async () => {

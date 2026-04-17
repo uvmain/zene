@@ -20,7 +20,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "vite.config.*",
+    "vite.config.ts",
     "uno.config.ts",
     "components.d.ts",
     "auto-imports.d.ts",

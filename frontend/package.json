@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "rimraf dist && vite build",
+    "build:mobile": "rimraf dist && vite build --config vite.mobile.config.ts",
     "preview": "vite preview",
     "cspell": "cspell \"**/*.{ts,js,vue}\"",
     "lint": "eslint .",

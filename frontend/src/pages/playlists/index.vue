@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPlaylistsResponse, SubsonicResponse } from '~/types/subsonic'
 import type { SubsonicPlaylist } from '~/types/subsonicPlaylists'
-import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { getServerUrl, openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { onImageError } from '~/logic/common'
 
 const showModal = ref(false)
@@ -46,7 +46,7 @@ async function getPlaylists() {
   })
   playlists.value = response?.playlists?.playlist
   playlists.value.forEach((playlist) => {
-    playlist.coverArt = `/share/img/${playlist.coverArt}?size=200`
+    playlist.coverArt = getServerUrl(`/share/img/${playlist.coverArt}?size=200`)
   })
 }
 
