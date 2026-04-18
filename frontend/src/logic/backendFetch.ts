@@ -15,15 +15,9 @@ const concurrencyMap = new Map<string, Promise<any>>()
 
 export function getServerUrl(path: string): string {
   if (isMobileNative) {
-    if (serverBaseUrl.value.endsWith('/') && path.startsWith('/')) {
-      return `${serverBaseUrl.value.slice(0, -1)}${path}`
-    }
-    else if (!serverBaseUrl.value.endsWith('/') && !path.startsWith('/')) {
-      return `${serverBaseUrl.value}/${path}`
-    }
-    else {
-      return `${serverBaseUrl.value}/${path}`
-    }
+    let url = `${serverBaseUrl.value}/${path}`
+    url = url.replace(/([^:]\/)\/+/g, '$1')
+    return url
   }
   return path
 }

@@ -45,5 +45,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <audio ref="audioRef" :src="trackUrl" preload="metadata" />
+  <audio ref="audioRef" :src="trackUrl" preload="metadata" crossorigin="anonymous" />
 </template>

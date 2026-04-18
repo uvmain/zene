@@ -127,6 +127,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
 		w.Header().Set("Cache-Control", "public, max-age=31536000")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		contentType := mime.TypeByExtension(filepath.Ext(fileInfo.Name()))
 		w.Header().Set("Content-Type", contentType)
 		http.ServeContent(w, r, fileInfo.Name(), modTime, file)
