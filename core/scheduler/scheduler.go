@@ -146,7 +146,7 @@ func startAlbumArtCleanupRoutine(ctx context.Context) {
 
 func startScanScheduleRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting scan schedule routine")
-	_, err := scanner.RunScan(ctx)
+	_, err := scanner.RunScan(ctx, false)
 	if err != nil {
 		logger.Printf("Error starting scan schedule routine: %v", err)
 	}
@@ -160,7 +160,7 @@ func startScanScheduleRoutine(ctx context.Context) {
 				logger.Println("Scheduler: stopping album art cleanup routine")
 				return
 			case <-ticker.C:
-				_, err := scanner.RunScan(ctx)
+				_, err := scanner.RunScan(ctx, false)
 				if err != nil {
 					logger.Printf("Error running scan: %v", err)
 				}

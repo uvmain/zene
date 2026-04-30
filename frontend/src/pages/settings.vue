@@ -2,17 +2,20 @@
 import { useDark, useToggle } from '@vueuse/core'
 import { openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { clearApiKey } from '~/logic/common'
-import { debugLog, toggleDebug } from '~/logic/logger'
+import { toggleDebug } from '~/logic/logger'
 import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const router = useRouter()
+const forceEnabled = ref(false)
 
 async function runScan() {
-  const response = await openSubsonicFetchRequest('startScan.view')
-  const json = await response.json()
-  debugLog(JSON.stringify(json))
+  const formData = new FormData()
+  formData.append('force', forceEnabled.value ? 'true' : 'false')
+  await openSubsonicFetchRequest('startScan.view', {
+    body: formData,
+  })
 }
 
 async function logOut() {
@@ -23,9 +26,15 @@ async function logOut() {
 
 <template>
   <div class="p-4 flex flex-col gap-y-6">
-    <ZButton @click="runScan()">
-      <span class="text-nowrap">Run a scan</span>
-    </ZButton>
+    <div class="flex gap-4">
+      <ZButton @click="runScan()">
+        <span class="text-nowrap">Run a scan</span>
+      </ZButton>
+      <label for="force" class="flex gap-x-2 items-center">
+        <input id="force" v-model="forceEnabled" type="checkbox" class="size-6">
+        <span class="text-nowrap">Force</span>
+      </label>
+    </div>
     <ZButton :primary="debugEnabled" @click="toggleDebug()">
       <span class="text-nowrap">Debug: {{ debugEnabled ? 'On' : 'Off' }}</span>
     </ZButton>

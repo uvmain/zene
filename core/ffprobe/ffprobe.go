@@ -167,13 +167,13 @@ func ParseMetadata(ctx context.Context, ffprobeOutput types.FfprobeStandard) (ty
 	parsedTitle := getTagStringValue(ffprobeOutput.Tags, []string{"title"})
 	parsedAlbum := getTagStringValue(ffprobeOutput.Tags, []string{"album"})
 	parsedGenre := getTagStringValue(ffprobeOutput.Tags, []string{"genre"})
-	parsedReleaseDate := getTagStringValue(ffprobeOutput.Tags, []string{"date", "release_date", "ORIGINAL_DATE", "ORIGINALDATE"})
+	parsedReleaseDate := getTagStringValue(ffprobeOutput.Tags, []string{"ORIGINAL_DATE", "ORIGINALDATE", "date", "release_date"})
 	musicBrainzAlbumId := getTagStringValue(ffprobeOutput.Tags, []string{"MUSICBRAINZ_ALBUMID", "MusicBrainz Album Id", "musicbrainz Album Id"})
 	musicBrainzArtistId := getTagStringValue(ffprobeOutput.Tags, []string{"MUSICBRAINZ_ARTISTID", "MusicBrainz Artist Id", "musicbrainz Artist Id"})
 	musicBrainzTrackId := getTagStringValue(ffprobeOutput.Tags, []string{"MUSICBRAINZ_TRACKID", "MusicBrainz Release Track Id", "musicbrainz Release Track Id"})
 	totalTracks := getTagStringValue(ffprobeOutput.Tags, []string{"TOTALTRACKS"})
 	trackNumber := getTagStringValue(ffprobeOutput.Tags, []string{"track"})
-	originalYear := getTagStringValue(ffprobeOutput.Tags, []string{"TORY", "ORY", "ORIGINAL_YEAR", "ORIGINAL YEAR", "ORIGINALYEAR"})
+	// originalYear := getTagStringValue(ffprobeOutput.Tags, []string{"TORY", "ORY", "ORIGINAL_YEAR", "ORIGINAL YEAR", "ORIGINALYEAR"})
 	totalDiscs := getTagStringValue(ffprobeOutput.Tags, []string{"TOTALDISCS"})
 	discNumber := getTagStringValue(ffprobeOutput.Tags, []string{"disc"})
 	label := getTagStringValue(ffprobeOutput.Tags, []string{"label", "publisher"})
@@ -202,9 +202,9 @@ func ParseMetadata(ctx context.Context, ffprobeOutput types.FfprobeStandard) (ty
 		discNumber = "1"
 	}
 
-	if parsedReleaseDate == "" && originalYear != "" {
-		parsedReleaseDate = fmt.Sprintf("%s-01-01", originalYear)
-	}
+	// if parsedReleaseDate == "" && originalYear != "" {
+	// 	parsedReleaseDate = fmt.Sprintf("%s-01-01", originalYear)
+	// }
 
 	var musicBrainzData types.MbRelease
 

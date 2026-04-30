@@ -19,7 +19,7 @@ import (
 	"zene/core/types"
 )
 
-func RunScan(ctx context.Context) (types.ScanStatus, error) {
+func RunScan(ctx context.Context, force bool) (types.ScanStatus, error) {
 	latestScan, err := database.GetLatestScan(ctx)
 	if err != nil && err != sql.ErrNoRows {
 		logger.Printf("Error getting latest scan: %v", err)
@@ -28,6 +28,13 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 			Count:       0,
 			FolderCount: 0,
 		}, err
+	}
+
+	var scanType string
+	if force {
+		scanType = "full"
+	} else {
+		scanType = "incremental"
 	}
 
 	if latestScan.Id > 0 && latestScan.CompletedDate == "" {
@@ -63,7 +70,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 		Count:       0,
 		FolderCount: 0,
 		StartedDate: logic.GetCurrentTimeFormatted(),
-		Type:        "full",
+		Type:        scanType,
 	}
 
 	scanId, err := database.InsertScan(ctx, newScan)
@@ -71,7 +78,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 		return types.ScanStatus{}, err
 	}
 
-	go scanMusicDirs(ctx, int(scanId))
+	go scanMusicDirs(ctx, int(scanId), force)
 
 	return types.ScanStatus{
 		Scanning:    true,
@@ -82,7 +89,7 @@ func RunScan(ctx context.Context) (types.ScanStatus, error) {
 	}, nil
 }
 
-func scanMusicDirs(ctx context.Context, scanId int) {
+func scanMusicDirs(ctx context.Context, scanId int, force bool) {
 	scanUpdate := database.ScanRow{
 		Count:         0,
 		FolderCount:   0,
@@ -105,7 +112,7 @@ func scanMusicDirs(ctx context.Context, scanId int) {
 	defer func() { logger.Printf("Scan completed in %s", time.Since(start)) }()
 
 	for _, musicDir := range config.MusicDirs {
-		changesMade, err = scanMusicDir(ctx, musicDir)
+		changesMade, err = scanMusicDir(ctx, musicDir, force)
 		if err != nil {
 			logger.Printf("Error scanning music directory %s in scanMusicDirs: %v", musicDir, err)
 			return
@@ -151,10 +158,14 @@ func scanMusicDirs(ctx context.Context, scanId int) {
 	}
 }
 
-func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
+func scanMusicDir(ctx context.Context, musicDir string, force bool) (bool, error) {
 	changesMade := false
 
-	logger.Printf("Starting scan of music dir %s", musicDir)
+	if force {
+		logger.Printf("Starting forced scan of music dir %s", musicDir)
+	} else {
+		logger.Printf("Starting incremental scan of music dir %s", musicDir)
+	}
 
 	// get a list of files from the filesystem
 	logger.Printf("Scan: Getting list of audio files in the filesystem")
@@ -186,7 +197,7 @@ func scanMusicDir(ctx context.Context, musicDir string) (bool, error) {
 		if len(matchingMetadata) > 0 {
 			// Update existing metadata..
 			metadataDateModified := matchingMetadata[0].DateModified
-			if logic.GetStringTimeFormatted(metadataDateModified).Before(logic.GetStringTimeFormatted(audioFile.DateModified)) {
+			if force || logic.GetStringTimeFormatted(metadataDateModified).Before(logic.GetStringTimeFormatted(audioFile.DateModified)) {
 				// if the file's modified date is more recent than in the database
 				existingMetadataToUpdate = append(existingMetadataToUpdate, audioFile)
 			}

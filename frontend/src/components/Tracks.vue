@@ -3,7 +3,7 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import { currentlyPlayingItem, currentQueuePosition } from '~/logic/playbackQueue'
 import { routeTracks } from '~/logic/routeTracks'
-import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+import 'vue-virtual-scroller/index.css'
 
 const props = defineProps({
   primaryArtist: { type: String, required: false },
@@ -57,6 +57,7 @@ onMounted(() => {
         class="h-full"
         :items="routeTracks"
         :item-size="68"
+        :flow-mode="true"
         key-field="id"
         @visible="scrollToActiveTrack()"
       >
