@@ -25,12 +25,12 @@ watchEffect(() => {
 })
 
 onMounted(async () => {
+  initializeCast()
   debugLog('Waiting for Cast SDK...')
   window.__onGCastApiAvailable = (isAvailable: boolean) => {
     if (isAvailable) {
       debugLog('Cast API available')
       chromecastAvailable.value = true
-      initializeCast()
     }
     else {
       debugLog('Cast API unavailable')
@@ -41,7 +41,6 @@ onMounted(async () => {
   if ((window.cast && window.cast.framework) || (window.chrome?.cast && window.chrome.cast.isAvailable)) {
     debugLog('Cast API already available')
     chromecastAvailable.value = true
-    initializeCast()
   }
 })
 
@@ -52,7 +51,7 @@ onUnmounted(() => {
 
 <template>
   <div v-if="chromecastAvailable" class="border-none flex cursor-pointer items-center justify-center">
-    <google-cast-launcher ref="castButton" class="size-7" />
+    <google-cast-launcher ref="castButton" class="size-6" />
   </div>
 </template>
 

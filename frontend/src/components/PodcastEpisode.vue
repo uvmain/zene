@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
-import { downloadMediaBlob, openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { downloadMediaBlob, getServerUrl, openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { formatTimeFromSeconds } from '~/logic/common'
 import { deleteStoredEpisode, episodeIsStored, setStoredEpisode } from '~/stores/usePodcastStore'
 
@@ -21,7 +21,7 @@ const newlineRegex1 = /\r\n/g
 const newlineRegex2 = /\r/g
 
 const episodeArtUrl = computed(() => {
-  return `/share/img/${props.episode.coverArt}?size=192`
+  return getServerUrl(`/share/img/${props.episode.coverArt}?size=192`)
 })
 
 const descriptionLinesCleaned = computed<string>(() => {

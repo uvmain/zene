@@ -33,7 +33,7 @@ function handleSeek(event: Event) {
 
 <template>
   <div v-if="currentlyPlayingItem.track || currentlyPlayingItem.podcastEpisode" class="mb-2 flex flex-row gap-2 max-w-xs w-full items-center lg:gap-2 lg:max-w-200 sm:max-w-md">
-    <span id="currentTime" class="text-sm text-muted text-right w-10 sm:text-sm lg:w-12 sm:w-10">
+    <span id="currentTime" class="text-sm text-muted text-left w-12 sm:text-sm">
       {{ currentTimeFormatted }}
     </span>
     <input
@@ -43,7 +43,7 @@ function handleSeek(event: Event) {
       :value="currentTime"
       @input="handleSeek($event)"
     />
-    <span id="duration" class="text-sm text-muted w-10 sm:text-sm lg:w-12 sm:w-10">
+    <span id="duration" class="text-sm text-muted text-right w-12 sm:text-sm">
       {{ duration }}
     </span>
   </div>

@@ -13,6 +13,7 @@
     "clean": "npm run clean:build && npm run clean:modules",
     "dev:backend": "air",
     "dev:frontend": "npm run dev --workspace frontend",
+    "dev:android": "npm run build:frontend && npx cap sync && npx cap open android",
     "dev": "concurrently npm:caddy npm:dev:backend npm:dev:frontend",
     "dev:noproxy": "concurrently npm:dev:backend npm:dev:frontend",
     "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && cpy zene . --rename=zene.exe",
@@ -39,6 +40,7 @@
   },
   "homepage": "https://github.com/uvmain/zene#readme",
   "devDependencies": {
+    "@capacitor/cli": "^8.3.1",
     "caddy-baron": "^5.0.1",
     "concurrently": "^9.2.1",
     "cpy-cli": "^7.0.0",

@@ -173,7 +173,7 @@ func ParseMetadata(ctx context.Context, ffprobeOutput types.FfprobeStandard) (ty
 	musicBrainzTrackId := getTagStringValue(ffprobeOutput.Tags, []string{"MUSICBRAINZ_TRACKID", "MusicBrainz Release Track Id", "musicbrainz Release Track Id"})
 	totalTracks := getTagStringValue(ffprobeOutput.Tags, []string{"TOTALTRACKS"})
 	trackNumber := getTagStringValue(ffprobeOutput.Tags, []string{"track"})
-	originalYear := getTagStringValue(ffprobeOutput.Tags, []string{"TORY", "ORY", "ORIGINAL_YEAR", "ORIGINAL YEAR"})
+	originalYear := getTagStringValue(ffprobeOutput.Tags, []string{"TORY", "ORY", "ORIGINAL_YEAR", "ORIGINAL YEAR", "ORIGINALYEAR"})
 	totalDiscs := getTagStringValue(ffprobeOutput.Tags, []string{"TOTALDISCS"})
 	discNumber := getTagStringValue(ffprobeOutput.Tags, []string{"disc"})
 	label := getTagStringValue(ffprobeOutput.Tags, []string{"label", "publisher"})

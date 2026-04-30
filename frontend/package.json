@@ -7,12 +7,15 @@
   "scripts": {
     "dev": "vite",
     "build": "rimraf dist && vite build",
+    "build:mobile": "rimraf dist && vite build --config vite.mobile.config.ts",
     "preview": "vite preview",
     "cspell": "cspell \"**/*.{ts,js,vue}\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
     "@vueuse/core": "^14.2.1",
     "butterchurn": "^2.6.7",
     "md5": "^2.3.0",
