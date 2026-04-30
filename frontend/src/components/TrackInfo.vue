@@ -35,11 +35,11 @@ function navigateAlbum() {
             v-if="coverArtUrl"
             :src="coverArtUrl"
             alt="Album Art"
-            class="mx-auto h-auto max-w-30vw w-full cursor-pointer shadow-lg"
+            class="mx-auto h-auto max-w-400px w-full aspect-square cursor-pointer shadow-lg"
             @error="onImageError"
             @click="navigateAlbum()"
           />
-          <div class="flex flex-col gap-4 lg:w-2/3">
+          <div class="flex flex-col gap-4 items-center justify-center lg:w-2/3">
             <h1 class="text-3xl text-primary font-bold mb-2">
               {{ track.title }}
             </h1>
@@ -66,6 +66,7 @@ function navigateAlbum() {
               <Fave v-model="modelTrack.starred" :musicbrainz-id="modelTrack.musicBrainzId" />
               <Rating v-model="modelTrack.userRating" :musicbrainz-id="modelTrack.musicBrainzId" />
             </div>
+            <PlayerMediaControls :compact="true" />
           </div>
         </div>
       </div>
