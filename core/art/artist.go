@@ -2,7 +2,9 @@ package art
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -163,4 +165,62 @@ func GetArtForArtist(ctx context.Context, musicBrainzArtistId string, size int) 
 		return nil, time.Now(), fmt.Errorf("error reading image for filepath %s: %s", filePath, err)
 	}
 	return blob, modTime, nil
+}
+
+func GetLocalArtistArtAsBase64(ctx context.Context, musicBrainzArtistId string) (LocalArts, error) {
+	var localArts LocalArts
+
+	albumDirectories, err := database.SelectArtistSubDirectories(ctx, musicBrainzArtistId)
+	if err != nil {
+		logger.Printf("Error getting artist subdirectories from database in ImportArtForArtist: %v", err)
+	}
+
+	artist, err := database.SelectArtistByMusicBrainzArtistId(ctx, musicBrainzArtistId)
+	if err != nil {
+		logger.Printf("Error getting artist from database in GetLocalArtistArtAsBase64: %v", err)
+		return localArts, err
+	}
+
+	directories := []string{}
+
+	for _, albumDirectory := range albumDirectories {
+		if err := logic.CheckContext(ctx); err != nil {
+			return localArts, err
+		}
+		directory := filepath.Dir(albumDirectory)
+		if !slices.Contains(directories, directory) {
+			directories = append(directories, directory)
+		}
+	}
+	directories = slices.Compact(directories)
+
+	var foundFile string
+
+	for _, directory := range directories {
+		if err := logic.CheckContext(ctx); err != nil {
+			return localArts, err
+		}
+		folderFilePath := filepath.Join(directory, "artist.jpg")
+		artistFileName := strings.Join([]string{artist.Name, "jpg"}, ".")
+		artistFilePath := filepath.Join(directory, artistFileName)
+		if io.FileExists(folderFilePath) {
+			foundFile = folderFilePath
+			break
+		} else if io.FileExists(artistFilePath) {
+			foundFile = artistFilePath
+			break
+		}
+	}
+
+	if foundFile != "" {
+		folderArtBytes, err := getBytesFromFilePath(foundFile)
+		if err == nil {
+			contentType := http.DetectContentType(folderArtBytes)
+			localArts.FolderArt = "data:" + contentType + ";base64," + base64.StdEncoding.EncodeToString(folderArtBytes)
+		} else {
+			localArts.FolderArt = ""
+			logger.Printf("No folder art found for artist %s: %v", musicBrainzArtistId, err)
+		}
+	}
+	return localArts, nil
 }

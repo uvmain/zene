@@ -61,11 +61,11 @@ export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.si
   return getServerUrl(path)
 }
 
-export async function cacheBustAlbumArt(albumId: string) {
+export async function cacheBustArt(musicbrainz_id: string) {
   const promises = []
-  promises.push(fetch(getCoverArtUrl(albumId, 0), { method: 'POST' }))
+  promises.push(fetch(getCoverArtUrl(musicbrainz_id, 0), { method: 'POST' }))
   for (const size of Object.values(artSizes).filter(value => typeof value === 'number')) {
-    promises.push(fetch(getCoverArtUrl(albumId, size), { method: 'POST' }))
+    promises.push(fetch(getCoverArtUrl(musicbrainz_id, size), { method: 'POST' }))
   }
   await Promise.all(promises)
 }

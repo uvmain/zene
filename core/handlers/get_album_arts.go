@@ -49,7 +49,7 @@ func HandleGetAlbumArts(w http.ResponseWriter, r *http.Request) {
 	deezerImageUrl, _ := deezer.GetAlbumArtUrlWithArtistNameAndAlbumName(ctx, artistName, albumName)
 	coverArtArchiveUrl, _ := musicbrainz.GetAlbumArtUrl(ctx, album.MusicBrainzId)
 
-	localArts, _ := art.GetLocalArtAsBase64(ctx, album.MusicBrainzId)
+	localArts, _ := art.GetLocalAlbumArtAsBase64(ctx, album.MusicBrainzId)
 
 	response := AlbumArtsResponse{
 		Deezer:           deezerImageUrl,

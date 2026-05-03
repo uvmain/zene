@@ -352,11 +352,11 @@ export async function fetchSearchResults(query: string, limit = 50): Promise<Sea
   }
 }
 
-export type AlbumArtSseMessage = | { source: 'Deezer', data: string }
+export type ArtSseMessage = { source: 'Deezer', data: string }
   | { source: 'CoverArtArchive', data: string }
   | { source: 'LocalArt', data: { folderArt: string, embeddedArt: string } }
 
-export async function useServerSentEventsForAlbumArt(artist: string, album: string, onMessage: (data: AlbumArtSseMessage) => void, onError: (error: any) => void): Promise<EventSource> {
+export async function useServerSentEventsForAlbumArt(artist: string, album: string, onMessage: (data: ArtSseMessage) => void, onError: (error: any) => void): Promise<EventSource> {
   const params = new URLSearchParams()
   params.append('apiKey', apiKey.value)
   params.append('f', 'json')
@@ -369,7 +369,7 @@ export async function useServerSentEventsForAlbumArt(artist: string, album: stri
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
-    const data = JSON.parse(event.data as string) as AlbumArtSseMessage
+    const data = JSON.parse(event.data as string) as ArtSseMessage
     onMessage(data)
   })
 
@@ -507,4 +507,43 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
     debugLog(error as string)
     return []
   }
+}
+
+export async function useServerSentEventsForArtistArt(artistId: string, onMessage: (data: ArtSseMessage) => void, onError: (error: any) => void): Promise<EventSource> {
+  const params = new URLSearchParams()
+  params.append('apiKey', apiKey.value)
+  params.append('f', 'json')
+  params.append('v', '1.16.0')
+  params.append('c', 'zene-frontend')
+  params.append('id', artistId)
+
+  const url = getServerUrl(`/rest/getartistartssse?${params.toString()}`)
+  const eventSource = new EventSource(url)
+
+  eventSource.addEventListener('message', (event) => {
+    const data = JSON.parse(event.data as string) as ArtSseMessage
+    onMessage(data)
+  })
+
+  eventSource.addEventListener('done', () => {
+    console.log('SSE completed — closing stream')
+    eventSource.close()
+  })
+
+  eventSource.onerror = (err) => {
+    onError(err)
+  }
+
+  return eventSource
+}
+
+export async function postNewArtistArt(musicbrainz_artist_id: string, image: Blob): Promise<Types.SubsonicResponse> {
+  const formData = new FormData()
+  formData.append('id', musicbrainz_artist_id)
+  formData.append('file', image)
+
+  const response = await openSubsonicFetchRequest<Types.SubsonicResponse>('updateArtistArt', {
+    body: formData,
+  })
+  return response
 }

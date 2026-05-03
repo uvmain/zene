@@ -19,15 +19,17 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
 	force := form["force"]
+	includeArt := form["include-art"]
+
+	scanOptions := types.ScanOptions{
+		Force:      strings.ToLower(force) == "true",
+		IncludeArt: strings.ToLower(includeArt) == "true",
+	}
 
 	var scanStatus types.ScanStatus
 	var err error
 
-	if strings.ToLower(force) == "true" {
-		scanStatus, err = scanner.RunScan(context.Background(), true)
-	} else {
-		scanStatus, err = scanner.RunScan(context.Background(), false)
-	}
+	scanStatus, err = scanner.RunScan(context.Background(), scanOptions)
 
 	if err != nil {
 		if scanStatus.Scanning {

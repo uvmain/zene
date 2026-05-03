@@ -19,7 +19,7 @@ import (
 	"zene/core/types"
 )
 
-func RunScan(ctx context.Context, force bool) (types.ScanStatus, error) {
+func RunScan(ctx context.Context, scanOptions types.ScanOptions) (types.ScanStatus, error) {
 	latestScan, err := database.GetLatestScan(ctx)
 	if err != nil && err != sql.ErrNoRows {
 		logger.Printf("Error getting latest scan: %v", err)
@@ -31,7 +31,7 @@ func RunScan(ctx context.Context, force bool) (types.ScanStatus, error) {
 	}
 
 	var scanType string
-	if force {
+	if scanOptions.Force {
 		scanType = "full"
 	} else {
 		scanType = "incremental"
@@ -78,7 +78,7 @@ func RunScan(ctx context.Context, force bool) (types.ScanStatus, error) {
 		return types.ScanStatus{}, err
 	}
 
-	go scanMusicDirs(ctx, int(scanId), force)
+	go scanMusicDirs(ctx, int(scanId), scanOptions)
 
 	return types.ScanStatus{
 		Scanning:    true,
@@ -89,7 +89,7 @@ func RunScan(ctx context.Context, force bool) (types.ScanStatus, error) {
 	}, nil
 }
 
-func scanMusicDirs(ctx context.Context, scanId int, force bool) {
+func scanMusicDirs(ctx context.Context, scanId int, scanOptions types.ScanOptions) {
 	scanUpdate := database.ScanRow{
 		Count:         0,
 		FolderCount:   0,
@@ -112,7 +112,7 @@ func scanMusicDirs(ctx context.Context, scanId int, force bool) {
 	defer func() { logger.Printf("Scan completed in %s", time.Since(start)) }()
 
 	for _, musicDir := range config.MusicDirs {
-		changesMade, err = scanMusicDir(ctx, musicDir, force)
+		changesMade, err = scanMusicDir(ctx, musicDir, scanOptions)
 		if err != nil {
 			logger.Printf("Error scanning music directory %s in scanMusicDirs: %v", musicDir, err)
 			return
@@ -158,13 +158,18 @@ func scanMusicDirs(ctx context.Context, scanId int, force bool) {
 	}
 }
 
-func scanMusicDir(ctx context.Context, musicDir string, force bool) (bool, error) {
+func scanMusicDir(ctx context.Context, musicDir string, scanOptions types.ScanOptions) (bool, error) {
 	changesMade := false
 
-	if force {
+	if scanOptions.Force {
 		logger.Printf("Starting forced scan of music dir %s", musicDir)
 	} else {
 		logger.Printf("Starting incremental scan of music dir %s", musicDir)
+	}
+	if scanOptions.IncludeArt {
+		logger.Printf("This scan will reset album and artist artwork for music dir %s", musicDir)
+	} else {
+		logger.Printf("This scan will not reset album and artist artwork for music dir %s", musicDir)
 	}
 
 	// get a list of files from the filesystem
@@ -197,7 +202,7 @@ func scanMusicDir(ctx context.Context, musicDir string, force bool) (bool, error
 		if len(matchingMetadata) > 0 {
 			// Update existing metadata..
 			metadataDateModified := matchingMetadata[0].DateModified
-			if force || logic.GetStringTimeFormatted(metadataDateModified).Before(logic.GetStringTimeFormatted(audioFile.DateModified)) {
+			if scanOptions.Force || logic.GetStringTimeFormatted(metadataDateModified).Before(logic.GetStringTimeFormatted(audioFile.DateModified)) {
 				// if the file's modified date is more recent than in the database
 				existingMetadataToUpdate = append(existingMetadataToUpdate, audioFile)
 			}
@@ -246,6 +251,11 @@ func scanMusicDir(ctx context.Context, musicDir string, force bool) (bool, error
 			changesMade = true
 			logger.Printf("Scan: %d orphaned metadata rows removed", fileCount)
 		}
+	}
+
+	if !scanOptions.IncludeArt {
+		logger.Printf("Scan: skipping album and artist artwork retrieval for music dir %s", musicDir)
+		return changesMade, nil
 	}
 
 	err = getAlbumArtworkForMusicDir(ctx, musicDir)

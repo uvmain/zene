@@ -16,6 +16,8 @@ declare module 'vue' {
     Artists: typeof import('./src/components/Artists.vue')['default']
     ArtistThumb: typeof import('./src/components/ArtistThumb.vue')['default']
     ChangeAlbumArt: typeof import('./src/components/ChangeAlbumArt.vue')['default']
+    ChangeArtistArt: typeof import('./src/components/ChangeArtistArt.vue')['default']
+    copy: typeof import('./src/components/ChangeAlbumArt copy.vue')['default']
     DropdownMenu: typeof import('./src/components/DropdownMenu.vue')['default']
     Fave: typeof import('./src/components/Fave.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']

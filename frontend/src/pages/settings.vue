@@ -1,4 +1,5 @@
-<script setup>
+<script setup lang="ts">
+import type { StreamQuality } from '~/logic/store'
 import { useDark, useToggle } from '@vueuse/core'
 import { openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { clearApiKey } from '~/logic/common'
@@ -8,14 +9,28 @@ import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 const router = useRouter()
-const forceEnabled = ref(false)
+const forceTags = ref(false)
+const forceArt = ref(false)
+
+// convert streamQualities to an array of string | number
+const streamQualitiesArray = computed<(string | number)[]>(() => {
+  return Object.values(streamQualities)
+})
 
 async function runScan() {
   const formData = new FormData()
-  formData.append('force', forceEnabled.value ? 'true' : 'false')
+  formData.append('force', forceTags.value ? 'true' : 'false')
+  formData.append('include-art', forceArt.value ? 'true' : 'false')
   await openSubsonicFetchRequest('startScan.view', {
     body: formData,
   })
+}
+
+function setStreamQuality(quality: StreamQuality) {
+  if (streamQuality.value === quality) {
+    return
+  }
+  streamQuality.value = quality
 }
 
 async function logOut() {
@@ -31,8 +46,12 @@ async function logOut() {
         <span class="text-nowrap">Run a scan</span>
       </ZButton>
       <label for="force" class="flex gap-x-2 items-center">
-        <input id="force" v-model="forceEnabled" type="checkbox" class="size-6">
+        <input id="force" v-model="forceTags" type="checkbox" class="size-6">
         <span class="text-nowrap">Force</span>
+      </label>
+      <label v-if="forceTags" for="include-art" class="flex gap-x-2 items-center">
+        <input id="include-art" v-model="forceArt" type="checkbox" class="size-6">
+        <span class="text-nowrap">Include Art</span>
       </label>
     </div>
     <ZButton :primary="debugEnabled" @click="toggleDebug()">
@@ -44,21 +63,12 @@ async function logOut() {
     <ZButton @click="logOut()">
       <span class="text-nowrap">Logout</span>
     </ZButton>
-    <div class="px-4 py-3 lg:py-2">
-      <label class="text-base text-gray-500 mb-2 block lg:text-sm lg:mb-1">Stream Quality</label>
-      <select
-        v-model="streamQuality"
-        class="-md text-base text-gray-700 px-3 py-2 border border-gray-300 w-full lg:text-sm lg:px-2 lg:py-1 focus:outline-none focus:ring focus:ring-blue-200"
-      >
-        <option
-          v-for="quality in streamQualities"
-          :key="quality"
-          :value="quality"
-        >
-          {{ quality === 'native' ? 'Original Quality' : `${quality} kbps` }}
-        </option>
-      </select>
-    </div>
+    <DropdownMenu
+      title="Stream Quality"
+      :options="streamQualitiesArray"
+      align="right"
+      @select="setStreamQuality"
+    />
     <UserManagement />
   </div>
 </template>

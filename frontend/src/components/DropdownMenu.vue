@@ -3,7 +3,7 @@ type Alignment = 'left' | 'right'
 
 defineProps({
   title: { type: String, required: true },
-  options: { type: Array as PropType<string[]>, required: true },
+  options: { type: Array as PropType<(string | number)[]>, required: true },
   align: { type: String as PropType<Alignment>, default: 'left' },
 })
 
@@ -18,7 +18,7 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
-function handleSelect(optionValue: string) {
+function handleSelect(optionValue: string | number) {
   show.value = false
   emits('select', optionValue)
 }
