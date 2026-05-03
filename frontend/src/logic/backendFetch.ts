@@ -564,3 +564,7 @@ export async function postNewArtistArt(options: PostArtOptions): Promise<Types.S
   })
   return response
 }
+
+export async function deleteAudioCache(): Promise<Types.SubsonicResponse> {
+  return openSubsonicFetchRequest<Types.SubsonicResponse>('deleteaudiocache')
+}

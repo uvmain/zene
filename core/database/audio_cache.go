@@ -74,6 +74,17 @@ func DeleteAudioCacheEntry(cache_key string) error {
 	return nil
 }
 
+func DeleteAllAudioCache(ctx context.Context) error {
+	stmt := "DELETE FROM audio_cache"
+	_, err := DB.ExecContext(ctx, stmt)
+
+	if err != nil {
+		return fmt.Errorf("deleting all audio cache rows: %v", err)
+	}
+
+	return nil
+}
+
 func SelectAllAudioCacheEntries(ctx context.Context) ([]types.AudioCacheEntry, error) {
 	query := "SELECT cache_key, last_accessed FROM audio_cache"
 
