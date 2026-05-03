@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
 
@@ -240,4 +241,26 @@ func PathWithoutTraversal(inputPath string) (string, error) {
 	}
 	cleanPath := filepath.Clean(inputPath)
 	return cleanPath, nil
+}
+
+func DeleteAllAudioCacheFiles(ctx context.Context) error {
+	files, err := GetFiles(ctx, config.AudioCacheFolder, []string{})
+	if err != nil {
+		return fmt.Errorf("getting audio cache files: %v", err)
+	}
+
+	errorCount := 0
+
+	for _, file := range files {
+		if err := DeleteFile(file.FilePathAbs); err != nil {
+			logger.Printf("Error deleting audio cache file %s: %v", file.FilePathAbs, err)
+			errorCount++
+		}
+	}
+
+	if errorCount > 0 {
+		return fmt.Errorf("%d errors occurred while deleting audio cache files", errorCount)
+	}
+
+	return nil
 }

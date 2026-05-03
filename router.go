@@ -67,6 +67,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/updateartistart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateArtistArt)))
 	apiRouter.Handle("/rest/getartistlist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistList)))
 	apiRouter.Handle("/rest/getpodcastssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcastsServerSentEvents)))
+	apiRouter.Handle("/rest/deleteaudiocache", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAudioCache)))
 	apiRouter.Handle("/rest/getbutterchurnpresets", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetButterchurnPresets)))
 	/* cSpell:disable */
 

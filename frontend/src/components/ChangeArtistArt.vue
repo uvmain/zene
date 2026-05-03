@@ -88,7 +88,7 @@ onMounted(() => {
       <div v-if="showError" class="text-primary-400 text-center">
         {{ showError }}
       </div>
-      <div v-else class="flex flex-wrap gap-4 justify-center">
+      <div class="flex flex-wrap gap-4 justify-center">
         <ImageSelectorImage
           v-if="deezerArtUrl"
           :image-url="deezerArtUrl"

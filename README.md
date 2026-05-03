@@ -61,6 +61,7 @@ Supports the following OpenSubsonic API extensions:
 - `getArtistList` Like getAlbumList, requires `type` param which can be: `starred`, `random`, `newest`, `highest`, `frequent`, `recent` or `alphabetical`. If type=random, accepts an optional `seed` param (integer) to get deterministic results.
 - `refreshPodcast` Like refreshPodcasts, but for a single channel. Requires an `id` parameter.
 - `getbutterchurnpresets` Accepts `count: number` and `random: boolean` parameters. Returns `[{ name: 'presetName', preset: 'presetJson' }]`
+- `deleteaudiocache` Deletes all cached transcoded audio. Only admins can call this endpoint.
 
 ## Versioning
 This project uses a [calver](https://calver.org/) versioning system like `pip`

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { StreamQuality } from '~/logic/store'
 import { useDark, useToggle } from '@vueuse/core'
-import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { deleteAudioCache, openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
 import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
@@ -62,6 +62,9 @@ async function logOut() {
     </ZButton>
     <ZButton @click="logOut()">
       <span class="text-nowrap">Logout</span>
+    </ZButton>
+    <ZButton @click="deleteAudioCache()">
+      <span class="text-nowrap">Delete Audio Cache</span>
     </ZButton>
     <DropdownMenu
       title="Stream Quality"

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"time"
 	"zene/core/config"
@@ -27,7 +26,6 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	maxBitRateString := form["maxbitrate"]
 	streamFormat := form["format"]
 	timeOffsetString := form["timeoffset"]
-	size := form["size"]
 
 	ctx := r.Context()
 
@@ -70,29 +68,6 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if size != "" {
-		// check size is in "WxH" syntax, eg "640x480"
-		re := regexp.MustCompile(`^\d+x\d+$`)
-		if !re.MatchString(size) {
-			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "size parameter must be in 'WxH' format", "")
-			return
-		}
-	}
-
-	// This parameter is unused - we send the Content-Length header anyway, even if they don't ask for it
-	// var estimateContentLength bool
-	// estimateContentLengthString := r.FormValue("estimateContentLength")
-	// if estimateContentLengthString != "" {
-	// 	estimateContentLength = net.ParseBooleanFromString(w, r, estimateContentLengthString)
-	// }
-
-	// This parameter is unused - it is for Video, which Zene does not support
-	// var converted bool
-	// convertedString := r.FormValue("converted")
-	// if convertedString != "" {
-	// 	converted = net.ParseBooleanFromString(w, r, convertedString)
-	// }
-
 	mediaFilepath, err := database.GetMediaFilePath(ctx, streamId)
 
 	if mediaFilepath == "" || err != nil {
@@ -118,7 +93,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if streamFormat == "raw" {
-		fileInfo, modTime, file, err := OpenFile(mediaFilepath)
+		fileInfo, modTime, file, err := getFile(mediaFilepath)
 		if err != nil {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error opening file.", "")
 			return
@@ -141,7 +116,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func OpenFile(filePath string) (os.FileInfo, time.Time, *os.File, error) {
+func getFile(filePath string) (os.FileInfo, time.Time, *os.File, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, time.Time{}, nil, fmt.Errorf("opening file: %w", err)
