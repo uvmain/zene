@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { ArtSseMessage, PostArtOptions } from '~/logic/backendFetch'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
+
 import { postNewArtistArt, useServerSentEventsForArtistArt } from '~/logic/backendFetch'
 
 const props = defineProps({
@@ -13,6 +15,7 @@ const deezerArtUrl = ref<string | null>(null)
 const coverArtArchiveUrl = ref<string | null>(null)
 const localFolderArtUrl = ref<string | null>(null)
 const artistArt = ref<string | null>(null)
+const showError = ref<string | null>(null)
 
 async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'localfolder') {
   let artUrl: string | null = null
@@ -31,15 +34,23 @@ async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'loca
       break
   }
   if (artUrl) {
-    const imageBlob = await (await fetch(artUrl)).blob()
-    const response = await postNewArtistArt(props.artist.id, imageBlob)
+    const options: PostArtOptions = {
+      musicbrainz_id: props.artist.id,
+    }
+    if (artUrl.startsWith('http')) {
+      options.url = artUrl
+    }
+    else {
+      options.image = await (await fetch(artUrl)).blob()
+    }
+    const response = await postNewArtistArt(options)
     if (response.status === 'ok') {
       emits('artUpdated', artUrl)
     }
   }
 }
 
-function onMessageReceived(data: any) {
+function onMessageReceived(data: ArtSseMessage) {
   loading.value = false
   if (data.source === 'Deezer') {
     deezerArtUrl.value = data.data
@@ -52,12 +63,21 @@ function onMessageReceived(data: any) {
   }
 }
 
+function onCompleteReceived() {
+  loading.value = false
+  if (`${deezerArtUrl.value}${coverArtArchiveUrl.value}${localFolderArtUrl.value}` === '') {
+    showError.value = 'No artist art options found.'
+  }
+}
+
 function onErrorReceived(error: any) {
   console.error('SSE Error Received:', error)
+  showError.value = 'An error occurred while fetching artist art options.'
+  loading.value = false
 }
 
 onMounted(() => {
-  useServerSentEventsForArtistArt(props.artist.id, onMessageReceived, onErrorReceived)
+  useServerSentEventsForArtistArt(props.artist.id, onMessageReceived, onErrorReceived, onCompleteReceived)
 })
 </script>
 
@@ -65,6 +85,9 @@ onMounted(() => {
   <Modal :show-modal="true" modal-title="Change Artist Art" @close="$emit('close')">
     <template #content>
       <Loading v-if="loading" class="h-56" />
+      <div v-if="showError" class="text-primary-400 text-center">
+        {{ showError }}
+      </div>
       <div v-else class="flex flex-wrap gap-4 justify-center">
         <ImageSelectorImage
           v-if="deezerArtUrl"

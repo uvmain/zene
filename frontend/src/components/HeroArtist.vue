@@ -36,8 +36,8 @@ function actOnUpdatedArt() {
         <div class="flex flex-row gap-4 items-center">
           <img
             :src="coverArtUrl"
-            class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
-            loading="lazy"
+            class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md object-cover lg:h-52 dark:shadow-background-900"
+            loading="eager"
             @error="onImageError"
           >
           <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">

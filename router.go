@@ -64,6 +64,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/updatealbumart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAlbumArt)))
 	apiRouter.Handle("/rest/getartistarts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArts)))
 	apiRouter.Handle("/rest/getartistartssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistArtsServerSentEvents)))
+	apiRouter.Handle("/rest/updateartistart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateArtistArt)))
 	apiRouter.Handle("/rest/getartistlist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetArtistList)))
 	apiRouter.Handle("/rest/getpodcastssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcastsServerSentEvents)))
 	apiRouter.Handle("/rest/getbutterchurnpresets", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetButterchurnPresets)))

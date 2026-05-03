@@ -23,21 +23,33 @@ func HandleGetAlbumArtsServerSentEvents(w http.ResponseWriter, r *http.Request) 
 	form := net.NormalisedForm(r, w)
 	artistName := form["artist"]
 	albumName := form["album"]
+	albumId := form["id"]
 
-	if artistName == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist parameter is required", "")
-		return
-	}
+	var album types.AlbumId3
+	var err error
 
-	if albumName == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "album parameter is required", "")
-		return
-	}
+	if albumId != "" {
+		album, err = database.GetAlbum(ctx, albumId)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
+			return
+		}
+	} else {
+		if artistName == "" {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist parameter is required", "")
+			return
+		}
 
-	album, err := database.GetAlbumByArtistNameAndAlbumName(ctx, artistName, albumName)
-	if err != nil {
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
-		return
+		if albumName == "" {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "album parameter is required", "")
+			return
+		}
+
+		album, err = database.GetAlbumByArtistNameAndAlbumName(ctx, artistName, albumName)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
+			return
+		}
 	}
 
 	flusher, ok := w.(http.Flusher)

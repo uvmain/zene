@@ -6,12 +6,19 @@ import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
+import { on } from 'node:cluster'
 import { debugLog } from '~/logic/logger'
 import { isMobileNative, serverBaseUrl } from '~/logic/mobileNative'
 import { albumSeed, apiKey, artistSeed } from '~/logic/store'
 import { generateSeed } from './common'
 
 const concurrencyMap = new Map<string, Promise<any>>()
+
+export interface PostArtOptions {
+  musicbrainz_id: string
+  image?: Blob
+  url?: string
+}
 
 export function getServerUrl(path: string): string {
   if (isMobileNative) {
@@ -356,14 +363,13 @@ export type ArtSseMessage = { source: 'Deezer', data: string }
   | { source: 'CoverArtArchive', data: string }
   | { source: 'LocalArt', data: { folderArt: string, embeddedArt: string } }
 
-export async function useServerSentEventsForAlbumArt(artist: string, album: string, onMessage: (data: ArtSseMessage) => void, onError: (error: any) => void): Promise<EventSource> {
+export async function useServerSentEventsForAlbumArt(albumId: string, onMessage: (data: ArtSseMessage) => void, onError: (error: any) => void, onComplete: () => void): Promise<EventSource> {
   const params = new URLSearchParams()
   params.append('apiKey', apiKey.value)
   params.append('f', 'json')
   params.append('v', '1.16.0')
   params.append('c', 'zene-frontend')
-  params.append('artist', artist)
-  params.append('album', album)
+  params.append('id', albumId)
 
   const url = getServerUrl(`/rest/getalbumartssse?${params.toString()}`)
   const eventSource = new EventSource(url)
@@ -374,7 +380,8 @@ export async function useServerSentEventsForAlbumArt(artist: string, album: stri
   })
 
   eventSource.addEventListener('done', () => {
-    console.log('SSE completed — closing stream')
+    debugLog('SSE completed — closing stream')
+    onComplete()
     eventSource.close()
   })
 
@@ -385,10 +392,15 @@ export async function useServerSentEventsForAlbumArt(artist: string, album: stri
   return eventSource
 }
 
-export async function postNewAlbumArt(musicbrainz_song_id: string, image: Blob): Promise<Types.SubsonicResponse> {
+export async function postNewAlbumArt(options: PostArtOptions): Promise<Types.SubsonicResponse> {
   const formData = new FormData()
-  formData.append('id', musicbrainz_song_id)
-  formData.append('file', image)
+  formData.append('id', options.musicbrainz_id)
+  if (options.image) {
+    formData.append('file', options.image)
+  }
+  if (options.url != null) {
+    formData.append('url', options.url)
+  }
 
   const response = await openSubsonicFetchRequest<Types.SubsonicResponse>('updateAlbumArt', {
     body: formData,
@@ -413,7 +425,7 @@ export async function useServerSentEventsForPodcast(podcastId: string, onMessage
   })
 
   eventSource.addEventListener('done', () => {
-    console.log('SSE completed — closing stream')
+    debugLog('SSE completed — closing stream')
     eventSource.close()
   })
 
@@ -509,7 +521,7 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
   }
 }
 
-export async function useServerSentEventsForArtistArt(artistId: string, onMessage: (data: ArtSseMessage) => void, onError: (error: any) => void): Promise<EventSource> {
+export async function useServerSentEventsForArtistArt(artistId: string, onMessage: (data: ArtSseMessage) => void, onError: (error: any) => void, onComplete: () => void): Promise<EventSource> {
   const params = new URLSearchParams()
   params.append('apiKey', apiKey.value)
   params.append('f', 'json')
@@ -526,8 +538,9 @@ export async function useServerSentEventsForArtistArt(artistId: string, onMessag
   })
 
   eventSource.addEventListener('done', () => {
-    console.log('SSE completed — closing stream')
+    debugLog('SSE completed — closing stream')
     eventSource.close()
+    onComplete()
   })
 
   eventSource.onerror = (err) => {
@@ -537,10 +550,15 @@ export async function useServerSentEventsForArtistArt(artistId: string, onMessag
   return eventSource
 }
 
-export async function postNewArtistArt(musicbrainz_artist_id: string, image: Blob): Promise<Types.SubsonicResponse> {
+export async function postNewArtistArt(options: PostArtOptions): Promise<Types.SubsonicResponse> {
   const formData = new FormData()
-  formData.append('id', musicbrainz_artist_id)
-  formData.append('file', image)
+  formData.append('id', options.musicbrainz_id)
+  if (options.image) {
+    formData.append('file', options.image)
+  }
+  if (options.url != null) {
+    formData.append('url', options.url)
+  }
 
   const response = await openSubsonicFetchRequest<Types.SubsonicResponse>('updateArtistArt', {
     body: formData,

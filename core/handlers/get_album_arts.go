@@ -30,20 +30,33 @@ func HandleGetAlbumArts(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	if artistName == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist parameter is required", "")
-		return
-	}
+	albumId := form["id"]
 
-	if albumName == "" {
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "album parameter is required", "")
-		return
-	}
+	var album types.AlbumId3
+	var err error
 
-	album, err := database.GetAlbumByArtistNameAndAlbumName(ctx, artistName, albumName)
-	if err != nil {
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
-		return
+	if albumId != "" {
+		album, err = database.GetAlbum(ctx, albumId)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
+			return
+		}
+	} else {
+		if artistName == "" {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist parameter is required", "")
+			return
+		}
+
+		if albumName == "" {
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "album parameter is required", "")
+			return
+		}
+
+		album, err = database.GetAlbumByArtistNameAndAlbumName(ctx, artistName, albumName)
+		if err != nil {
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
+			return
+		}
 	}
 
 	deezerImageUrl, _ := deezer.GetAlbumArtUrlWithArtistNameAndAlbumName(ctx, artistName, albumName)

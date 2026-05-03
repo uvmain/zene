@@ -43,7 +43,16 @@ func getBytesFromFilePath(filePath string) ([]byte, error) {
 }
 
 func GetImageFromInternet(imageUrl string) (image.Image, error) {
-	res, err := http.Get(imageUrl)
+	req, err := http.NewRequest("GET", imageUrl, nil)
+	if err != nil {
+		return nil, fmt.Errorf("creating request: %w", err)
+	}
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+
+	client := &http.Client{}
+
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("downloading image: %w", err)
 	}
@@ -57,6 +66,7 @@ func GetImageFromInternet(imageUrl string) (image.Image, error) {
 	if err != nil {
 		return nil, fmt.Errorf("decoding image: %w", err)
 	}
+
 	return img, nil
 }
 

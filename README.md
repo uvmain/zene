@@ -21,14 +21,12 @@
 
   ![butterchurn](./docs/assets/butterchurn-fullscreen.webp)
 - All transcoded audio is cached locally and cleaned with smart rules
-- Wide support of If-Modified-Since headers for 304 responses
-- Supports gzip compression
 - ffmpeg and ffprobe automatically downloaded as required on first boot
-- Lyrics automatically fetched on demand from https://lrclib.net and saved locally
+- Lyrics automatically fetched from https://lrclib.net and saved locally
 - Album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
 - Artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
 - Similar artists/songs are fetched from https://api.deezer.com and saved locally
-- Admins can update album art via frontend
+- Admins can update album or artist art via frontend
 
   ![art-selector](./docs/assets/art-selector.webp)
 - Full podcast support, including downloading and offline playing
@@ -54,9 +52,12 @@ Supports the following OpenSubsonic API extensions:
 - `createApiKey` Accepts a `userId` parameter. Only admins can create API keys for other users.
 - `getApiKeys` Accepts a `userId` parameter. Only admins can get API keys for other users.
 - `deleteApiKey` Requires one or more `id` parameter(s). Accepts a `userId` parameter. Only admins can delete API keys for other users.
-- `getAlbumArts` Returns URLs for various album art choices, eg Deezer, CoverArtArchive, Local Folder art, Embedded track art.
-- `getAlbumArtsSse` Returns URLs via ServerSentEvents for various album art choices, eg Deezer, CoverArtArchive, Local Folder art, Embedded track art.
-- `updateAlbumArt` Accepts an `id` parameter and a `file` form blob to update album art. Only admins can call this endpoint.
+- `getAlbumArts` Returns URLs for various album art choices, eg Deezer, CoverArtArchive, Local Folder art, Embedded track art. Accepts either an `id` or both `artist` and `album`.
+- `getAlbumArtsSse` Returns URLs via ServerSentEvents for various album art choices, eg Deezer, CoverArtArchive, Local Folder art, Embedded track art. Accepts either an `id` or both `artist` and `album`.
+- `updateAlbumArt` Accepts an `id` parameter and a `file` form blob or `url` remote url to update album art. Only admins can call this endpoint.
+- `getArtistArts` Returns URLs for various artist art choices, eg Deezer, CoverArtArchive, Local Folder art.
+- `getArtistArtsSse` Returns URLs via ServerSentEvents for various artist art choices, eg Deezer, CoverArtArchive, Local Folder art.
+- `updateArtistArt` Accepts an `id` parameter and a `file` form blob or `url` remote url to update album art. Only admins can call this endpoint.
 - `getArtistList` Like getAlbumList, requires `type` param which can be: `starred`, `random`, `newest`, `highest`, `frequent`, `recent` or `alphabetical`. If type=random, accepts an optional `seed` param (integer) to get deterministic results.
 - `refreshPodcast` Like refreshPodcasts, but for a single channel. Requires an `id` parameter.
 - `getbutterchurnpresets` Accepts `count: number` and `random: boolean` parameters. Returns `[{ name: 'presetName', preset: 'presetJson' }]`

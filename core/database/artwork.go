@@ -46,6 +46,19 @@ func UpsertAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 	return nil
 }
 
+func UpsertArtistArtRow(ctx context.Context, musicbrainzArtistId string) error {
+	query := `INSERT INTO artist_art (musicbrainz_artist_id, date_modified)
+		VALUES (?, ?)
+		ON CONFLICT(musicbrainz_artist_id) DO UPDATE SET date_modified=excluded.date_modified
+		WHERE excluded.date_modified>artist_art.date_modified`
+
+	_, err := DB.ExecContext(ctx, query, musicbrainzArtistId, logic.GetCurrentTimeFormatted())
+	if err != nil {
+		return fmt.Errorf("inserting artist art row: %v", err)
+	}
+	return nil
+}
+
 func DeleteAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 	query := `DELETE FROM album_art WHERE musicbrainz_album_id = ?`
 	_, err := DB.ExecContext(ctx, query, musicbrainzAlbumId)
@@ -120,17 +133,4 @@ func SelectArtistArtByMusicBrainzArtistId(ctx context.Context, musicbrainzArtist
 		return types.ArtistArtRow{}, err
 	}
 	return row, nil
-}
-
-func InsertArtistArtRow(ctx context.Context, musicbrainzArtistId string, dateModified string) error {
-	query := `INSERT INTO artist_art (musicbrainz_artist_id, date_modified)
-		VALUES (?, ?)
-		ON CONFLICT(musicbrainz_artist_id) DO UPDATE SET date_modified=excluded.date_modified
-		WHERE excluded.date_modified>artist_art.date_modified`
-
-	_, err := DB.ExecContext(ctx, query, musicbrainzArtistId, logic.GetCurrentTimeFormatted())
-	if err != nil {
-		return fmt.Errorf("inserting artist art row: %v", err)
-	}
-	return nil
 }

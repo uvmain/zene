@@ -111,7 +111,7 @@ func ImportArtForArtist(ctx context.Context, musicBrainzArtistId string, artistN
 
 func getArtistArtFromFolder(ctx context.Context, musicBrainzArtistId string, imagePath string) {
 	go resizeFileAndSaveAsJPG(imagePath, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
-	err := database.InsertArtistArtRow(ctx, musicBrainzArtistId, logic.GetCurrentTimeFormatted())
+	err := database.UpsertArtistArtRow(ctx, musicBrainzArtistId)
 	if err != nil {
 		logger.Printf("Error inserting artist art row: %v", err)
 	}
@@ -138,7 +138,7 @@ func getArtistArtFromInternet(ctx context.Context, musicBrainzArtistId string, a
 	}
 	go ResizeImageAndSaveAsJPG(img, filepath.Join(config.ArtistArtFolder, musicBrainzArtistId), 512)
 
-	err = database.InsertArtistArtRow(ctx, musicBrainzArtistId, logic.GetCurrentTimeFormatted())
+	err = database.UpsertArtistArtRow(ctx, musicBrainzArtistId)
 	if err != nil {
 		logger.Printf("Error inserting artist art row: %v", err)
 	}

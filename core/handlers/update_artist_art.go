@@ -13,17 +13,17 @@ import (
 	"zene/core/types"
 )
 
-func HandleUpdateAlbumArt(w http.ResponseWriter, r *http.Request) {
+func HandleUpdateArtistArt(w http.ResponseWriter, r *http.Request) {
 	if net.MethodIsNotGetOrPost(w, r) {
 		return
 	}
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
-	albumId := form["id"]
+	artistId := form["id"]
 	artUrl := form["url"]
 
-	if albumId == "" {
+	if artistId == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id parameter is required", "")
 		return
 	}
@@ -37,29 +37,29 @@ func HandleUpdateAlbumArt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !user.AdminRole {
-		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "Admin role required to update album art", "")
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "Admin role required to update artist art", "")
 		return
 	}
 
-	valid, err := database.GetMediaCoverType(ctx, albumId)
+	valid, err := database.GetMediaCoverType(ctx, artistId)
 	if err != nil {
 		logger.Printf("Error getting media cover type: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error getting media cover type", "")
 		return
 	}
-	if valid != "album" {
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Invalid album id", "")
+	if valid != "artist" {
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Invalid artist id", "")
 		return
 	}
 
-	filename := filepath.Join(config.AlbumArtFolder, albumId+".jpg")
+	filename := filepath.Join(config.ArtistArtFolder, artistId+".jpg")
 
 	fileExists := io.FileExists(filename)
 	if fileExists {
 		err = io.DeleteFile(filename)
 		if err != nil {
-			logger.Printf("Error deleting existing album art: %v", err)
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error deleting existing album art", "")
+			logger.Printf("Error deleting existing artist art: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error deleting existing artist art", "")
 			return
 		}
 	}
@@ -89,21 +89,21 @@ func HandleUpdateAlbumArt(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = database.UpsertAlbumArtRow(ctx, albumId)
+	err = database.UpsertArtistArtRow(ctx, artistId)
 	if err != nil {
-		logger.Printf("Error inserting album art row: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error updating album_art row", "")
+		logger.Printf("Error inserting artist art row: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error updating artist_art row", "")
 		return
 	}
 
-	album, err := database.GetAlbum(ctx, albumId)
+	artist, err := database.SelectArtistByMusicBrainzArtistId(ctx, artistId)
 	if err != nil {
-		logger.Printf("Error getting album: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error getting album", "")
+		logger.Printf("Error getting artist: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error getting artist", "")
 		return
 	}
 
-	logger.Printf("Updated album art for album ID %s: %s", albumId, album.Name)
+	logger.Printf("Updated artist art for artist ID %s: %s", artistId, artist.Name)
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 

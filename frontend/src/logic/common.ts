@@ -57,7 +57,9 @@ export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.si
   if (timeUpdated != null) {
     path = size === 0 ? `/share/img/${musicbrainzId}?time=${timeUpdated}` : `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
   }
-  path = size === 0 ? `/share/img/${musicbrainzId}` : `/share/img/${musicbrainzId}?size=${size}`
+  else {
+    path = size === 0 ? `/share/img/${musicbrainzId}` : `/share/img/${musicbrainzId}?size=${size}`
+  }
   return getServerUrl(path)
 }
 
