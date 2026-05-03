@@ -47,18 +47,18 @@ func GetArtistArtUrlWithArtistName(ctx context.Context, artistName string) (stri
 		return "", err
 	}
 
-	var data DeezerArtistResponse
-	if err := json.Unmarshal(body, &data); err != nil {
+	var response DeezerArtistResponse
+	if err := json.Unmarshal(body, &response); err != nil {
 		return "", err
 	}
 
-	if len(data.Data) < 1 {
+	if len(response.Data) < 1 {
 		return "", fmt.Errorf("no Deezer picture found for artist: %s", artistName)
 	}
 
-	// search data.Data for where the name matches artistName (case insensitive)
+	// search response.Data for where the name matches artistName (case insensitive)
 	var dataItem DeezerArtistData
-	for _, item := range data.Data {
+	for _, item := range response.Data {
 		if strings.EqualFold(item.Name, artistName) {
 			dataItem = item
 			break

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicArtist } from '~/types/subsonicArtist'
-import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
+import { artSizes, cacheBustArt, getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({
   artist: { type: Object as PropType<SubsonicArtist>, required: true },
@@ -9,13 +9,21 @@ const props = defineProps({
 
 const showChangeArtModal = ref(false)
 const isStarred = ref<string | undefined>(props.artist.starred)
+const artUpdatedTime = ref<string | undefined>(undefined)
+
 const modelArtist = computed(() => {
   return props.artist
 })
 
 const coverArtUrl = computed(() => {
-  return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
+  return getCoverArtUrl(props.artist.coverArt, artSizes.size200, artUpdatedTime.value)
 })
+
+function actOnUpdatedArt() {
+  showChangeArtModal.value = false
+  cacheBustArt(`${modelArtist.value.id}`)
+  artUpdatedTime.value = Date.now().toString()
+}
 </script>
 
 <template>
@@ -28,8 +36,8 @@ const coverArtUrl = computed(() => {
         <div class="flex flex-row gap-4 items-center">
           <img
             :src="coverArtUrl"
-            class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
-            loading="lazy"
+            class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md object-cover lg:h-52 dark:shadow-background-900"
+            loading="eager"
             @error="onImageError"
           >
           <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
@@ -51,20 +59,17 @@ const coverArtUrl = computed(() => {
         </div>
         <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
           <!-- Change Album Art section -->
-          <ZButton
-            :disabled="true"
-            @click="showChangeArtModal = true"
-          >
+          <ZButton @click="showChangeArtModal = true">
             <div>
               Change Art
             </div>
           </ZButton>
-          <!-- <ChangeAlbumArt
-              v-if="showChangeArtModal"
-              :album="albumArray[index]"
-              @close="showChangeArtModal = false"
-              @art-updated="actOnUpdatedArt"
-            /> -->
+          <ChangeArtistArt
+            v-if="showChangeArtModal"
+            :artist="modelArtist"
+            @close="showChangeArtModal = false"
+            @art-updated="actOnUpdatedArt"
+          />
         </div>
       </div>
     </div>

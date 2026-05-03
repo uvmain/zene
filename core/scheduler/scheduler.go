@@ -6,6 +6,7 @@ import (
 	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/scanner"
+	"zene/core/types"
 )
 
 func Initialise(ctx context.Context) {
@@ -146,7 +147,12 @@ func startAlbumArtCleanupRoutine(ctx context.Context) {
 
 func startScanScheduleRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting scan schedule routine")
-	_, err := scanner.RunScan(ctx)
+
+	scanOptions := types.ScanOptions{
+		Force:      false,
+		IncludeArt: true,
+	}
+	_, err := scanner.RunScan(ctx, scanOptions)
 	if err != nil {
 		logger.Printf("Error starting scan schedule routine: %v", err)
 	}
@@ -160,7 +166,7 @@ func startScanScheduleRoutine(ctx context.Context) {
 				logger.Println("Scheduler: stopping album art cleanup routine")
 				return
 			case <-ticker.C:
-				_, err := scanner.RunScan(ctx)
+				_, err := scanner.RunScan(ctx, scanOptions)
 				if err != nil {
 					logger.Printf("Error running scan: %v", err)
 				}

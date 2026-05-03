@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
-import { artSizes, cacheBustAlbumArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
+import { artSizes, cacheBustArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 import { albumsStore } from '~/logic/store'
 
 const props = defineProps({
@@ -77,7 +77,7 @@ function navigateArtist() {
 
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
-  cacheBustAlbumArt(`${currentAlbum.value.id}`)
+  cacheBustArt(`${currentAlbum.value.id}`)
   artUpdatedTime.value = Date.now().toString()
 }
 
@@ -111,7 +111,7 @@ onBeforeMount(async () => {
           <div class="flex flex-row gap-4 items-center">
             <img
               :src="coverArtUrl"
-              class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md lg:h-52 dark:shadow-background-900"
+              class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md object-cover lg:h-52 dark:shadow-background-900"
               loading="lazy"
               @error="onImageError"
               @click="navigateAlbum"

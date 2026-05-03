@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"strings"
 	"zene/core/logger"
 	"zene/core/net"
 	"zene/core/scanner"
@@ -17,8 +18,19 @@ func HandleStartScan(w http.ResponseWriter, r *http.Request) {
 
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
+	force := form["force"]
+	includeArt := form["include-art"]
 
-	scanStatus, err := scanner.RunScan(context.Background())
+	scanOptions := types.ScanOptions{
+		Force:      strings.ToLower(force) == "true",
+		IncludeArt: strings.ToLower(includeArt) == "true",
+	}
+
+	var scanStatus types.ScanStatus
+	var err error
+
+	scanStatus, err = scanner.RunScan(context.Background(), scanOptions)
+
 	if err != nil {
 		if scanStatus.Scanning {
 			logger.Printf("Error starting scan: %v", scanStatus)

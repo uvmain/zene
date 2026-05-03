@@ -13,7 +13,7 @@ const loaded = ref(false)
 <template>
   <div class="w-56 relative">
     <img
-      class="bg-bluegray rounded-md size-56 aspect-square"
+      class="rounded-md size-224px object-cover"
       :src="imageUrl"
       :alt="label"
       width="224"

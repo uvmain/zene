@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { PostArtOptions } from '~/logic/backendFetch'
-import type { SubsonicAlbum } from '~/types/subsonicAlbum'
-import { postNewAlbumArt, useServerSentEventsForAlbumArt } from '~/logic/backendFetch'
+import type { ArtSseMessage, PostArtOptions } from '~/logic/backendFetch'
+import type { SubsonicArtist } from '~/types/subsonicArtist'
+
+import { postNewArtistArt, useServerSentEventsForArtistArt } from '~/logic/backendFetch'
 
 const props = defineProps({
-  album: { type: Object as PropType<SubsonicAlbum>, required: true },
+  artist: { type: Object as PropType<SubsonicArtist>, required: true },
 })
 
 const emits = defineEmits(['close', 'artUpdated'])
@@ -13,11 +14,10 @@ const loading = ref(true)
 const deezerArtUrl = ref<string | null>(null)
 const coverArtArchiveUrl = ref<string | null>(null)
 const localFolderArtUrl = ref<string | null>(null)
-const localEmbeddedArtUrl = ref<string | null>(null)
-const albumArt = ref<string | null>(null)
+const artistArt = ref<string | null>(null)
 const showError = ref<string | null>(null)
 
-async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'localfolder' | 'localembedded') {
+async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'localfolder') {
   let artUrl: string | null = null
   switch (source) {
     case 'deezer':
@@ -27,18 +27,15 @@ async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'loca
       artUrl = coverArtArchiveUrl.value
       break
     case 'manual':
-      artUrl = albumArt.value
+      artUrl = artistArt.value
       break
     case 'localfolder':
       artUrl = localFolderArtUrl.value
       break
-    case 'localembedded':
-      artUrl = localEmbeddedArtUrl.value
-      break
   }
   if (artUrl) {
     const options: PostArtOptions = {
-      musicbrainz_id: props.album.id,
+      musicbrainz_id: props.artist.id,
     }
     if (artUrl.startsWith('http')) {
       options.url = artUrl
@@ -46,14 +43,15 @@ async function updateArt(source: 'deezer' | 'coverartarchive' | 'manual' | 'loca
     else {
       options.image = await (await fetch(artUrl)).blob()
     }
-    const response = await postNewAlbumArt(options)
+    const response = await postNewArtistArt(options)
     if (response.status === 'ok') {
       emits('artUpdated', artUrl)
     }
   }
 }
 
-function onMessageReceived(data: any) {
+function onMessageReceived(data: ArtSseMessage) {
+  loading.value = false
   if (data.source === 'Deezer') {
     deezerArtUrl.value = data.data
   }
@@ -62,32 +60,31 @@ function onMessageReceived(data: any) {
   }
   else if (data.source === 'LocalArt') {
     localFolderArtUrl.value = data.data.folderArt
-    localEmbeddedArtUrl.value = data.data.embeddedArt
+  }
+}
+
+function onCompleteReceived() {
+  loading.value = false
+  if (`${deezerArtUrl.value}${coverArtArchiveUrl.value}${localFolderArtUrl.value}` === '') {
+    showError.value = 'No artist art options found.'
   }
 }
 
 function onErrorReceived(error: any) {
   console.error('SSE Error Received:', error)
-  showError.value = 'An error occurred while fetching album art options.'
+  showError.value = 'An error occurred while fetching artist art options.'
   loading.value = false
-}
-
-function onCompleteReceived() {
-  loading.value = false
-  if (`${deezerArtUrl.value}${coverArtArchiveUrl.value}${localFolderArtUrl.value}${localEmbeddedArtUrl.value}` === '') {
-    showError.value = 'No album art options found.'
-  }
 }
 
 onMounted(() => {
-  useServerSentEventsForAlbumArt(props.album.id, onMessageReceived, onErrorReceived, onCompleteReceived)
+  useServerSentEventsForArtistArt(props.artist.id, onMessageReceived, onErrorReceived, onCompleteReceived)
 })
 </script>
 
 <template>
-  <Modal :show-modal="true" modal-title="Change Album Art" @close="$emit('close')">
+  <Modal :show-modal="true" modal-title="Change Artist Art" @close="$emit('close')">
     <template #content>
-      <Loading v-if="loading" class="h-10" />
+      <Loading v-if="loading" class="h-56" />
       <div v-if="showError" class="text-primary-400 text-center">
         {{ showError }}
       </div>
@@ -114,21 +111,14 @@ onMounted(() => {
           @update-art="updateArt"
         />
         <ImageSelectorImage
-          v-if="localEmbeddedArtUrl"
-          :image-url="localEmbeddedArtUrl"
-          label="Embedded"
-          type="localembedded"
-          @update-art="updateArt"
-        />
-        <ImageSelectorImage
-          v-if="albumArt"
-          :image-url="albumArt"
+          v-if="artistArt"
+          :image-url="artistArt"
           label="Custom"
           type="manual"
           @update-art="updateArt"
         />
       </div>
-      <ImageSelector v-model="albumArt" />
+      <ImageSelector v-model="artistArt" />
     </template>
   </Modal>
 </template>

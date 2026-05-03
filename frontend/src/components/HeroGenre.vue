@@ -86,6 +86,7 @@ onUnmounted(() => {
             class="fade border-muted rounded-md size-32 aspect-square cursor-pointer shadow-background-500 shadow-md bg-cover bg-center lg:size-52 dark:shadow-background-900"
             loading="eager"
             @error="onImageError"
+            @click="navigateToArtist(tracks[current].artistId)"
           />
           <div class="my-auto text-left flex flex-col gap-1 lg:gap-4">
             <div class="text-xl font-bold line-clamp-1 lg:text-4xl">

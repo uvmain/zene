@@ -185,7 +185,7 @@ type LocalArts struct {
 	EmbeddedArt string `json:"embeddedArt"`
 }
 
-func GetLocalArtAsBase64(ctx context.Context, musicBrainzAlbumId string) (LocalArts, error) {
+func GetLocalAlbumArtAsBase64(ctx context.Context, musicBrainzAlbumId string) (LocalArts, error) {
 	var localArts LocalArts
 	tracks, err := database.GetSongsForAlbum(ctx, musicBrainzAlbumId)
 	if err != nil {

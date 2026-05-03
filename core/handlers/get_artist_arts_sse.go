@@ -14,7 +14,7 @@ import (
 	"zene/core/types"
 )
 
-func HandleGetAlbumArtsServerSentEvents(w http.ResponseWriter, r *http.Request) {
+func HandleGetArtistArtsServerSentEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -22,34 +22,27 @@ func HandleGetAlbumArtsServerSentEvents(w http.ResponseWriter, r *http.Request) 
 
 	form := net.NormalisedForm(r, w)
 	artistName := form["artist"]
-	albumName := form["album"]
-	albumId := form["id"]
+	artistId := form["id"]
 
-	var album types.AlbumId3
+	if artistName == "" && artistId == "" {
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist or id parameters are required", "")
+		return
+	}
+
 	var err error
 
-	if albumId != "" {
-		album, err = database.GetAlbum(ctx, albumId)
+	if artistId == "" {
+		artistId, err = database.GetArtistIdByName(ctx, artistName)
 		if err != nil {
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "artist not found", "")
 			return
 		}
-	} else {
-		if artistName == "" {
-			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "artist parameter is required", "")
-			return
-		}
+	}
 
-		if albumName == "" {
-			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "album parameter is required", "")
-			return
-		}
-
-		album, err = database.GetAlbumByArtistNameAndAlbumName(ctx, artistName, albumName)
-		if err != nil {
-			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "album not found", "")
-			return
-		}
+	artist, err := database.SelectArtistByMusicBrainzArtistId(ctx, artistId)
+	if err != nil {
+		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "artist not found", "")
+		return
 	}
 
 	flusher, ok := w.(http.Flusher)
@@ -59,15 +52,15 @@ func HandleGetAlbumArtsServerSentEvents(w http.ResponseWriter, r *http.Request) 
 	}
 
 	deezerFunc := func() types.SseMessage {
-		deezerImageUrl, _ := deezer.GetAlbumArtUrlWithArtistNameAndAlbumName(ctx, artistName, albumName)
+		deezerImageUrl, _ := deezer.GetArtistArtUrlWithArtistName(ctx, artist.Name)
 		return types.SseMessage{Source: "Deezer", Data: deezerImageUrl}
 	}
 	coverArtArchiveFunc := func() types.SseMessage {
-		coverArtArchiveUrl, _ := musicbrainz.GetAlbumArtUrl(ctx, album.MusicBrainzId)
+		coverArtArchiveUrl, _ := musicbrainz.GetArtistArtUrl(ctx, artist.MusicBrainzId)
 		return types.SseMessage{Source: "CoverArtArchive", Data: coverArtArchiveUrl}
 	}
 	localArtFunc := func() types.SseMessage {
-		localArts, _ := art.GetLocalAlbumArtAsBase64(ctx, album.MusicBrainzId)
+		localArts, _ := art.GetLocalArtistArtAsBase64(ctx, artist.MusicBrainzId)
 		return types.SseMessage{Source: "LocalArt", Data: localArts}
 	}
 
