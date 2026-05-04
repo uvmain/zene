@@ -568,3 +568,25 @@ export async function postNewArtistArt(options: PostArtOptions): Promise<Types.S
 export async function deleteAudioCache(): Promise<Types.SubsonicResponse> {
   return openSubsonicFetchRequest<Types.SubsonicResponse>('deleteaudiocache')
 }
+
+export function getAuthenticatedAvatarUrl(userId: number): string {
+  const queryParams = new URLSearchParams({
+    apiKey: apiKey.value,
+    c: 'zene-frontend',
+    v: '1.6.0',
+    f: 'json',
+    id: userId.toString(),
+  })
+  const url = getServerUrl(`/rest/getAvatar?${queryParams.toString()}`)
+  return url
+}
+
+export async function postNewAvatarImage(options: { userId: number, file: Blob }): Promise<Types.SubsonicResponse> {
+  const formData = new FormData()
+  formData.append('id', options.userId.toString())
+  formData.append('avatar', options.file)
+
+  return openSubsonicFetchRequest<Types.SubsonicResponse>('updateAvatar', {
+    body: formData,
+  })
+}

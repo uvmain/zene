@@ -44,6 +44,7 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.SubsonicResponse.User = &types.SubsonicUser{}
+	response.SubsonicResponse.User.Id = user.Id
 	response.SubsonicResponse.User.Username = user.Username
 	response.SubsonicResponse.User.Email = user.Email
 	response.SubsonicResponse.User.ScrobblingEnabled = user.ScrobblingEnabled

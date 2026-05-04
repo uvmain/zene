@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"zene/core/art"
 	"zene/core/database"
 	"zene/core/logger"
@@ -18,6 +19,7 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 	form := net.NormalisedForm(r, w)
 	format := form["f"]
 	username := form["username"]
+	userId := form["id"]
 
 	ctx := r.Context()
 
@@ -28,20 +30,34 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !requestUser.AdminRole && username == requestUser.Username {
+	if username == "" && userId == "" {
+
+	}
+
+	var avatarUser types.User
+
+	if userId != "" {
+		idInt, err := strconv.Atoi(userId)
+		if err != nil {
+			logger.Printf("Error converting id to int: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid id parameter", "")
+			return
+		}
+		avatarUser, err = database.GetUserById(ctx, idInt)
+	} else if username != "" {
+		avatarUser, err = database.GetUserByUsername(ctx, username)
+		if err != nil {
+			logger.Printf("Error getting user ID for username %s: %v", username, err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
+			return
+		}
+	} else {
+		avatarUser = requestUser
+	}
+
+	if !requestUser.AdminRole && avatarUser.Id != requestUser.Id {
 		logger.Printf("User %s attempted to fetch avatars for another user without admin role", requestUser.Username)
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get avatars for another user", "")
-		return
-	}
-
-	if username == "" {
-		username = requestUser.Username
-	}
-
-	avatarUser, err := database.GetUserByUsername(ctx, username)
-	if err != nil {
-		logger.Printf("Error getting user ID for username %s: %v", username, err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
 		return
 	}
 

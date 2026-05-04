@@ -1,5 +1,6 @@
 export interface SubsonicUser {
   folder: number[]
+  id: number
   username: string
   password?: string
   email: string

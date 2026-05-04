@@ -46,7 +46,7 @@
 - [x] getCaptions[^1]
 - [x] getCoverArt
 - [x] getLyrics
-- [x] getAvatar
+- [x] getAvatar[^10]
 - [x] getLyricsBySongId
 ## Media annotation
 - [x] star
@@ -105,3 +105,4 @@
 [^7]: Additionally support `offset` param to enable paging through the same random results.
 [^8]: Additionally supports a `type` param value of `release`, ordering by release date desc.
 [^9]: Additionally supports a `seed` integer param value for deterministic random ordering.
+[^10]: Additionally supports an `id` parameter that can be used instead of `username`

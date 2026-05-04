@@ -46,7 +46,7 @@ Supports the following OpenSubsonic API extensions:
 [Implemented OpenSubsonic API endpoints](./docs/implemented-opensubsonic-endpoints.md)
 
 ### Additional custom API endpoints include:
-- `createAvatar` Accepts a `username` parameter and a `avatar` formFile key. Only admins can create avatars for other users.
+- `createAvatar` Accepts a `username` or `id` parameter and a `avatar` formFile key. Only admins can create avatars for other users.
 - `updateAvatar` Accepts a `username` parameter and a `avatar` formFile key. Only admins can update avatars for other users.
 - `deleteAvatar` Accepts a `username` parameter. Only admins can delete avatars for other users.
 - `createApiKey` Accepts a `userId` parameter. Only admins can create API keys for other users.
