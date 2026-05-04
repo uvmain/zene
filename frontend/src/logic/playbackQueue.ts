@@ -135,6 +135,9 @@ export function handleNextTrack() {
     let nextTrack: SubsonicSong | undefined
     if (shuffleEnabled.value) {
       previousIndexes.value.push(currentIndex)
+      if (previousIndexes.value.length >= 50) {
+        previousIndexes.value.shift()
+      }
       let randomIndex: number
       randomIndex = Math.floor(Math.random() * currentQueue.value.length)
       let whileCounter = 0

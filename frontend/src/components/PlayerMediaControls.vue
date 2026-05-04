@@ -11,8 +11,8 @@ defineProps({
 const router = useRouter()
 const route = useRoute()
 
-async function handleGetRandomTracks() {
-  await getRandomTracks(1000)
+async function handleGetRandomTracks(count = 1000) {
+  await getRandomTracks(count)
   if (route.path !== '/queue' && route.path !== '/visualizer') {
     router.push('/queue')
   }
