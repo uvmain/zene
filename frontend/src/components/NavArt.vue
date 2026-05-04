@@ -90,7 +90,7 @@ watch(currentlyPlayingItem, (newItem) => {
         @error="onImageError"
       />
     </RouterLink>
-    <TrackInfo v-if="currentlyPlayingItem.track" v-model="showTrackModal" :track="currentlyPlayingItem.track" @click.stop />
+    <TrackInfo v-if="currentlyPlayingItem.track" v-model="showTrackModal" :track="currentlyPlayingItem.track" />
   </div>
 </template>
 

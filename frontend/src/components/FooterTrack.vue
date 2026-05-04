@@ -56,6 +56,6 @@ const showTrackModal = ref(false)
       <icon-nrk-more />
     </div>
 
-    <TrackInfo v-model="showTrackModal" :track="currentlyPlayingItem.track" @click.stop />
+    <TrackInfo v-model="showTrackModal" :track="currentlyPlayingItem.track" />
   </div>
 </template>

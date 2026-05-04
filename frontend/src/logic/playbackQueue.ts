@@ -20,8 +20,8 @@ export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
 export const currentTime = ref(0)
 export const trackUrl = ref('')
+export const previousIndexes = ref<number[]>([])
 
-let previousIndexes: number[] = []
 let currentHalfwayPoint: number = 0
 
 export function handlePlay(track: SubsonicSong) {
@@ -92,16 +92,8 @@ function setCurrentQueue(tracks: SubsonicSong[]) {
 }
 
 export function clearQueue() {
-  previousIndexes = []
+  previousIndexes.value = []
   currentQueue.value = undefined
-}
-
-async function getRandomTrack(): Promise<SubsonicSong> {
-  const randomTracks = await fetchRandomTracks({ limit: 1 })
-  const randomTrack = randomTracks[0]
-  setCurrentlyPlayingTrack(randomTrack)
-  clearQueue()
-  return randomTrack
 }
 
 interface PlayOptions {
@@ -142,14 +134,14 @@ export function handleNextTrack() {
     const currentIndex = currentQueuePosition.value
     let nextTrack: SubsonicSong | undefined
     if (shuffleEnabled.value) {
+      previousIndexes.value.push(currentIndex)
       let randomIndex: number
       randomIndex = Math.floor(Math.random() * currentQueue.value.length)
       let whileCounter = 0
-      while (previousIndexes.includes(randomIndex) && whileCounter < 50) {
+      while (previousIndexes.value.includes(randomIndex) && whileCounter < 50) {
         randomIndex = Math.floor(Math.random() * currentQueue.value.length)
         whileCounter++
       }
-      previousIndexes.push(randomIndex)
       nextTrack = currentQueue.value[randomIndex]
       currentQueuePosition.value = randomIndex
       if (nextTrack !== undefined) {
@@ -188,48 +180,45 @@ export function handleNextTrack() {
 }
 
 export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
-  if (currentQueue.value && currentQueue.value.length) {
-    const currentIndex = currentQueuePosition.value
-    let prevTrack: SubsonicSong | undefined
-    if (shuffleEnabled.value) {
-      if (previousIndexes.length) {
-        previousIndexes.pop()
-      }
-      const previousIndex = previousIndexes.at(-1) ?? 0
-      const prevTrack = currentQueue.value[previousIndex]
-      currentQueuePosition.value = previousIndex
-      if (prevTrack !== undefined) {
-        setCurrentlyPlayingTrack(prevTrack)
-      }
-      return prevTrack
+  if (!currentQueue.value || !currentQueue.value.length) {
+    return undefined
+  }
+
+  const currentIndex = currentQueuePosition.value
+  let prevTrack: SubsonicSong | undefined
+
+  if (shuffleEnabled.value && previousIndexes.value.length > 0) {
+    const previousIndex = previousIndexes.value.at(-1) as number
+    const prevTrack = currentQueue.value[previousIndex]
+    currentQueuePosition.value = previousIndex
+    previousIndexes.value.pop()
+    if (prevTrack !== undefined) {
+      setCurrentlyPlayingTrack(prevTrack)
     }
-    if (repeatStatus.value === 'all') {
-      prevTrack = currentQueue.value.at(-1)
-      currentQueuePosition.value = currentQueue.value.length - 1
-      return prevTrack
-    }
-    else if (repeatStatus.value === '1') {
-      prevTrack = currentQueue.value[currentIndex]
-      return prevTrack
-    }
-    else {
-      if (currentIndex > 0) {
-        prevTrack = currentQueue.value[currentIndex - 1]
-        currentQueuePosition.value = currentIndex - 1
-      }
-      else {
-        prevTrack = currentQueue.value.at(-1)
-        currentQueuePosition.value = currentQueue.value.length - 1
-      }
-      if (prevTrack !== undefined) {
-        setCurrentlyPlayingTrack(prevTrack)
-      }
-      return prevTrack
-    }
+    return prevTrack
+  }
+  if (repeatStatus.value === 'all') {
+    prevTrack = currentQueue.value.at(-1)
+    currentQueuePosition.value = currentQueue.value.length - 1
+    return prevTrack
+  }
+  else if (repeatStatus.value === '1') {
+    prevTrack = currentQueue.value[currentIndex]
+    return prevTrack
   }
   else {
-    const randomTrack = await getRandomTrack()
-    return randomTrack
+    if (currentIndex > 0) {
+      prevTrack = currentQueue.value[currentIndex - 1]
+      currentQueuePosition.value = currentIndex - 1
+    }
+    else {
+      prevTrack = currentQueue.value.at(-1)
+      currentQueuePosition.value = currentQueue.value.length - 1
+    }
+    if (prevTrack !== undefined) {
+      setCurrentlyPlayingTrack(prevTrack)
+    }
+    return prevTrack
   }
 }
 
