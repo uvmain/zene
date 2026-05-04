@@ -5,6 +5,7 @@ defineProps({
   title: { type: String, required: true },
   options: { type: Array as PropType<(string | number)[]>, required: true },
   align: { type: String as PropType<Alignment>, default: 'left' },
+  currentOption: { type: [String, Number], required: false },
 })
 
 const emits = defineEmits(['select'])
@@ -45,6 +46,9 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
         v-for="item in options"
         :key="item"
         class="p-2 border-l-4 border-transparent block cursor-pointer group-hover:border-blue-600 hover:bg-accent-500/50"
+        :class="{
+          'border-l-4 border-primary-400': currentOption === item,
+        }"
         @click="handleSelect(item)"
       >
         {{ item }}

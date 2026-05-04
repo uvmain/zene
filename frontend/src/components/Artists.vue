@@ -104,6 +104,7 @@ onBeforeMount(async () => {
       <hr v-if="!props.orderDisabled" class="mx-2 border-t border-primary-400/20 flex-1 lg:mx-4" />
       <DropdownMenu
         v-if="!props.orderDisabled"
+        :current-option="artistOrder"
         :title="artistOrder"
         :options="Object.values(ArtistOrders)"
         align="right"

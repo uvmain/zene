@@ -105,6 +105,7 @@ onBeforeMount(async () => {
       <DropdownMenu
         v-if="!props.orderDisabled"
         :title="albumOrder"
+        :current-option="albumOrder"
         :options="Object.values(AlbumOrders)"
         align="right"
         @select="setOrder"

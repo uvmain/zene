@@ -54,3 +54,24 @@ export async function deleteUser(user: SubsonicUser) {
     throw new Error(response.error?.message ?? 'Unknown error')
   }
 }
+
+export const defaultNewUser = {
+  folder: [],
+  username: '',
+  password: '',
+  email: '',
+  adminRole: false,
+  scrobblingEnabled: true,
+  streamRole: true,
+  settingsRole: true,
+  jukeboxRole: true,
+  downloadRole: true,
+  uploadRole: true,
+  playlistRole: true,
+  coverArtRole: true,
+  commentRole: true,
+  podcastRole: true,
+  shareRole: true,
+  videoConversionRole: false,
+  maxBitRate: 0,
+} as SubsonicUser

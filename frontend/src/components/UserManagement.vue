@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicUser } from '~/types/subsonicUser'
-import { createUser, deleteUser, fetchCurrentUser, fetchUsers, updateUser } from '~/logic/users'
+import { createUser, defaultNewUser, deleteUser, fetchCurrentUser, fetchUsers, updateUser } from '~/logic/users'
 
 const users = ref<SubsonicUser[]>([])
 const currentUser = ref<SubsonicUser>({} as SubsonicUser)
@@ -8,7 +8,7 @@ const showCreateUserDialog = ref(false)
 const showEditUserDialog = ref(false)
 const showDeleteUserDialog = ref(false)
 
-const newUser = ref<SubsonicUser>({} as SubsonicUser)
+const newUser = ref<SubsonicUser>({ ...defaultNewUser })
 const editingUser = ref<SubsonicUser>({} as SubsonicUser)
 const userToDelete = ref<SubsonicUser>({} as SubsonicUser)
 
@@ -26,16 +26,16 @@ async function handleCreateUser() {
 
   await createUser(newUser.value)
 
-  await fetchUsers()
+  await getUsers()
   showCreateUserDialog.value = false
-  newUser.value = {} as SubsonicUser
+  newUser.value = { ...defaultNewUser }
 }
 
 async function handleUpdateUser() {
   if (!currentUser.value?.adminRole || !editingUser.value)
     return
   await updateUser(editingUser.value)
-  await fetchUsers()
+  await getUsers()
   showEditUserDialog.value = false
   editingUser.value = {} as SubsonicUser
 }
@@ -44,7 +44,7 @@ async function handleDeleteUser() {
   if (!currentUser.value?.adminRole || !userToDelete.value)
     return
   await deleteUser(userToDelete.value)
-  await fetchUsers()
+  await getUsers()
   showDeleteUserDialog.value = false
   userToDelete.value = {} as SubsonicUser
 }
@@ -52,8 +52,13 @@ async function handleDeleteUser() {
 function openCreateUserDialog() {
   if (!currentUser.value?.adminRole)
     return
-  newUser.value = {} as SubsonicUser
+  newUser.value = { ...defaultNewUser }
   showCreateUserDialog.value = true
+}
+
+function closeCreateUserDialog() {
+  showCreateUserDialog.value = false
+  newUser.value = { ...defaultNewUser }
 }
 
 function openEditUserDialog(user: SubsonicUser) {
@@ -79,10 +84,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="!currentUser?.adminRole" class="text-red-500">
-    You do not have permission to manage users.
-  </div>
-  <div v-else class="p-4 lg:p-6">
+  <div v-if="currentUser?.adminRole" class="mt-4">
     <h1 class="text-2xl font-semibold mb-6">
       Manage Users
     </h1>
@@ -93,49 +95,50 @@ onMounted(async () => {
             class="z-button"
             @click="openCreateUserDialog"
           >
-            Create User
+            Create new user
           </button>
         </div>
 
         <div v-if="!users.length" class="py-4 text-center">
           Loading users...
         </div>
-        <div v-if="users.length > 0" class="overflow-x-auto">
-          <table class="bg-white min-w-full shadow-md">
-            <thead class="bg-gray-200">
+        <div v-if="users.length > 0">
+          <table class="text-left background-2 w-full">
+            <thead class="text-primary background-3">
               <tr>
-                <th class="text-xs text-gray-500 tracking-wider font-medium px-4 py-3 text-left uppercase">
+                <th class="text-xs px-4 py-3 uppercase">
                   Username
                 </th>
-                <th class="text-xs text-gray-500 tracking-wider font-medium px-4 py-3 text-left uppercase">
+                <th class="text-xs px-4 py-3 uppercase">
                   Admin
                 </th>
-                <th class="text-xs text-gray-500 tracking-wider font-medium px-4 py-3 text-left uppercase">
+                <th class="text-xs px-4 py-3 uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-gray-200 divide-y">
+            <tbody class="text-muted divide-background-300 divide-y dark:divide-background-700">
               <tr v-for="user in users" :key="user.username">
-                <td class="text-gray-600 px-4 py-4 whitespace-nowrap">
+                <td class="px-4 py-4 whitespace-nowrap">
                   {{ user.username }}
                 </td>
-                <td class="text-gray-600 px-4 py-4 whitespace-nowrap">
+                <td class="px-4 py-4 whitespace-nowrap">
                   {{ user.adminRole ? 'Yes' : 'No' }}
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap space-x-2">
-                  <button
-                    class="text-sm font-semibold px-3 py-1 bg-yellow-500 hover:bg-yellow-600"
+                <td class="px-4 py-4 flex flex-row whitespace-nowrap space-x-2">
+                  <ZButton
+                    :hover-text="`Edit ${user.username} user`"
                     @click="openEditUserDialog(user)"
                   >
                     Edit
-                  </button>
-                  <button
-                    class="text-sm font-semibold px-3 py-1 bg-red-500 hover:bg-red-600"
+                  </ZButton>
+                  <ZButton
+                    :hover-text="`Delete ${user.username} user`"
+                    :red="true"
                     @click="openDeleteUserDialog(user)"
                   >
                     Delete
-                  </button>
+                  </ZButton>
                 </td>
               </tr>
             </tbody>
@@ -168,7 +171,7 @@ onMounted(async () => {
               </label>
             </div>
             <div class="mt-6 flex justify-end space-x-3">
-              <button type="button" class="text-sm text-gray-700 font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200" @click="showCreateUserDialog = false">
+              <button type="button" class="text-sm text-gray-700 font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200" @click="closeCreateUserDialog">
                 Cancel
               </button>
               <button type="submit" class="text-sm font-medium px-4 py-2 bg-blue-600 hover:bg-blue-700">

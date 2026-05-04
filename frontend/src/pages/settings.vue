@@ -12,7 +12,6 @@ const router = useRouter()
 const forceTags = ref(false)
 const forceArt = ref(false)
 
-// convert streamQualities to an array of string | number
 const streamQualitiesArray = computed<(string | number)[]>(() => {
   return Object.values(streamQualities)
 })
@@ -54,10 +53,10 @@ async function logOut() {
         <span class="text-nowrap">Include Art</span>
       </label>
     </div>
-    <ZButton :primary="debugEnabled" @click="toggleDebug()">
+    <ZButton @click="toggleDebug()">
       <span class="text-nowrap">Debug: {{ debugEnabled ? 'On' : 'Off' }}</span>
     </ZButton>
-    <ZButton :primary="isDark" @click="toggleDark()">
+    <ZButton @click="toggleDark()">
       <span class="text-nowrap">Dark Mode: {{ isDark ? 'On' : 'Off' }}</span>
     </ZButton>
     <ZButton @click="logOut()">
@@ -70,6 +69,7 @@ async function logOut() {
       title="Stream Quality"
       :options="streamQualitiesArray"
       align="right"
+      :current-option="streamQuality"
       @select="setStreamQuality"
     />
     <UserManagement />
