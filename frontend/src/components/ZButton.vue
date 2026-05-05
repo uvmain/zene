@@ -6,6 +6,7 @@ defineProps({
   disabled: { type: Boolean, default: false },
   hoverText: { type: String, required: false },
   red: { type: Boolean, default: false },
+  green: { type: Boolean, default: false },
 })
 
 defineEmits(['click'])
@@ -22,6 +23,7 @@ defineEmits(['click'])
         'cursor-not-allowed opacity-50': disabled,
         'border-primary-400!': primary,
         'border-red-400/70!': red,
+        'border-green-400/70!': green,
       }"
       @click="$emit('click')"
     >

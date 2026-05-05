@@ -98,6 +98,7 @@ func GetBookmarks(ctx context.Context) ([]types.Bookmark, error) {
 		var row types.Bookmark
 		var albumArtistName sql.NullString
 		var albumArtistId sql.NullString
+		var commentNullString sql.NullString
 		var genreString string
 		var labelString string
 		var playedString sql.NullString
@@ -113,7 +114,7 @@ func GetBookmarks(ctx context.Context) ([]types.Bookmark, error) {
 			&row.Username,
 			&row.Created,
 			&row.Changed,
-			&row.Comment,
+			&commentNullString,
 			&row.Position,
 		)
 		if err != nil {
@@ -127,6 +128,10 @@ func GetBookmarks(ctx context.Context) ([]types.Bookmark, error) {
 
 		if playedString.Valid {
 			row.Entry.Played = playedString.String
+		}
+
+		if commentNullString.Valid {
+			row.Comment = commentNullString.String
 		}
 
 		if starredString.Valid {

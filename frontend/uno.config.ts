@@ -19,6 +19,7 @@ export default defineConfig({
     'footer-icon-disabled': 'scale-100 text-lg text-muted lg:text-xl opacity-50',
     'footer-icon-on': 'scale-110 text-lg text-secondary-400 transition-all duration-100 hover:scale-130 group-hover/button:scale-130 lg:text-xl',
     'track-grid': 'items-center gap-4 grid grid-cols-[40px_minmax(0,_1fr)_40px_20px] md:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_60px_20px] lg:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_20px] xl:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_40px_40px_20px]',
+    'input-text': 'background-2 mt-2 p-2 border-1 border-gray-300 border-solid w-28rem focus:outline-none focus:ring-1 focus:ring-primary-200 dark:focus:ring-primary-400',
   },
   theme: {
     colors: {

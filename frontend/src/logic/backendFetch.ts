@@ -581,7 +581,7 @@ export function getAuthenticatedAvatarUrl(userId: number): string {
   return url
 }
 
-export async function postNewAvatarImage(options: { userId: number, file: Blob }): Promise<Types.SubsonicResponse> {
+export async function postAvatarImage(options: { userId: number, file: Blob }): Promise<Types.SubsonicResponse> {
   const formData = new FormData()
   formData.append('id', options.userId.toString())
   formData.append('avatar', options.file)

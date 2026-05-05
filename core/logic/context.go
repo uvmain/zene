@@ -14,12 +14,3 @@ func GetUserIdFromContext(ctx context.Context) (int, error) {
 	}
 	return userId, nil
 }
-
-func GetUsernameFromContext(ctx context.Context) (string, error) {
-	val := ctx.Value(types.ContextKey("userName"))
-	username, ok := val.(string)
-	if !ok || username == "" {
-		return "", fmt.Errorf("username missing or invalid in context")
-	}
-	return username, nil
-}

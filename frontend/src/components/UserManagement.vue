@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicUser } from '~/types/subsonicUser'
-import { getAuthenticatedAvatarUrl, postNewAvatarImage } from '~/logic/backendFetch'
+import { getAuthenticatedAvatarUrl, postAvatarImage } from '~/logic/backendFetch'
 import { onImageError } from '~/logic/common'
 import { createUser, defaultNewUser, deleteUser, fetchCurrentUser, fetchUsers, updateUser } from '~/logic/users'
 
@@ -12,7 +12,7 @@ const showDeleteUserDialog = ref(false)
 const newUser = ref<SubsonicUser>({ ...defaultNewUser })
 const editingUser = ref<SubsonicUser>({} as SubsonicUser)
 const userToDelete = ref<SubsonicUser>({} as SubsonicUser)
-const newAvatar = ref<string | null>(null)
+const avatar = ref<string | null>(null)
 
 async function getCurrentUser() {
   currentUser.value = await fetchCurrentUser()
@@ -23,11 +23,15 @@ async function getUsers() {
 }
 
 async function handleCreateUser() {
-  if (!currentUser.value?.adminRole || !newUser.value)
+  if (!currentUser.value?.adminRole || !newUser.value) {
     return
-
+  }
   await createUser(newUser.value)
-
+  if (avatar.value) {
+    const imageBlob = await (await fetch(avatar.value)).blob()
+    await postAvatarImage({ userId: editingUser.value.id, file: imageBlob })
+    avatar.value = null
+  }
   await getUsers()
   showCreateUserDialog.value = false
   newUser.value = { ...defaultNewUser }
@@ -37,10 +41,10 @@ async function handleUpdateUser() {
   if (!currentUser.value?.adminRole || !editingUser.value)
     return
   await updateUser(editingUser.value)
-  if (newAvatar.value) {
-    const imageBlob = await (await fetch(newAvatar.value)).blob()
-    await postNewAvatarImage({ userId: editingUser.value.id, file: imageBlob })
-    newAvatar.value = null
+  if (avatar.value) {
+    const imageBlob = await (await fetch(avatar.value)).blob()
+    await postAvatarImage({ userId: editingUser.value.id, file: imageBlob })
+    avatar.value = null
   }
   showEditUserDialog.value = false
   editingUser.value = {} as SubsonicUser
@@ -122,16 +126,16 @@ onMounted(async () => {
             </thead>
             <tbody class="text-muted divide-background-300 divide-y dark:divide-background-700">
               <tr v-for="user in users" :key="user.username">
-                <td class="px-4 py-4 flex flex-row whitespace-nowrap items-center space-x-3">
+                <td class="px-4 py-2 flex flex-row whitespace-nowrap items-center space-x-3">
                   <img
                     :src="getAuthenticatedAvatarUrl(user.id)"
                     alt="User Avatar"
-                    class="rounded-full size-8 object-cover"
+                    class="rounded-full size-10 object-cover"
                     @error="onImageError"
                   />
                   <span>{{ user.username }}</span>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap">
+                <td class="px-4 whitespace-nowrap">
                   {{ user.adminRole ? 'Yes' : 'No' }}
                 </td>
                 <td class="px-4 py-4 flex flex-row whitespace-nowrap space-x-2">
@@ -155,41 +159,44 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-if="showCreateUserDialog" class="bg-gray-600 bg-opacity-50 flex h-full w-full items-center inset-0 justify-center fixed z-30 overflow-y-auto">
-        <div class="p-6 bg-white max-w-md w-full shadow-xl">
-          <h3 class="text-lg text-gray-900 leading-6 font-medium mb-4">
-            Create New User
-          </h3>
-          <form @submit.prevent="handleCreateUser">
-            <div class="mb-4">
-              <label for="new-username" class="text-sm text-gray-700 font-medium">Username</label>
-              <input id="new-username" v-model="newUser.username" type="text" required class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
+      <Modal :show-modal="showCreateUserDialog" modal-title="Create New User" @close="closeCreateUserDialog">
+        <template #content>
+          <form class="text-muted flex flex-col gap-4">
+            <div class="flex flex-row gap-2 items-center justify-between">
+              <label for="new-username" class="text-sm">Username</label>
+              <input id="new-username" v-model="newUser.username" type="text" required class="input-text">
             </div>
-            <div class="mb-4">
-              <label for="new-password" class="text-sm text-gray-700 font-medium">Password</label>
-              <input id="new-password" v-model="newUser.password" type="password" required class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="flex flex-row gap-2 items-center justify-between">
+              <label for="new-password" class="text-sm">Password</label>
+              <input id="new-password" v-model="newUser.password" type="password" required class="input-text">
             </div>
-            <div class="mb-4">
-              <label for="new-email" class="text-sm text-gray-700 font-medium">Email</label>
-              <input id="new-email" v-model="newUser.email" type="email" required class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="flex flex-row gap-2 items-center justify-between">
+              <label for="new-email" class="text-sm">Email</label>
+              <input id="new-email" v-model="newUser.email" type="email" required class="input-text">
             </div>
-            <div class="mb-4">
-              <label class="flex items-center">
-                <input v-model="newUser.adminRole" type="checkbox" class="text-indigo-600 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 focus:ring-offset-0">
-                <span class="text-sm text-gray-600 ml-2">Is Admin</span>
-              </label>
+            <div class="flex flex-row gap-2 items-center justify-center">
+              <label for="is-admin" class="flex items-center" />
+              <input id="is-admin" v-model="newUser.adminRole" type="checkbox" class="text-primary border-gray-300 focus:border-indigo-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 focus:ring-offset-0">
+              <span class="text-sm">Admin user</span>
             </div>
-            <div class="mt-6 flex justify-end space-x-3">
-              <button type="button" class="text-sm text-gray-700 font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200" @click="closeCreateUserDialog">
+            <ImageSelector v-model="avatar">
+              <template #title>
+                <span class="text-sm text-muted">
+                  Optional user avatar
+                </span>
+              </template>
+            </ImageSelector>
+            <div class="mt-6 flex justify-center space-x-3">
+              <ZButton :red="true" @click="closeCreateUserDialog">
                 Cancel
-              </button>
-              <button type="submit" class="text-sm font-medium px-4 py-2 bg-blue-600 hover:bg-blue-700">
+              </ZButton>
+              <ZButton :green="true" @click="handleCreateUser">
                 Create
-              </button>
+              </ZButton>
             </div>
           </form>
-        </div>
-      </div>
+        </template>
+      </Modal>
 
       <!-- Edit User Dialog -->
       <div v-if="showEditUserDialog && editingUser" class="bg-gray-600 bg-opacity-50 flex h-full w-full items-center inset-0 justify-center fixed z-30 overflow-y-auto">
@@ -211,10 +218,10 @@ onMounted(async () => {
                 <label for="new-email" class="text-sm text-gray-700 font-medium">Email</label>
                 <input id="new-email" v-model="editingUser.email" type="email" class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
               </div>
-              <div v-if="newAvatar" class="text-black">
-                newAvatar: {{ newAvatar }}
+              <div v-if="avatar" class="text-black">
+                avatar: {{ avatar }}
               </div>
-              <ImageSelector v-model="newAvatar" />
+              <ImageSelector v-model="avatar" />
             </div>
             <div class="mt-6 flex justify-end space-x-3">
               <button type="button" class="text-sm text-gray-700 font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200" @click="showEditUserDialog = false">
