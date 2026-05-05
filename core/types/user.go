@@ -1,6 +1,7 @@
 package types
 
 type SubsonicUser struct {
+	Id                  int    `json:"id" xml:"id"`
 	Folders             []int  `json:"folder" xml:"folder,attr"`                           // Optional: IDs of music folders the user can access.
 	Username            string `json:"username" xml:"username,attr"`                       // Required: The name of the new user.
 	Email               string `json:"email" xml:"email,attr"`                             // Required: The email address of the new user.
@@ -25,7 +26,7 @@ type SubsonicUsers struct {
 }
 
 type User struct {
-	Id                  int    `json:"id"`
+	Id                  int    `json:"id" xml:"id"`
 	Username            string `json:"username" xml:"username"`                       // Required: The name of the new user.
 	Password            string `json:"password" xml:"password"`                       // Required: The password of the new user, either clear text or hex-encoded.
 	Email               string `json:"email" xml:"email"`                             // Required: The email address of the new user.

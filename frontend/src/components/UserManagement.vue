@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import type { SubsonicUser } from '~/types/subsonicUser'
-import { createUser, deleteUser, fetchCurrentUser, fetchUsers, updateUser } from '~/logic/users'
+import { getAuthenticatedAvatarUrl, postAvatarImage } from '~/logic/backendFetch'
+import { onImageError } from '~/logic/common'
+import { createUser, defaultNewUser, deleteUser, fetchCurrentUser, fetchUsers, updateUser } from '~/logic/users'
 
 const users = ref<SubsonicUser[]>([])
 const currentUser = ref<SubsonicUser>({} as SubsonicUser)
 const showCreateUserDialog = ref(false)
 const showEditUserDialog = ref(false)
 const showDeleteUserDialog = ref(false)
-
-const newUser = ref<SubsonicUser>({} as SubsonicUser)
+const newUser = ref<SubsonicUser>({ ...defaultNewUser })
 const editingUser = ref<SubsonicUser>({} as SubsonicUser)
 const userToDelete = ref<SubsonicUser>({} as SubsonicUser)
+const avatar = ref<string | null>(null)
 
 async function getCurrentUser() {
   currentUser.value = await fetchCurrentUser()
@@ -21,30 +23,39 @@ async function getUsers() {
 }
 
 async function handleCreateUser() {
-  if (!currentUser.value?.adminRole || !newUser.value)
+  if (!currentUser.value?.adminRole || !newUser.value) {
     return
-
+  }
   await createUser(newUser.value)
-
-  await fetchUsers()
+  if (avatar.value) {
+    const imageBlob = await (await fetch(avatar.value)).blob()
+    await postAvatarImage({ userId: editingUser.value.id, file: imageBlob })
+    avatar.value = null
+  }
+  await getUsers()
   showCreateUserDialog.value = false
-  newUser.value = {} as SubsonicUser
+  newUser.value = { ...defaultNewUser }
 }
 
 async function handleUpdateUser() {
   if (!currentUser.value?.adminRole || !editingUser.value)
     return
   await updateUser(editingUser.value)
-  await fetchUsers()
+  if (avatar.value) {
+    const imageBlob = await (await fetch(avatar.value)).blob()
+    await postAvatarImage({ userId: editingUser.value.id, file: imageBlob })
+    avatar.value = null
+  }
   showEditUserDialog.value = false
   editingUser.value = {} as SubsonicUser
+  await getUsers()
 }
 
 async function handleDeleteUser() {
   if (!currentUser.value?.adminRole || !userToDelete.value)
     return
   await deleteUser(userToDelete.value)
-  await fetchUsers()
+  await getUsers()
   showDeleteUserDialog.value = false
   userToDelete.value = {} as SubsonicUser
 }
@@ -52,8 +63,13 @@ async function handleDeleteUser() {
 function openCreateUserDialog() {
   if (!currentUser.value?.adminRole)
     return
-  newUser.value = {} as SubsonicUser
+  newUser.value = { ...defaultNewUser }
   showCreateUserDialog.value = true
+}
+
+function closeCreateUserDialog() {
+  showCreateUserDialog.value = false
+  newUser.value = { ...defaultNewUser }
 }
 
 function openEditUserDialog(user: SubsonicUser) {
@@ -79,10 +95,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="!currentUser?.adminRole" class="text-red-500">
-    You do not have permission to manage users.
-  </div>
-  <div v-else class="p-4 lg:p-6">
+  <div v-if="currentUser?.adminRole" class="mt-4">
     <h1 class="text-2xl font-semibold mb-6">
       Manage Users
     </h1>
@@ -93,49 +106,52 @@ onMounted(async () => {
             class="z-button"
             @click="openCreateUserDialog"
           >
-            Create User
+            Create new user
           </button>
         </div>
-
-        <div v-if="!users.length" class="py-4 text-center">
-          Loading users...
-        </div>
-        <div v-if="users.length > 0" class="overflow-x-auto">
-          <table class="bg-white min-w-full shadow-md">
-            <thead class="bg-gray-200">
+        <div>
+          <table class="text-left background-2 w-full">
+            <thead class="text-primary background-3">
               <tr>
-                <th class="text-xs text-gray-500 tracking-wider font-medium px-4 py-3 text-left uppercase">
-                  Username
+                <th class="text-xs px-4 py-3 uppercase">
+                  User
                 </th>
-                <th class="text-xs text-gray-500 tracking-wider font-medium px-4 py-3 text-left uppercase">
+                <th class="text-xs px-4 py-3 uppercase">
                   Admin
                 </th>
-                <th class="text-xs text-gray-500 tracking-wider font-medium px-4 py-3 text-left uppercase">
+                <th class="text-xs px-4 py-3 uppercase">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-gray-200 divide-y">
+            <tbody class="text-muted divide-background-300 divide-y dark:divide-background-700">
               <tr v-for="user in users" :key="user.username">
-                <td class="text-gray-600 px-4 py-4 whitespace-nowrap">
-                  {{ user.username }}
+                <td class="px-4 py-2 flex flex-row whitespace-nowrap items-center space-x-3">
+                  <img
+                    :src="getAuthenticatedAvatarUrl(user.id)"
+                    alt="User Avatar"
+                    class="rounded-full size-10 object-cover"
+                    @error="onImageError"
+                  />
+                  <span>{{ user.username }}</span>
                 </td>
-                <td class="text-gray-600 px-4 py-4 whitespace-nowrap">
+                <td class="px-4 whitespace-nowrap">
                   {{ user.adminRole ? 'Yes' : 'No' }}
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap space-x-2">
-                  <button
-                    class="text-sm font-semibold px-3 py-1 bg-yellow-500 hover:bg-yellow-600"
+                <td class="px-4 py-4 flex flex-row whitespace-nowrap space-x-2">
+                  <ZButton
+                    :hover-text="`Edit ${user.username} user`"
                     @click="openEditUserDialog(user)"
                   >
                     Edit
-                  </button>
-                  <button
-                    class="text-sm font-semibold px-3 py-1 bg-red-500 hover:bg-red-600"
+                  </ZButton>
+                  <ZButton
+                    :hover-text="`Delete ${user.username} user`"
+                    :red="true"
                     @click="openDeleteUserDialog(user)"
                   >
                     Delete
-                  </button>
+                  </ZButton>
                 </td>
               </tr>
             </tbody>
@@ -143,41 +159,44 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-if="showCreateUserDialog" class="bg-gray-600 bg-opacity-50 flex h-full w-full items-center inset-0 justify-center fixed z-30 overflow-y-auto">
-        <div class="p-6 bg-white max-w-md w-full shadow-xl">
-          <h3 class="text-lg text-gray-900 leading-6 font-medium mb-4">
-            Create New User
-          </h3>
-          <form @submit.prevent="handleCreateUser">
-            <div class="mb-4">
-              <label for="new-username" class="text-sm text-gray-700 font-medium">Username</label>
-              <input id="new-username" v-model="newUser.username" type="text" required class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
+      <Modal :show-modal="showCreateUserDialog" modal-title="Create New User" @close="closeCreateUserDialog">
+        <template #content>
+          <form class="text-muted flex flex-col gap-4">
+            <div class="flex flex-row gap-2 items-center justify-between">
+              <label for="new-username" class="text-sm">Username</label>
+              <input id="new-username" v-model="newUser.username" type="text" required class="input-text">
             </div>
-            <div class="mb-4">
-              <label for="new-password" class="text-sm text-gray-700 font-medium">Password</label>
-              <input id="new-password" v-model="newUser.password" type="password" required class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="flex flex-row gap-2 items-center justify-between">
+              <label for="new-password" class="text-sm">Password</label>
+              <input id="new-password" v-model="newUser.password" type="password" required class="input-text">
             </div>
-            <div class="mb-4">
-              <label for="new-email" class="text-sm text-gray-700 font-medium">Email</label>
-              <input id="new-email" v-model="newUser.email" type="email" required class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="flex flex-row gap-2 items-center justify-between">
+              <label for="new-email" class="text-sm">Email</label>
+              <input id="new-email" v-model="newUser.email" type="email" required class="input-text">
             </div>
-            <div class="mb-4">
-              <label class="flex items-center">
-                <input v-model="newUser.adminRole" type="checkbox" class="text-indigo-600 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 focus:ring-offset-0">
-                <span class="text-sm text-gray-600 ml-2">Is Admin</span>
-              </label>
+            <div class="flex flex-row gap-2 items-center justify-center">
+              <label for="is-admin" class="flex items-center" />
+              <input id="is-admin" v-model="newUser.adminRole" type="checkbox" class="text-primary border-gray-300 focus:border-indigo-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 focus:ring-offset-0">
+              <span class="text-sm">Admin user</span>
             </div>
-            <div class="mt-6 flex justify-end space-x-3">
-              <button type="button" class="text-sm text-gray-700 font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200" @click="showCreateUserDialog = false">
+            <ImageSelector v-model="avatar">
+              <template #title>
+                <span class="text-sm text-muted">
+                  Optional user avatar
+                </span>
+              </template>
+            </ImageSelector>
+            <div class="mt-6 flex justify-center space-x-3">
+              <ZButton :red="true" @click="closeCreateUserDialog">
                 Cancel
-              </button>
-              <button type="submit" class="text-sm font-medium px-4 py-2 bg-blue-600 hover:bg-blue-700">
+              </ZButton>
+              <ZButton :green="true" @click="handleCreateUser">
                 Create
-              </button>
+              </ZButton>
             </div>
           </form>
-        </div>
-      </div>
+        </template>
+      </Modal>
 
       <!-- Edit User Dialog -->
       <div v-if="showEditUserDialog && editingUser" class="bg-gray-600 bg-opacity-50 flex h-full w-full items-center inset-0 justify-center fixed z-30 overflow-y-auto">
@@ -185,7 +204,7 @@ onMounted(async () => {
           <h3 class="text-lg text-gray-900 leading-6 font-medium mb-4">
             Edit User: {{ editingUser.username }}
           </h3>
-          <form @submit.prevent="handleUpdateUser">
+          <div>
             <div class="mb-4">
               <label class="flex items-center">
                 <input v-model="editingUser.adminRole" type="checkbox" class="text-indigo-600 border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 focus:ring-offset-0">
@@ -199,16 +218,20 @@ onMounted(async () => {
                 <label for="new-email" class="text-sm text-gray-700 font-medium">Email</label>
                 <input id="new-email" v-model="editingUser.email" type="email" class="mt-1 px-3 py-2 border border-gray-300 w-full shadow-sm sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-indigo-500">
               </div>
+              <div v-if="avatar" class="text-black">
+                avatar: {{ avatar }}
+              </div>
+              <ImageSelector v-model="avatar" />
             </div>
             <div class="mt-6 flex justify-end space-x-3">
               <button type="button" class="text-sm text-gray-700 font-medium px-4 py-2 bg-gray-100 hover:bg-gray-200" @click="showEditUserDialog = false">
                 Cancel
               </button>
-              <button type="submit" class="text-sm font-medium px-4 py-2 bg-yellow-600 hover:bg-yellow-700">
+              <button type="button" class="text-sm font-medium px-4 py-2 bg-yellow-600 hover:bg-yellow-700" @click="handleUpdateUser()">
                 Update
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
 

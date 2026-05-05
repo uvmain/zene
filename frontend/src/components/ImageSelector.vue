@@ -58,7 +58,8 @@ watch(image, () => {
 </script>
 
 <template>
-  <div class="text p-6 flex flex-col gap-2 max-w-100vw items-center" @paste="onPaste">
+  <div class="p-6 flex flex-col gap-2 max-w-100vw items-center" @paste="onPaste">
+    <slot name="title" />
     <input
       id="fileInput"
       type="file"
@@ -75,12 +76,12 @@ watch(image, () => {
     <input
       v-model="imageUrlInput"
       placeholder="Enter image URL"
-      class="mt-2 p-2 border-1 border-gray-300 border-solid w-28rem focus:outline-none focus:ring-2 focus:ring-primary-500"
+      class="input-text"
       @change="onUrlChange"
     />
     <textarea
       placeholder="Paste an image here"
-      class="mt-2 p-2 border-1 border-gray-300 border-solid w-28rem focus:outline-none focus:ring-2 focus:ring-primary-500"
+      class="input-text"
     />
   </div>
 </template>

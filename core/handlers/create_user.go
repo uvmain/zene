@@ -237,7 +237,7 @@ func HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Printf("User %s created with ID %d by %s", username, userId, ctx.Value("username"))
+	logger.Printf("User %s created with ID %d by %s", username, userId, requestUser.Username)
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 

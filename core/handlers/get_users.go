@@ -46,6 +46,7 @@ func HandleGetUsers(w http.ResponseWriter, r *http.Request) {
 
 	for _, user := range allUsers {
 		response.SubsonicResponse.Users.User = append(response.SubsonicResponse.Users.User, types.SubsonicUser{
+			Id:                  user.Id,
 			Username:            user.Username,
 			Email:               user.Email,
 			ScrobblingEnabled:   user.ScrobblingEnabled,

@@ -302,14 +302,6 @@ func DeleteUserById(ctx context.Context, id int) error {
 	if err != nil {
 		return fmt.Errorf("deleting user: %v", err)
 	}
-
-	adminUser, err := logic.GetUsernameFromContext(ctx)
-	if err != nil {
-		logger.Printf("user id %d deleted, failed to get admin user: %v", id, err)
-	} else {
-		logger.Printf("user id %d deleted by admin user %s", id, adminUser)
-	}
-
 	return nil
 }
 
