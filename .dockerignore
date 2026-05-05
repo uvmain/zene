@@ -1,11 +1,12 @@
 .github
 .vscode
+android
 data
+docs
+frontend/node_modules
 node_modules
-tmp
 .env
 Caddy*
+tmp
 zene
 zene.exe
-docs
-android
