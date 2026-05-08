@@ -1,6 +1,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
+import type { SubsonicSong } from '~/types/subsonicSong'
 import { useLocalStorage } from '@vueuse/core'
 
 export enum AlbumOrders {
@@ -40,3 +41,5 @@ export const randomTracksSeed = useLocalStorage<number>('randomTracksSeed', 0)
 export const albumsStore = useLocalStorage<SubsonicAlbum[]>('albumsStore', [])
 export const artistsStore = useLocalStorage<SubsonicArtist[]>('artistsStore', [])
 export const genresStore = useLocalStorage<SubsonicGenre[]>('genresStore', [])
+export const queueStore = useLocalStorage<SubsonicSong[]>('queueStore', [])
+export const volumeStore = useLocalStorage<number>('volumeStore', 1)

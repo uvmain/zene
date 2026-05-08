@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { volumeStore } from '~/logic/store'
 import { changeVolume, currentVolume, toggleMute } from '~/logic/volume'
 
 function handleInput(e: Event) {
   const value = (e.target as HTMLInputElement).value
   changeVolume(value)
 }
+
+onMounted(() => {
+  currentVolume.value = volumeStore.value
+})
 </script>
 
 <template>
