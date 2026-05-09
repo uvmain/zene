@@ -24,5 +24,8 @@ export function changeVolume(volumeString: string) {
   if (audioElement.value) {
     audioElement.value.volume = volume
   }
-  volumeStore.value = volume
+  else {
+    console.warn('Audio element not found when trying to change volume')
+  }
+  volumeStore.value = volumeString
 }

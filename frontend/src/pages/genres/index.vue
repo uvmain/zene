@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import { fetchGenres } from '~/logic/backendFetch'
-import { genresStore } from '~/logic/store'
+import { getStoredKV, setStoredKV } from '~/stores/keyValueIdbStore'
 
 const router = useRouter()
 
 const genres = ref<SubsonicGenre[]>()
 
 async function getGenres() {
-  if (genresStore.value.length > 0) {
-    genres.value = genresStore.value
+  const storedGenres = await getStoredKV('genres')
+  if (storedGenres) {
+    genres.value = JSON.parse(storedGenres) as SubsonicGenre[]
   }
   const fetchedGenres = await fetchGenres()
   if (fetchedGenres && fetchedGenres.length > 0 && JSON.stringify(fetchedGenres) !== JSON.stringify(genres.value)) {
     genres.value = fetchedGenres
-    genresStore.value = genres.value
+    await setStoredKV('genres', JSON.stringify(genres.value))
   }
 }
 

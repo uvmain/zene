@@ -5,13 +5,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import App from '~/App.vue'
 import { apiKey } from '~/logic/store'
+import { createKVStoreIfNotExists } from '~/stores/keyValueIdbStore'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
 
+import { debugLog } from './logic/logger'
 import 'virtual:uno.css'
 import '~/styles/main.css'
 
 useDark()
 createEpisodeStoreIfNotExists()
+createKVStoreIfNotExists()
 
 const scrollBehavior: RouterScrollBehavior = async (to, from, savedPosition) => {
   if (to.hash) {
@@ -38,5 +41,13 @@ router.beforeEach((to: RouteLocationNormalized) => {
     return { path: '/login', replace: true }
   }
 })
+
+let totalLength = 0
+for (const item of Object.values(localStorage) as string[]) {
+  const itemLength = item.length * 2 // each character is 2 bytes in UTF-16
+  totalLength += itemLength
+}
+
+debugLog(`Localstorage space used: ${(totalLength / 1024).toFixed(2)} KB`)
 
 createApp(App as Component).use(router).mount('#app')
