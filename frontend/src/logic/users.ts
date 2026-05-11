@@ -44,19 +44,18 @@ export async function updateUser(user: SubsonicUser): Promise<void> {
   }
 }
 
-export async function deleteUser(user: SubsonicUser) {
+export async function deleteUser(user: SubsonicUser): Promise<SubsonicResponse> {
   const formData = new FormData()
   formData.append('username', user.username)
   const response = await openSubsonicFetchRequest<SubsonicResponse>('deleteUser.view', {
     body: formData,
   })
-  if (response.status !== 'ok') {
-    throw new Error(response.error?.message ?? 'Unknown error')
-  }
+  return response
 }
 
 export const defaultNewUser = {
   folder: [],
+  id: 0,
   username: '',
   password: '',
   email: '',

@@ -50,4 +50,8 @@ for (const item of Object.values(localStorage) as string[]) {
 
 debugLog(`Localstorage space used: ${(totalLength / 1024).toFixed(2)} KB`)
 
-createApp(App as Component).use(router).mount('#app')
+const app = createApp(App as Component)
+
+app.use(router)
+
+app.mount('#app')
