@@ -11,6 +11,7 @@ const toggleDark = useToggle(isDark)
 const router = useRouter()
 const forceTags = ref(false)
 const forceArt = ref(false)
+const showLogoutModal = ref(false)
 
 const streamQualitiesArray = computed<(string | number)[]>(() => {
   return Object.values(streamQualities)
@@ -45,11 +46,11 @@ async function logOut() {
         <span class="text-nowrap">Run a scan</span>
       </ZButton>
       <label for="force" class="flex gap-x-2 items-center">
-        <input id="force" v-model="forceTags" type="checkbox" class="size-6">
+        <input id="force" v-model="forceTags" type="checkbox" class="accent-primary-400 size-4">
         <span class="text-nowrap">Force</span>
       </label>
       <label v-if="forceTags" for="include-art" class="flex gap-x-2 items-center">
-        <input id="include-art" v-model="forceArt" type="checkbox" class="size-6">
+        <input id="include-art" v-model="forceArt" type="checkbox" class="accent-primary-400 size-4">
         <span class="text-nowrap">Include Art</span>
       </label>
     </div>
@@ -59,7 +60,7 @@ async function logOut() {
     <ZButton @click="toggleDark()">
       <span class="text-nowrap">Dark Mode: {{ isDark ? 'On' : 'Off' }}</span>
     </ZButton>
-    <ZButton @click="logOut()">
+    <ZButton @click="showLogoutModal = true">
       <span class="text-nowrap">Logout</span>
     </ZButton>
     <ZButton @click="deleteAudioCache()">
@@ -73,5 +74,26 @@ async function logOut() {
       @select="setStreamQuality"
     />
     <UserManagement />
+
+    <!-- Logout Modal -->
+    <Modal :show-modal="showLogoutModal" modal-title="Logout" @close="showLogoutModal = false">
+      <template #content>
+        <div class="p-6">
+          <h1 class="text-xl text-primary font-semibold mb-6">
+            Confirm Logout
+          </h1>
+          <div class="flex justify-center space-x-3">
+            <ZButton @click="showLogoutModal = false">
+              Cancel
+            </ZButton>
+            <ZButton @click="logOut">
+              Logout
+            </ZButton>
+          </div>
+          <div>
+          </div>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
