@@ -40,7 +40,7 @@
   },
   "homepage": "https://github.com/uvmain/zene#readme",
   "devDependencies": {
-    "@capacitor/cli": "^8.3.1",
+    "@capacitor/cli": "^8.3.3",
     "caddy-baron": "^5.0.1",
     "concurrently": "^9.2.1",
     "cpy-cli": "^7.0.0",

@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2022",
-    "lib": ["es2023", "esnext", "DOM"],
-    "baseUrl": ".",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "target": "esnext",
+    "lib": ["esnext", "DOM"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["./src/*"]
     },
     "types": [
       "node",

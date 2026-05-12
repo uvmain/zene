@@ -317,6 +317,19 @@ func anyAdminUsersExist(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+func OnlyOneAdminUserExists(ctx context.Context) (bool, error) {
+	query := `SELECT COUNT(*) FROM users where admin_role = true`
+	var adminCount int
+	err := DB.QueryRowContext(ctx, query).Scan(&adminCount)
+	if err != nil {
+		return false, err
+	}
+	if adminCount == 1 {
+		return true, nil
+	}
+	return false, nil
+}
+
 func GetEncryptedPasswordFromDB(ctx context.Context, username string) (string, int, error) {
 	query := `SELECT password, id FROM users WHERE username = ?`
 	var encryptedPassword string

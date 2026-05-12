@@ -45,6 +45,19 @@ func HandleDeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if userToDelete.AdminRole {
+		isOnlyAdminUser, err := database.OnlyOneAdminUserExists(ctx)
+		if err != nil {
+			logger.Printf("Error checking if user is the only admin: %v", err)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to delete user", "")
+			return
+		}
+		if isOnlyAdminUser {
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Cannot delete the only admin user", "")
+			return
+		}
+	}
+
 	err = database.DeleteUserById(ctx, userToDelete.Id)
 	if err != nil {
 		logger.Printf("Error deleting user %s: %v", username, err)

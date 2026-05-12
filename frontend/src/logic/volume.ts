@@ -1,5 +1,6 @@
 import { audioElement } from '~/logic/audioElement'
 import { castPlayerController, chromecastConnected } from '~/logic/castRefs'
+import { volumeStore } from './store'
 
 export const previousVolume = ref(1)
 export const currentVolume = ref(1)
@@ -23,4 +24,8 @@ export function changeVolume(volumeString: string) {
   if (audioElement.value) {
     audioElement.value.volume = volume
   }
+  else {
+    console.warn('Audio element not found when trying to change volume')
+  }
+  volumeStore.value = volumeString
 }
