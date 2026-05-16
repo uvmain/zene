@@ -18,7 +18,6 @@ declare module 'vue' {
     Avatar: typeof import('./src/components/Avatar.vue')['default']
     ChangeAlbumArt: typeof import('./src/components/ChangeAlbumArt.vue')['default']
     ChangeArtistArt: typeof import('./src/components/ChangeArtistArt.vue')['default']
-    DefaultUser: typeof import('./src/components/DefaultUser.vue')['default']
     DropdownMenu: typeof import('./src/components/DropdownMenu.vue')['default']
     Fave: typeof import('./src/components/Fave.vue')['default']
     Footer: typeof import('./src/components/Footer.vue')['default']

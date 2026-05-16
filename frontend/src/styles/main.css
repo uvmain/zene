@@ -25,3 +25,7 @@ input, textarea {
     background: var(--colors-background-800);
   }
 }
+
+:root {
+  --main-colour: hsl(22 95% 60%);
+}

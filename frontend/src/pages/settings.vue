@@ -2,9 +2,10 @@
 import type { StreamQuality } from '~/logic/store'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { resetAccentColour, updateAccentColour } from '~/logic/colours'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
-import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
+import { accentColour, debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -73,6 +74,21 @@ async function logOut() {
       :current-option="streamQuality"
       @select="setStreamQuality"
     />
+
+    <div class="flex flex-row gap-2 items-center">
+      <input
+        id="accent"
+        v-model="accentColour"
+        type="color"
+        name="accent"
+        colorspace="display-p3"
+        @input="updateAccentColour"
+      />
+      <label for="accent">Accent color</label>
+      <ZButton @click="resetAccentColour()">
+        Reset
+      </ZButton>
+    </div>
     <UserManagement />
 
     <!-- Logout Modal -->
