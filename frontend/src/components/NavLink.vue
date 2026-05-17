@@ -31,8 +31,8 @@ function handleLinkClick() {
     <icon-nrk-media-ffw
       class="opacity-0 size-8 transition-all duration-300"
       :class="{
-        'opacity-100 text-primary-500': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
-        'group-hover/navlink:opacity-50 text-accent-400': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
+        'opacity-100 text-main-400': currentRoute === routeProp || currentRoute.startsWith(`${routeProp}/`),
+        'group-hover/navlink:opacity-50 text-main-400': currentRoute !== routeProp && !currentRoute.startsWith(`${routeProp}/`),
       }"
     />
     <span class="text-xl lg:text-lg">{{ routeName }}</span>

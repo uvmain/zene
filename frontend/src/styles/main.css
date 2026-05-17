@@ -27,5 +27,6 @@ input, textarea {
 }
 
 :root {
-  --main-colour: hsl(22 95% 60%);
+  --main-colour: hsla(22 95% 60% / 1);
+  --un-bg-opacity: 1;
 }

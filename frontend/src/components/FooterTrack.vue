@@ -9,7 +9,7 @@ const showTrackModal = ref(false)
 <template>
   <div
     v-if="currentlyPlayingItem.track"
-    class="p-2 corner-cut bg-primary-500/30 flex flex-row gap-4 items-center justify-center overflow-hidden"
+    class="p-2 corner-cut bg-main-500/30 flex flex-row gap-4 items-center justify-center overflow-hidden"
   >
     <div>
       <RouterLink

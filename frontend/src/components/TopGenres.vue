@@ -22,7 +22,7 @@ onBeforeMount(async () => {
         </h2>
         <Refresher @refreshed="getGenres()" />
       </div>
-      <hr class="mx-2 border-t border-primary-400/20 flex-1 lg:mx-4" />
+      <hr class="mx-2 border-t border-main-400/20 flex-1 lg:mx-4" />
       <ZButton>
         Top Genres
       </ZButton>

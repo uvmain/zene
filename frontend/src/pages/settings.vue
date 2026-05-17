@@ -47,11 +47,11 @@ async function logOut() {
         <span class="text-nowrap">Run a scan</span>
       </ZButton>
       <label for="force" class="flex gap-x-2 items-center">
-        <input id="force" v-model="forceTags" type="checkbox" class="accent-primary-400 size-4">
+        <input id="force" v-model="forceTags" type="checkbox" class="accent-main-400 size-4">
         <span class="text-nowrap">Force</span>
       </label>
       <label v-if="forceTags" for="include-art" class="flex gap-x-2 items-center">
-        <input id="include-art" v-model="forceArt" type="checkbox" class="accent-primary-400 size-4">
+        <input id="include-art" v-model="forceArt" type="checkbox" class="accent-main-400 size-4">
         <span class="text-nowrap">Include Art</span>
       </label>
     </div>

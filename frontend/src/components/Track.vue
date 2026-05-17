@@ -45,10 +45,10 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <div
       class="group text-base px-2 py-1 track-grid cursor-pointer transition-colors duration-300 ease-out"
       :class="{
-        'hover:bg-accent-500/30': !isTrackPlaying,
         'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
         'dark:bg-background-700/20 bg-background-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
-        'bg-primary-500/30 corner-cut': isTrackPlaying,
+        'bg-main-500/30 corner-cut': isTrackPlaying,
+        'hover:bg-main-500/20 dark:hover:bg-main-500/20': !isTrackPlaying,
         'corner-cut': trackIndex === 0,
       }"
       @click="handlePlay(track)"

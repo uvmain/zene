@@ -31,11 +31,11 @@ function effectiveRating() {
       <icon-nrk-star-active
         v-if="effectiveRating() >= rating"
         :class="{
-          'text-primary-400': rating === 5,
-          'text-primary-400/60': rating === 1,
-          'text-primary-400/70': rating === 2,
-          'text-primary-400/80': rating === 3,
-          'text-primary-400/90': rating === 4,
+          'text-main-400': rating === 5,
+          'text-main-400/60': rating === 1,
+          'text-main-400/70': rating === 2,
+          'text-main-400/80': rating === 3,
+          'text-main-400/90': rating === 4,
         }"
       />
       <icon-nrk-star v-else class="text-muted opacity-70" />
