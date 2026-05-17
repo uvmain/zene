@@ -10,6 +10,7 @@ html, body, #app {
   .dark & {
     scrollbar-color: var(--colors-background-300) var(--colors-background-800);
   }
+  transition: background-color 1s, color 1s;
 }
 
 button, input, select, textarea {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { fetchPodcastChannel } from '~/logic/backendFetch'
+import { setAccentFromImage } from '~/logic/colours'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
@@ -21,6 +22,17 @@ const coverArtUrl = computed(() => {
   }
   else {
     return '/default-square.png'
+  }
+})
+
+watch(coverArtUrl, (newUrl) => {
+  if (newUrl) {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = newUrl
+    img.onload = () => {
+      setAccentFromImage(img)
+    }
   }
 })
 
