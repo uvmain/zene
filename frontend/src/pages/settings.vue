@@ -2,10 +2,10 @@
 import type { StreamQuality } from '~/logic/store'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, openSubsonicFetchRequest } from '~/logic/backendFetch'
-import { resetAccentColour, updateAccentColour } from '~/logic/colours'
+import { initializeAccentColour, resetAccentColour, updateAccentColour } from '~/logic/colours'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
-import { accentColour, debugEnabled, streamQualities, streamQuality } from '~/logic/store'
+import { accentColour, autoSwitchColours, debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -16,6 +16,12 @@ const showLogoutModal = ref(false)
 
 const streamQualitiesArray = computed<(string | number)[]>(() => {
   return Object.values(streamQualities)
+})
+
+watch(autoSwitchColours, (newValue) => {
+  if (!newValue) {
+    initializeAccentColour()
+  }
 })
 
 async function runScan() {
@@ -76,6 +82,10 @@ async function logOut() {
     />
 
     <div class="flex flex-row gap-2 items-center">
+      <label for="auto-switch-colours" class="flex gap-x-2 items-center">
+        <input id="auto-switch-colours" v-model="autoSwitchColours" type="checkbox" class="accent-main-400 size-4">
+        <span class="text-nowrap">Auto Switch Colours</span>
+      </label>
       <input
         id="accent"
         v-model="accentColour"

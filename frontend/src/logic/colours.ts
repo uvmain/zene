@@ -27,21 +27,20 @@ export async function setAccentFromImage(imageElement: HTMLImageElement): Promis
   }
   const swatches = await getSwatches(imageElement, options)
   let newColour: string
-  if (swatches.Vibrant?.color) {
+  if (swatches.Vibrant?.color && swatches.Vibrant.color.hsl().s > 20) {
     newColour = swatches.Vibrant.color.toString()
   }
-  else if (swatches.DarkVibrant?.color) {
+  else if (swatches.DarkVibrant?.color && swatches.DarkVibrant.color.hsl().s > 20) {
     newColour = swatches.DarkVibrant.color.toString()
   }
-  else if (swatches.LightVibrant?.color) {
+  else if (swatches.LightVibrant?.color && swatches.LightVibrant.color.hsl().s > 20) {
     newColour = swatches.LightVibrant.color.toString()
   }
-  else if (swatches.Muted?.color) {
+  else if (swatches.Muted?.color && swatches.Muted.color.hsl().s > 20) {
     newColour = swatches.Muted.color.toString()
   }
   else {
     newColour = DEFAULT_COLOUR
   }
   document.documentElement.style.setProperty('--main-colour', newColour)
-  accentColour.value = newColour
 }
