@@ -1,8 +1,8 @@
 import type { ExtractionOptions } from 'colorthief'
-import { getSwatches } from 'colorthief'
+import { getPalette } from 'colorthief'
 import { accentColour } from './store'
 
-const DEFAULT_COLOUR = 'hsl(22 95% 60%)' as const
+const DEFAULT_COLOUR: string = 'hsl(22 95% 60%)' as const
 
 export function initializeAccentColour() {
   document.documentElement.style.setProperty('--main-colour', accentColour.value)
@@ -21,26 +21,15 @@ export function resetAccentColour() {
 
 export async function setAccentFromImage(imageElement: HTMLImageElement): Promise<void> {
   const options: ExtractionOptions = {
-    colorCount: 10,
-    quality: 5,
-    colorSpace: 'oklch',
+    colorCount: 6,
   }
-  const swatches = await getSwatches(imageElement, options)
-  let newColour: string
-  if (swatches.Vibrant?.color && swatches.Vibrant.color.hsl().s > 20) {
-    newColour = swatches.Vibrant.color.toString()
-  }
-  else if (swatches.DarkVibrant?.color && swatches.DarkVibrant.color.hsl().s > 20) {
-    newColour = swatches.DarkVibrant.color.toString()
-  }
-  else if (swatches.LightVibrant?.color && swatches.LightVibrant.color.hsl().s > 20) {
-    newColour = swatches.LightVibrant.color.toString()
-  }
-  else if (swatches.Muted?.color && swatches.Muted.color.hsl().s > 20) {
-    newColour = swatches.Muted.color.toString()
-  }
-  else {
-    newColour = DEFAULT_COLOUR
-  }
+  const palette = await getPalette(imageElement, options) ?? []
+  const colours = palette.filter((colour) => {
+    const hsl = colour.hsl()
+    return hsl.s > 20 && hsl.l > 10 && hsl.l < 90
+  }).sort((a, b) => b.population - a.population)
+
+  const newColour = colours[0]?.toString() ?? DEFAULT_COLOUR
+
   document.documentElement.style.setProperty('--main-colour', newColour)
 }
