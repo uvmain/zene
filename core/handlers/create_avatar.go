@@ -31,7 +31,9 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username == "" && userId == "" {
-
+		logger.Printf("No username or id parameter provided, defaulting to request user %s", requestUser.Username)
+		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "id or username parameter required", "")
+		return
 	}
 
 	var avatarUser types.User
@@ -44,6 +46,11 @@ func HandleCreateAvatar(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		avatarUser, err = database.GetUserById(ctx, idInt)
+		if err != nil {
+			logger.Printf("Error getting user ID for user ID %d: %v", idInt, err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
+			return
+		}
 	} else if username != "" {
 		avatarUser, err = database.GetUserByUsername(ctx, username)
 		if err != nil {

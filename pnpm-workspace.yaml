@@ -1,0 +1,7 @@
+packages:
+  - 'frontend'
+
+allowBuilds:
+  caddy-baron: true
+
+minimumReleaseAge: 1440

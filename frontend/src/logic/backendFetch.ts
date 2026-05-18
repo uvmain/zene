@@ -7,7 +7,6 @@ import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { debugLog } from '~/logic/logger'
-import { isMobileNative, serverBaseUrl } from '~/logic/mobileNative'
 import { albumSeed, apiKey, artistSeed } from '~/logic/store'
 import { generateSeed } from './common'
 
@@ -17,15 +16,6 @@ export interface PostArtOptions {
   musicbrainz_id: string
   image?: Blob
   url?: string
-}
-
-export function getServerUrl(path: string): string {
-  if (isMobileNative) {
-    let url = `${serverBaseUrl.value}/${path}`
-    url = url.replace(/([^:]\/)\/+/g, '$1')
-    return url
-  }
-  return path
 }
 
 export async function createNewApiKeyWithTokenAndSalt(username: string, token: string, salt: string): Promise<string> {
@@ -38,7 +28,7 @@ export async function createNewApiKeyWithTokenAndSalt(username: string, token: s
     formData.append('c', 'zeneclient')
     formData.append('f', 'json')
 
-    const url = getServerUrl('rest/createApiKey.view')
+    const url = 'rest/createApiKey.view'
 
     const response = await fetch(url, {
       method: 'POST',
@@ -68,7 +58,7 @@ export async function fetchApiKeysWithTokenAndSalt(username: string, token: stri
     formData.append('c', 'zeneclient')
     formData.append('f', 'json')
 
-    const url = getServerUrl('rest/getApiKeys.view')
+    const url = 'rest/getApiKeys.view'
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
@@ -121,7 +111,7 @@ export async function openSubsonicFetchRequest<T>(path: string, options: Request
   options.method = options.method ?? 'POST'
 
   const promise = async <T>(path: string, options: RequestInit): Promise<T> => {
-    const url = getServerUrl(`/rest/${path}`)
+    const url = `/rest/${path}`
 
     const response = await fetch(url, options)
 
@@ -370,7 +360,7 @@ export async function useServerSentEventsForAlbumArt(albumId: string, onMessage:
   params.append('c', 'zene-frontend')
   params.append('id', albumId)
 
-  const url = getServerUrl(`/rest/getalbumartssse?${params.toString()}`)
+  const url = `/rest/getalbumartssse?${params.toString()}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -415,7 +405,7 @@ export async function useServerSentEventsForPodcast(podcastId: string, onMessage
   params.append('c', 'zene-frontend')
   params.append('id', podcastId)
 
-  const url = getServerUrl(`/rest/getpodcastssse?${params.toString()}`)
+  const url = `/rest/getpodcastssse?${params.toString()}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -443,7 +433,7 @@ export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
   formData.append('c', 'zene-frontend')
   formData.append('id', mediaId)
 
-  const url = getServerUrl('/rest/download.view')
+  const url = '/rest/download.view'
   const response = await fetch(url, {
     method: 'POST',
     body: formData,
@@ -505,7 +495,7 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
     formData.append('random', random.toString())
     formData.append('count', count.toString())
 
-    const url = getServerUrl('rest/getbutterchurnpresets')
+    const url = '/rest/getbutterchurnpresets'
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
@@ -528,7 +518,7 @@ export async function useServerSentEventsForArtistArt(artistId: string, onMessag
   params.append('c', 'zene-frontend')
   params.append('id', artistId)
 
-  const url = getServerUrl(`/rest/getartistartssse?${params.toString()}`)
+  const url = `/rest/getartistartssse?${params.toString()}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -577,7 +567,7 @@ export function getAuthenticatedAvatarUrl(userId: number): string {
     f: 'json',
     id: userId.toString(),
   })
-  const url = getServerUrl(`/rest/getAvatar?${queryParams.toString()}`)
+  const url = `/rest/getAvatar?${queryParams.toString()}`
   return url
 }
 

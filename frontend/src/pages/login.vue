@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import md5 from 'md5'
 import { createNewApiKeyWithTokenAndSalt, fetchApiKeysWithTokenAndSalt } from '~/logic/backendFetch'
-import { isMobileNative, serverBaseUrl } from '~/logic/mobileNative'
 import { apiKey } from '~/logic/store'
 
 const router = useRouter()
@@ -91,19 +90,6 @@ async function login() {
           @input="error = null"
           @keydown.enter.prevent="login()"
         />
-        <div v-if="isMobileNative" class="flex flex-col gap-2">
-          <label for="serverUrl">
-            Server URL
-          </label>
-          <input
-            id="serverUrl"
-            v-model="serverBaseUrl"
-            type="text"
-            class="input"
-            autocomplete="serverBaseUrl"
-            required
-          />
-        </div>
       </form>
       <ZButton :disabled="signInDisabled" @click="login()">
         <div class="text-xl lg:text-base">

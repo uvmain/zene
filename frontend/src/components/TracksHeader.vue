@@ -1,6 +1,6 @@
 <template>
   <div
-    class="track-grid text-lg text-muted mb-2 pl-2 pr-6"
+    class="text-lg text-muted mb-2 pl-2 pr-6 track-grid"
   >
     <div class="text-center cursor-pointer">
       #

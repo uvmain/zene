@@ -1,6 +1,5 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
 import { apiKey, streamQuality } from '~/logic/store'
-import { getServerUrl } from './backendFetch'
 
 export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)
@@ -26,7 +25,7 @@ export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = fal
   else {
     queryParams.append('raw', 'true')
   }
-  const url = getServerUrl(`/rest/stream.view?${queryParams.toString()}`)
+  const url = `/rest/stream.view?${queryParams.toString()}`
   return url
 }
 
@@ -60,7 +59,7 @@ export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.si
   else {
     path = size === 0 ? `/share/img/${musicbrainzId}` : `/share/img/${musicbrainzId}?size=${size}`
   }
-  return getServerUrl(path)
+  return path
 }
 
 export async function cacheBustArt(musicbrainz_id: string) {

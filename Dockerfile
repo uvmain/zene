@@ -1,12 +1,13 @@
-FROM node:24-alpine AS frontend-build
+FROM ghcr.io/pnpm/pnpm:latest AS frontend-build
 
-WORKDIR /frontend
+WORKDIR /app
 
-COPY ./frontend .
-COPY ./package-lock.json ./
+COPY ./frontend ./frontend
+COPY ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json ./
 
-RUN npm ci
-RUN npm run build
+RUN pnpm runtime set node 24 -g
+RUN pnpm install --frozen-lockfile
+RUN pnpm run build:frontend
 
 FROM golang:1.26.3 AS backend-build
 
@@ -14,7 +15,7 @@ WORKDIR /app
 
 COPY . .
 
-COPY --from=frontend-build /frontend/dist ./frontend/dist
+COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
 RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o zene .
 
