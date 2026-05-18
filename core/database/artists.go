@@ -184,18 +184,18 @@ func GetArtistList(ctx context.Context, musicFolderIds []int, limit int, offset 
 	case "newest": // recently added artists
 		query += " order by m.date_added desc"
 	case "highest": // highest rated artists
-		query += " order by ur.rating desc, m.artist desc"
+		query += " order by ur.rating desc, upper(m.artist) desc"
 	case "frequent": // most frequently played artists
 		query += " order by ap.play_count desc, m.date_added desc"
 	case "recent": // recently played artists
 		query += " order by last_played desc, m.date_added desc"
 	case "alphabetical":
-		query += " order by m.artist asc"
+		query += " order by upper(m.artist) asc"
 	case "starred":
 		query += ` having date_starred is not null
-			order by date_starred desc, m.artist asc`
+			order by date_starred desc, upper(m.artist) asc`
 	default:
-		query += " order BY m.artist asc"
+		query += " order BY upper(m.artist) asc"
 	}
 
 	if limit > 0 {

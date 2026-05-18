@@ -131,9 +131,9 @@ func GetAlbumList(ctx context.Context, sortType string, limit int, offset int, f
 	case "recent": // recently played albums
 		query += " order by last_played desc, m.musicbrainz_album_id desc"
 	case "alphabeticalbyname":
-		query += " order by m.album asc"
+		query += " order by upper(m.album) asc"
 	case "alphabeticalbyartist":
-		query += " order by m.artist asc"
+		query += " order by upper(m.artist) asc"
 	case "release":
 		query += " order by m.release_date desc"
 	default:

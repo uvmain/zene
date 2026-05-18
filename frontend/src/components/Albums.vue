@@ -123,7 +123,6 @@ onBeforeMount(async () => {
         :index="index"
         class="scale-100 transition duration-200 hover:scale-105"
       />
-      <!-- <div v-for="index in 30" id="push-non-full-grid-left" :key="index" aria-none class="size-full" /> -->
     </div>
     <Loading v-else />
   </div>

@@ -5,13 +5,12 @@ import { artSizes, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logi
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: true },
-  showArtist: { type: Boolean, default: true },
-  showDate: { type: Boolean, default: true },
   trackTitle: { type: String, required: false },
   index: { type: Number, default: 0 },
 })
 
 const router = useRouter()
+const route = useRoute()
 
 const artist = computed(() => {
   return props.album.displayAlbumArtist ?? props.album.artist ?? props.album.displayArtist ?? 'Unknown Artist'
@@ -29,17 +28,8 @@ const artistAndDate = computed(() => {
   }
 })
 
-const albumAndDate = computed(() => {
-  const album = props.album.title || props.album.name || 'Unknown Album'
-  if (props.album.releaseDate) {
-    return `${album} • ${parseReleaseDate(props.album.releaseDate)}`
-  }
-  else if (props.album.year) {
-    return `${album} • ${props.album.year}`
-  }
-  else {
-    return album
-  }
+const showDate = computed(() => {
+  return route.path.startsWith('/artist') && (props.album.releaseDate || props.album.year)
 })
 
 const loading = computed<LoadingAttribute>(() => {
@@ -79,20 +69,14 @@ function navigateArtist() {
       <div v-if="trackTitle" class="text-lg text-primary text-nowrap truncate">
         {{ trackTitle }}
       </div>
-      <div v-if="showArtist" class="text-lg text-primary link text-nowrap truncate lg:text-base" @click="navigateAlbum()">
+      <div class="text-lg text-primary link text-nowrap truncate lg:text-base" @click="navigateAlbum()">
         {{ album.title || album.name }}
       </div>
-      <div v-if="showArtist && showDate" class="text-sm link text-nowrap truncate" @click="navigateArtist()">
+      <div v-if="showDate" class="text-sm link text-nowrap truncate" @click="navigateArtist()">
         {{ artistAndDate }}
       </div>
-      <div v-else-if="showArtist && !showDate" class="text-sm link text-nowrap truncate" @click="navigateArtist()">
+      <div v-else class="text-sm link text-nowrap truncate" @click="navigateArtist()">
         {{ artist }}
-      </div>
-      <div v-if="!showArtist && showDate" class="text-sm link text-nowrap truncate lg:text-base" @click="navigateArtist()">
-        {{ albumAndDate }}
-      </div>
-      <div v-else-if="!showArtist && !showDate" class="text-sm link text-nowrap truncate lg:text-base" @click="navigateArtist()">
-        {{ album.title }}
       </div>
     </div>
   </div>

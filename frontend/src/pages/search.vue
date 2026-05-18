@@ -61,7 +61,7 @@ onMounted(() => {
             Tracks: {{ searchResults?.songs?.length ?? 0 }}
           </div>
           <div class="flex flex-wrap gap-6">
-            <Album v-for="track in searchResults?.songs" :key="track.path" :album="trackToAlbum(track)" :track-title="track.title" :show-artist="true" :show-date="false" />
+            <Album v-for="track in searchResults?.songs" :key="track.path" :album="trackToAlbum(track)" :track-title="track.title" />
           </div>
         </div>
         <hr class="border-main-400 opacity-50" />
