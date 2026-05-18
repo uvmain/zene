@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { audioElement } from '~/logic/audioElement'
 import { volumeStore } from '~/logic/store'
 import { changeVolume, currentVolume, toggleMute } from '~/logic/volume'
 

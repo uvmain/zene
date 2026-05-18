@@ -28,8 +28,11 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install dependencies (npm workspaces)
-        run: npm ci
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies (pnpm workspaces)
+        run: pnpm install --frozen-lockfile
 
       - name: Build project (Go backend + Vue3 frontend)
-        run: npm run build
+        run: pnpm build

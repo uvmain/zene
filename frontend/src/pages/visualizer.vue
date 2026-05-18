@@ -5,7 +5,6 @@ import { onKeyStroke } from '@vueuse/core'
 import butterchurnModule from 'butterchurn'
 import { audioContext, audioNode } from '~/logic/audioElement'
 import { getButterchurnPresets } from '~/logic/backendFetch'
-import { isMobileNative } from '~/logic/mobileNative'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
@@ -225,14 +224,8 @@ onUnmounted(() => {
         </div>
         <div class="group/next flex flex-row gap-2 h-10 cursor-pointer items-center justify-between">
           <div class="text-sm flex text-wrap items-center" @click="loadRandomPreset(0)">
-            <p v-if="isMobileNative" class="opacity-100 transition-opacity duration-500 fixed group-hover/next:opacity-0">
-              Double-tap to toggle fullscreen.
-            </p>
-            <p v-else class="opacity-100 transition-opacity duration-500 fixed group-hover/next:opacity-0">
+            <p class="opacity-100 transition-opacity duration-500 fixed group-hover/next:opacity-0">
               Press F or double-click to toggle fullscreen.
-            </p>
-            <p v-if="!isMobileNative" class="opacity-0 transition-opacity duration-500 fixed group-hover/next:opacity-100">
-              Next preset
             </p>
           </div>
           <icon-nrk-media-ffw class="text-muted size-10 min-w-10 group-hover/next:text-main-500" />

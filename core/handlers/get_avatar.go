@@ -43,6 +43,11 @@ func HandleGetAvatar(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		avatarUser, err = database.GetUserById(ctx, idInt)
+		if err != nil {
+			logger.Printf("Error getting user ID for user ID %d: %v", idInt, err)
+			net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
+			return
+		}
 	} else {
 		avatarUser, err = database.GetUserByUsername(ctx, username)
 		if err != nil {

@@ -29,7 +29,7 @@ export async function setAccentFromImage(imageElement: HTMLImageElement): Promis
     return hsl.s > 20 && hsl.l > 10 && hsl.l < 90
   }).sort((a, b) => b.population - a.population)
 
-  const newColour = colours[0]?.toString() ?? DEFAULT_COLOUR
+  const newColour = colours[0]?.toString() ?? accentColour.value
 
   document.documentElement.style.setProperty('--main-colour', newColour)
 }
