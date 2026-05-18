@@ -121,7 +121,7 @@ async function login() {
 
 <style scoped>
 .input {
-  @apply text-muted p-2 border-1 border-background-300 corner-cut border-solid focus:outline-none focus:ring-2 focus:ring-primary-500;
+  @apply text-muted p-2 border-1 border-background-300 corner-cut border-solid focus:outline-none focus:ring-2 focus:ring-main-500;
   @apply bg-background-100 dark:bg-background-800;
 }
 </style>

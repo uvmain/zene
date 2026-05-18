@@ -235,7 +235,7 @@ onUnmounted(() => {
               Next preset
             </p>
           </div>
-          <icon-nrk-media-ffw class="text-muted size-10 min-w-10 group-hover/next:text-primary-500" />
+          <icon-nrk-media-ffw class="text-muted size-10 min-w-10 group-hover/next:text-main-500" />
         </div>
       </div>
     </div>

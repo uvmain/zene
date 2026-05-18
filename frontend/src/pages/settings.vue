@@ -2,9 +2,10 @@
 import type { StreamQuality } from '~/logic/store'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { initializeAccentColour, resetAccentColour, updateAccentColour } from '~/logic/colours'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
-import { debugEnabled, streamQualities, streamQuality } from '~/logic/store'
+import { accentColour, autoSwitchColours, debugEnabled, streamQualities, streamQuality } from '~/logic/store'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -15,6 +16,12 @@ const showLogoutModal = ref(false)
 
 const streamQualitiesArray = computed<(string | number)[]>(() => {
   return Object.values(streamQualities)
+})
+
+watch(autoSwitchColours, (newValue) => {
+  if (!newValue) {
+    initializeAccentColour()
+  }
 })
 
 async function runScan() {
@@ -46,11 +53,11 @@ async function logOut() {
         <span class="text-nowrap">Run a scan</span>
       </ZButton>
       <label for="force" class="flex gap-x-2 items-center">
-        <input id="force" v-model="forceTags" type="checkbox" class="accent-primary-400 size-4">
+        <input id="force" v-model="forceTags" type="checkbox" class="accent-main-400 size-4">
         <span class="text-nowrap">Force</span>
       </label>
       <label v-if="forceTags" for="include-art" class="flex gap-x-2 items-center">
-        <input id="include-art" v-model="forceArt" type="checkbox" class="accent-primary-400 size-4">
+        <input id="include-art" v-model="forceArt" type="checkbox" class="accent-main-400 size-4">
         <span class="text-nowrap">Include Art</span>
       </label>
     </div>
@@ -73,6 +80,25 @@ async function logOut() {
       :current-option="streamQuality"
       @select="setStreamQuality"
     />
+
+    <div class="flex flex-row gap-2 items-center">
+      <label for="auto-switch-colours" class="flex gap-x-2 items-center">
+        <input id="auto-switch-colours" v-model="autoSwitchColours" type="checkbox" class="accent-main-400 size-4">
+        <span class="text-nowrap">Auto Switch Colours</span>
+      </label>
+      <input
+        id="accent"
+        v-model="accentColour"
+        type="color"
+        name="accent"
+        colorspace="display-p3"
+        @input="updateAccentColour"
+      />
+      <label for="accent">Accent color</label>
+      <ZButton @click="resetAccentColour()">
+        Reset
+      </ZButton>
+    </div>
     <UserManagement />
 
     <!-- Logout Modal -->

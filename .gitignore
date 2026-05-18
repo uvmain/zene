@@ -13,3 +13,4 @@ frontend/dist
 data
 .DS_Store
 tmp
+bugreport*

@@ -40,7 +40,7 @@ onMounted(async () => {
     <div v-if="loading" class="text-center">
       Loading track details...
     </div>
-    <div v-if="error" class="text-accent1 text-center">
+    <div v-if="error" class="text-red-400 text-center">
       {{ error }}
     </div>
     <div v-if="track && !loading && !error" class="flex flex-col gap-8 lg:flex-row">

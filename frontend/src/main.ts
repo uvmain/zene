@@ -4,15 +4,16 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 import App from '~/App.vue'
+import { initializeAccentColour } from '~/logic/colours'
 import { apiKey } from '~/logic/store'
 import { createKVStoreIfNotExists } from '~/stores/keyValueIdbStore'
 import { createEpisodeStoreIfNotExists } from '~/stores/usePodcastStore'
-
 import { debugLog } from './logic/logger'
 import 'virtual:uno.css'
 import '~/styles/main.css'
 
 useDark()
+initializeAccentColour()
 createEpisodeStoreIfNotExists()
 createKVStoreIfNotExists()
 

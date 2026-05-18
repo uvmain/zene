@@ -45,9 +45,9 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
       <div
         v-for="item in options"
         :key="item"
-        class="p-2 border-l-4 border-transparent block cursor-pointer group-hover:border-blue-600 hover:bg-accent-500/50"
+        class="p-2 border-l-4 border-transparent block cursor-pointer group-hover:border-blue-600 hover:bg-main-500/50"
         :class="{
-          'border-l-4 border-primary-400': currentOption === item,
+          'border-l-4 border-main-400': currentOption === item,
         }"
         @click="handleSelect(item)"
       >

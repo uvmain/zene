@@ -88,7 +88,7 @@ onMounted(() => {
   <Modal :show-modal="true" modal-title="Change Album Art" @close="$emit('close')">
     <template #content>
       <Loading v-if="loading" class="h-10" />
-      <div v-if="showError" class="text-primary-400 text-center">
+      <div v-if="showError" class="text-main-400 text-center">
         {{ showError }}
       </div>
       <div class="flex flex-wrap gap-4 justify-center">

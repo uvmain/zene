@@ -170,7 +170,7 @@ onMounted(async () => {
             </div>
             <div class="flex flex-row gap-2 items-center justify-center">
               <label for="is-admin" class="flex items-center" />
-              <input id="is-admin" v-model="newUser.adminRole" type="checkbox" class="text-primary border-gray-300 focus:border-indigo-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 focus:ring-offset-0">
+              <input id="is-admin" v-model="newUser.adminRole" type="checkbox" class="text-primary border-gray-300 focus:border-indigo-300 focus:ring focus:ring-main-200 focus:ring-opacity-50 focus:ring-offset-0">
               <span class="text-sm">Admin user</span>
             </div>
           </div>
@@ -210,7 +210,7 @@ onMounted(async () => {
             </div>
             <div class="flex flex-row gap-2 items-center justify-center">
               <label for="is-admin" class="flex items-center" />
-              <input id="is-admin" v-model="editingUser.adminRole" type="checkbox" class="text-primary border-gray-300 focus:border-indigo-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50 focus:ring-offset-0">
+              <input id="is-admin" v-model="editingUser.adminRole" type="checkbox" class="text-primary border-gray-300 focus:border-indigo-300 focus:ring focus:ring-main-200 focus:ring-opacity-50 focus:ring-offset-0">
               <span class="text-sm">Admin user</span>
             </div>
             <p v-if="adminCount === 1 && editingUserAdminRole" class="text-red-400 max-w-lg text-wrap">
