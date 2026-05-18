@@ -115,13 +115,13 @@ services:
 - Node 22+
 
 ### install dependencies
-First install npm dependencies (this will install the frontend workspace and the Caddy localdev utility)
+First install pnpm dependencies (this will install the frontend workspace and the Caddy localdev utility)
 ```bash
-npm i
+pnpm i
 ```
 Then install the Golang requirements
 ```bash
-npm run setup
+pnpm run setup
 ```
 
 resolving Caddy cert issues on debian/ubuntu
