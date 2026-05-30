@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "setup": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go install golang.org/x/vuln/cmd/govulncheck@latest && go mod download",
+    "go:deps": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go install golang.org/x/vuln/cmd/govulncheck@latest && go mod download",
     "clean:build": "rimraf -v -I zene zene.exe frontend/dist tmp",
     "clean:modules": "rimraf -v -I ./frontend/node_modules ./node_modules",
     "clean": "pnpm clean:build && pnpm clean:modules",

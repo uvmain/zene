@@ -13,6 +13,59 @@ interface ExtendedWindow extends Window {
   webkitAudioContext?: typeof AudioContext
 }
 
+function isSamePlayItem(playItem1: PlayItem | null, playItem2: PlayItem): boolean {
+  if (playItem1?.track && playItem2.track) {
+    return playItem1.track.musicBrainzId === playItem2.track.musicBrainzId
+  }
+
+  if (playItem1?.podcastEpisode && playItem2.podcastEpisode) {
+    return playItem1.podcastEpisode.streamId === playItem2.podcastEpisode.streamId
+  }
+
+  return false
+}
+
+function setElementSource(audio: HTMLAudioElement, src: string) {
+  if (audio.getAttribute('src') === src) {
+    return
+  }
+
+  audio.setAttribute('src', src)
+}
+
+function cleanElementSource(audio: HTMLAudioElement) {
+  audio.pause()
+  audio.currentTime = 0
+  audio.removeAttribute('src')
+  audio.load()
+}
+
+async function waitForCanPlayThrough(audio: HTMLAudioElement): Promise<boolean> {
+  if (audio.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+    return true
+  }
+
+  return new Promise((resolve) => {
+    function onCanPlayThrough() {
+      cleanup()
+      resolve(true)
+    }
+
+    function onError() {
+      cleanup()
+      resolve(false)
+    }
+
+    function cleanup() {
+      audio.removeEventListener('canplaythrough', onCanPlayThrough)
+      audio.removeEventListener('error', onError)
+    }
+
+    audio.addEventListener('canplaythrough', onCanPlayThrough, { once: true })
+    audio.addEventListener('error', onError, { once: true })
+  })
+}
+
 // One-time play event to create AudioContext after user interaction
 export function createContextOnPlay() {
   const audio = audioElement.value
@@ -26,8 +79,6 @@ export function createContextOnPlay() {
       audioContext.value = new AudioContextConstructor()
     }
     if (audioContext.value) {
-      audioNode.value = audioContext.value.createMediaElementSource(audio)
-      audioNode.value.connect(audioContext.value.destination)
       contextCreated = true
       debugLog('Audio context created')
     }
@@ -35,46 +86,40 @@ export function createContextOnPlay() {
       debugLog('Failed to create audio context')
     }
   }
-  audio.removeEventListener('play', createContextOnPlay)
 }
 
-export function playWhenReady(playItem: PlayItem) {
+export async function playWhenReady(playItem: PlayItem, src: string): Promise<boolean> {
+  const audio = audioElement.value
+  if (!audio) {
+    return false
+  }
+
+  const shouldReload = !isSamePlayItem(previousPlayItem.value, playItem) || audio.getAttribute('src') !== src
+
+  if (shouldReload) {
+    audio.pause()
+    setElementSource(audio, src)
+    audio.load()
+  }
+
+  const ready = await waitForCanPlayThrough(audio)
+  if (!ready) {
+    return false
+  }
+
+  await audio.play()
+  previousPlayItem.value = playItem
+  return true
+}
+
+export function clearActiveAudio() {
   const audio = audioElement.value
   if (!audio) {
     return
   }
 
-  if (previousPlayItem.value !== playItem) {
-    audio.pause()
-    audio.load()
-    audio.addEventListener(
-      'canplaythrough',
-      () => {
-        void audio.play()
-      },
-      { once: true },
-    )
-    previousPlayItem.value = playItem
-    return
-  }
-
-  if (audio.readyState >= 4) {
-    void audio.play()
-    previousPlayItem.value = playItem
-    return
-  }
-
-  // fallback
-  audio.addEventListener(
-    'canplaythrough',
-    () => {
-      void audio.play()
-    },
-    { once: true },
-  )
-  audio.pause()
-  audio.load()
-  previousPlayItem.value = playItem
+  cleanElementSource(audio)
+  previousPlayItem.value = null
 }
 
 export function seek(seekSeconds: number) {

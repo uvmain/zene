@@ -20,9 +20,9 @@ import type {
 
 declare module 'vue-router' {
   interface TypesConfig {
-    ParamParsers:
-      | never
+    _ParamParsers: {}
     RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
+    _RouteFileInfoMap: import('vue-router/auto-routes')._RouteFileInfoMap
   }
 }
 
@@ -203,17 +203,23 @@ declare module 'vue-router/auto-routes' {
         | '/'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/[...all].vue': {
       routes:
         | '/[...all]'
       views:
         | never
+      pathParamNames:
+        | 'all'
     }
     'src/pages/admin.vue': {
       routes:
         | '/admin'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/albums/index.vue': {
@@ -221,17 +227,23 @@ declare module 'vue-router/auto-routes' {
         | '/albums/'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/albums/[album].vue': {
       routes:
         | '/albums/[album]'
       views:
         | never
+      pathParamNames:
+        | 'album'
     }
     'src/pages/artists/index.vue': {
       routes:
         | '/artists/'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/artists/[artist].vue': {
@@ -239,11 +251,15 @@ declare module 'vue-router/auto-routes' {
         | '/artists/[artist]'
       views:
         | never
+      pathParamNames:
+        | 'artist'
     }
     'src/pages/genres/index.vue': {
       routes:
         | '/genres/'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/genres/[genre].vue': {
@@ -251,11 +267,15 @@ declare module 'vue-router/auto-routes' {
         | '/genres/[genre]'
       views:
         | never
+      pathParamNames:
+        | 'genre'
     }
     'src/pages/login.vue': {
       routes:
         | '/login'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/playlists/index.vue': {
@@ -263,17 +283,23 @@ declare module 'vue-router/auto-routes' {
         | '/playlists/'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/playlists/[playlist].vue': {
       routes:
         | '/playlists/[playlist]'
       views:
         | never
+      pathParamNames:
+        | 'playlist'
     }
     'src/pages/podcasts/index.vue': {
       routes:
         | '/podcasts/'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/podcasts/[podcast].vue': {
@@ -281,17 +307,23 @@ declare module 'vue-router/auto-routes' {
         | '/podcasts/[podcast]'
       views:
         | never
+      pathParamNames:
+        | 'podcast'
     }
     'src/pages/podcasts/episodes/[episode].vue': {
       routes:
         | '/podcasts/episodes/[episode]'
       views:
         | never
+      pathParamNames:
+        | 'episode'
     }
     'src/pages/queue.vue': {
       routes:
         | '/queue'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/radio.vue': {
@@ -299,11 +331,15 @@ declare module 'vue-router/auto-routes' {
         | '/radio'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/search.vue': {
       routes:
         | '/search'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/settings.vue': {
@@ -311,11 +347,15 @@ declare module 'vue-router/auto-routes' {
         | '/settings'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/tracks/index.vue': {
       routes:
         | '/tracks/'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/tracks/[track].vue': {
@@ -323,11 +363,15 @@ declare module 'vue-router/auto-routes' {
         | '/tracks/[track]'
       views:
         | never
+      pathParamNames:
+        | 'track'
     }
     'src/pages/visualizer.vue': {
       routes:
         | '/visualizer'
       views:
+        | never
+      pathParamNames:
         | never
     }
   }

@@ -239,6 +239,10 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	if waitErr != nil {
+		if ctx.Err() != nil {
+			logger.Printf("ffmpeg killed due to client disconnect: %s (trackId=%s, client=%s, UA=%s)", filePathAbs, trackId, r.RemoteAddr, r.UserAgent())
+			return nil
+		}
 		logger.Printf("ffmpeg exited with error while streaming %s (trackId=%s, client=%s, UA=%s): %v", filePathAbs, trackId, r.RemoteAddr, r.UserAgent(), waitErr)
 		if useCache && cacheFileCreated {
 			cacheFile.Close()

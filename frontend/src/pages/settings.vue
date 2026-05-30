@@ -18,6 +18,10 @@ const streamQualitiesArray = computed<(string | number)[]>(() => {
   return Object.values(streamQualities)
 })
 
+const currentStreamQuality = computed(() => {
+  return streamQuality.value
+})
+
 watch(autoSwitchColours, (newValue) => {
   if (!newValue) {
     initializeAccentColour()
@@ -77,7 +81,7 @@ async function logOut() {
       title="Stream Quality"
       :options="streamQualitiesArray"
       align="right"
-      :current-option="streamQuality"
+      :current-option="currentStreamQuality"
       @select="setStreamQuality"
     />
 
