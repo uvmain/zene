@@ -121,7 +121,7 @@ pnpm i
 ```
 Then install the Golang requirements
 ```bash
-pnpm run setup
+pnpm go:deps
 ```
 
 resolving Caddy cert issues on debian/ubuntu

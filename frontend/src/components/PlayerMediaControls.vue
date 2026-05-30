@@ -31,6 +31,10 @@ const repeatAbbreviation = computed(() => {
   }
 })
 
+const repeatStatusComputed = computed(() => {
+  return repeatStatus.value
+})
+
 onKeyStroke('MediaPlayPause', (e) => {
   e.preventDefault()
   togglePlayback()
@@ -96,15 +100,15 @@ onKeyStroke('MediaStop', (e) => {
     <button id="repeat" :title="repeatAbbreviation" class="media-control-button relative" @click="toggleRepeat">
       <icon-nrk-media-jumpto
         :class="{
-          'footer-icon': repeatStatus === 'off',
-          'footer-icon-on': repeatStatus !== 'off',
+          'footer-icon': repeatStatusComputed === 'off',
+          'footer-icon-on': repeatStatusComputed !== 'off',
         }"
       />
       <span
-        v-if="repeatStatus !== 'off'"
+        v-if="repeatStatusComputed !== 'off'"
         class="text-xs text-main-400 text-left w-4 top-0 absolute -right-1"
       >
-        {{ repeatStatus }}
+        {{ repeatStatusComputed }}
       </span>
     </button>
     <button

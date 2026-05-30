@@ -3,7 +3,7 @@ import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicIndexArtist } from '~/types/subsonicArtist'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { audioElement, seek as elementSeek, playWhenReady } from '~/logic/audioElement'
+import { audioElement, clearActiveAudio, seek as elementSeek, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
 import { castAudio } from '~/logic/castAudio'
 import { castPlayer, castPlayerController, chromecastConnected } from '~/logic/castRefs'
@@ -12,6 +12,7 @@ import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/logic/store'
 import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
+import { debugLog } from './logger'
 
 export const currentlyPlayingItem = ref<PlayItem>({})
 export const currentQueue = ref<SubsonicSong[] | undefined>()
@@ -22,73 +23,256 @@ export const currentTime = ref(0)
 export const trackUrl = ref('')
 export const previousIndexes = ref<number[]>([])
 
-let currentHalfwayPoint: number = 0
+interface QueueTransition {
+  track: SubsonicSong
+  queuePosition: number
+  previousIndexes: number[]
+  restartCurrentTrack?: boolean
+}
+
+interface PlaybackOptions {
+  autoPlay?: boolean
+  queuePosition?: number
+  previousIndexes?: number[]
+  restartCurrentTrack?: boolean
+}
+
+let currentHalfwayPoint = 0
+
+function setHalfwayPoint(playItem: PlayItem) {
+  if (playItem.track) {
+    currentHalfwayPoint = playItem.track.duration / 2
+    return
+  }
+
+  if (playItem.podcastEpisode) {
+    currentHalfwayPoint = Number.parseInt(playItem.podcastEpisode.duration, 10) / 2
+    return
+  }
+
+  currentHalfwayPoint = 0
+}
+
+function applyPlaybackState(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
+  currentlyPlayingItem.value = playItem
+  trackUrl.value = src
+  playcountPosted.value = false
+  setHalfwayPoint(playItem)
+
+  if (options.queuePosition !== undefined) {
+    currentQueuePosition.value = options.queuePosition
+  }
+
+  if (options.previousIndexes) {
+    previousIndexes.value = [...options.previousIndexes]
+  }
+}
+
+async function resolvePodcastUrl(episode: SubsonicPodcastEpisode): Promise<string> {
+  const stored = await episodeIsStored(episode.streamId)
+  if (!stored) {
+    return getAuthenticatedTrackUrl(episode.streamId, true)
+  }
+
+  const blob = await getStoredEpisode(episode.streamId)
+  return URL.createObjectURL(blob)
+}
+
+async function startPlayback(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
+  const { autoPlay = true, restartCurrentTrack = false } = options
+
+  applyPlaybackState(playItem, src, options)
+
+  if (chromecastConnected.value) {
+    await castAudio()
+    return
+  }
+
+  if (!autoPlay) {
+    return
+  }
+
+  if (restartCurrentTrack && audioElement.value) {
+    audioElement.value.currentTime = 0
+  }
+
+  let started = false
+
+  if (!started) {
+    started = await playWhenReady(playItem, src)
+  }
+
+  if (!started) {
+    isPlaying.value = false
+  }
+}
+
+async function playTrack(track: SubsonicSong, options: PlaybackOptions = {}) {
+  const src = getAuthenticatedTrackUrl(track.musicBrainzId)
+  await startPlayback({ track }, src, options)
+}
+
+async function playQueueTransition(transition: QueueTransition, options: PlaybackOptions = {}) {
+  await playTrack(transition.track, {
+    ...options,
+    queuePosition: transition.queuePosition,
+    previousIndexes: transition.previousIndexes,
+    restartCurrentTrack: transition.restartCurrentTrack,
+  })
+}
+
+function findRandomQueueIndex(queueLength: number, priorIndexes: number[]): number {
+  let randomIndex = Math.floor(Math.random() * queueLength)
+  let whileCounter = 0
+
+  while (priorIndexes.includes(randomIndex) && whileCounter < 50) {
+    randomIndex = Math.floor(Math.random() * queueLength)
+    whileCounter++
+  }
+
+  return randomIndex
+}
+
+function getNextQueueTransition(): QueueTransition | undefined {
+  if (!currentQueue.value || currentQueue.value.length === 0) {
+    debugLog('No queue or empty queue when trying to get next track')
+    return undefined
+  }
+
+  const queue = currentQueue.value
+  const currentIndex = currentQueuePosition.value
+
+  if (shuffleEnabled.value) {
+    const nextPreviousIndexes = [...previousIndexes.value, currentIndex]
+    if (nextPreviousIndexes.length >= 50) {
+      nextPreviousIndexes.shift()
+    }
+
+    const randomIndex = findRandomQueueIndex(queue.length, nextPreviousIndexes)
+    return {
+      track: queue[randomIndex],
+      queuePosition: randomIndex,
+      previousIndexes: nextPreviousIndexes,
+    }
+  }
+
+  if (repeatStatus.value === 'all' && currentIndex === queue.length - 1) {
+    return {
+      track: queue[0],
+      queuePosition: 0,
+      previousIndexes: [...previousIndexes.value],
+    }
+  }
+
+  if (repeatStatus.value === '1') {
+    return {
+      track: queue[currentIndex],
+      queuePosition: currentIndex,
+      previousIndexes: [...previousIndexes.value],
+      restartCurrentTrack: true,
+    }
+  }
+
+  if (currentIndex < queue.length - 1) {
+    return {
+      track: queue[currentIndex + 1],
+      queuePosition: currentIndex + 1,
+      previousIndexes: [...previousIndexes.value],
+    }
+  }
+
+  debugLog('Reached end of queue with no repeat when trying to get next track')
+
+  return undefined
+}
+
+function getPreviousQueueTransition(): QueueTransition | undefined {
+  if (!currentQueue.value || currentQueue.value.length === 0) {
+    return undefined
+  }
+
+  const queue = currentQueue.value
+  const currentIndex = currentQueuePosition.value
+
+  if (shuffleEnabled.value && previousIndexes.value.length > 0) {
+    const nextPreviousIndexes = [...previousIndexes.value]
+    const previousIndex = nextPreviousIndexes.pop() as number
+    return {
+      track: queue[previousIndex],
+      queuePosition: previousIndex,
+      previousIndexes: nextPreviousIndexes,
+    }
+  }
+
+  if (repeatStatus.value === '1') {
+    return {
+      track: queue[currentIndex],
+      queuePosition: currentIndex,
+      previousIndexes: [...previousIndexes.value],
+      restartCurrentTrack: true,
+    }
+  }
+
+  if (currentIndex > 0) {
+    return {
+      track: queue[currentIndex - 1],
+      queuePosition: currentIndex - 1,
+      previousIndexes: [...previousIndexes.value],
+    }
+  }
+
+  if (repeatStatus.value === 'all' || currentIndex === 0) {
+    return {
+      track: queue.at(-1) as SubsonicSong,
+      queuePosition: queue.length - 1,
+      previousIndexes: [...previousIndexes.value],
+    }
+  }
+
+  return undefined
+}
 
 export function handlePlay(track: SubsonicSong) {
   if (currentQueue.value?.some(queueTrack => queueTrack.id === track.id)) {
-    setCurrentlyPlayingTrack(track)
+    void setCurrentlyPlayingTrack(track)
   }
   else if (routeTracks.value?.some(queueTrack => queueTrack.musicBrainzId === track.musicBrainzId)) {
     setCurrentQueue(routeTracks.value)
-    setCurrentlyPlayingTrack(track)
+    void setCurrentlyPlayingTrack(track)
   }
   else {
     void play({ track })
   }
 }
 
-export function setCurrentlyPlayingTrack(track: SubsonicSong, autoPlay: boolean = true) {
-  if (currentQueue.value) {
-    const index = currentQueue.value.indexOf(track)
-    currentQueuePosition.value = index
-  }
-  currentlyPlayingItem.value = { track }
-  trackUrl.value = getAuthenticatedTrackUrl(track.musicBrainzId)
-  playcountPosted.value = false
-  currentHalfwayPoint = track.duration / 2
-  if (chromecastConnected.value) {
-    void castAudio()
-  }
-  else if (autoPlay) {
-    playWhenReady({ track })
-  }
+export async function setCurrentlyPlayingTrack(track: SubsonicSong, autoPlay = true) {
+  const queuePosition = currentQueue.value?.indexOf(track)
+  await playTrack(track, {
+    autoPlay,
+    queuePosition: queuePosition !== undefined && queuePosition >= 0 ? queuePosition : undefined,
+  })
 }
 
 export async function setCurrentlyPlayingPodcast(episode: SubsonicPodcastEpisode) {
-  currentlyPlayingItem.value = { podcastEpisode: episode }
-  playcountPosted.value = false
-  currentHalfwayPoint = Number.parseInt(episode.duration) / 2
-
-  if (currentlyPlayingItem.value.podcastEpisode) {
-    await episodeIsStored(currentlyPlayingItem.value.podcastEpisode.streamId).then(async (stored) => {
-      if (!stored && currentlyPlayingItem.value.podcastEpisode) {
-        trackUrl.value = getAuthenticatedTrackUrl(currentlyPlayingItem.value.podcastEpisode.streamId, true)
-      }
-      else if (currentlyPlayingItem.value.podcastEpisode) {
-        await getStoredEpisode(currentlyPlayingItem.value.podcastEpisode.streamId).then((blob) => {
-          trackUrl.value = URL.createObjectURL(blob)
-        })
-      }
-    })
-  }
+  const src = await resolvePodcastUrl(episode)
   clearQueue()
-  if (chromecastConnected.value) {
-    await castAudio()
-  }
-  else {
-    playWhenReady({ podcastEpisode: episode })
-  }
+  await startPlayback({ podcastEpisode: episode }, src)
 }
 
 function setCurrentQueue(tracks: SubsonicSong[]) {
   clearQueue()
+  if (tracks.length === 0) {
+    return
+  }
+
   let index = 0
-  if (shuffleEnabled.value && tracks.length > 0) {
+  if (shuffleEnabled.value) {
     index = Math.floor(Math.random() * tracks.length)
   }
+
   currentQueue.value = tracks
   currentQueuePosition.value = index
-  setCurrentlyPlayingTrack(tracks[index])
+  void setCurrentlyPlayingTrack(tracks[index])
 }
 
 export function clearQueue() {
@@ -105,7 +289,7 @@ interface PlayOptions {
 
 export async function play(playOptions: PlayOptions) {
   if (playOptions.track) {
-    setCurrentlyPlayingTrack(playOptions.track)
+    await setCurrentlyPlayingTrack(playOptions.track)
   }
   else if (playOptions.album) {
     const tracks = await fetchAlbum(playOptions.album.id).then(fetchedAlbum => fetchedAlbum.song)
@@ -129,100 +313,26 @@ export async function getRandomTracks(size: number = 10): Promise<SubsonicSong[]
   return randomTracks
 }
 
-export function handleNextTrack() {
-  if (currentQueue.value && currentQueue.value.length) {
-    const currentIndex = currentQueuePosition.value
-    let nextTrack: SubsonicSong | undefined
-    if (shuffleEnabled.value) {
-      previousIndexes.value.push(currentIndex)
-      if (previousIndexes.value.length >= 50) {
-        previousIndexes.value.shift()
-      }
-      let randomIndex: number
-      randomIndex = Math.floor(Math.random() * currentQueue.value.length)
-      let whileCounter = 0
-      while (previousIndexes.value.includes(randomIndex) && whileCounter < 50) {
-        randomIndex = Math.floor(Math.random() * currentQueue.value.length)
-        whileCounter++
-      }
-      nextTrack = currentQueue.value[randomIndex]
-      currentQueuePosition.value = randomIndex
-      if (nextTrack !== undefined) {
-        setCurrentlyPlayingTrack(nextTrack)
-      }
-    }
-    else if (repeatStatus.value === 'all' && currentIndex === currentQueue.value.length - 1) {
-      nextTrack = currentQueue.value[0]
-      currentQueuePosition.value = 0
-      if (nextTrack !== undefined) {
-        setCurrentlyPlayingTrack(nextTrack)
-      }
-    }
-    else if (repeatStatus.value === '1') {
-      nextTrack = currentQueue.value[currentIndex]
-      currentQueuePosition.value = currentIndex
-      if (nextTrack !== undefined) {
-        setCurrentlyPlayingTrack(nextTrack)
-        if (audioElement.value) {
-          audioElement.value.currentTime = 0
-          void audioElement.value.play()
-        }
-      }
-    }
-    else {
-      if (currentIndex < currentQueue.value.length - 1) {
-        nextTrack = currentQueue.value[currentIndex + 1]
-        currentQueuePosition.value = currentIndex + 1
-      }
-      if (nextTrack !== undefined) {
-        setCurrentlyPlayingTrack(nextTrack)
-        return nextTrack
-      }
-    }
+export async function handleNextTrack(): Promise<SubsonicSong | undefined> {
+  const transition = getNextQueueTransition()
+
+  if (transition) {
+    await playQueueTransition(transition)
+    return transition.track
+  }
+  else {
+    return undefined
   }
 }
 
 export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
-  if (!currentQueue.value || !currentQueue.value.length) {
+  const transition = getPreviousQueueTransition()
+  if (!transition) {
     return undefined
   }
 
-  const currentIndex = currentQueuePosition.value
-  let prevTrack: SubsonicSong | undefined
-
-  if (shuffleEnabled.value && previousIndexes.value.length > 0) {
-    const previousIndex = previousIndexes.value.at(-1) as number
-    const prevTrack = currentQueue.value[previousIndex]
-    currentQueuePosition.value = previousIndex
-    previousIndexes.value.pop()
-    if (prevTrack !== undefined) {
-      setCurrentlyPlayingTrack(prevTrack)
-    }
-    return prevTrack
-  }
-  if (repeatStatus.value === 'all') {
-    prevTrack = currentQueue.value.at(-1)
-    currentQueuePosition.value = currentQueue.value.length - 1
-    return prevTrack
-  }
-  else if (repeatStatus.value === '1') {
-    prevTrack = currentQueue.value[currentIndex]
-    return prevTrack
-  }
-  else {
-    if (currentIndex > 0) {
-      prevTrack = currentQueue.value[currentIndex - 1]
-      currentQueuePosition.value = currentIndex - 1
-    }
-    else {
-      prevTrack = currentQueue.value.at(-1)
-      currentQueuePosition.value = currentQueue.value.length - 1
-    }
-    if (prevTrack !== undefined) {
-      setCurrentlyPlayingTrack(prevTrack)
-    }
-    return prevTrack
-  }
+  await playQueueTransition(transition)
+  return transition.track
 }
 
 export function togglePlayback() {
@@ -234,22 +344,26 @@ export function togglePlayback() {
     console.error('Audio element not found')
     return
   }
-  else if (!(currentQueue.value && currentQueue.value.length) && routeTracks.value.length) {
+
+  if (!(currentQueue.value && currentQueue.value.length) && routeTracks.value.length) {
     setCurrentQueue(routeTracks.value)
+    return
   }
-  else if ((currentQueue.value && currentQueue.value.length) && !currentlyPlayingItem.value.track) {
+
+  if ((currentQueue.value && currentQueue.value.length) && !currentlyPlayingItem.value.track && !currentlyPlayingItem.value.podcastEpisode) {
     setCurrentQueue(currentQueue.value)
+    return
   }
 
   if (isPlaying.value) {
     audioElement.value.pause()
     isPlaying.value = false
+    return
   }
-  else {
-    if (currentlyPlayingItem.value.track || currentlyPlayingItem.value.podcastEpisode) {
-      void audioElement.value.play()
-      isPlaying.value = true
-    }
+
+  if (currentlyPlayingItem.value.track || currentlyPlayingItem.value.podcastEpisode) {
+    void audioElement.value.play()
+    isPlaying.value = true
   }
 }
 
@@ -261,12 +375,14 @@ export function stopPlayback() {
   if (audioElement.value) {
     if (!isPlaying.value || audioElement.value.currentTime === 0) {
       currentlyPlayingItem.value = {}
-      audioElement.value.currentTime = 0
-      audioElement.value.removeAttribute('src')
+      trackUrl.value = ''
       clearQueue()
+      clearActiveAudio()
     }
-    audioElement.value.pause()
-    audioElement.value.load()
+    else {
+      audioElement.value.pause()
+      audioElement.value.load()
+    }
   }
 
   isPlaying.value = false
@@ -276,6 +392,7 @@ export function updateProgress() {
   if (!audioElement.value) {
     return
   }
+
   currentTime.value = audioElement.value.currentTime
 
   if (!playcountPosted.value && currentTime.value >= currentHalfwayPoint) {
@@ -289,5 +406,6 @@ export function seek(seekSeconds: number) {
     castPlayer.value.currentTime = castPlayer.value.currentTime + seekSeconds
     castPlayerController.value.seek()
   }
+
   elementSeek(seekSeconds)
 }

@@ -1,49 +1,66 @@
 <script setup lang="ts">
 import { audioElement, createContextOnPlay } from '~/logic/audioElement'
-import { handleNextTrack, isPlaying, trackUrl, updateProgress } from '~/logic/playbackQueue'
+import { handleNextTrack, isPlaying, updateProgress } from '~/logic/playbackQueue'
 
-const audioRef = useTemplateRef('audioRef')
+const audioRef1 = useTemplateRef('audioRef1') as Ref<HTMLAudioElement>
 
-function onPlay() {
+function isActiveAudioTarget(event: Event) {
+  return event.target === audioElement.value
+}
+
+function onPlay(event: Event) {
+  if (!isActiveAudioTarget(event))
+    return
   isPlaying.value = true
 }
 
-function onPause() {
+function onPause(event: Event) {
+  if (!isActiveAudioTarget(event))
+    return
   isPlaying.value = false
 }
 
-function onTimeUpdate() {
+function onTimeUpdate(event: Event) {
+  if (!isActiveAudioTarget(event))
+    return
   updateProgress()
 }
 
-function onEnded() {
-  handleNextTrack()
+function onEnded(event: Event) {
+  if (!isActiveAudioTarget(event))
+    return
+  void handleNextTrack()
 }
 
-onMounted(() => {
-  if (!audioRef.value)
-    return
-  audioElement.value = audioRef.value
-  const audio = audioRef.value
+function registerAudioEvents(audio: HTMLAudioElement) {
   audio.addEventListener('play', createContextOnPlay)
   audio.addEventListener('play', onPlay)
   audio.addEventListener('pause', onPause)
   audio.addEventListener('timeupdate', onTimeUpdate)
   audio.addEventListener('ended', onEnded)
-})
+}
 
-onUnmounted(() => {
-  if (!audioRef.value)
-    return
-  const audio = audioRef.value
+function removeAudioEvents(audio: HTMLAudioElement) {
   audio.removeEventListener('play', createContextOnPlay)
   audio.removeEventListener('play', onPlay)
   audio.removeEventListener('pause', onPause)
   audio.removeEventListener('timeupdate', onTimeUpdate)
   audio.removeEventListener('ended', onEnded)
+}
+
+onMounted(() => {
+  audioElement.value = audioRef1.value
+  registerAudioEvents(audioRef1.value)
+})
+
+onUnmounted(() => {
+  audioElement.value = null
+  removeAudioEvents(audioRef1.value)
 })
 </script>
 
 <template>
-  <audio ref="audioRef" :src="trackUrl" preload="metadata" crossorigin="anonymous" />
+  <div class="hidden">
+    <audio ref="audioRef1" preload="auto" crossorigin="anonymous" />
+  </div>
 </template>
