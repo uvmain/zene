@@ -2,7 +2,7 @@
 import { onKeyStroke } from '@vueuse/core'
 import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback } from '~/logic/playbackQueue'
 import { toggleRepeat, toggleShuffle } from '~/logic/playerUtils'
-import { repeatStatus, shuffleEnabled } from '~/logic/store'
+import { repeatStatus, shuffleEnabled } from '~/stores/main'
 
 defineProps({
   compact: { type: Boolean, default: false },
@@ -112,7 +112,7 @@ onKeyStroke('MediaStop', (e) => {
       </span>
     </button>
     <button
-      id="shuffle"
+      id="lucky-dip"
       title="Play random tracks"
       class="media-control-button"
       @click="handleGetRandomTracks()"

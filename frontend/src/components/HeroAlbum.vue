@@ -2,7 +2,7 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { artSizes, cacheBustArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
-import { albumsStore } from '~/logic/store'
+import { albumsStore } from '~/stores/main'
 
 const props = defineProps({
   album: { type: Object as PropType<SubsonicAlbum>, required: false },

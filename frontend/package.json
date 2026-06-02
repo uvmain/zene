@@ -32,14 +32,14 @@
     "@unocss/eslint-plugin": "^66.7.0",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.9.1",
-    "cspell": "^10.0.0",
-    "eslint": "^10.4.0",
+    "cspell": "^10.0.1",
+    "eslint": "^10.4.1",
     "rimraf": "^6.1.3",
     "typescript": "^6.0.3",
     "unocss": "^66.7.0",
     "unplugin-auto-import": "^21.0.0",
     "unplugin-icons": "^23.0.1",
     "unplugin-vue-components": "^32.1.0",
-    "vite": "^8.0.14"
+    "vite": "^8.0.15"
   }
 }

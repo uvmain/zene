@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { RecycleScroller } from 'vue-virtual-scroller'
-import { currentlyPlayingItem, currentQueuePosition } from '~/logic/playbackQueue'
+import { debugLog } from '~/logic/logger'
+import { currentlyPlayingItem } from '~/logic/playbackQueue'
 import { routeTracks } from '~/logic/routeTracks'
 import 'vue-virtual-scroller/index.css'
 
@@ -14,10 +15,16 @@ const props = defineProps({
 const scroller = useTemplateRef('scroller')
 
 function scrollToActiveTrack() {
-  if (!props.autoScrolling || !scroller.value)
+  if (!props.autoScrolling || !scroller.value) {
+    debugLog('Auto-scrolling is disabled or scroller not available, skipping scrollToActiveTrack')
     return
+  }
 
-  const index = currentQueuePosition.value - 1
+  const index = props.tracks.findIndex(track => track.id === currentlyPlayingItem.value.track?.id) - 1
+  if (index === -1) {
+    debugLog(`Currently playing track: ${currentlyPlayingItem.value.track?.id} not found in the track list, skipping scrollToActiveTrack`)
+    return
+  }
   const scrollerEl = scroller.value.el as HTMLElement
   const itemTop = index * 68
   const itemBottom = itemTop + 68
@@ -39,23 +46,22 @@ if (props.autoScrolling) {
   }, { deep: true })
 }
 
-onMounted(() => {
-  if (props.tracks && props.tracks.length > 0) {
-    routeTracks.value = props.tracks
-  }
+onMounted(async () => {
+  routeTracks.value = props.tracks
+  await nextTick()
   scrollToActiveTrack()
 })
 </script>
 
 <template>
-  <div v-if="routeTracks && routeTracks.length > 0" class="corner-cut background-2 lg:corner-cut-large">
+  <div v-if="tracks && tracks.length > 0" class="corner-cut background-2 lg:corner-cut-large">
     <div class="p-2 text-left flex flex-col h-full lg:p-4">
       <TracksHeader class="hidden md:grid" />
       <RecycleScroller
         v-slot="{ item, index }"
         ref="scroller"
         class="h-full"
-        :items="routeTracks"
+        :items="tracks"
         :item-size="68"
         :flow-mode="true"
         key-field="id"
@@ -76,9 +82,9 @@ onMounted(() => {
 
 <style lang="css" scoped>
 .vue-recycle-scroller {
-  scrollbar-color: var(--colors-background-600) var(--colors-background-100);
+  scrollbar-color: hsl(from var(--main-colour) h 40% 65%) var(--colors-background-200);
   .dark & {
-    scrollbar-color: var(--colors-background-800) var(--colors-background-600);
+    scrollbar-color: hsl(from var(--main-colour) h 40% 35%) var(--colors-background-800);
   }
 }
 </style>

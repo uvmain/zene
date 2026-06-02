@@ -3,7 +3,7 @@ import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import { downloadMediaBlob, openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { formatTimeFromSeconds } from '~/logic/common'
-import { deleteStoredEpisode, episodeIsStored, setStoredEpisode } from '~/stores/usePodcastStore'
+import { deleteStoredEpisode, episodeIsStored, setStoredEpisode } from '~/stores/podcastStore'
 
 const props = defineProps({
   episode: { type: Object as PropType<SubsonicPodcastEpisode>, required: true },

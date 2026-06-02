@@ -1,6 +1,6 @@
 import type { ExtractionOptions } from 'colorthief'
 import { getPalette } from 'colorthief'
-import { accentColour } from './store'
+import { accentColour } from '~/stores/main'
 
 const DEFAULT_COLOUR: string = 'hsl(22 95% 60%)' as const
 
@@ -26,10 +26,19 @@ export async function setAccentFromImage(imageElement: HTMLImageElement): Promis
   const palette = await getPalette(imageElement, options) ?? []
   const colours = palette.filter((colour) => {
     const hsl = colour.hsl()
-    return hsl.s > 20 && hsl.l > 10 && hsl.l < 90
-  }).sort((a, b) => b.population - a.population)
+    return hsl.l > 10 && hsl.l < 90 && hsl.s > 10 && colour.population > 5
+  }).sort((a, b) => b.hsl().s - a.hsl().s)
 
-  const newColour = colours[0]?.toString() ?? accentColour.value
+  const newColour = colours.length > 0 ? colours[0]?.toString() : accentColour.value
 
   document.documentElement.style.setProperty('--main-colour', newColour)
+}
+
+export async function setAccentFromImageUrl(imageUrl: string): Promise<void> {
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  img.src = imageUrl
+  img.onload = async () => {
+    await setAccentFromImage(img)
+  }
 }

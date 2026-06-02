@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { volumeStore } from '~/logic/store'
+import { volumeStore } from '~/stores/main'
 import { changeVolume, currentVolume, toggleMute } from '~/logic/volume'
 
 function handleInput(e: Event) {

@@ -1,6 +1,6 @@
 import { audioElement } from '~/logic/audioElement'
 import { castPlayerController, chromecastConnected } from '~/logic/castRefs'
-import { volumeStore } from './store'
+import { volumeStore } from '~/stores/main'
 
 export const previousVolume = ref(1)
 export const currentVolume = ref(1)

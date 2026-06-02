@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { isMobileNavOpen } from '~/logic/navbar'
-import { apiKey } from '~/logic/store'
+import { apiKey } from '~/stores/main'
 import NavOpenerMobile from './NavOpenerMobile.vue'
 </script>
 

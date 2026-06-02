@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import md5 from 'md5'
 import { createNewApiKeyWithTokenAndSalt, fetchApiKeysWithTokenAndSalt } from '~/logic/backendFetch'
-import { apiKey } from '~/logic/store'
+import { apiKey } from '~/stores/main'
 
 const router = useRouter()
 

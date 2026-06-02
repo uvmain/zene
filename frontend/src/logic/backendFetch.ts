@@ -7,7 +7,7 @@ import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { debugLog } from '~/logic/logger'
-import { albumSeed, apiKey, artistSeed } from '~/logic/store'
+import { albumSeed, apiKey, artistSeed } from '~/stores/main'
 import { generateSeed } from './common'
 
 const concurrencyMap = new Map<string, Promise<any>>()

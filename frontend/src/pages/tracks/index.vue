@@ -3,7 +3,7 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { fetchRandomTracks } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
 import { clearRouteTracks, routeTracks } from '~/logic/routeTracks'
-import { randomTracksSeed } from '~/logic/store'
+import { randomTracksSeed } from '~/stores/main'
 
 const tracks = ref<SubsonicSong[]>()
 

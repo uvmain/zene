@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { AlbumOrder } from '~/logic/store'
+import type { AlbumOrder } from '~/stores/main'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { albumOrder, AlbumOrders, albumSeed, albumsStore } from '~/logic/store'
+import { albumOrder, AlbumOrders, albumSeed, albumsStore } from '~/stores/main'
 import DropdownMenu from './DropdownMenu.vue'
 
 const props = defineProps({
