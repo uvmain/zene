@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { StreamQuality } from '~/logic/store'
+import type { StreamQuality } from '~/stores/main'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { initializeAccentColour, resetAccentColour, updateAccentColour } from '~/logic/colours'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
-import { accentColour, autoSwitchColours, debugEnabled, streamQualities, streamQuality } from '~/logic/store'
+import { accentColour, autoSwitchColours, debugEnabled, streamQualities, streamQuality } from '~/stores/main'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)

@@ -5,6 +5,7 @@ import { onKeyStroke } from '@vueuse/core'
 import butterchurnModule from 'butterchurn'
 import { audioContext, audioNode } from '~/logic/audioElement'
 import { getButterchurnPresets } from '~/logic/backendFetch'
+import { debugLog } from '~/logic/logger'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
 const canvas = useTemplateRef('canvas') as Ref<HTMLCanvasElement>
@@ -94,6 +95,13 @@ function setFullscreen() {
 
 function createVisualizer() {
   if (!canvas.value || !audioContext.value || !audioNode.value || !fetchedPresets.value || fetchedPresets.value.length === 0) {
+    const errorObject = {
+      canvas: !!canvas.value,
+      audioContext: !!audioContext.value,
+      audioNode: !!audioNode.value,
+      fetchedPresets: !!fetchedPresets.value && fetchedPresets.value.length > 0,
+    }
+    debugLog(`Cannot create visualizer, missing dependencies: ${JSON.stringify(errorObject)}`)
     return
   }
 

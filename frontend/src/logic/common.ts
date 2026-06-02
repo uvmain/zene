@@ -1,5 +1,5 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
-import { apiKey, streamQuality } from '~/logic/store'
+import { apiKey, streamQuality } from '~/stores/main'
 
 export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)

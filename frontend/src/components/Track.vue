@@ -48,7 +48,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         'hover:bg-main-500/20': !isTrackPlaying,
         'dark:bg-background-700/60 bg-background-100/60': !isTrackPlaying && trackIndex % 2 === 0,
         'dark:bg-background-700/20 bg-background-100/20': !isTrackPlaying && trackIndex % 2 !== 0,
-        'bg-main-500/30 corner-cut': isTrackPlaying,
+        'bg-gradient-to-r from-main-500/40 via-main-500/20 corner-cut': isTrackPlaying,
         'corner-cut': trackIndex === 0,
       }"
       @click="handlePlay(track)"
@@ -56,7 +56,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       <!-- track number and play button -->
       <div class="flex items-center justify-center relative">
         <div class="opacity-100 translate-x-0 transition-all duration-300 relative group-hover:(opacity-0 translate-x-[1rem])">
-          <div v-if="!route.path.startsWith('/artists/')">
+          <div v-if="!route.path.startsWith('/artists/') && route.path !== '/queue'">
             <div v-if="track.discNumber > 1" class="text-sm text-muted opacity-40 bottom-1px left--4 absolute">
               {{ track.discNumber }}:
             </div>
@@ -131,7 +131,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
       </div>
 
       <!-- track genres -->
-      <div class="lg:fadeout hidden lg:(min-w-0 truncate line-clamp-1)">
+      <div class="hidden lg:(min-w-0 truncate line-clamp-1)">
         <RouterLink
           v-for="genre in trackGenres"
           :key="genre"
@@ -164,10 +164,3 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
     <TrackInfo v-model="showTrackModal" :track="track" />
   </div>
 </template>
-
-<style scoped>
-.fadeout {
-  mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
-  -webkit-mask: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0.4) 100%);
-}
-</style>

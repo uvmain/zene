@@ -51,7 +51,7 @@ onUnmounted(() => {
 
 <template>
   <div v-if="chromecastAvailable" class="border-none flex cursor-pointer items-center justify-center">
-    <google-cast-launcher ref="castButton" class="size-6" />
+    <google-cast-launcher ref="castButton" class="footer-icon size-6" />
   </div>
 </template>
 

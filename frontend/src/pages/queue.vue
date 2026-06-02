@@ -6,7 +6,7 @@ import { getStoredKV, setStoredKV } from '~/stores/keyValueIdbStore'
 const tracks = ref<SubsonicSong[]>([])
 
 watch(currentQueue, async () => {
-  tracks.value = currentQueue?.value ?? [] as SubsonicSong[]
+  tracks.value = currentQueue.value
   await setStoredKV('queue', JSON.stringify(tracks.value))
 })
 
@@ -16,7 +16,7 @@ onBeforeMount(async () => {
     tracks.value = JSON.parse(storedQueue) as SubsonicSong[]
   }
   else {
-    tracks.value = currentQueue?.value ?? [] as SubsonicSong[]
+    tracks.value = currentQueue.value
   }
 })
 </script>

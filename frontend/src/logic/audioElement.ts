@@ -79,6 +79,8 @@ export function createContextOnPlay() {
       audioContext.value = new AudioContextConstructor()
     }
     if (audioContext.value) {
+      audioNode.value = audioContext.value.createMediaElementSource(audio)
+      audioNode.value.connect(audioContext.value.destination)
       contextCreated = true
       debugLog('Audio context created')
     }

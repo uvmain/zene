@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { fetchPodcastChannel } from '~/logic/backendFetch'
-import { setAccentFromImage } from '~/logic/colours'
+import { setAccentFromImageUrl } from '~/logic/colours'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
-import { autoSwitchColours } from '~/logic/store'
+import { autoSwitchColours } from '~/stores/main'
 
 const props = defineProps({
   large: { type: Boolean, default: false },
@@ -30,12 +30,13 @@ watch(coverArtUrl, (newUrl) => {
   if (!autoSwitchColours.value)
     return
   if (newUrl) {
-    const img = new Image()
-    img.crossOrigin = 'anonymous'
-    img.src = newUrl
-    img.onload = () => {
-      setAccentFromImage(img)
-    }
+    setAccentFromImageUrl(newUrl)
+  }
+})
+
+watch(autoSwitchColours, (newValue) => {
+  if (newValue && coverArtUrl.value) {
+    setAccentFromImageUrl(coverArtUrl.value)
   }
 })
 

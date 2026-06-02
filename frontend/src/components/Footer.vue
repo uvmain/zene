@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiKey } from '~/logic/store'
+import { apiKey } from '~/stores/main'
 
 const loggedIn = computed(() => {
   return !!apiKey.value
@@ -19,7 +19,7 @@ const loggedIn = computed(() => {
       </div>
       <div class="flex flex-row gap-4 items-center lg:gap-6">
         <NavOpenerMobile class="relative lg:hidden" />
-        <!-- <GoogleCastButton /> -->
+        <GoogleCastButton />
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />

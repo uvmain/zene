@@ -10,12 +10,12 @@ import { castPlayer, castPlayerController, chromecastConnected } from '~/logic/c
 import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
-import { repeatStatus, shuffleEnabled } from '~/logic/store'
-import { episodeIsStored, getStoredEpisode } from '~/stores/usePodcastStore'
+import { repeatStatus, shuffleEnabled } from '~/stores/main'
+import { episodeIsStored, getStoredEpisode } from '~/stores/podcastStore'
 import { debugLog } from './logger'
 
 export const currentlyPlayingItem = ref<PlayItem>({})
-export const currentQueue = ref<SubsonicSong[] | undefined>()
+export const currentQueue = ref<SubsonicSong[]>([])
 export const currentQueuePosition = ref<number>(0)
 export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
@@ -134,7 +134,7 @@ function findRandomQueueIndex(queueLength: number, priorIndexes: number[]): numb
 }
 
 function getNextQueueTransition(): QueueTransition | undefined {
-  if (!currentQueue.value || currentQueue.value.length === 0) {
+  if (currentQueue.value.length === 0) {
     debugLog('No queue or empty queue when trying to get next track')
     return undefined
   }
@@ -187,7 +187,7 @@ function getNextQueueTransition(): QueueTransition | undefined {
 }
 
 function getPreviousQueueTransition(): QueueTransition | undefined {
-  if (!currentQueue.value || currentQueue.value.length === 0) {
+  if (currentQueue.value.length === 0) {
     return undefined
   }
 
@@ -277,7 +277,7 @@ function setCurrentQueue(tracks: SubsonicSong[]) {
 
 export function clearQueue() {
   previousIndexes.value = []
-  currentQueue.value = undefined
+  currentQueue.value = []
 }
 
 interface PlayOptions {
@@ -345,12 +345,12 @@ export function togglePlayback() {
     return
   }
 
-  if (!(currentQueue.value && currentQueue.value.length) && routeTracks.value.length) {
+  if (currentQueue.value.length === 0 && routeTracks.value.length) {
     setCurrentQueue(routeTracks.value)
     return
   }
 
-  if ((currentQueue.value && currentQueue.value.length) && !currentlyPlayingItem.value.track && !currentlyPlayingItem.value.podcastEpisode) {
+  if (currentQueue.value.length > 0 && !currentlyPlayingItem.value.track && !currentlyPlayingItem.value.podcastEpisode) {
     setCurrentQueue(currentQueue.value)
     return
   }

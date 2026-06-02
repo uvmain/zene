@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { ArtistOrder } from '~/logic/store'
+import type { ArtistOrder } from '~/stores/main'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
 import { fetchArtistList } from '~/logic/backendFetch'
 import { generateSeed } from '~/logic/common'
-import { artistOrder, ArtistOrders, artistSeed, artistsStore } from '~/logic/store'
+import { artistOrder, ArtistOrders, artistSeed, artistsStore } from '~/stores/main'
 
 const props = defineProps({
   title: { type: String, default: 'Artists' },

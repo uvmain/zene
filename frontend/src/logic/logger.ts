@@ -1,4 +1,4 @@
-import { debugEnabled } from '~/logic/store'
+import { debugEnabled } from '~/stores/main'
 
 export function toggleDebug(): boolean {
   debugEnabled.value = !debugEnabled.value

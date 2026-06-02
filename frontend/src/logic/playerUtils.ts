@@ -1,6 +1,6 @@
 import { postScrobble } from '~/logic/backendFetch'
 import { debugLog } from '~/logic/logger'
-import { repeatStatus, shuffleEnabled } from '~/logic/store'
+import { repeatStatus, shuffleEnabled } from '~/stores/main'
 
 export const playcountUpdatedMusicbrainzTrackId = ref<string | undefined>()
 
