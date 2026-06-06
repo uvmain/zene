@@ -9,8 +9,7 @@ const route = useRoute('/artists/[artist]')
 
 const artist = ref<SubsonicArtist>()
 const tracks = ref<SubsonicSong[]>()
-const albumArtistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
-const artistAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
+const allAlbums = ref<SubsonicAlbum[]>([] as SubsonicAlbum[])
 const similarArtists = ref<SubsonicArtist[]>([])
 const artistGenres = ref<string[]>([])
 
@@ -28,10 +27,8 @@ async function getData() {
       (results) => {
         artist.value = results[0] as SubsonicArtist
         const info = results[1] as SubsonicArtistInfo
-        const albums = artist.value.album ?? []
-        artistAlbums.value = albums.filter(album => album.albumArtists[0].name === artist.value?.name) ?? []
-        albumArtistAlbums.value = albums.filter(album => album.albumArtists[0].name !== artist.value?.name) ?? []
-        const albumGenres = albums.flatMap(album => album.genres).filter(genre => genre.name !== '').map(genre => genre.name) ?? []
+        allAlbums.value = artist.value.album ?? []
+        const albumGenres = allAlbums.value.flatMap(album => album.genres).filter(genre => genre.name !== '').map(genre => genre.name) ?? []
         artistGenres.value = Array.from(new Set(albumGenres)).slice(0, 12)
         similarArtists.value = info.similarArtists.map((artist) => {
           return {
@@ -44,20 +41,21 @@ async function getData() {
     )
 }
 
+const artistAlbums = computed(() => {
+  return allAlbums.value.filter(album => album.albumArtists?.some(arrayArtist => arrayArtist.name === artist.value?.name))
+})
+
+const albumArtistAlbums = computed(() => {
+  return allAlbums.value.filter(album => album.albumArtists?.some(arrayArtist => arrayArtist.name !== artist.value?.name))
+})
+
 async function getTopSongs() {
   const newSongs = await fetchArtistTopSongs(musicbrainzArtistId.value)
   tracks.value = newSongs
   routeTracks.value = tracks.value
 }
 
-function resetRefs() {
-  tracks.value = []
-  routeTracks.value = []
-  artistGenres.value = []
-}
-
 watch(musicbrainzArtistId, async () => {
-  resetRefs()
   await getData()
 })
 

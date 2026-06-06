@@ -7,7 +7,7 @@ import { currentlyPlayingItem, currentTime, trackUrl } from '~/logic/playbackQue
 let castUrl = ''
 
 export async function castAudio() {
-  if (!castSession.value || !chromecastConnected.value) {
+  if (castSession.value === undefined || !chromecastConnected.value) {
     console.error('No active cast session found')
     return
   }
@@ -72,7 +72,7 @@ export async function castAudio() {
     // updateCastState()
 
     // Automatically start cast playback if local audio was playing
-    if (wasPlayingLocally && castPlayerController.value) {
+    if (wasPlayingLocally && castPlayerController.value !== undefined) {
       debugLog('Auto-starting cast playback since local audio was playing')
       // castPlayerController.value.playOrPause()
     }
@@ -86,7 +86,7 @@ export async function castAudio() {
 }
 
 export function togglePlayback() {
-  if (chromecastConnected.value && castPlayerController.value) {
+  if (chromecastConnected.value && castPlayerController.value !== undefined) {
     castPlayerController.value.playOrPause()
   }
 }

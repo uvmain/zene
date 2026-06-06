@@ -1,18 +1,20 @@
 import { seek } from '~/logic/audioElement'
 import { isPlaying, updateProgress } from '~/logic/playbackQueue'
 import { currentVolume } from '~/logic/volume'
-import { castContext, castPlayer, castPlayerController, castSession, chromecastAvailable, chromecastConnected, savedLocalPosition } from './castRefs'
+import { castPlayer, castPlayerController, castSession, chromecastAvailable, chromecastConnected, savedLocalPosition } from './castRefs'
 import { debugLog } from './logger'
 
+let castContext: cast.framework.CastContext
+
 export function initializeCast() {
-  castContext.value = cast.framework.CastContext.getInstance()
-  castContext.value.setOptions({
+  castContext = cast.framework.CastContext.getInstance()
+  castContext.setOptions({
     receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
 
-  castContext.value.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-  castContext.value.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
+  castContext.addEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+  castContext.addEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
 
   castPlayer.value = new cast.framework.RemotePlayer()
   castPlayerController.value = new cast.framework.RemotePlayerController(castPlayer.value)
@@ -54,7 +56,7 @@ function onSessionStateChanged(event: cast.framework.SessionStateEventData) {
   }
   else if (event.sessionState === cast.framework.SessionState.SESSION_STARTED) {
     debugLog('Cast session started')
-    castSession.value = castContext.value?.getCurrentSession() as cast.framework.CastSession | null
+    castSession.value = castContext?.getCurrentSession()
   }
 }
 
@@ -120,9 +122,9 @@ export function cleanupCastPlayer() {
     castPlayerController.value.removeEventListener(cast.framework.RemotePlayerEventType.MEDIA_INFO_CHANGED, onCastMediaInfoChanged)
   }
 
-  if (castContext.value) {
-    castContext.value.removeEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
-    castContext.value.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
+  if (castContext) {
+    castContext.removeEventListener(cast.framework.CastContextEventType.CAST_STATE_CHANGED, onCastStateChanged)
+    castContext.removeEventListener(cast.framework.CastContextEventType.SESSION_STATE_CHANGED, onSessionStateChanged)
   }
 
   castPlayer.value = null

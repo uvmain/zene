@@ -10,7 +10,9 @@
     },
     "types": [
       "node",
-      "vite/client"
+      "vite/client",
+      "@types/chrome",
+      "@types/chromecast-caf-sender"
     ],
     "strict": true,
     "noEmit": true,

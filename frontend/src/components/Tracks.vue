@@ -3,7 +3,6 @@ import type { SubsonicSong } from '~/types/subsonicSong'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import { debugLog } from '~/logic/logger'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
-import { routeTracks } from '~/logic/routeTracks'
 import 'vue-virtual-scroller/index.css'
 
 const props = defineProps({
@@ -36,10 +35,6 @@ function scrollToActiveTrack() {
   }
 }
 
-watch(() => props.tracks, (newtracks) => {
-  routeTracks.value = newtracks
-}, { immediate: true })
-
 if (props.autoScrolling) {
   watch(() => currentlyPlayingItem.value, () => {
     scrollToActiveTrack()
@@ -47,7 +42,6 @@ if (props.autoScrolling) {
 }
 
 onMounted(async () => {
-  routeTracks.value = props.tracks
   await nextTick()
   scrollToActiveTrack()
 })
