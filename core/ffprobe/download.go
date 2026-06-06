@@ -3,10 +3,8 @@ package ffprobe
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"runtime"
-	"strings"
 	"zene/core/config"
 	"zene/core/net"
 )
@@ -14,7 +12,6 @@ import (
 const (
 	fileName = "ffprobe.zip"
 	mainUrl  = "https://ffbinaries.com/api/v1/version/latest"
-	macUrl   = "https://www.osxexperts.net"
 )
 
 var (
@@ -28,14 +25,8 @@ func DownloadFfprobeBinary() error {
 		return err
 	}
 
-	if platform == "darwin" {
-		if err := downloadOsxExpertsBinariesFile(); err != nil {
-			return err
-		}
-	} else {
-		if err := downloadFfBinariesFile(); err != nil {
-			return err
-		}
+	if err := downloadFfBinariesFile(); err != nil {
+		return err
 	}
 	return nil
 }
@@ -49,11 +40,7 @@ func getArch() error {
 			target = "windows-32"
 		}
 	case "darwin":
-		if arch == "arm64" {
-			target = "arm"
-		} else {
-			target = "intel"
-		}
+		target = "osx-64"
 	case "linux":
 		if arch == "amd64" {
 			target = "linux-64"
@@ -64,37 +51,6 @@ func getArch() error {
 		return fmt.Errorf("unsupported platform/architecture for ffprobe: %s/%s", platform, arch)
 	}
 	return nil
-}
-
-func downloadOsxExpertsBinariesFile() error {
-	response, err := http.Get(macUrl)
-	if err != nil {
-		return fmt.Errorf("downloading ffprobe from %s: %v", macUrl, err)
-	}
-	defer response.Body.Close()
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-
-	html := string(body)
-	prefix := `href="`
-	suffix := `"`
-
-	elementIndex := strings.Index(html, "ffprobe")
-	if elementIndex == -1 {
-		return fmt.Errorf("finding ffprobe link from html")
-	}
-
-	start := strings.LastIndex(html[:elementIndex], prefix) + len(prefix)
-	end := strings.Index(html[start:], suffix)
-	if end == -1 {
-		return fmt.Errorf("extracting ffprobe link from html")
-	}
-	url := html[start : start+end]
-
-	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffprobe")
 }
 
 func downloadFfBinariesFile() error {
@@ -117,7 +73,7 @@ func downloadFfBinariesFile() error {
 
 	url := info.Bin[target].FFProbe
 	if url == "" {
-		return fmt.Errorf("ffprobe not found at %s", mainUrl)
+		return fmt.Errorf("ffprobe download url not found at %s", mainUrl)
 	}
 
 	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffprobe")
