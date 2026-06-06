@@ -9,7 +9,7 @@ RUN pnpm runtime set node 24 -g
 RUN pnpm install --frozen-lockfile
 RUN pnpm run build:frontend
 
-FROM golang:1.26.3 AS backend-build
+FROM golang:1.26.4 AS backend-build
 
 WORKDIR /app
 
