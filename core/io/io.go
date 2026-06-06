@@ -179,16 +179,25 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 	if err != nil {
 		return err
 	}
+	defer zipReader.Close()
 
 	absTargetDir, err := filepath.Abs(targetDirectory)
 	if err != nil {
 		return fmt.Errorf("resolving target directory: %v", err)
 	}
 
-	for _, file := range zipReader.File {
-		if strings.Contains(file.Name, fileNameFilter) {
+	filter := strings.ToLower(fileNameFilter)
+	extracted := false
 
-			targetPath := filepath.Join(absTargetDir, filepath.Clean(file.Name))
+	for _, file := range zipReader.File {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+
+		baseName := strings.ToLower(filepath.Base(file.Name))
+		if baseName == filter || baseName == filter+".exe" {
+
+			targetPath := filepath.Join(absTargetDir, filepath.Base(file.Name))
 			absTargetPath, err := filepath.Abs(targetPath)
 			if err != nil {
 				return fmt.Errorf("resolving target file path: %v", err)
@@ -227,10 +236,15 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 			if err := os.Chmod(absTargetPath, 0755); err != nil {
 				return fmt.Errorf("setting executable permissions on %s: %v", absTargetPath, err)
 			}
+
+			extracted = true
 		}
 	}
 
-	zipReader.Close()
+	if !extracted {
+		return fmt.Errorf("no matching file (%s or %s.exe) found in archive", fileNameFilter, fileNameFilter)
+	}
+
 	Cleanup(srcFile)
 	return nil
 }

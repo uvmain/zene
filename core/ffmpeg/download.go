@@ -3,10 +3,8 @@ package ffmpeg
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"runtime"
-	"strings"
 	"zene/core/config"
 	"zene/core/net"
 )
@@ -14,7 +12,6 @@ import (
 const (
 	fileName = "ffmpeg.zip"
 	mainUrl  = "https://ffbinaries.com/api/v1/version/latest"
-	macUrl   = "https://www.osxexperts.net"
 )
 
 var (
@@ -28,14 +25,8 @@ func downloadFfmpegBinary() error {
 		return err
 	}
 
-	if platform == "darwin" {
-		if err := downloadOsxExpertsBinariesFile(); err != nil {
-			return err
-		}
-	} else {
-		if err := downloadFfBinariesFile(); err != nil {
-			return err
-		}
+	if err := downloadFfBinariesFile(); err != nil {
+		return err
 	}
 
 	return nil
@@ -50,11 +41,7 @@ func getArch() error {
 			target = "windows-32"
 		}
 	case "darwin":
-		if arch == "arm64" {
-			target = "arm"
-		} else {
-			target = "intel"
-		}
+		target = "osx-64"
 	case "linux":
 		if arch == "amd64" {
 			target = "linux-64"
@@ -65,35 +52,6 @@ func getArch() error {
 		return fmt.Errorf("unsupported platform/architecture")
 	}
 	return nil
-}
-
-func downloadOsxExpertsBinariesFile() error {
-	response, err := http.Get(macUrl)
-	if err != nil {
-		return fmt.Errorf("downloading ffmpeg from %s: %v", macUrl, err)
-	}
-	defer response.Body.Close()
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return err
-	}
-
-	html := string(body)
-	prefix := `href="`
-	elementIndex := strings.Index(html, "ffmpeg")
-	if elementIndex == -1 {
-		return fmt.Errorf("finding ffmpeg link from html")
-	}
-
-	start := strings.LastIndex(html[:elementIndex], prefix) + len(prefix)
-	end := strings.Index(html[start:], `"`)
-	if end == -1 {
-		return fmt.Errorf("extracting ffmpeg link from html")
-	}
-	url := html[start : start+end]
-
-	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffmpeg")
 }
 
 func downloadFfBinariesFile() error {
