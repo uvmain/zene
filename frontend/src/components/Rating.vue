@@ -27,7 +27,7 @@ function effectiveRating() {
     class="flex flex-row gap-1 cursor-pointer transition-all duration-200 items-center justify-center lg:gap-2"
     @mouseleave="hoverRating = 0"
   >
-    <div v-for="rating in 5" :key="rating" class="hover:scale-115" @click="updateRating(rating)" @mouseenter="hoverRating = rating">
+    <div v-for="rating in 5" :key="rating" class="hover:scale-115" :title="`Rating: ${rating}`" @click="updateRating(rating)" @mouseenter="hoverRating = rating">
       <icon-nrk-star-active
         v-if="effectiveRating() >= rating"
         :class="{

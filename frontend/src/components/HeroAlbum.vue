@@ -52,7 +52,7 @@ const coverArtUrl = computed(() => {
 })
 
 const artist = computed(() => {
-  return currentAlbum.value.displayAlbumArtist ?? currentAlbum.value.artist ?? currentAlbum.value.displayArtist ?? 'Unknown Artist'
+  return currentAlbum.value.artist ?? currentAlbum.value.displayAlbumArtist ?? currentAlbum.value.displayArtist ?? 'Unknown Artist'
 })
 
 const date = computed(() => {
@@ -126,43 +126,28 @@ onBeforeMount(async () => {
               <div class="text-lg link line-clamp-1 lg:hidden" @click="navigateArtist()">
                 {{ artist }}
               </div>
-              <div v-if="albumGenres.length > 0" class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
-                <GenreBottle v-for="genre in albumGenres.slice(0, 3)" :key="genre" :genre="genre" class="hidden md:block lg:hidden" />
-                <GenreBottle v-for="genre in albumGenres.slice(0, 6)" :key="genre" :genre="genre" class="hidden lg:block xl:hidden" />
-                <GenreBottle v-for="genre in albumGenres.slice(0, 9)" :key="genre" :genre="genre" class="hidden xl:block 2xl:hidden" />
-                <GenreBottle v-for="genre in albumGenres" :key="genre" :genre="genre" class="hidden 2xl:block" />
-              </div>
+              <Genres v-if="albumGenres.length > 0" :genre-strings="albumGenres" :row-limit="1" />
               <div class="flex flex-row gap-4 lg:gap-8">
                 <PlayButton class="flex justify-start" :album="currentAlbum" />
                 <Fave v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
                 <Rating v-model="currentAlbum.userRating" :musicbrainz-id="currentAlbum.id" />
+                <ChangeArtIcon @click="showChangeArtModal = true" />
               </div>
             </div>
           </div>
-          <div class="opacity-50 right-1 top-1 absolute hover:opacity-100 lg:(right-2 top-2)">
-            <!-- Change Album Art -->
-            <div v-if="props.album">
-              <ZButton
-                class=""
-                @click="showChangeArtModal = true"
-              >
-                <div>
-                  Change Art
-                </div>
-              </ZButton>
-              <ChangeAlbumArt
-                v-if="showChangeArtModal"
-                :album="albumArray[index]"
-                @close="showChangeArtModal = false"
-                @art-updated="actOnUpdatedArt"
-              />
-            </div>
-            <ZButton v-else size-10 @click="nextIndex()">
+          <div v-if="!album" class="opacity-50 right-1 top-1 absolute hover:opacity-100 lg:(right-2 top-2)">
+            <ZButton size-10 @click="nextIndex()">
               <icon-nrk-media-next />
             </ZButton>
           </div>
         </div>
       </div>
+      <ChangeAlbumArt
+        v-if="showChangeArtModal"
+        :album="albumArray[index]"
+        @close="showChangeArtModal = false"
+        @art-updated="actOnUpdatedArt"
+      />
     </div>
   </section>
 </template>

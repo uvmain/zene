@@ -44,34 +44,22 @@ function actOnUpdatedArt() {
             <div class="text-xl font-bold line-clamp-1 lg:text-4xl">
               {{ artist.name }}
             </div>
-            <div v-if="genres.length > 0" class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
-              <GenreBottle v-for="genre in genres.slice(0, 3)" :key="genre" :genre="genre" class="hidden md:block lg:hidden" />
-              <GenreBottle v-for="genre in genres.slice(0, 6)" :key="genre" :genre="genre" class="hidden lg:block xl:hidden" />
-              <GenreBottle v-for="genre in genres.slice(0, 9)" :key="genre" :genre="genre" class="hidden xl:block 2xl:hidden" />
-              <GenreBottle v-for="genre in genres" :key="genre" :genre="genre" class="hidden 2xl:block" />
-            </div>
+            <Genres v-if="genres.length > 0" :genre-strings="genres" :row-limit="1" />
             <div class="mt-2 flex flex-row gap-8">
               <PlayButton class="flex justify-start" :artist="modelArtist" />
               <Fave v-model="isStarred" :musicbrainz-id="modelArtist.id" />
               <Rating v-model="modelArtist.userRating" :musicbrainz-id="modelArtist.id" />
+              <ChangeArtIcon @click="showChangeArtModal = true" />
             </div>
           </div>
         </div>
-        <div class="opacity-50 right-2 top-2 absolute hover:opacity-100">
-          <!-- Change Album Art section -->
-          <ZButton @click="showChangeArtModal = true">
-            <div>
-              Change Art
-            </div>
-          </ZButton>
-          <ChangeArtistArt
-            v-if="showChangeArtModal"
-            :artist="modelArtist"
-            @close="showChangeArtModal = false"
-            @art-updated="actOnUpdatedArt"
-          />
-        </div>
       </div>
     </div>
+    <ChangeArtistArt
+      v-if="showChangeArtModal"
+      :artist="modelArtist"
+      @close="showChangeArtModal = false"
+      @art-updated="actOnUpdatedArt"
+    />
   </div>
 </template>
