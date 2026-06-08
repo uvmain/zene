@@ -13,6 +13,7 @@ func Initialise(ctx context.Context) {
 	startAudioCacheCleanupRoutine(ctx)
 	startNowPlayingCleanupRoutine(ctx)
 	startAlbumArtCleanupRoutine(ctx)
+	startArtistArtCleanupRoutine(ctx)
 	startOrphanedPlaylistEntriesCleanupRoutine(ctx)
 	startPodcastCleanupRoutine(ctx)
 	startPodcastEpisodeRefreshRoutine(ctx)
@@ -140,6 +141,25 @@ func startAlbumArtCleanupRoutine(ctx context.Context) {
 				return
 			case <-ticker.C:
 				cleanupAlbumArt(ctx)
+			}
+		}
+	}()
+}
+
+func startArtistArtCleanupRoutine(ctx context.Context) {
+	logger.Println("Scheduler: starting artist art cleanup routine")
+	cleanupArtistArt(ctx)
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Println("Scheduler: stopping artist art cleanup routine")
+				return
+			case <-ticker.C:
+				cleanupArtistArt(ctx)
 			}
 		}
 	}()

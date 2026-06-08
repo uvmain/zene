@@ -68,6 +68,15 @@ func DeleteAlbumArtRow(ctx context.Context, musicbrainzAlbumId string) error {
 	return nil
 }
 
+func DeleteArtistArtRow(ctx context.Context, musicbrainzArtistId string) error {
+	query := `DELETE FROM artist_art WHERE musicbrainz_artist_id = ?`
+	_, err := DB.ExecContext(ctx, query, musicbrainzArtistId)
+	if err != nil {
+		return fmt.Errorf("deleting artist art row: %v", err)
+	}
+	return nil
+}
+
 func SelectAlbumArtIds(ctx context.Context) ([]string, error) {
 	query := `SELECT distinct musicbrainz_album_id FROM album_art`
 	rows, err := DB.QueryContext(ctx, query)
@@ -90,6 +99,30 @@ func SelectAlbumArtIds(ctx context.Context) ([]string, error) {
 	}
 
 	return albumArtIds, nil
+}
+
+func SelectArtistArtIds(ctx context.Context) ([]string, error) {
+	query := `SELECT distinct musicbrainz_artist_id FROM artist_art`
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("querying artist art IDs: %v", err)
+	}
+	defer rows.Close()
+
+	var artistArtIds []string
+	for rows.Next() {
+		var artistArtId string
+		if err := rows.Scan(&artistArtId); err != nil {
+			return nil, fmt.Errorf("scanning artist art ID: %v", err)
+		}
+		artistArtIds = append(artistArtIds, artistArtId)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %v", err)
+	}
+
+	return artistArtIds, nil
 }
 
 func SelectArtistSubDirectories(ctx context.Context, musicbrainzArtistId string) ([]string, error) {
