@@ -51,7 +51,7 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 	case "album":
 		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, imageId, sizeInt)
 	case "artist":
-		imageBlob, lastModified, err = art.GetArtForArtist(ctx, imageId, sizeInt)
+		imageBlob, lastModified, err = art.GetSavedArtistArt(ctx, imageId, sizeInt)
 	case "podcast_channel":
 		imageBlob, lastModified, err = art.GetArtForPodcast(ctx, imageId, sizeInt)
 	case "podcast_episode":

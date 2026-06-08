@@ -87,9 +87,7 @@ onMounted(() => {
           <div class="text-lg font-bold">
             Genres: {{ searchResults?.genres?.length ?? 0 }}
           </div>
-          <div class="flex flex-wrap gap-2 overflow-hidden">
-            <GenreBottle v-for="genre in searchResults?.genres.filter(g => g.value !== '')" :key="genre.value" :genre="genre.value" />
-          </div>
+          <Genres v-if="searchResults !== null && searchResults?.genres?.length > 0" :genre-strings="searchResults.genres.map(g => g.value)" />
         </div>
       </div>
     </div>

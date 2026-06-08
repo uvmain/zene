@@ -21,7 +21,7 @@ function toggleStarred() {
 
 <template>
   <div class="flex cursor-pointer transition-all duration-200 items-center justify-center hover:scale-115" @click="toggleStarred" @click.stop>
-    <icon-nrk-heart-active v-if="model" class="text-main-400" />
-    <icon-nrk-heart v-else class="text-muted opacity-70" />
+    <icon-nrk-heart-active v-if="model" title="Remove from favourites" class="text-main-400" />
+    <icon-nrk-heart v-else title="Add to favourites" class="text-muted opacity-70" />
   </div>
 </template>

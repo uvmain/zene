@@ -274,7 +274,7 @@ export async function postScrobble(musicbrainz_track_id: string): Promise<boolea
 
 export async function fetchGenres(count?: number) {
   const response = await openSubsonicFetchRequest<Types.SubsonicGenresResponse>('getGenres')
-  const allGenres = response.genres.genre
+  const allGenres = response.genres.genre.filter(genre => genre.value.trim().length > 0)
   if (allGenres.length === 0) {
     return [] as SubsonicGenre[]
   }

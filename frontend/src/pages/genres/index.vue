@@ -3,8 +3,6 @@ import type { SubsonicGenre } from '~/types/subsonicGenres'
 import { fetchGenres } from '~/logic/backendFetch'
 import { getStoredKV, setStoredKV } from '~/stores/keyValueIdbStore'
 
-const router = useRouter()
-
 const genres = ref<SubsonicGenre[]>()
 
 async function getGenres() {
@@ -25,12 +23,5 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div>
-    <div v-if="genres" class="flex flex-wrap gap-2">
-      <div v-for="genre in genres.filter(g => g.value !== '')" :key="genre.value">
-        <GenreBottle :genre="genre.value" class="cursor-pointer" @click="() => router.push(`/genres/${genre.value}`)" />
-      </div>
-    </div>
-    <div class="h-4" />
-  </div>
+  <Genres :genre-strings="genres ? genres.map((g) => g.value) : []" />
 </template>

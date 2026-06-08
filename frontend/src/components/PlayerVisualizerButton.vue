@@ -11,18 +11,17 @@ function navigateToVisualizer() {
 </script>
 
 <template>
-  <abbr title="Visualizer">
-    <button
-      id="visualizer"
-      class="text-muted font-semibold outline-none border-none bg-white/0 flex cursor-pointer items-center justify-center"
-      @click="navigateToVisualizer()"
-    >
-      <icon-nrk-media-soundwave
-        :class="{
-          'footer-icon-disabled': !canNavigateToVisualizer,
-          'footer-icon': canNavigateToVisualizer,
-        }"
-      />
-    </button>
-  </abbr>
+  <button
+    id="visualizer"
+    title="Butterchurn visualizer"
+    class="text-muted font-semibold outline-none border-none bg-white/0 flex cursor-pointer items-center justify-center"
+    @click="navigateToVisualizer()"
+  >
+    <icon-nrk-media-soundwave
+      :class="{
+        'footer-icon-disabled': !canNavigateToVisualizer,
+        'footer-icon': canNavigateToVisualizer,
+      }"
+    />
+  </button>
 </template>

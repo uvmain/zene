@@ -2,7 +2,7 @@
 import type { SubsonicGenre } from '~/types/subsonicGenres'
 import { fetchGenres } from '~/logic/backendFetch'
 
-const genres = ref<SubsonicGenre[]>()
+const genres = ref<SubsonicGenre[]>([])
 
 async function getGenres() {
   genres.value = await fetchGenres(50)
@@ -27,8 +27,6 @@ onBeforeMount(async () => {
         Top Genres
       </ZButton>
     </div>
-    <div class="mb-2 flex flex-wrap gap-2 justify-center overflow-hidden lg:justify-start" :style="`max-height: calc(${(28 * 2) + 12}px);`">
-      <GenreBottle v-for="genre in genres?.filter(g => g.value !== '')" :key="genre.value" :genre="genre.value" />
-    </div>
+    <Genres v-if="genres.length > 0" :genre-strings="genres.map(g => g.value)" :row-limit="2" class="mb-4" />
   </div>
 </template>

@@ -9,6 +9,13 @@ const props = defineProps({
 const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.podcast.coverArt, artSizes.size200)
 })
+
+const genres = computed(() => {
+  if (props.podcast.episode.length > 0) {
+    return props.podcast.episode[0].genres?.map(genre => genre.name) || []
+  }
+  return []
+})
 </script>
 
 <template>
@@ -36,9 +43,7 @@ const coverArtUrl = computed(() => {
                 class="whitespace-pre-line text-pretty truncate overflow-hidden line-clamp-5"
                 v-html="podcast.description.replaceAll(/\n/g, '<br>')"
               />
-              <div v-if="podcast.episode.length && podcast.episode[0].genres?.length > 0" class="hidden lg:(flex flex-nowrap gap-2 justify-start overflow-hidden)">
-                <GenreBottle v-for="genre in podcast.episode[0].genres.slice(0, 8)" :key="genre.name" :genre="genre.name" />
-              </div>
+              <Genres v-if="genres.length > 0" :genre-strings="genres" :row-limit="1" />
               <!-- <PlayButton class="flex justify-start" :podcast-episode="podcast.episode[0]" /> -->
             </div>
           </div>

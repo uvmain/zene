@@ -56,7 +56,7 @@ func HandleGetCoverArt(w http.ResponseWriter, r *http.Request) {
 	case "album":
 		imageBlob, lastModified, err = art.GetArtForAlbum(ctx, idParameter, sizeInt)
 	case "artist":
-		imageBlob, lastModified, err = art.GetArtForArtist(ctx, idParameter, sizeInt)
+		imageBlob, lastModified, err = art.GetSavedArtistArt(ctx, idParameter, sizeInt)
 	case "podcast":
 		imageBlob, lastModified, err = art.GetArtForPodcast(ctx, idParameter, sizeInt)
 	default:

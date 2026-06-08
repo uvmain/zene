@@ -41,11 +41,11 @@ async function getData() {
     )
 }
 
-const artistAlbums = computed(() => {
-  return allAlbums.value.filter(album => album.albumArtists?.some(arrayArtist => arrayArtist.name === artist.value?.name))
+const artistAlbums = computed<SubsonicAlbum[]>(() => {
+  return allAlbums.value.filter(album => album.artist === artist.value?.name)
 })
 
-const albumArtistAlbums = computed(() => {
+const appearsOnAlbums = computed<SubsonicAlbum[]>(() => {
   return allAlbums.value.filter(album => album.albumArtists?.some(arrayArtist => arrayArtist.name !== artist.value?.name))
 })
 
@@ -68,7 +68,7 @@ onBeforeMount(async () => {
   <div class="flex flex-col gap-4 lg:gap-6">
     <HeroArtist v-if="artist" :artist="artist" :genres="artistGenres" />
     <Albums v-if="artistAlbums.length > 0" :albums="artistAlbums" :order-disabled="true" />
-    <Albums v-if="albumArtistAlbums.length > 0" :albums="albumArtistAlbums" title="Appears on albums" :order-disabled="true" />
+    <Albums v-if="appearsOnAlbums.length > 0" :albums="appearsOnAlbums" title="Appears on albums" :order-disabled="true" />
     <Artists v-if="similarArtists.length > 0" :artists="similarArtists" title="Similar Artists" :order-disabled="true" />
     <Tracks
       v-if="tracks"
