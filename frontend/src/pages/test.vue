@@ -1,0 +1,3 @@
+<template>
+  <Chromecast />
+</template>
