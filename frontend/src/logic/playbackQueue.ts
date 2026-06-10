@@ -5,8 +5,6 @@ import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { audioElement, clearActiveAudio, seek as elementSeek, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
-import { castAudio } from '~/logic/castAudio'
-import { castPlayer, castPlayerController, chromecastConnected } from '~/logic/castRefs'
 import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
@@ -82,11 +80,6 @@ async function startPlayback(playItem: PlayItem, src: string, options: PlaybackO
   const { autoPlay = true, restartCurrentTrack = false } = options
 
   applyPlaybackState(playItem, src, options)
-
-  if (chromecastConnected.value) {
-    await castAudio()
-    return
-  }
 
   if (!autoPlay) {
     return
@@ -336,10 +329,6 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
 }
 
 export function togglePlayback() {
-  if (chromecastConnected.value && castPlayerController.value) {
-    castPlayerController.value.playOrPause()
-  }
-
   if (!audioElement.value) {
     console.error('Audio element not found')
     return
@@ -368,10 +357,6 @@ export function togglePlayback() {
 }
 
 export function stopPlayback() {
-  if (chromecastConnected.value && castPlayerController.value) {
-    castPlayerController.value.stop()
-  }
-
   if (audioElement.value) {
     if (!isPlaying.value || audioElement.value.currentTime === 0) {
       currentlyPlayingItem.value = {}
@@ -402,10 +387,5 @@ export function updateProgress() {
 }
 
 export function seek(seekSeconds: number) {
-  if (chromecastConnected.value && castPlayer.value !== null && castPlayerController.value) {
-    castPlayer.value.currentTime = castPlayer.value.currentTime + seekSeconds
-    castPlayerController.value.seek()
-  }
-
   elementSeek(seekSeconds)
 }

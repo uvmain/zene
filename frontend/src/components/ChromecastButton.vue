@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isBrowserChrome } from '~/logic/browser'
+
 interface CastEventValue<T> { value?: T }
 
 const mediaUrl = ref('')
@@ -10,40 +12,14 @@ const duration = ref(0)
 const currentTime = ref(0)
 const volume = ref(0.7)
 const savedVolume = ref(0.7)
-const muted = ref(false)
-const castOptionsReady = ref(false)
-
-function buildTimeString(displayTime: number, showHour = false): string {
-  const h = Math.floor(displayTime / 3600)
-  const m = Math.floor((displayTime / 60) % 60)
-  let s: string | number = Math.floor(displayTime % 60)
-
-  if (s < 10) {
-    s = `0${s}`
-  }
-
-  let text = `${m}:${s}`
-  if (showHour) {
-    if (m < 10) {
-      text = `0${text}`
-    }
-    text = `${h}:${text}`
-  }
-
-  return text
-}
-
-const timeString = computed(() => buildTimeString(currentTime.value))
-const isChrome = computed(() => {
-  return /Chrome/.test(navigator.userAgent)
-    && /Google Inc/.test(navigator.vendor)
-})
+const chromecastMuted = ref(false)
+const isChromecastReady = ref(false)
 
 function debugLog(logMessage: string) {
   console.log(`[DEBUG] ${logMessage}`)
 }
 
-function init() {
+function initialiseChromecast() {
   window.__onGCastApiAvailable = (isAvailable: boolean) => {
     if (isAvailable) {
       setTimeout(() => {
@@ -55,7 +31,7 @@ function init() {
 }
 
 function initializeCastApi() {
-  if (castOptionsReady.value) {
+  if (isChromecastReady.value) {
     return
   }
 
@@ -65,7 +41,7 @@ function initializeCastApi() {
     receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
     autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
   })
-  castOptionsReady.value = true
+  isChromecastReady.value = true
   setPlayerEvents()
 }
 
@@ -75,11 +51,11 @@ function connect() {
     return
   }
 
-  if (!castOptionsReady.value) {
+  if (!isChromecastReady.value) {
     initializeCastApi()
   }
 
-  if (!castOptionsReady.value) {
+  if (!isChromecastReady.value) {
     debugLog('[chromecast:connect] - Cast options are not ready yet')
     return
   }
@@ -190,7 +166,7 @@ function pause() {
   })
 }
 
-function stop() {
+function stopChromecast() {
   debugLog('[chromecast:stop]')
 
   const castSession = cast.framework.CastContext.getInstance().getCurrentSession()
@@ -246,14 +222,14 @@ function setVolume(value: number) {
   volume.value = value
 
   if (volume.value > 0) {
-    muted.value = false
+    chromecastMuted.value = false
   }
 }
 
 function setMute() {
-  debugLog(`[chromecast:setMute] - ${!muted.value}`)
-  muted.value = !muted.value
-  if (muted.value) {
+  debugLog(`[chromecast:setMute] - ${!chromecastMuted.value}`)
+  chromecastMuted.value = !chromecastMuted.value
+  if (chromecastMuted.value) {
     savedVolume.value = volume.value
     volume.value = 0
   }
@@ -265,7 +241,7 @@ function setMute() {
     return
   }
 
-  castSession.setMute(muted.value)
+  castSession.setMute(chromecastMuted.value)
 }
 
 function onDebugChange() {
@@ -325,72 +301,60 @@ function onPlayerStateChanged(event: CastEventValue<string>) {
 }
 
 onMounted(() => {
-  init()
+  initialiseChromecast()
 })
 </script>
 
 <template>
-  <div class="mx-auto px-5 text-left max-w-[960px] w-full box-border sm:px-0 md:w-[80%] sm:w-[85%]">
-    <label class="mc-label">Media URL</label>
+  <div v-if="isBrowserChrome" class="mb-2.5 inline-block">
+    <button v-if="connected" class="mc-button-active" @click="connect">
+      <icon-nrk-media-chromecast-active />
+    </button>
+    <button v-else class="mc-button-primary" @click="connect">
+      <icon-nrk-media-chromecast />
+    </button>
+    <span v-if="!isBrowserChrome" class="ml-2.5">Google Chrome required!</span>
+    <button v-if="connected" class="mc-button" @click="loadMedia">
+      Load Media
+    </button>
+    <button v-if="connected" class="mc-button" @click="stopChromecast">
+      Stop
+    </button>
+    <label v-if="connected" class="mx-2.5 inline" for="checkbox">
+      <input id="checkbox" v-model="debugEnabled" type="checkbox" @change="onDebugChange">
+      <span>Debug Panel</span>
+    </label>
+  </div>
+
+  <div v-if="connected" class="mc-player-controls">
+    <button v-if="playing" class="mc-icon-button mr-[7px]" @click="pause">
+      pause_arrow
+    </button>
+    <button v-else class="mc-icon-button mr-[7px]" @click="play">
+      play_arrow
+    </button>
+    <input class="mc-seek" type="range" step="any" min="0" :max="duration" :value="currentTime" @change="onSeekChange">
+    <button class="mc-icon-button mr-[7px] hidden">
+      fast_rewind
+    </button>
+    <button class="mc-icon-button mr-[7px] hidden">
+      fast_forward
+    </button>
+    <button v-if="chromecastMuted" class="mc-icon-button mr-[7px]" @click="setMute">
+      volume_mute
+    </button>
+    <button v-else class="mc-icon-button mr-[7px]" @click="setMute">
+      volume_up
+    </button>
     <input
-      v-model="mediaUrl"
-      class="mc-form-control"
-      type="text"
+      class="mc-volume"
+      type="range"
+      step="any"
+      min="0"
+      max="1"
+      :value="volume"
+      :style="{ background: `linear-gradient(to right, rgb(204, 204, 204) ${volume * 100}%, rgb(0, 0, 0) ${volume * 100}%, rgb(0, 0, 0) 100%)` }"
+      @change="onVolumeChange"
     >
-
-    <div class="mb-2.5 inline-block">
-      <button v-if="connected" class="mc-button-active" @click="connect">
-        <icon-nrk-media-chromecast-active />
-      </button>
-      <button v-else class="mc-button-primary" :disabled="!isChrome" @click="connect">
-        <icon-nrk-media-chromecast />
-      </button>
-      <span v-if="!isChrome" class="ml-2.5">Google Chrome required!</span>
-      <button v-if="connected" class="mc-button" @click="loadMedia">
-        Load Media
-      </button>
-      <button v-if="connected" class="mc-button" @click="stop">
-        Stop
-      </button>
-      <label v-if="connected" class="mx-2.5 inline" for="checkbox">
-        <input id="checkbox" v-model="debugEnabled" type="checkbox" @change="onDebugChange">
-        <span>Debug Panel</span>
-      </label>
-    </div>
-
-    <div v-if="connected" class="mc-player-controls">
-      <button v-if="playing" class="mc-icon-button mr-[7px]" @click="pause">
-        pause_arrow
-      </button>
-      <button v-else class="mc-icon-button mr-[7px]" @click="play">
-        play_arrow
-      </button>
-      <input class="mc-seek" type="range" step="any" min="0" :max="duration" :value="currentTime" @change="onSeekChange">
-      <button class="mc-icon-button mr-[7px] hidden">
-        fast_rewind
-      </button>
-      <div class="text-[13px] text-white leading-none font-bold font-sans mr-[9px] select-none">
-        {{ timeString }}
-      </div>
-      <button class="mc-icon-button mr-[7px] hidden">
-        fast_forward
-      </button>
-      <button v-if="muted" class="mc-icon-button mr-[7px]" @click="setMute">
-        volume_mute
-      </button>
-      <button v-else class="mc-icon-button mr-[7px]" @click="setMute">
-        volume_up
-      </button>
-      <input
-        class="mc-volume"
-        type="range"
-        step="any"
-        min="0"
-        max="1"
-        :value="volume"
-        :style="{ background: `linear-gradient(to right, rgb(204, 204, 204) ${volume * 100}%, rgb(0, 0, 0) ${volume * 100}%, rgb(0, 0, 0) 100%)` }"
-        @change="onVolumeChange"
-      >
-    </div>
   </div>
 </template>

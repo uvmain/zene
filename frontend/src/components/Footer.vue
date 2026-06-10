@@ -19,7 +19,7 @@ const loggedIn = computed(() => {
       </div>
       <div class="flex flex-row gap-4 items-center lg:gap-6">
         <NavOpenerMobile class="relative lg:hidden" />
-        <GoogleCastButton />
+        <ChromecastButton />
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />

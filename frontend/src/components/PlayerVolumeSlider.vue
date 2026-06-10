@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { volumeStore } from '~/stores/main'
 import { changeVolume, currentVolume, toggleMute } from '~/logic/volume'
+import { volumeStore } from '~/stores/main'
 
 function handleInput(e: Event) {
   const value = (e.target as HTMLInputElement).value

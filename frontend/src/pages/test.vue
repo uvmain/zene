@@ -1,3 +1,10 @@
+<script setup lang="ts">
+import { isBrowserChrome } from '~/logic/browser'
+
+const isChrome = isBrowserChrome()
+</script>
+
 <template>
-  <Chromecast />
+  is Chrome?: {{ isChrome }}
+  <ChromecastButton />
 </template>
