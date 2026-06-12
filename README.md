@@ -17,6 +17,7 @@
 ### Fast, small and feature packed with smart caching
 - No rocket emojis - just good old optimisation
 - Light and Dark mode
+- Auto-colours based on album art
 - Visualizations with [butterchurn](https://butterchurnviz.com/) and a curated select of presets from [Ansorre's collection](https://github.com/ansorre/tens-of-thousands-milkdrop-presets-for-butterchurn/tree/master)
 
   ![butterchurn](./docs/assets/butterchurn-fullscreen.webp)
