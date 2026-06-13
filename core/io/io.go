@@ -292,12 +292,17 @@ func UnTarXz(srcFile string, targetDirectory string, fileNameFilter []string) er
 			continue
 		}
 
-		baseName := strings.ToLower(filepath.Base(hdr.Name))
+		safeHdrName, err := PathWithoutTraversal(hdr.Name)
+		if err != nil {
+			return fmt.Errorf("tar slip detected: %s", hdr.Name)
+		}
+
+		baseName := strings.ToLower(filepath.Base(safeHdrName))
 		if !slices.Contains(fileNameFilters, baseName) && !slices.Contains(fileNameFilters, baseName+".exe") {
 			continue
 		}
 
-		targetPath := filepath.Join(absoluteTargetDir, filepath.Base(hdr.Name))
+		targetPath := filepath.Join(absoluteTargetDir, filepath.Base(safeHdrName))
 
 		absoluteTargetPath, err := filepath.Abs(targetPath)
 		if err != nil {
