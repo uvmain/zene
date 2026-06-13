@@ -232,10 +232,10 @@ func FilterArray[T any](s []T, f func(T) (bool, error)) ([]T, error) {
 	return result, nil
 }
 
-func LowercaseArray(s []string) []string {
+func LowercaseArray(originalStringArray []string) []string {
 	var result []string
-	for _, val := range s {
-		result = append(result, strings.ToLower(val))
+	for _, originalString := range originalStringArray {
+		result = append(result, strings.ToLower(originalString))
 	}
 	return result
 }

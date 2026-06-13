@@ -26,7 +26,7 @@ export async function setAccentFromImage(imageElement: HTMLImageElement): Promis
   const palette = await getPalette(imageElement, options) ?? []
   const colours = palette.filter((colour) => {
     const hsl = colour.hsl()
-    return hsl.l > 10 && hsl.l < 90 && hsl.s > 10 && colour.population > 5
+    return hsl.l > 5 && hsl.l < 95 && hsl.s > 10 && colour.population > 5
   }).sort((a, b) => b.hsl().s - a.hsl().s)
 
   const newColour = colours.length > 0 ? colours[0]?.toString() : accentColour.value
