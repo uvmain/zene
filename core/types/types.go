@@ -9,6 +9,11 @@ type ButterchurnPreset struct {
 	Preset interface{} `json:"preset"`
 }
 
+type FfVersions struct {
+	FfmpegVersion  string `json:"ffmpeg_version"`
+	FfprobeVersion string `json:"ffprobe_version"`
+}
+
 type FileMetadata struct {
 	Format              string `json:"format"`
 	Duration            string `json:"duration"`

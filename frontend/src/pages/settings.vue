@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import type { StreamQuality } from '~/stores/main'
 import { useDark, useToggle } from '@vueuse/core'
-import { deleteAudioCache, openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { deleteAudioCache, downloadNewFfBinaries, fetchFfVersions, openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { initializeAccentColour, resetAccentColour, updateAccentColour } from '~/logic/colours'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
 import { accentColour, autoSwitchColours, debugEnabled, streamQualities, streamQuality } from '~/stores/main'
+
+interface FfVersions {
+  ffmpeg_version: string
+  ffprobe_version: string
+}
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -13,6 +18,7 @@ const router = useRouter()
 const forceTags = ref(false)
 const forceArt = ref(false)
 const showLogoutModal = ref(false)
+const ffVersions = ref<FfVersions | null>(null)
 
 const streamQualitiesArray = computed<(string | number)[]>(() => {
   return Object.values(streamQualities)
@@ -44,10 +50,24 @@ function setStreamQuality(quality: StreamQuality) {
   streamQuality.value = quality
 }
 
+async function getFfVersions() {
+  const versions = await fetchFfVersions()
+  ffVersions.value = versions
+}
+
 async function logOut() {
   clearApiKey()
   router.push('/login')
 }
+
+async function downloadFfBinaries() {
+  await downloadNewFfBinaries()
+  await getFfVersions()
+}
+
+onMounted(() => {
+  getFfVersions()
+})
 </script>
 
 <template>
@@ -103,6 +123,19 @@ async function logOut() {
         Reset
       </ZButton>
     </div>
+
+    <div v-if="ffVersions" class="mr-auto p-2 border-muted corner-cut flex flex-col gap-y-2">
+      <div class="text-lg font-semibold">
+        FFmpeg Version: {{ ffVersions.ffmpeg_version }}
+      </div>
+      <div class="text-lg font-semibold">
+        FFprobe Version: {{ ffVersions.ffprobe_version }}
+      </div>
+      <ZButton @click="downloadFfBinaries()">
+        Update FFmpeg and FFprobe
+      </ZButton>
+    </div>
+
     <UserManagement />
 
     <!-- Logout Modal -->
