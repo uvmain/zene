@@ -22,18 +22,18 @@ export function resetAccentColour() {
 export async function setAccentFromImage(imageElement: HTMLImageElement): Promise<void> {
   const options: ExtractionOptions = {
     colorCount: 10,
-    quality: 4,
+    quality: 10,
+    worker: true,
+    ignoreWhite: true,
+    minSaturation: 0.1,
   }
   const palette = await getPalette(imageElement, options) ?? []
   const colours = palette.filter((colour) => {
     const hsl = colour.hsl()
-    return hsl.l > 5 && hsl.l < 95 && hsl.s > 11 && colour.proportion > 0.1
+    return hsl.l > 5 && hsl.l < 95
   }).sort((a, b) => {
-    // weight saturation by 1.5, proportion by 1.0
-    const aHsl = a.hsl()
-    const bHsl = b.hsl()
-    const aScore = aHsl.s * 1.5 + a.proportion * 1.0
-    const bScore = bHsl.s * 1.5 + b.proportion * 1.0
+    const aScore = (a.hsl().s * 1.5 + a.proportion * 1.0) * (a.isLight === true ? 1.5 : 1.0)
+    const bScore = (b.hsl().s * 1.5 + b.proportion * 1.0) * (b.isLight === true ? 1.5 : 1.0)
     return bScore - aScore
   })
 
