@@ -59,7 +59,7 @@ func setLatestFfmpegDownloadUrl() error {
 	return fmt.Errorf("unsupported platform %s/%s", runtime.GOOS, runtime.GOARCH)
 }
 
-func downloadFfmpegBinary() error {
+func DownloadFfmpegBinary() error {
 	if err := setLatestFfmpegDownloadUrl(); err != nil {
 		return err
 	}
@@ -73,6 +73,10 @@ func downloadFfmpegBinary() error {
 
 func downloadFfmpeg() error {
 	targetPath := filepath.Join(config.TempDirectory, fileName)
+	// delete file if it already exists
+	if io.FileExists(targetPath) {
+		io.Cleanup(targetPath)
+	}
 	err := net.DownloadBinaryFile(targetUrl, targetPath)
 	if err != nil {
 		return fmt.Errorf("downloading ffmpeg binary: %v", err)
@@ -82,11 +86,13 @@ func downloadFfmpeg() error {
 	}
 	logger.Printf("ffmpeg download from %s", targetUrl)
 
+	filters := []string{"ffmpeg", "ffmpeg.exe"}
+
 	switch ext {
 	case ".zip":
-		io.Unzip(targetPath, config.LibraryDirectory, "ffmpeg")
+		io.Unzip(targetPath, config.LibraryDirectory, filters)
 	case ".tar.xz":
-		io.UnTarXz(targetPath, config.LibraryDirectory, "ffmpeg")
+		io.UnTarXz(targetPath, config.LibraryDirectory, filters)
 	}
 
 	io.Cleanup(targetPath)

@@ -22,7 +22,7 @@ func setLatestFfprobeDownloadUrl() error {
 	switch runtime.GOOS {
 
 	case "darwin":
-		targetUrl = "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip"
+		targetUrl = "https://evermeet.cx/ffmpeg/getrelease/ffprobe/zip"
 		fileName = "ffprobe.zip"
 		ext = ".zip"
 		return nil
@@ -59,7 +59,7 @@ func setLatestFfprobeDownloadUrl() error {
 	return fmt.Errorf("unsupported platform %s/%s", runtime.GOOS, runtime.GOARCH)
 }
 
-func downloadFfprobeBinary() error {
+func DownloadFfprobeBinary() error {
 	if err := setLatestFfprobeDownloadUrl(); err != nil {
 		return err
 	}
@@ -73,6 +73,10 @@ func downloadFfprobeBinary() error {
 
 func downloadFfprobe() error {
 	targetPath := filepath.Join(config.TempDirectory, fileName)
+	// delete file if it already exists
+	if io.FileExists(targetPath) {
+		io.Cleanup(targetPath)
+	}
 	err := net.DownloadBinaryFile(targetUrl, targetPath)
 	if err != nil {
 		return fmt.Errorf("downloading ffprobe binary: %v", err)
@@ -82,11 +86,13 @@ func downloadFfprobe() error {
 	}
 	logger.Printf("ffprobe download from %s", targetUrl)
 
+	filters := []string{"ffprobe", "ffprobe.exe"}
+
 	switch ext {
 	case ".zip":
-		io.Unzip(targetPath, config.LibraryDirectory, "ffprobe")
+		io.Unzip(targetPath, config.LibraryDirectory, filters)
 	case ".tar.xz":
-		io.UnTarXz(targetPath, config.LibraryDirectory, "ffprobe")
+		io.UnTarXz(targetPath, config.LibraryDirectory, filters)
 	}
 
 	io.Cleanup(targetPath)

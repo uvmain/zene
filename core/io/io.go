@@ -14,6 +14,7 @@ import (
 	"time"
 	"zene/core/config"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/types"
 
 	"github.com/djherbis/times"
@@ -176,7 +177,7 @@ func Cleanup(fileName string) {
 	}
 }
 
-func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error {
+func Unzip(srcFile string, targetDirectory string, fileNameFilter []string) error {
 	logger.Printf("Unzipping %s to %s", srcFile, targetDirectory)
 	zipReader, err := zip.OpenReader(srcFile)
 	if err != nil {
@@ -189,7 +190,7 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 		return fmt.Errorf("resolving target directory: %v", err)
 	}
 
-	filter := strings.ToLower(fileNameFilter)
+	fileNameFilters := logic.LowercaseArray(fileNameFilter)
 	extracted := false
 
 	for _, file := range zipReader.File {
@@ -198,7 +199,8 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 		}
 
 		baseName := strings.ToLower(filepath.Base(file.Name))
-		if baseName == filter || baseName == filter+".exe" {
+		// if baseName == filter || baseName == filter+".exe" {
+		if slices.Contains(fileNameFilters, baseName) || slices.Contains(fileNameFilters, baseName+".exe") {
 
 			targetPath := filepath.Join(absTargetDir, filepath.Base(file.Name))
 			absTargetPath, err := filepath.Abs(targetPath)
@@ -245,13 +247,13 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 	}
 
 	if !extracted {
-		return fmt.Errorf("no matching file (%s or %s.exe) found in archive", fileNameFilter, fileNameFilter)
+		return fmt.Errorf("no matching file (%s or %s.exe) found in archive", strings.Join(fileNameFilter, ", "), strings.Join(fileNameFilter, ", "))
 	}
 
 	return nil
 }
 
-func UnTarXz(srcFile string, targetDirectory string, fileNameFilter string) error {
+func UnTarXz(srcFile string, targetDirectory string, fileNameFilter []string) error {
 	logger.Printf("Extracting %s to %s", srcFile, targetDirectory)
 
 	f, err := os.Open(srcFile)
@@ -272,7 +274,7 @@ func UnTarXz(srcFile string, targetDirectory string, fileNameFilter string) erro
 		return fmt.Errorf("resolving target directory: %w", err)
 	}
 
-	filter := strings.ToLower(fileNameFilter)
+	fileNameFilters := logic.LowercaseArray(fileNameFilter)
 	extracted := false
 
 	for {
@@ -291,7 +293,7 @@ func UnTarXz(srcFile string, targetDirectory string, fileNameFilter string) erro
 		}
 
 		baseName := strings.ToLower(filepath.Base(hdr.Name))
-		if baseName != filter && baseName != filter+".exe" {
+		if !slices.Contains(fileNameFilters, baseName) && !slices.Contains(fileNameFilters, baseName+".exe") {
 			continue
 		}
 
@@ -333,8 +335,7 @@ func UnTarXz(srcFile string, targetDirectory string, fileNameFilter string) erro
 	}
 
 	if !extracted {
-		return fmt.Errorf("no matching file (%s or %s.exe) found in archive",
-			fileNameFilter, fileNameFilter)
+		return fmt.Errorf("no matching file (%s or %s.exe) found in archive", strings.Join(fileNameFilter, ", "), strings.Join(fileNameFilter, ", "))
 	}
 
 	return nil
