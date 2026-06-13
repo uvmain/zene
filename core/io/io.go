@@ -1,8 +1,10 @@
 package io
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,6 +17,7 @@ import (
 	"zene/core/types"
 
 	"github.com/djherbis/times"
+	"github.com/ulikunitz/xz"
 )
 
 func FileExists(absoluteFilePath string) bool {
@@ -245,7 +248,95 @@ func Unzip(srcFile string, targetDirectory string, fileNameFilter string) error 
 		return fmt.Errorf("no matching file (%s or %s.exe) found in archive", fileNameFilter, fileNameFilter)
 	}
 
-	Cleanup(srcFile)
+	return nil
+}
+
+func UnTarXz(srcFile string, targetDirectory string, fileNameFilter string) error {
+	logger.Printf("Extracting %s to %s", srcFile, targetDirectory)
+
+	f, err := os.Open(srcFile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	xzReader, err := xz.NewReader(f)
+	if err != nil {
+		return fmt.Errorf("creating xz reader: %w", err)
+	}
+
+	tr := tar.NewReader(xzReader)
+
+	absoluteTargetDir, err := filepath.Abs(targetDirectory)
+	if err != nil {
+		return fmt.Errorf("resolving target directory: %w", err)
+	}
+
+	filter := strings.ToLower(fileNameFilter)
+	extracted := false
+
+	for {
+		hdr, err := tr.Next()
+
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		if err != nil {
+			return err
+		}
+
+		if hdr.Typeflag != tar.TypeReg {
+			continue
+		}
+
+		baseName := strings.ToLower(filepath.Base(hdr.Name))
+		if baseName != filter && baseName != filter+".exe" {
+			continue
+		}
+
+		targetPath := filepath.Join(absoluteTargetDir, filepath.Base(hdr.Name))
+
+		absoluteTargetPath, err := filepath.Abs(targetPath)
+		if err != nil {
+			return err
+		}
+
+		if !strings.HasPrefix(absoluteTargetPath, absoluteTargetDir+string(filepath.Separator)) &&
+			absoluteTargetPath != absoluteTargetDir {
+			return fmt.Errorf("tar slip detected: %s", hdr.Name)
+		}
+
+		if err := os.MkdirAll(filepath.Dir(absoluteTargetPath), 0755); err != nil {
+			return err
+		}
+
+		outFile, err := os.Create(absoluteTargetPath)
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(outFile, tr)
+		outFile.Close()
+
+		if err != nil {
+			return err
+		}
+
+		if err := os.Chmod(absoluteTargetPath, 0755); err != nil {
+			return err
+		}
+
+		logger.Printf("extracted %s to %s", hdr.Name, absoluteTargetPath)
+
+		extracted = true
+	}
+
+	if !extracted {
+		return fmt.Errorf("no matching file (%s or %s.exe) found in archive",
+			fileNameFilter, fileNameFilter)
+	}
+
 	return nil
 }
 

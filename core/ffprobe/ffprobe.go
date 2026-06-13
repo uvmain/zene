@@ -23,7 +23,7 @@ func InitializeFfprobe(ctx context.Context) {
 	if io.FileExists(config.FfprobePath) {
 		logger.Printf("ffprobe binary found at %s", config.FfprobePath)
 	} else {
-		err := DownloadFfprobeBinary()
+		err := downloadFfprobeBinary()
 		if err != nil {
 			log.Fatalf("failed to download ffprobe binary: %v", err)
 		}
