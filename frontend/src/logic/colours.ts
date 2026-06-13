@@ -21,13 +21,21 @@ export function resetAccentColour() {
 
 export async function setAccentFromImage(imageElement: HTMLImageElement): Promise<void> {
   const options: ExtractionOptions = {
-    colorCount: 6,
+    colorCount: 10,
+    quality: 4,
   }
   const palette = await getPalette(imageElement, options) ?? []
   const colours = palette.filter((colour) => {
     const hsl = colour.hsl()
-    return hsl.l > 5 && hsl.l < 95 && hsl.s > 10 && colour.population > 5
-  }).sort((a, b) => b.hsl().s - a.hsl().s)
+    return hsl.l > 5 && hsl.l < 95 && hsl.s > 11 && colour.proportion > 0.1
+  }).sort((a, b) => {
+    // weight saturation by 1.5, proportion by 1.0
+    const aHsl = a.hsl()
+    const bHsl = b.hsl()
+    const aScore = aHsl.s * 1.5 + a.proportion * 1.0
+    const bScore = bHsl.s * 1.5 + b.proportion * 1.0
+    return bScore - aScore
+  })
 
   const newColour = colours.length > 0 ? colours[0]?.toString() : accentColour.value
 
