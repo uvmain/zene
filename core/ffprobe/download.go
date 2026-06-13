@@ -30,12 +30,12 @@ func setLatestFfprobeDownloadUrl() error {
 	case "linux":
 		switch runtime.GOARCH {
 		case "amd64":
-			targetUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
+			targetUrl = "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz"
 			ext = ".tar.xz"
 			fileName = "ffprobe.tar.xz"
 			return nil
 		case "arm64":
-			targetUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz"
+			targetUrl = "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-arm64-static.tar.xz"
 			ext = ".tar.xz"
 			fileName = "ffprobe.tar.xz"
 			return nil
