@@ -19,6 +19,10 @@ const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200, artUpdatedTime.value)
 })
 
+const artistRoute = computed(() => {
+  return `/artists/${props.artist.id}`
+})
+
 function actOnUpdatedArt() {
   showChangeArtModal.value = false
   cacheBustArt(`${modelArtist.value.id}`)
@@ -46,7 +50,7 @@ function actOnUpdatedArt() {
             </div>
             <Genres v-if="genres.length > 0" :genre-strings="genres" :row-limit="1" />
             <div class="mt-2 flex flex-row gap-8">
-              <PlayButton class="flex justify-start" :artist="modelArtist" />
+              <PlayButton class="flex justify-start" :artist="modelArtist" :playing-route="artistRoute" />
               <Fave v-model="isStarred" :musicbrainz-id="modelArtist.id" />
               <Rating v-model="modelArtist.userRating" :musicbrainz-id="modelArtist.id" />
               <ChangeArtIcon @click="showChangeArtModal = true" />

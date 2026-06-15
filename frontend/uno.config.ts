@@ -1,4 +1,4 @@
-import { defineConfig, presetWind4, transformerDirectives, transformerVariantGroup } from 'unocss'
+import { defineConfig, presetAttributify, presetWind4, transformerDirectives, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   shortcuts: {
@@ -62,6 +62,9 @@ export default defineConfig({
         900: 'hsl(from var(--main-colour) h 70% 10%)',
         950: 'hsl(from var(--main-colour) h 70% 5%)',
       },
+      hero: {
+        400: 'hsl(from var(--hero-colour) h 70% 60%)',
+      },
     },
   },
   presets: [
@@ -70,6 +73,7 @@ export default defineConfig({
         reset: true,
       },
     }),
+    presetAttributify(),
   ],
   transformers: [
     transformerDirectives(),

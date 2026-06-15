@@ -51,12 +51,12 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
         'bg-gradient-to-r from-main-500/40 via-main-500/20 corner-cut': isTrackPlaying,
         'corner-cut': trackIndex === 0,
       }"
-      @click="handlePlay(track)"
+      @click="handlePlay(track, route.path)"
     >
       <!-- track number and play button -->
       <div class="flex items-center justify-center relative">
         <div class="opacity-100 translate-x-0 transition-all duration-300 relative group-hover:(opacity-0 translate-x-[1rem])">
-          <div v-if="!route.path.startsWith('/artists/') && route.path !== '/queue'">
+          <div v-if="!route.path.startsWith('/artists/')">
             <div v-if="track.discNumber > 1" class="text-sm text-muted opacity-40 bottom-1px left--4 absolute">
               {{ track.discNumber }}:
             </div>
