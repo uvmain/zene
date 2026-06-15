@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import { fetchAlbums } from '~/logic/backendFetch'
+import { setHeroColourFromImage } from '~/logic/colours'
 import { artSizes, cacheBustArt, getCoverArtUrl, onImageError, parseReleaseDate } from '~/logic/common'
 import { albumsStore } from '~/stores/main'
 
@@ -67,8 +68,12 @@ const date = computed(() => {
   }
 })
 
+const albumRoute = computed(() => {
+  return `/albums/${currentAlbum.value.id}`
+})
+
 function navigateAlbum() {
-  router.push(`/albums/${currentAlbum.value.id}`)
+  router.push(albumRoute.value)
 }
 
 function navigateArtist() {
@@ -89,6 +94,11 @@ watch(() => props.album, (newAlbum) => {
     getRandomAlbums()
   }
 }, { immediate: true })
+
+function onImageLoad(event: Event) {
+  const target = event.target as HTMLImageElement
+  setHeroColourFromImage(target)
+}
 
 onBeforeMount(async () => {
   if (!props.album) {
@@ -115,6 +125,7 @@ onBeforeMount(async () => {
               loading="lazy"
               @error="onImageError"
               @click="navigateAlbum"
+              @load="onImageLoad"
             >
             <div class="text-left flex flex-col gap-1 justify-center lg:gap-4">
               <div class="text-2xl font-bold link line-clamp-1 lg:text-4xl" @click="navigateAlbum()">
@@ -128,7 +139,7 @@ onBeforeMount(async () => {
               </div>
               <Genres v-if="albumGenres.length > 0" :genre-strings="albumGenres" :row-limit="1" />
               <div class="flex flex-row gap-4 lg:gap-8">
-                <PlayButton class="flex justify-start" :album="currentAlbum" />
+                <PlayButton class="flex justify-start" :album="currentAlbum" :playing-route="albumRoute" :hero="true" />
                 <Fave v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
                 <Rating v-model="currentAlbum.userRating" :musicbrainz-id="currentAlbum.id" />
                 <ChangeArtIcon @click="showChangeArtModal = true" />

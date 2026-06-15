@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
+import { setHeroColourFromImage } from '~/logic/colours'
 import { artSizes, getCoverArtUrl, onImageError } from '~/logic/common'
 
 const props = defineProps({
@@ -53,8 +54,17 @@ const genreArtists = computed(() => {
   return artistCounts.sort((a, b) => b.count - a.count)
 })
 
+const genreRoute = computed(() => {
+  return `/genres/${props.genre}`
+})
+
 function navigateToArtist(artist: string) {
   router.push(`/artists/${artist}`)
+}
+
+function onImageLoad(event: Event) {
+  const target = event.target as HTMLImageElement
+  setHeroColourFromImage(target)
 }
 
 onBeforeMount(() => {
@@ -98,7 +108,13 @@ onUnmounted(() => {
               </ZButton>
             </div>
             <div class="mt-2 flex flex-row gap-8">
-              <PlayButton class="flex justify-start" />
+              <PlayButton :playing-route="genreRoute" class="fade flex justify-start" :hero="true" />
+              <img
+                :src="coverArtUrl"
+                class="hidden"
+                loading="eager"
+                @load="onImageLoad"
+              />
             </div>
           </div>
         </div>

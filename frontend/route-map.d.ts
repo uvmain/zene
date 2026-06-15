@@ -136,13 +136,6 @@ declare module 'vue-router/auto-routes' {
       { episode: ParamValue<false> },
       | never
     >,
-    '/queue': RouteRecordInfo<
-      '/queue',
-      '/queue',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/radio': RouteRecordInfo<
       '/radio',
       '/radio',
@@ -317,14 +310,6 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | 'episode'
-    }
-    'src/pages/queue.vue': {
-      routes:
-        | '/queue'
-      views:
-        | never
-      pathParamNames:
-        | never
     }
     'src/pages/radio.vue': {
       routes:
