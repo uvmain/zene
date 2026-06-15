@@ -37,7 +37,7 @@ export async function setHeroColourFromImage(imageElement: HTMLImageElement): Pr
     return bScore - aScore
   })
 
-  const newColour = colours.length > 0 ? colours[0]?.toString() : accentColour.value
+  const newColour = colours.length > 0 ? colours[0]?.toString() : 'hsl(from var(--main-colour) h s l)'
 
   document.documentElement.style.setProperty('--hero-colour', newColour)
 }
