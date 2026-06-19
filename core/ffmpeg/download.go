@@ -1,81 +1,100 @@
 package ffmpeg
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
+	"path/filepath"
 	"runtime"
 	"zene/core/config"
+	"zene/core/io"
+	"zene/core/logger"
 	"zene/core/net"
 )
 
-const (
-	fileName = "ffmpeg.zip"
-	mainUrl  = "https://ffbinaries.com/api/v1/version/latest"
-)
-
 var (
-	target   string
-	platform = runtime.GOOS
-	arch     = runtime.GOARCH
+	targetUrl string
+	platform  = runtime.GOOS
+	arch      = runtime.GOARCH
+	ext       string
+	fileName  string
 )
 
-func downloadFfmpegBinary() error {
-	if err := getArch(); err != nil {
-		return err
-	}
+func setLatestFfmpegDownloadUrl() error {
+	switch runtime.GOOS {
 
-	if err := downloadFfBinariesFile(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func getArch() error {
-	switch platform {
-	case "windows":
-		if arch == "amd64" {
-			target = "windows-64"
-		} else {
-			target = "windows-32"
-		}
 	case "darwin":
-		target = "osx-64"
+		targetUrl = "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip"
+		fileName = "ffmpeg.zip"
+		ext = ".zip"
+		return nil
+
 	case "linux":
-		if arch == "amd64" {
-			target = "linux-64"
-		} else {
-			target = "linux-32"
+		switch runtime.GOARCH {
+		case "amd64":
+			targetUrl = "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz"
+			ext = ".tar.xz"
+			fileName = "ffmpeg.tar.xz"
+			return nil
+		case "arm64":
+			targetUrl = "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-arm64-static.tar.xz"
+			ext = ".tar.xz"
+			fileName = "ffmpeg.tar.xz"
+			return nil
 		}
-	default:
-		return fmt.Errorf("unsupported platform/architecture")
+
+	case "windows":
+		switch runtime.GOARCH {
+		case "amd64":
+			targetUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
+			ext = ".zip"
+			fileName = "ffmpeg.zip"
+			return nil
+		case "arm64":
+			targetUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-winarm64-gpl.zip"
+			ext = ".zip"
+			fileName = "ffmpeg.zip"
+			return nil
+		}
 	}
+
+	return fmt.Errorf("unsupported platform %s/%s", runtime.GOOS, runtime.GOARCH)
+}
+
+func DownloadFfmpegBinary() error {
+	if err := setLatestFfmpegDownloadUrl(); err != nil {
+		return err
+	}
+
+	if err := downloadFfmpeg(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func downloadFfBinariesFile() error {
-	response, err := http.Get(mainUrl)
+func downloadFfmpeg() error {
+	targetPath := filepath.Join(config.TempDirectory, fileName)
+	// delete file if it already exists
+	if io.FileExists(targetPath) {
+		io.Cleanup(targetPath)
+	}
+	err := net.DownloadBinaryFile(targetUrl, targetPath)
 	if err != nil {
-		return fmt.Errorf("downloading ffmpeg from %s: %v", mainUrl, err)
+		return fmt.Errorf("downloading ffmpeg binary: %v", err)
 	}
-	defer response.Body.Close()
-
-	type BinInfo struct {
-		Bin map[string]struct {
-			FFMpeg string `json:"ffmpeg"`
-		} `json:"bin"`
+	if !io.FileExists(targetPath) {
+		return fmt.Errorf("ffmpeg binary file not found after download: %s", targetPath)
 	}
+	logger.Printf("ffmpeg download from %s", targetUrl)
 
-	var info BinInfo
-	if err := json.NewDecoder(response.Body).Decode(&info); err != nil {
-		return fmt.Errorf("decoding JSON response from %s: %v", mainUrl, err)
-	}
+	filters := []string{"ffmpeg", "ffmpeg.exe"}
 
-	url := info.Bin[target].FFMpeg
-	if url == "" {
-		return fmt.Errorf("ffmpeg not found at %s", mainUrl)
+	switch ext {
+	case ".zip":
+		io.Unzip(targetPath, config.LibraryDirectory, filters)
+	case ".tar.xz":
+		io.UnTarXz(targetPath, config.LibraryDirectory, filters)
 	}
 
-	return net.DownloadZip(url, fileName, config.LibraryDirectory, "ffmpeg")
+	io.Cleanup(targetPath)
+	return nil
 }

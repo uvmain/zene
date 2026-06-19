@@ -510,6 +510,24 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
   }
 }
 
+export async function fetchFfVersions(): Promise<{ ffmpeg_version: string, ffprobe_version: string }> {
+  const formData = new FormData()
+  formData.append('apiKey', apiKey.value)
+  formData.append('f', 'json')
+  formData.append('v', '1.16.0')
+  formData.append('c', 'zene-frontend')
+  const response = await fetch('/rest/getffversions.view', {
+    method: 'POST',
+    body: formData,
+  })
+  const data = await response.json() as { ffmpeg_version: string, ffprobe_version: string }
+  return data
+}
+
+export async function downloadNewFfBinaries(): Promise<Types.SubsonicResponse> {
+  return openSubsonicFetchRequest<Types.SubsonicResponse>('downloadffbinaries')
+}
+
 export async function useServerSentEventsForArtistArt(artistId: string, onMessage: (data: ArtSseMessage) => void, onError: (error: any) => void, onComplete: () => void): Promise<EventSource> {
   const params = new URLSearchParams()
   params.append('apiKey', apiKey.value)

@@ -20,6 +20,7 @@ export const playcountPosted = ref(false)
 export const currentTime = ref(0)
 export const trackUrl = ref('')
 export const previousIndexes = ref<number[]>([])
+export const currentlyPlayingRoute = ref<string>('')
 
 interface QueueTransition {
   track: SubsonicSong
@@ -225,7 +226,7 @@ function getPreviousQueueTransition(): QueueTransition | undefined {
   return undefined
 }
 
-export function handlePlay(track: SubsonicSong) {
+export function handlePlay(track: SubsonicSong, route = '') {
   if (currentQueue.value?.some(queueTrack => queueTrack.id === track.id)) {
     void setCurrentlyPlayingTrack(track)
   }
@@ -234,7 +235,7 @@ export function handlePlay(track: SubsonicSong) {
     void setCurrentlyPlayingTrack(track)
   }
   else {
-    void play({ track })
+    void play({ track, route })
   }
 }
 
@@ -278,9 +279,13 @@ interface PlayOptions {
   album?: SubsonicAlbum
   track?: SubsonicSong
   podcastEpisode?: SubsonicPodcastEpisode
+  route?: string
 }
 
 export async function play(playOptions: PlayOptions) {
+  if (playOptions.route !== undefined && playOptions.route !== currentlyPlayingRoute.value && playOptions.route !== '') {
+    currentlyPlayingRoute.value = playOptions.route
+  }
   if (playOptions.track) {
     await setCurrentlyPlayingTrack(playOptions.track)
   }

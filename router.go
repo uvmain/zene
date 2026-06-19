@@ -69,6 +69,8 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/getpodcastssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcastsServerSentEvents)))
 	apiRouter.Handle("/rest/deleteaudiocache", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteAudioCache)))
 	apiRouter.Handle("/rest/getbutterchurnpresets", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetButterchurnPresets)))
+	apiRouter.Handle("/rest/getffversions", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetFfVersions)))
+	apiRouter.Handle("/rest/downloadffbinaries", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownloadFfBinaries)))
 	/* cSpell:disable */
 
 	// System

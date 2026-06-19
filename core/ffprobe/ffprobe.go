@@ -29,12 +29,17 @@ func InitializeFfprobe(ctx context.Context) {
 		}
 	}
 
-	version, err := exec.CommandContext(ctx, config.FfprobePath, "-version").Output()
+	version, err := GetFfprobeVersion(ctx)
 	if err != nil {
 		log.Fatalf("ffprobe not found at %s: %v", config.FfprobePath, err)
 	} else {
-		logger.Printf("ffprobe version is %v", strings.Split(string(version), "\n")[0])
+		logger.Printf("ffprobe version is %v", version)
 	}
+}
+
+func GetFfprobeVersion(ctx context.Context) (string, error) {
+	version, err := exec.CommandContext(ctx, config.FfprobePath, "-version").Output()
+	return strings.Split(string(version), "\n")[0], err
 }
 
 func GetMetadata(ctx context.Context, audiofilePath string) (types.FileMetadata, error) {

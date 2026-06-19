@@ -41,7 +41,7 @@ func AddUserAgentHeaderToRequest(req *http.Request) {
 	req.Header.Set("User-Agent", userAgent)
 }
 
-func DownloadZip(url string, fileName string, targetDirectory string, fileNameFilter string) error {
+func DownloadZip(url string, fileName string, targetDirectory string, fileNameFilter []string) error {
 	logger.Println("Downloading:", url)
 	response, err := http.Get(url)
 	if err != nil {

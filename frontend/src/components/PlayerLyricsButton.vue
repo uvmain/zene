@@ -36,29 +36,29 @@ onMounted(async () => {
 
 <template>
   <div>
-    <abbr :title="lyricsRef.length > 0 ? 'Show lyrics' : 'No Lyrics Available'">
-      <button
-        id="lyrics"
-        class="text-muted font-semibold outline-none border-none bg-white/0 flex items-center justify-center"
+    <button
+      id="lyrics"
+      :title="lyricsRef.length > 0 ? 'Show lyrics' : 'No Lyrics Available'"
+      class="text-muted font-semibold outline-none border-none bg-white/0 flex items-center justify-center"
+      :class="{
+        'cursor-not-allowed': lyricsRef.length === 0,
+        'cursor-pointer': lyricsRef.length > 0,
+      }"
+      :disabled="lyricsRef.length === 0"
+      @click="showLyrics = !showLyrics"
+    >
+      <icon-nrk-mening
         :class="{
-          'cursor-not-allowed': lyricsRef.length === 0,
-          'cursor-pointer': lyricsRef.length > 0,
+          'footer-icon-disabled': lyricsRef.length === 0,
+          'footer-icon': lyricsRef.length > 0,
         }"
-        :disabled="lyricsRef.length === 0"
-        @click="showLyrics = !showLyrics"
-      >
-        <icon-nrk-mening
-          :class="{
-            'footer-icon-disabled': lyricsRef.length === 0,
-            'footer-icon': lyricsRef.length > 0,
-          }"
-        />
-      </button>
-    </abbr>
+      />
+    </button>
     <LyricsModal
       v-if="showLyrics && currentlyPlayingItem.track"
       :lyrics="lyricsRef"
       :current-seconds="currentTime"
+      :modal-title="currentlyPlayingItem.track?.title"
       @close="showLyrics = false"
     />
   </div>

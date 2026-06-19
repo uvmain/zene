@@ -40,8 +40,12 @@ const coverArtUrl = computed(() => {
   return getCoverArtUrl(`${props.album.id}`, artSizes.size200)
 })
 
+const albumRoute = computed(() => {
+  return `/albums/${props.album.id}`
+})
+
 function navigateAlbum() {
-  router.push(`/albums/${props.album.id}`)
+  router.push(albumRoute.value)
 }
 
 function navigateArtist() {
@@ -62,7 +66,9 @@ function navigateArtist() {
       />
       <PlayButton
         :album="album"
+        :playing-route="albumRoute"
         class="m-auto pr-1 opacity-0 col-span-full row-span-full scale-50 duration-200 z-2 group-hover:opacity-100 group-hover:scale-100"
+        @click.stop
       />
     </div>
     <div>

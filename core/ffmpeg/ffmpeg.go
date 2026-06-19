@@ -19,18 +19,21 @@ func InitializeFfmpeg(ctx context.Context) {
 	if io.FileExists(config.FfmpegPath) {
 		logger.Printf("ffmpeg binary found at %s", config.FfmpegPath)
 	} else {
-		err := downloadFfmpegBinary()
+		err := DownloadFfmpegBinary()
 		if err != nil {
 			log.Fatalf("downloading ffmpeg binary: %v", err)
 		}
 	}
-
-	version, err := exec.CommandContext(ctx, config.FfmpegPath, "-version").Output()
+	version, err := GetFfmpegVersion(ctx)
 	if err != nil {
 		log.Fatalf("ffmpeg not found at %s: %v", config.FfmpegPath, err)
-	} else {
-		logger.Printf("ffmpeg version is %v", strings.Split(string(version), "\n")[0])
 	}
+	logger.Printf("ffmpeg version is %v", strings.Split(version, "\n")[0])
+}
+
+func GetFfmpegVersion(ctx context.Context) (string, error) {
+	version, err := exec.CommandContext(ctx, config.FfmpegPath, "-version").Output()
+	return strings.Split(string(version), "\n")[0], err
 }
 
 func GetCoverArtFromTrack(ctx context.Context, audiofilePath string) ([]byte, error) {

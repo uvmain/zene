@@ -18,8 +18,12 @@ const loading = computed<LoadingAttribute>(() => {
   return props.index < 10 ? 'eager' : 'lazy'
 })
 
+const artistRoute = computed(() => {
+  return `/artists/${props.artist.id ?? props.artist.musicBrainzId}`
+})
+
 function navigateArtist() {
-  router.push(`/artists/${props.artist.id ?? props.artist.musicBrainzId}`)
+  router.push(artistRoute.value)
 }
 </script>
 
@@ -36,7 +40,9 @@ function navigateArtist() {
       />
       <PlayButton
         :artist="artist"
+        :playing-route="artistRoute"
         class="m-auto pr-1 opacity-0 col-span-full row-span-full scale-50 duration-200 z-2 group-hover:opacity-100 group-hover:scale-100"
+        @click.stop
       />
     </div>
     <div>

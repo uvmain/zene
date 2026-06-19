@@ -231,3 +231,11 @@ func FilterArray[T any](s []T, f func(T) (bool, error)) ([]T, error) {
 	}
 	return result, nil
 }
+
+func LowercaseArray(originalStringArray []string) []string {
+	var result []string
+	for _, originalString := range originalStringArray {
+		result = append(result, strings.ToLower(originalString))
+	}
+	return result
+}

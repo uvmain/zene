@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Self Hosted Music Server",
   "main": "index.js",
-  "packageManager": "pnpm@11.5.3",
+  "packageManager": "pnpm@11.6.0",
   "workspaces": [
     "./frontend"
   ],
@@ -29,7 +29,7 @@
     "lint:backend": "golangci-lint run",
     "lint": "pnpm lint:frontend && pnpm lint:backend",
     "cspell": "cspell \"**/*.{go,ts,js,vue}\"",
-    "deps:update": "go get -u && pnpm update -r --latest"
+    "deps:update": "go get -u && go mod tidy && pnpm update -r --latest"
   },
   "repository": {
     "type": "git",

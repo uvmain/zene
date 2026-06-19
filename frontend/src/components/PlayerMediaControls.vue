@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onKeyStroke } from '@vueuse/core'
-import { getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback } from '~/logic/playbackQueue'
+import { currentlyPlayingRoute, getRandomTracks, handleNextTrack, handlePreviousTrack, isPlaying, stopPlayback, togglePlayback } from '~/logic/playbackQueue'
 import { toggleRepeat, toggleShuffle } from '~/logic/playerUtils'
 import { repeatStatus, shuffleEnabled } from '~/stores/main'
 
@@ -13,8 +13,9 @@ const route = useRoute()
 
 async function handleGetRandomTracks(count = 1000) {
   await getRandomTracks(count)
-  if (route.path !== '/queue' && route.path !== '/visualizer') {
-    router.push('/queue')
+  if (route.path !== '/tracks' && route.path !== '/visualizer') {
+    currentlyPlayingRoute.value = '/tracks'
+    router.push('/tracks')
   }
 }
 
