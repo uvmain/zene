@@ -49,7 +49,7 @@ function actOnUpdatedArt() {
               {{ artist.name }}
             </div>
             <Genres v-if="genres.length > 0" :genre-strings="genres" :row-limit="1" />
-            <div class="mt-2 flex flex-row gap-8">
+            <div class="mt-2 flex flex-row gap-4 lg:gap-6">
               <PlayButton class="flex justify-start" :artist="modelArtist" :playing-route="artistRoute" />
               <Fave v-model="isStarred" :musicbrainz-id="modelArtist.id" />
               <Rating v-model="modelArtist.userRating" :musicbrainz-id="modelArtist.id" />

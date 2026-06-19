@@ -138,7 +138,7 @@ onBeforeMount(async () => {
                 {{ artist }}
               </div>
               <Genres v-if="albumGenres.length > 0" :genre-strings="albumGenres" :row-limit="1" />
-              <div class="flex flex-row gap-4 lg:gap-8">
+              <div class="flex flex-row gap-4 lg:gap-6">
                 <PlayButton class="flex justify-start" :album="currentAlbum" :playing-route="albumRoute" :hero="true" />
                 <Fave v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
                 <Rating v-model="currentAlbum.userRating" :musicbrainz-id="currentAlbum.id" />
