@@ -40,3 +40,4 @@ export const artistsStore = useLocalStorage<SubsonicArtist[]>('artistsStore', []
 export const volumeStore = useLocalStorage<string>('volumeStore', '1')
 export const accentColour = useLocalStorage<string>('accentColour', 'hsl(22 95% 60%)')
 export const autoSwitchColours = useLocalStorage<boolean>('autoSwitchColours', true)
+export const overrideBackendUrl = useLocalStorage<string>('overrideBackendUrl', '')
