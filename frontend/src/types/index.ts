@@ -17,3 +17,8 @@ export interface PlayItem {
   track?: SubsonicSong
   podcastEpisode?: SubsonicPodcastEpisode
 }
+
+export interface FfVersionsResponse {
+  ffmpeg_version: string
+  ffprobe_version: string
+}

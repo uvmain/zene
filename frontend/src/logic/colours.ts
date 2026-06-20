@@ -2,7 +2,7 @@ import type { Color, ExtractionOptions } from 'colorthief'
 import { getPalette } from 'colorthief'
 import { accentColour } from '~/stores/main'
 
-const DEFAULT_COLOUR: string = 'hsl(22 95% 60%)' as const
+const DEFAULT_COLOUR: string = 'hsla(22 95% 60% / 1)' as const
 
 export function initializeAccentColour() {
   document.documentElement.style.setProperty('--main-colour', accentColour.value)

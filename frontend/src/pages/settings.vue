@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import type { StreamQuality } from '~/stores/main'
+import type { FfVersionsResponse } from '~/types'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, downloadNewFfBinaries, fetchFfVersions, openSubsonicFetchRequest } from '~/logic/backendFetch'
-import { initializeAccentColour, resetAccentColour, updateAccentColour } from '~/logic/colours'
+import { initializeAccentColour, resetAccentColour } from '~/logic/colours'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
 import * as Store from '~/stores/main'
-
-interface FfVersions {
-  ffmpeg_version: string
-  ffprobe_version: string
-}
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -18,7 +14,7 @@ const router = useRouter()
 const forceTags = ref(false)
 const forceArt = ref(false)
 const showLogoutModal = ref(false)
-const ffVersions = ref<FfVersions | null>(null)
+const ffVersions = ref<FfVersionsResponse | null>(null)
 
 const streamQualitiesArray = computed<(string | number)[]>(() => {
   return Object.values(Store.streamQualities)
@@ -26,6 +22,29 @@ const streamQualitiesArray = computed<(string | number)[]>(() => {
 
 const currentStreamQuality = computed(() => {
   return Store.streamQuality.value
+})
+
+function colourToHex(colour: string): string {
+  const parser = new Option().style
+  parser.color = ''
+  parser.color = colour
+
+  const rgbMatch = parser.color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+  if (!rgbMatch) {
+    return '#fa742f'
+  }
+
+  const [r, g, b] = rgbMatch.slice(1).map(value => Number.parseInt(value, 10))
+  const toHex = (value: number) => value.toString(16).padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+const accentColourInputValue = computed({
+  get: () => colourToHex(Store.accentColour.value),
+  set: (value: string) => {
+    Store.accentColour.value = value
+    initializeAccentColour()
+  },
 })
 
 watch(Store.autoSwitchColours, (newValue) => {
@@ -51,8 +70,7 @@ function setStreamQuality(quality: StreamQuality) {
 }
 
 async function getFfVersions() {
-  const versions = await fetchFfVersions()
-  ffVersions.value = versions
+  ffVersions.value = await fetchFfVersions()
 }
 
 async function logOut() {
@@ -111,16 +129,15 @@ onMounted(() => {
 
     <div class="flex flex-row gap-2 items-center">
       <label for="auto-switch-colours" class="flex gap-x-2 items-center">
-        <input id="auto-switch-colours" v-model="Store.autoSwitchColours" type="checkbox" class="accent-main-400 size-4">
+        <input id="auto-switch-colours" v-model="Store.autoSwitchColours.value" type="checkbox" class="accent-main-400 size-4">
         <span class="text-nowrap">Auto Switch Colours</span>
       </label>
       <input
         id="accent"
-        v-model="Store.accentColour"
+        v-model="accentColourInputValue"
         type="color"
         name="accent"
         colorspace="display-p3"
-        @input="updateAccentColour"
       />
       <label for="accent">Accent color</label>
       <ZButton @click="resetAccentColour()">

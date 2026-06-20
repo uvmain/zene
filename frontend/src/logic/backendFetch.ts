@@ -1,4 +1,4 @@
-import type { ButterchurnPreset, SearchResult } from '~/types'
+import type { ButterchurnPreset, FfVersionsResponse, SearchResult } from '~/types'
 import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
@@ -516,7 +516,7 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
   }
 }
 
-export async function fetchFfVersions(): Promise<{ ffmpeg_version: string, ffprobe_version: string }> {
+export async function fetchFfVersions(): Promise<FfVersionsResponse> {
   const formData = new FormData()
   formData.append('apiKey', apiKey.value)
   formData.append('f', 'json')
