@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { isMobileNavOpen } from '~/logic/navbar'
-import { currentlyPlayingRoute } from '~/logic/playbackQueue'
+import { nowPlayingRoute } from '~/logic/playbackQueue'
 import { apiKey } from '~/stores/main'
 import NavOpenerMobile from './NavOpenerMobile.vue'
 </script>
@@ -28,62 +28,62 @@ import NavOpenerMobile from './NavOpenerMobile.vue'
         <nav class="flex flex-col gap-y-1rem">
           <NavLink route-name="Home" route-prop="/">
             <template #icon>
-              <icon-nrk-home class="text-primary mx-2 size-4" />
+              <icon-nrk-home class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Search" route-prop="/search">
             <template #icon>
-              <icon-nrk-search class="text-primary mx-2 size-4" />
+              <icon-nrk-search class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Albums" route-prop="/albums">
             <template #icon>
-              <icon-nrk-media-direkte-notlive class="text-primary mx-2 size-4" />
+              <icon-nrk-media-direkte-notlive class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Artists" route-prop="/artists">
             <template #icon>
-              <icon-nrk-hardware-microphone class="text-primary mx-2 size-4" />
+              <icon-nrk-hardware-microphone class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Genres" route-prop="/genres">
             <template #icon>
-              <icon-nrk-category class="text-primary mx-2 size-4" />
+              <icon-nrk-category class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Tracks" route-prop="/tracks">
             <template #icon>
-              <icon-nrk-media-quaver class="text-primary mx-2 size-4" />
+              <icon-nrk-media-quaver class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Playlists" route-prop="/playlists">
             <template #icon>
-              <icon-nrk-media-playlist class="text-primary mx-2 size-4" />
+              <icon-nrk-media-playlist class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Radio" route-prop="/radio">
             <template #icon>
-              <icon-nrk-hardware-radio class="text-primary mx-2 size-4" />
+              <icon-nrk-hardware-radio class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Podcasts" route-prop="/podcasts">
             <template #icon>
-              <icon-nrk-dialogue class="text-primary mx-2 size-4" />
+              <icon-nrk-dialogue class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Visualizer" route-prop="/visualizer">
             <template #icon>
-              <icon-nrk-media-soundwave class="text-primary mx-2 size-4" />
+              <icon-nrk-media-soundwave class="navicon" />
             </template>
           </NavLink>
           <NavLink route-name="Settings" route-prop="/settings">
             <template #icon>
-              <icon-nrk-settings class="text-primary mx-2 size-4" />
+              <icon-nrk-settings class="navicon" />
             </template>
           </NavLink>
-          <NavLink route-name="Now Playing" :route-prop="currentlyPlayingRoute" :disable-indicator="true">
+          <NavLink route-name="Now Playing" :route-prop="nowPlayingRoute" :disable-indicator="true">
             <template #icon>
-              <icon-nrk-bulleted-list class="text-primary mx-2 size-4" />
+              <icon-nrk-bulleted-list class="navicon" />
             </template>
           </NavLink>
         </nav>
@@ -97,5 +97,8 @@ import NavOpenerMobile from './NavOpenerMobile.vue'
 <style scoped lang="css">
 :deep(a) {
   text-decoration: none;
+}
+.navicon {
+  @apply mx-2 size-4 text-muted;
 }
 </style>

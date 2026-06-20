@@ -15,9 +15,9 @@ onMounted(() => {
 <template>
   <div id="volume-range-input" class="flex flex-row gap-2 cursor-pointer items-center lg:gap-2">
     <button :title="currentVolume === 0 ? 'Unmute' : 'Mute'" class="flex flex-row items-center" @click="toggleMute()">
-      <icon-nrk-media-volume-3 v-if="currentVolume > 0.66" class="text-sm text-muted sm:text-sm" />
-      <icon-nrk-media-volume-2 v-else-if="currentVolume > 0.33" class="text-sm text-muted sm:text-sm" />
-      <icon-nrk-media-volume-1 v-else class="text-sm text-muted sm:text-sm" />
+      <icon-nrk-media-volume-3 v-if="currentVolume > 0.66" class="footer-icon" />
+      <icon-nrk-media-volume-2 v-else-if="currentVolume > 0.33" class="footer-icon" />
+      <icon-nrk-media-volume-1 v-else class="footer-icon" />
     </button>
     <input
       type="range"

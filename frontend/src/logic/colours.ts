@@ -31,21 +31,6 @@ function getPrimaryColour(colours: Color[]): string {
   return colourArray[0]?.toString() ?? null
 }
 
-export async function setHeroColourFromImage(imageElement: HTMLImageElement): Promise<void> {
-  const options: ExtractionOptions = {
-    colorCount: 10,
-    quality: 10,
-    worker: true,
-    ignoreWhite: true,
-    minSaturation: 0.1,
-  }
-  const palette = await getPalette(imageElement, options) ?? []
-  const primaryColour = getPrimaryColour(palette)
-  const newColour = primaryColour ?? 'hsl(from var(--main-colour) h s l)'
-
-  document.documentElement.style.setProperty('--hero-colour', newColour)
-}
-
 export async function setAccentFromImage(imageElement: HTMLImageElement): Promise<void> {
   const options: ExtractionOptions = {
     colorCount: 10,

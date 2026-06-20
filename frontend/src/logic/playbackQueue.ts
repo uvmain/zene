@@ -18,9 +18,8 @@ export const currentQueuePosition = ref<number>(0)
 export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
 export const currentTime = ref(0)
-export const trackUrl = ref('')
 export const previousIndexes = ref<number[]>([])
-export const currentlyPlayingRoute = ref<string>('')
+export const nowPlayingRoute = ref<string>('')
 
 interface QueueTransition {
   track: SubsonicSong
@@ -54,7 +53,6 @@ function setHalfwayPoint(playItem: PlayItem) {
 
 function applyPlaybackState(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
   currentlyPlayingItem.value = playItem
-  trackUrl.value = src
   playcountPosted.value = false
   setHalfwayPoint(playItem)
 
@@ -283,8 +281,8 @@ interface PlayOptions {
 }
 
 export async function play(playOptions: PlayOptions) {
-  if (playOptions.route !== undefined && playOptions.route !== currentlyPlayingRoute.value && playOptions.route !== '') {
-    currentlyPlayingRoute.value = playOptions.route
+  if (playOptions.route !== undefined && playOptions.route !== nowPlayingRoute.value && playOptions.route !== '') {
+    nowPlayingRoute.value = playOptions.route
   }
   if (playOptions.track) {
     await setCurrentlyPlayingTrack(playOptions.track)
@@ -365,7 +363,6 @@ export function stopPlayback() {
   if (audioElement.value) {
     if (!isPlaying.value || audioElement.value.currentTime === 0) {
       currentlyPlayingItem.value = {}
-      trackUrl.value = ''
       clearQueue()
       clearActiveAudio()
     }

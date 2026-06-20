@@ -23,7 +23,7 @@ const loggedIn = computed(() => {
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />
-        <PlayerVolumeSlider class="hidden lg:flex" />
+        <PlayerVolumeSlider class="ml-2 hidden lg:flex" />
       </div>
     </div>
   </footer>
