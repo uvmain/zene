@@ -76,9 +76,9 @@ onMounted(async () => {
 
 <style lang="css" scoped>
 .vue-recycle-scroller {
-  scrollbar-color: hsl(from var(--main-colour) h 40% 65%) var(--colors-background-200);
+  scrollbar-color: hsl(from var(--main-colour) h 30% 55%) hsl(from var(--main-colour) h 5% 85%);
   .dark & {
-    scrollbar-color: hsl(from var(--main-colour) h 40% 35%) var(--colors-background-800);
+    scrollbar-color: hsl(from var(--main-colour) h 30% 45%) hsl(from var(--main-colour) h 5% 25%);
   }
 }
 </style>
