@@ -1,4 +1,5 @@
 import { debugLog } from '~/logic/logger'
+import { currentVolume } from '~/logic/volume'
 
 export interface CastEventValue<T> { value?: T }
 
@@ -20,7 +21,7 @@ export function isBrowserChrome(): boolean {
     && /Google Inc/.test(navigator.vendor)
 }
 
-export function initialiseChromecast() {
+export async function initialiseChromecast() {
   isChrome.value = isBrowserChrome()
   if (!isChrome.value) {
     debugLog('[chromecast] - initialiseChromecast called but browser is not Chrome, exiting')
@@ -33,6 +34,7 @@ export function initialiseChromecast() {
       }, 50)
     }
   }
+  await cast.framework.CastContext.getInstance().requestSession()
   connected.value = cast.framework.CastContext.getInstance().getCurrentSession() !== null
 }
 
@@ -49,6 +51,7 @@ export function initializeCastApi() {
   })
   isChromecastReady.value = true
   setPlayerEvents()
+  setVolume(currentVolume.value)
 }
 
 export async function connect() {
@@ -232,7 +235,7 @@ export function setVolume(value: number) {
   }
 }
 
-export function setMute() {
+export function toggleMute() {
   debugLog(`[chromecast:setMute] - ${!muted.value}`)
   muted.value = !muted.value
   if (muted.value) {

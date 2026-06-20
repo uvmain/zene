@@ -15,7 +15,7 @@ export default defineConfig({
     'background-3': 'dark:bg-background-700 bg-background-300',
     'background-grad-2': 'dark:from-background-800 from-background-200 bg-gradient-to-r',
     'z-button': 'border-1 border-solid border-primary relative font-semibold corner-cut flex cursor-pointer items-center justify-center cursor-pointer px-3 py-1 text-sm outline-none transition-all duration-200 text-muted background-2 hover:(from-main-200 text-primary bg-gradient-to-br border-main-400)',
-    'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:(scale-130 text-main-500) lg:text-xl active:text-main-500',
+    'footer-icon': 'scale-100 text-lg text-muted transition-all duration-100 hover:(scale-130 text-main-400) lg:text-xl active:text-main-400',
     'footer-icon-disabled': 'scale-100 text-lg text-muted lg:text-xl opacity-50',
     'footer-icon-on': 'scale-110 text-lg text-main-400 transition-all duration-100 hover:(scale-130) lg:text-xl',
     'track-grid': 'items-center gap-4 grid grid-cols-[40px_minmax(0,_1fr)_40px_20px] md:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_60px_20px] lg:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_20px] xl:grid-cols-[40px_minmax(0,_1.2fr)_40px_minmax(0,_0.9fr)_minmax(0,_0.9fr)_60px_40px_40px_20px]',

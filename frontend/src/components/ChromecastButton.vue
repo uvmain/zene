@@ -4,6 +4,14 @@ import { debugLog } from '~/logic/logger'
 
 const isChrome = ref(false)
 
+const chromecastDuration = computed(() => {
+  return ChromeCast.duration.value
+})
+
+const chromecastConnected = computed(() => {
+  return ChromeCast.connected.value
+})
+
 onMounted(() => {
   isChrome.value = ChromeCast.isBrowserChrome()
   if (isChrome.value) {
@@ -18,32 +26,32 @@ onMounted(() => {
 
 <template>
   <div v-if="isChrome" class="flex items-center justify-center">
-    <button v-if="ChromeCast.connected.value" class="footer-icon-on" @click="ChromeCast.connect">
+    <button v-if="chromecastConnected" class="footer-icon-on" @click="ChromeCast.connect">
       <icon-nrk-media-chromecast-active />
     </button>
     <button v-else class="footer-icon" @click="ChromeCast.connect">
       <icon-nrk-media-chromecast />
     </button>
-    <button v-if="ChromeCast.connected.value" @click="ChromeCast.loadMedia">
+    <button v-if="chromecastConnected" @click="ChromeCast.loadMedia">
       Load Media
     </button>
-    <button v-if="ChromeCast.connected.value" @click="ChromeCast.stop">
+    <button v-if="chromecastConnected" @click="ChromeCast.stop">
       Stop
     </button>
   </div>
 
-  <div v-if="ChromeCast.connected.value">
-    <button v-if="ChromeCast.playing.value" @click="ChromeCast.pause">
+  <div v-if="chromecastConnected">
+    <button v-if="ChromeCast.playing" @click="ChromeCast.pause">
       pause_arrow
     </button>
     <button v-else @click="ChromeCast.play">
       play_arrow
     </button>
-    <input type="range" step="any" min="0" :max="ChromeCast.duration.value" :value="ChromeCast.currentTime.value" @change="ChromeCast.onSeekChange">
-    <button v-if="ChromeCast.muted.value" @click="ChromeCast.setMute">
+    <input type="range" step="any" min="0" :max="chromecastDuration" :value="ChromeCast.currentTime" @change="ChromeCast.onSeekChange">
+    <button v-if="ChromeCast.muted" @click="ChromeCast.toggleMute">
       volume_mute
     </button>
-    <button v-else @click="ChromeCast.setMute">
+    <button v-else @click="ChromeCast.toggleMute">
       volume_up
     </button>
     <input

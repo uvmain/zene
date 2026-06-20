@@ -108,7 +108,7 @@ onMounted(() => {
       </label>
     </div>
     <ZButton @click="toggleDebug()">
-      <span class="text-nowrap">Debug: {{ Store.debugEnabled ? 'On' : 'Off' }}</span>
+      <span class="text-nowrap">Debug: {{ Store.debugEnabled.value ? 'On' : 'Off' }}</span>
     </ZButton>
     <ZButton @click="toggleDark()">
       <span class="text-nowrap">Dark Mode: {{ isDark ? 'On' : 'Off' }}</span>

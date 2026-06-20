@@ -51,7 +51,9 @@ function setHalfwayPoint(playItem: PlayItem) {
   currentHalfwayPoint = 0
 }
 
-function applyPlaybackState(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
+async function startPlayback(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
+  const { autoPlay = true, restartCurrentTrack = false } = options
+
   currentlyPlayingItem.value = playItem
   playcountPosted.value = false
   setHalfwayPoint(playItem)
@@ -63,22 +65,6 @@ function applyPlaybackState(playItem: PlayItem, src: string, options: PlaybackOp
   if (options.previousIndexes) {
     previousIndexes.value = [...options.previousIndexes]
   }
-}
-
-async function resolvePodcastUrl(episode: SubsonicPodcastEpisode): Promise<string> {
-  const stored = await episodeIsStored(episode.streamId)
-  if (!stored) {
-    return getAuthenticatedTrackUrl(episode.streamId, true)
-  }
-
-  const blob = await getStoredEpisode(episode.streamId)
-  return URL.createObjectURL(blob)
-}
-
-async function startPlayback(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
-  const { autoPlay = true, restartCurrentTrack = false } = options
-
-  applyPlaybackState(playItem, src, options)
 
   if (!autoPlay) {
     return
@@ -246,7 +232,14 @@ export async function setCurrentlyPlayingTrack(track: SubsonicSong, autoPlay = t
 }
 
 export async function setCurrentlyPlayingPodcast(episode: SubsonicPodcastEpisode) {
-  const src = await resolvePodcastUrl(episode)
+  const stored = await episodeIsStored(episode.streamId)
+  if (!stored) {
+    return getAuthenticatedTrackUrl(episode.streamId, true)
+  }
+
+  const blob = await getStoredEpisode(episode.streamId)
+  const src = URL.createObjectURL(blob)
+
   clearQueue()
   await startPlayback({ podcastEpisode: episode }, src)
 }
@@ -334,16 +327,6 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
 export function togglePlayback() {
   if (!audioElement.value) {
     console.error('Audio element not found')
-    return
-  }
-
-  if (currentQueue.value.length === 0 && routeTracks.value.length) {
-    setCurrentQueue(routeTracks.value)
-    return
-  }
-
-  if (currentQueue.value.length > 0 && !currentlyPlayingItem.value.track && !currentlyPlayingItem.value.podcastEpisode) {
-    setCurrentQueue(currentQueue.value)
     return
   }
 
