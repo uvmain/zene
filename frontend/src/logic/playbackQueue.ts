@@ -10,6 +10,7 @@ import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/stores/main'
 import { episodeIsStored, getStoredEpisode } from '~/stores/podcastStore'
+import * as Chromecast from './chromecast'
 import { debugLog } from './logger'
 
 export const currentlyPlayingItem = ref<PlayItem>({})
@@ -325,24 +326,37 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
 }
 
 export function togglePlayback() {
-  if (!audioElement.value) {
-    console.error('Audio element not found')
+  if (!audioElement.value && !Chromecast.connected.value) {
+    debugLog('No audio element or Chromecast connected, cannot toggle playback')
     return
   }
 
   if (isPlaying.value) {
-    audioElement.value.pause()
+    if (Chromecast.connected.value) {
+      void Chromecast.pause()
+    }
+    if (audioElement.value) {
+      audioElement.value.pause()
+    }
     isPlaying.value = false
     return
   }
 
   if (currentlyPlayingItem.value.track || currentlyPlayingItem.value.podcastEpisode) {
-    void audioElement.value.play()
+    if (Chromecast.connected.value) {
+      void Chromecast.play()
+    }
+    if (audioElement.value) {
+      void audioElement.value.play()
+    }
     isPlaying.value = true
   }
 }
 
 export function stopPlayback() {
+  if (Chromecast.connected.value) {
+    void Chromecast.stop()
+  }
   if (audioElement.value) {
     if (!isPlaying.value || audioElement.value.currentTime === 0) {
       currentlyPlayingItem.value = {}
@@ -372,5 +386,8 @@ export function updateProgress() {
 }
 
 export function seek(seekSeconds: number) {
+  if (Chromecast.connected.value) {
+    Chromecast.seekTo(seekSeconds)
+  }
   elementSeek(seekSeconds)
 }

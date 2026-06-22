@@ -1,9 +1,12 @@
+import { debug } from 'node:console'
+import { seek as elementSeek } from '~/logic/audioElement'
 import { debugLog } from '~/logic/logger'
+import { currentTime as uiCurrentTime } from '~/logic/playbackQueue'
 import { currentVolume } from '~/logic/volume'
 
 export interface CastEventValue<T> { value?: T }
 
-export const mediaUrl = ref<string>('')
+export const currentMediaUrl = ref<string>('')
 export const connected = ref<boolean>(false)
 export const playing = ref<boolean>(false)
 export const seeking = ref<boolean>(false)
@@ -113,14 +116,20 @@ export function setPlayerEvents() {
   )
 }
 
-export async function loadMedia(): Promise<void> {
+export async function loadMedia(mediaUrl: string): Promise<void> {
   const contentType = 'audio/aac'
   const castSession = cast.framework.CastContext.getInstance().getCurrentSession()
   if (!castSession) {
     return
   }
 
-  const mediaInfo = new window.chrome.cast.media.MediaInfo(mediaUrl.value, contentType)
+  const url = mediaUrl ?? currentMediaUrl.value
+  if (!url) {
+    debugLog('[chromecast:loadMedia] - No media URL provided')
+    return
+  }
+
+  const mediaInfo = new window.chrome.cast.media.MediaInfo(url, contentType)
   const request = new window.chrome.cast.media.LoadRequest(mediaInfo)
 
   castSession.loadMedia(request).then(
@@ -144,7 +153,7 @@ export async function play() {
   const media = castSession.getMediaSession()
 
   if (!media) {
-    await loadMedia()
+    debugLog('[chromecast:play] - No media session available')
     return
   }
 
@@ -260,10 +269,11 @@ export function onSeekChange(event: Event) {
   }
 
   debugLog(`[chromecast:onSeekChange] - ${target.value}`)
-  seeking.value = true
+
   if (target.value) {
     seekTo(Number.parseFloat(target.value))
   }
+  elementSeek(Number.parseFloat(target.value))
 }
 
 export function onVolumeChange(event: Event) {
@@ -277,6 +287,7 @@ export function onVolumeChange(event: Event) {
   volume.value = nextVolume
   if (!Number.isNaN(nextVolume)) {
     setVolume(nextVolume)
+    currentVolume.value = nextVolume
   }
 }
 
@@ -289,6 +300,7 @@ export function onCurrentTimeChanged(event: CastEventValue<number>) {
   debugLog(`[chromecast:onCurrentTimeChanged] - ${JSON.stringify(event)}`)
   if (!seeking.value) {
     currentTime.value = event.value ?? 0
+    uiCurrentTime.value = currentTime.value
   }
 }
 
