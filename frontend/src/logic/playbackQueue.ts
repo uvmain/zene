@@ -256,6 +256,7 @@ function setCurrentQueue(tracks: SubsonicSong[]) {
 
   currentQueue.value = tracks
   currentQueuePosition.value = index
+
   void setCurrentlyPlayingTrack(tracks[index])
 }
 

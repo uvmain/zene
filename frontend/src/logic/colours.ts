@@ -24,8 +24,8 @@ function getPrimaryColour(colours: Color[]): string {
     const hsl = colour.hsl()
     return hsl.l > 15 && hsl.l < 85 && hsl.s > 15
   }).sort((a, b) => {
-    const aScore = (a.hsl().s * 1.5 + a.proportion * 1.0) * (a.isLight === true ? 1.5 : 1.0)
-    const bScore = (b.hsl().s * 1.5 + b.proportion * 1.0) * (b.isLight === true ? 1.5 : 1.0)
+    const aScore = (a.hsl().s * 1.2 + a.proportion * 1.0) * (a.isLight === true ? 1.5 : 1.0)
+    const bScore = (b.hsl().s * 1.2 + b.proportion * 1.0) * (b.isLight === true ? 1.5 : 1.0)
     return bScore - aScore
   })
   return colourArray[0]?.toString() ?? null

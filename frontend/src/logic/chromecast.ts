@@ -117,7 +117,7 @@ export function setPlayerEvents() {
   )
 }
 
-function buildMediaMetadata(playItem?: PlayItem) {
+function buildMediaMetadata(playItem?: PlayItem): chrome.cast.media.MusicTrackMediaMetadata | chrome.cast.media.GenericMediaMetadata | undefined {
   if (playItem?.track) {
     const track = playItem.track
     const metadata = new window.chrome.cast.media.MusicTrackMediaMetadata()
@@ -142,8 +142,19 @@ function buildMediaMetadata(playItem?: PlayItem) {
   return undefined
 }
 
+function getMediaDuration(playItem?: PlayItem): number {
+  if (playItem?.track) {
+    return playItem.track.duration
+  }
+
+  if (playItem?.podcastEpisode) {
+    return Number.parseInt(playItem.podcastEpisode.duration, 10)
+  }
+
+  return 0
+}
+
 export async function loadMedia(mediaUrl: string, playItem?: PlayItem): Promise<void> {
-  const contentType = 'audio/aac'
   const castSession = cast.framework.CastContext.getInstance().getCurrentSession()
   if (!castSession) {
     return
@@ -155,7 +166,11 @@ export async function loadMedia(mediaUrl: string, playItem?: PlayItem): Promise<
     return
   }
 
-  const mediaInfo = new window.chrome.cast.media.MediaInfo(url, contentType)
+  const mediaInfo = new window.chrome.cast.media.MediaInfo(url, 'audio/aac')
+
+  mediaInfo.streamType = window.chrome.cast.media.StreamType.BUFFERED
+  mediaInfo.duration = getMediaDuration(playItem)
+
   const metadata = buildMediaMetadata(playItem)
   if (metadata) {
     mediaInfo.metadata = metadata
