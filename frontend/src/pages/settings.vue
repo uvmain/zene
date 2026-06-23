@@ -84,7 +84,7 @@ async function downloadFfBinaries() {
 }
 
 function resetBackendOverrides() {
-  Store.overrideBackendUrl.value = ''
+  Store.backendUrl.value = new URL(window.location.href).origin
 }
 
 onMounted(() => {
@@ -164,14 +164,14 @@ onMounted(() => {
         <span>Override Backend URL: </span>
         <input
           id="override-backend-url"
-          v-model="Store.overrideBackendUrl.value"
+          v-model="Store.backendUrl.value"
           type="text"
           class="p-2 w-64"
           placeholder="using default backend URL"
         />
       </label>
       <ZButton @click="resetBackendOverrides">
-        Reset Override Backend URL
+        Reset Backend URL
       </ZButton>
     </div>
 

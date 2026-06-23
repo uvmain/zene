@@ -7,7 +7,7 @@ import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { debugLog } from '~/logic/logger'
-import { albumSeed, apiKey, artistSeed, overrideBackendUrl } from '~/stores/main'
+import { albumSeed, apiKey, artistSeed, backendUrl } from '~/stores/main'
 import { generateSeed } from './common'
 
 const concurrencyMap = new Map<string, Promise<any>>()
@@ -29,7 +29,7 @@ export async function createNewApiKeyWithTokenAndSalt(username: string, token: s
     formData.append('f', 'json')
 
     const path = '/rest/createApiKey.view'
-    const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+    const url = `${backendUrl.value}${path}`
 
     const response = await fetch(url, {
       method: 'POST',
@@ -60,7 +60,7 @@ export async function fetchApiKeysWithTokenAndSalt(username: string, token: stri
     formData.append('f', 'json')
 
     const path = '/rest/getApiKeys.view'
-    const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+    const url = `${backendUrl.value}${path}`
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
@@ -114,7 +114,7 @@ export async function openSubsonicFetchRequest<T>(path: string, options: Request
 
   const promise = async <T>(path: string, options: RequestInit): Promise<T> => {
     const restPath = `/rest/${path}`
-    const url = overrideBackendUrl.value === '' ? restPath : `${overrideBackendUrl.value}${restPath}`
+    const url = `${backendUrl.value}${restPath}`
     const response = await fetch(url, options)
 
     try {
@@ -363,7 +363,7 @@ export async function useServerSentEventsForAlbumArt(albumId: string, onMessage:
   params.append('id', albumId)
 
   const path = `/rest/getalbumartssse?${params.toString()}`
-  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  const url = `${backendUrl.value}${path}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -409,7 +409,7 @@ export async function useServerSentEventsForPodcast(podcastId: string, onMessage
   params.append('id', podcastId)
 
   const path = `/rest/getpodcastssse?${params.toString()}`
-  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  const url = `${backendUrl.value}${path}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -438,7 +438,7 @@ export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
   formData.append('id', mediaId)
 
   const path = '/rest/download.view'
-  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  const url = `${backendUrl.value}${path}`
   const response = await fetch(url, {
     method: 'POST',
     body: formData,
@@ -501,7 +501,7 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
     formData.append('count', count.toString())
 
     const path = '/rest/getbutterchurnpresets'
-    const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+    const url = `${backendUrl.value}${path}`
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
@@ -523,7 +523,7 @@ export async function fetchFfVersions(): Promise<FfVersionsResponse> {
   formData.append('v', '1.16.0')
   formData.append('c', 'zene-frontend')
   const path = '/rest/getffversions.view'
-  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  const url = `${backendUrl.value}${path}`
   const response = await fetch(url, {
     method: 'POST',
     body: formData,
@@ -545,7 +545,7 @@ export async function useServerSentEventsForArtistArt(artistId: string, onMessag
   params.append('id', artistId)
 
   const path = `/rest/getartistartssse?${params.toString()}`
-  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  const url = `${backendUrl.value}${path}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -595,7 +595,7 @@ export function getAuthenticatedAvatarUrl(userId: number): string {
     id: userId.toString(),
   })
   const path = `/rest/getAvatar?${queryParams.toString()}`
-  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  const url = `${backendUrl.value}${path}`
   return url
 }
 
