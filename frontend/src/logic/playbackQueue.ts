@@ -81,9 +81,7 @@ async function startPlayback(playItem: PlayItem, src: string, options: PlaybackO
     started = await playWhenReady(playItem, src)
   }
 
-  if (!started) {
-    isPlaying.value = false
-  }
+  isPlaying.value = started
 }
 
 async function playTrack(track: SubsonicSong, options: PlaybackOptions = {}) {

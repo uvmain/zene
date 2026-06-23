@@ -1,4 +1,3 @@
-import { debug } from 'node:console'
 import { seek as elementSeek } from '~/logic/audioElement'
 import { debugLog } from '~/logic/logger'
 import { currentTime as uiCurrentTime } from '~/logic/playbackQueue'
