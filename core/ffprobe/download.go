@@ -12,8 +12,6 @@ import (
 
 var (
 	targetUrl string
-	platform  = runtime.GOOS
-	arch      = runtime.GOARCH
 	ext       string
 	fileName  string
 )
@@ -90,9 +88,15 @@ func downloadFfprobe() error {
 
 	switch ext {
 	case ".zip":
-		io.Unzip(targetPath, config.LibraryDirectory, filters)
+		err = io.Unzip(targetPath, config.LibraryDirectory, filters)
+		if err != nil {
+			return fmt.Errorf("unzipping ffprobe binary: %v", err)
+		}
 	case ".tar.xz":
-		io.UnTarXz(targetPath, config.LibraryDirectory, filters)
+		err = io.UnTarXz(targetPath, config.LibraryDirectory, filters)
+		if err != nil {
+			return fmt.Errorf("extracting ffprobe binary: %v", err)
+		}
 	}
 
 	io.Cleanup(targetPath)
