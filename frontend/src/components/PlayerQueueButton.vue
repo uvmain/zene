@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { currentlyPlayingRoute } from '~/logic/playbackQueue'
+import { nowPlayingRoute } from '~/logic/playbackQueue'
 
 const router = useRouter()
 
 const canNavigateToQueue = computed(() => {
-  return router.currentRoute.value.path !== currentlyPlayingRoute.value
+  return router.currentRoute.value.path !== nowPlayingRoute.value
 })
 
 function navigateToQueue() {
-  router.push(currentlyPlayingRoute.value)
+  router.push(nowPlayingRoute.value)
 }
 </script>
 

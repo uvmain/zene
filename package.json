@@ -29,7 +29,7 @@
     "lint:backend": "golangci-lint run",
     "lint": "pnpm lint:frontend && pnpm lint:backend",
     "cspell": "cspell \"**/*.{go,ts,js,vue}\"",
-    "deps:update": "go get -u && pnpm update -r --latest"
+    "deps:update": "go get -u && go mod tidy && pnpm update -r --latest"
   },
   "repository": {
     "type": "git",

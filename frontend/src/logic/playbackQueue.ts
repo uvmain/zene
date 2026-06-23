@@ -5,13 +5,12 @@ import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { audioElement, clearActiveAudio, seek as elementSeek, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
-import { castAudio } from '~/logic/castAudio'
-import { castPlayer, castPlayerController, chromecastConnected } from '~/logic/castRefs'
 import { getAuthenticatedTrackUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/stores/main'
 import { episodeIsStored, getStoredEpisode } from '~/stores/podcastStore'
+import * as Chromecast from './chromecast'
 import { debugLog } from './logger'
 
 export const currentlyPlayingItem = ref<PlayItem>({})
@@ -20,9 +19,8 @@ export const currentQueuePosition = ref<number>(0)
 export const isPlaying = ref(false)
 export const playcountPosted = ref(false)
 export const currentTime = ref(0)
-export const trackUrl = ref('')
 export const previousIndexes = ref<number[]>([])
-export const currentlyPlayingRoute = ref<string>('')
+export const nowPlayingRoute = ref<string>('')
 
 interface QueueTransition {
   track: SubsonicSong
@@ -54,9 +52,10 @@ function setHalfwayPoint(playItem: PlayItem) {
   currentHalfwayPoint = 0
 }
 
-function applyPlaybackState(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
+async function startPlayback(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
+  const { autoPlay = true, restartCurrentTrack = false } = options
+
   currentlyPlayingItem.value = playItem
-  trackUrl.value = src
   playcountPosted.value = false
   setHalfwayPoint(playItem)
 
@@ -66,27 +65,6 @@ function applyPlaybackState(playItem: PlayItem, src: string, options: PlaybackOp
 
   if (options.previousIndexes) {
     previousIndexes.value = [...options.previousIndexes]
-  }
-}
-
-async function resolvePodcastUrl(episode: SubsonicPodcastEpisode): Promise<string> {
-  const stored = await episodeIsStored(episode.streamId)
-  if (!stored) {
-    return getAuthenticatedTrackUrl(episode.streamId, true)
-  }
-
-  const blob = await getStoredEpisode(episode.streamId)
-  return URL.createObjectURL(blob)
-}
-
-async function startPlayback(playItem: PlayItem, src: string, options: PlaybackOptions = {}) {
-  const { autoPlay = true, restartCurrentTrack = false } = options
-
-  applyPlaybackState(playItem, src, options)
-
-  if (chromecastConnected.value) {
-    await castAudio()
-    return
   }
 
   if (!autoPlay) {
@@ -103,9 +81,7 @@ async function startPlayback(playItem: PlayItem, src: string, options: PlaybackO
     started = await playWhenReady(playItem, src)
   }
 
-  if (!started) {
-    isPlaying.value = false
-  }
+  isPlaying.value = started
 }
 
 async function playTrack(track: SubsonicSong, options: PlaybackOptions = {}) {
@@ -255,7 +231,14 @@ export async function setCurrentlyPlayingTrack(track: SubsonicSong, autoPlay = t
 }
 
 export async function setCurrentlyPlayingPodcast(episode: SubsonicPodcastEpisode) {
-  const src = await resolvePodcastUrl(episode)
+  const stored = await episodeIsStored(episode.streamId)
+  if (!stored) {
+    return getAuthenticatedTrackUrl(episode.streamId, true)
+  }
+
+  const blob = await getStoredEpisode(episode.streamId)
+  const src = URL.createObjectURL(blob)
+
   clearQueue()
   await startPlayback({ podcastEpisode: episode }, src)
 }
@@ -273,6 +256,7 @@ function setCurrentQueue(tracks: SubsonicSong[]) {
 
   currentQueue.value = tracks
   currentQueuePosition.value = index
+
   void setCurrentlyPlayingTrack(tracks[index])
 }
 
@@ -290,8 +274,8 @@ interface PlayOptions {
 }
 
 export async function play(playOptions: PlayOptions) {
-  if (playOptions.route !== undefined && playOptions.route !== currentlyPlayingRoute.value && playOptions.route !== '') {
-    currentlyPlayingRoute.value = playOptions.route
+  if (playOptions.route !== undefined && playOptions.route !== nowPlayingRoute.value && playOptions.route !== '') {
+    nowPlayingRoute.value = playOptions.route
   }
   if (playOptions.track) {
     await setCurrentlyPlayingTrack(playOptions.track)
@@ -341,46 +325,40 @@ export async function handlePreviousTrack(): Promise<SubsonicSong | undefined> {
 }
 
 export function togglePlayback() {
-  if (chromecastConnected.value && castPlayerController.value) {
-    castPlayerController.value.playOrPause()
-  }
-
-  if (!audioElement.value) {
-    console.error('Audio element not found')
-    return
-  }
-
-  if (currentQueue.value.length === 0 && routeTracks.value.length) {
-    setCurrentQueue(routeTracks.value)
-    return
-  }
-
-  if (currentQueue.value.length > 0 && !currentlyPlayingItem.value.track && !currentlyPlayingItem.value.podcastEpisode) {
-    setCurrentQueue(currentQueue.value)
+  if (!audioElement.value && !Chromecast.connected.value) {
+    debugLog('No audio element or Chromecast connected, cannot toggle playback')
     return
   }
 
   if (isPlaying.value) {
-    audioElement.value.pause()
+    if (Chromecast.connected.value) {
+      void Chromecast.pause()
+    }
+    if (audioElement.value) {
+      audioElement.value.pause()
+    }
     isPlaying.value = false
     return
   }
 
   if (currentlyPlayingItem.value.track || currentlyPlayingItem.value.podcastEpisode) {
-    void audioElement.value.play()
+    if (Chromecast.connected.value) {
+      void Chromecast.play()
+    }
+    if (audioElement.value) {
+      void audioElement.value.play()
+    }
     isPlaying.value = true
   }
 }
 
 export function stopPlayback() {
-  if (chromecastConnected.value && castPlayerController.value) {
-    castPlayerController.value.stop()
+  if (Chromecast.connected.value) {
+    void Chromecast.stop()
   }
-
   if (audioElement.value) {
     if (!isPlaying.value || audioElement.value.currentTime === 0) {
       currentlyPlayingItem.value = {}
-      trackUrl.value = ''
       clearQueue()
       clearActiveAudio()
     }
@@ -407,5 +385,8 @@ export function updateProgress() {
 }
 
 export function seek(seekSeconds: number) {
+  if (Chromecast.connected.value) {
+    Chromecast.seekTo(seekSeconds)
+  }
   elementSeek(seekSeconds)
 }

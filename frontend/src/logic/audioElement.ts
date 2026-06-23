@@ -1,4 +1,5 @@
 import type { PlayItem } from '~/types'
+import * as Chromecast from '~/logic/chromecast'
 import { debugLog } from '~/logic/logger'
 
 export const audioElement = ref<HTMLAudioElement | null>(null)
@@ -91,6 +92,14 @@ export function createContextOnPlay() {
 }
 
 export async function playWhenReady(playItem: PlayItem, src: string): Promise<boolean> {
+  if (Chromecast.connected.value) {
+    const mediaUrl = src
+    await Chromecast.loadMedia(mediaUrl, playItem)
+    void Chromecast.play()
+    previousPlayItem.value = playItem
+    return true
+  }
+
   const audio = audioElement.value
   if (!audio) {
     return false

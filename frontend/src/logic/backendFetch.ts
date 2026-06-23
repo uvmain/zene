@@ -1,4 +1,4 @@
-import type { ButterchurnPreset, SearchResult } from '~/types'
+import type { ButterchurnPreset, FfVersionsResponse, SearchResult } from '~/types'
 import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
@@ -7,7 +7,7 @@ import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { debugLog } from '~/logic/logger'
-import { albumSeed, apiKey, artistSeed } from '~/stores/main'
+import { albumSeed, apiKey, artistSeed, overrideBackendUrl } from '~/stores/main'
 import { generateSeed } from './common'
 
 const concurrencyMap = new Map<string, Promise<any>>()
@@ -28,7 +28,8 @@ export async function createNewApiKeyWithTokenAndSalt(username: string, token: s
     formData.append('c', 'zeneclient')
     formData.append('f', 'json')
 
-    const url = 'rest/createApiKey.view'
+    const path = '/rest/createApiKey.view'
+    const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
 
     const response = await fetch(url, {
       method: 'POST',
@@ -58,7 +59,8 @@ export async function fetchApiKeysWithTokenAndSalt(username: string, token: stri
     formData.append('c', 'zeneclient')
     formData.append('f', 'json')
 
-    const url = 'rest/getApiKeys.view'
+    const path = '/rest/getApiKeys.view'
+    const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
@@ -111,8 +113,8 @@ export async function openSubsonicFetchRequest<T>(path: string, options: Request
   options.method = options.method ?? 'POST'
 
   const promise = async <T>(path: string, options: RequestInit): Promise<T> => {
-    const url = `/rest/${path}`
-
+    const restPath = `/rest/${path}`
+    const url = overrideBackendUrl.value === '' ? restPath : `${overrideBackendUrl.value}${restPath}`
     const response = await fetch(url, options)
 
     try {
@@ -360,7 +362,8 @@ export async function useServerSentEventsForAlbumArt(albumId: string, onMessage:
   params.append('c', 'zene-frontend')
   params.append('id', albumId)
 
-  const url = `/rest/getalbumartssse?${params.toString()}`
+  const path = `/rest/getalbumartssse?${params.toString()}`
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -405,7 +408,8 @@ export async function useServerSentEventsForPodcast(podcastId: string, onMessage
   params.append('c', 'zene-frontend')
   params.append('id', podcastId)
 
-  const url = `/rest/getpodcastssse?${params.toString()}`
+  const path = `/rest/getpodcastssse?${params.toString()}`
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -433,7 +437,8 @@ export async function downloadMediaBlob(mediaId: string): Promise<Blob> {
   formData.append('c', 'zene-frontend')
   formData.append('id', mediaId)
 
-  const url = '/rest/download.view'
+  const path = '/rest/download.view'
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
   const response = await fetch(url, {
     method: 'POST',
     body: formData,
@@ -495,7 +500,8 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
     formData.append('random', random.toString())
     formData.append('count', count.toString())
 
-    const url = '/rest/getbutterchurnpresets'
+    const path = '/rest/getbutterchurnpresets'
+    const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
@@ -510,13 +516,15 @@ export async function getButterchurnPresets({ random = true, count = 100 }: { ra
   }
 }
 
-export async function fetchFfVersions(): Promise<{ ffmpeg_version: string, ffprobe_version: string }> {
+export async function fetchFfVersions(): Promise<FfVersionsResponse> {
   const formData = new FormData()
   formData.append('apiKey', apiKey.value)
   formData.append('f', 'json')
   formData.append('v', '1.16.0')
   formData.append('c', 'zene-frontend')
-  const response = await fetch('/rest/getffversions.view', {
+  const path = '/rest/getffversions.view'
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  const response = await fetch(url, {
     method: 'POST',
     body: formData,
   })
@@ -536,7 +544,8 @@ export async function useServerSentEventsForArtistArt(artistId: string, onMessag
   params.append('c', 'zene-frontend')
   params.append('id', artistId)
 
-  const url = `/rest/getartistartssse?${params.toString()}`
+  const path = `/rest/getartistartssse?${params.toString()}`
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
   const eventSource = new EventSource(url)
 
   eventSource.addEventListener('message', (event) => {
@@ -585,7 +594,8 @@ export function getAuthenticatedAvatarUrl(userId: number): string {
     f: 'json',
     id: userId.toString(),
   })
-  const url = `/rest/getAvatar?${queryParams.toString()}`
+  const path = `/rest/getAvatar?${queryParams.toString()}`
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
   return url
 }
 

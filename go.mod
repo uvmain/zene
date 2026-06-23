@@ -8,12 +8,12 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mmcdole/gofeed v1.3.0
-	github.com/ncruces/go-sqlite3 v0.35.0
+	github.com/ncruces/go-sqlite3 v0.35.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.11.1
 	github.com/timematic/anytime v0.0.0-20250424004116-93a49dc8f85f
 	github.com/ulikunitz/xz v0.5.15
-	golang.org/x/image v0.42.0
+	golang.org/x/image v0.43.0
 	golang.org/x/sync v0.21.0
 )
 

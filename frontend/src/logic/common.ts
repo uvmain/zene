@@ -1,5 +1,5 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
-import { apiKey, streamQuality } from '~/stores/main'
+import { apiKey, overrideBackendUrl, streamQuality } from '~/stores/main'
 
 export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)
@@ -25,7 +25,8 @@ export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = fal
   else {
     queryParams.append('raw', 'true')
   }
-  const url = `/rest/stream.view?${queryParams.toString()}`
+  const path = `/rest/stream.view?${queryParams.toString()}`
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
   return url
 }
 
@@ -59,7 +60,8 @@ export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.si
   else {
     path = size === 0 ? `/share/img/${musicbrainzId}` : `/share/img/${musicbrainzId}?size=${size}`
   }
-  return path
+  const url = overrideBackendUrl.value === '' ? path : `${overrideBackendUrl.value}${path}`
+  return url
 }
 
 export async function cacheBustArt(musicbrainz_id: string) {

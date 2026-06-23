@@ -36,8 +36,19 @@ func HandleDownloadFfBinaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ffmpeg.DownloadFfmpegBinary()
-	ffprobe.DownloadFfprobeBinary()
+	err = ffmpeg.DownloadFfmpegBinary()
+	if err != nil {
+		logger.Printf("Error downloading ffmpeg binary: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error downloading ffmpeg binary", "")
+		return
+	}
+
+	err = ffprobe.DownloadFfprobeBinary()
+	if err != nil {
+		logger.Printf("Error downloading ffprobe binary: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error downloading ffprobe binary", "")
+		return
+	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 

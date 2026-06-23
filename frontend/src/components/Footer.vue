@@ -19,11 +19,11 @@ const loggedIn = computed(() => {
       </div>
       <div class="flex flex-row gap-4 items-center lg:gap-6">
         <NavOpenerMobile class="relative lg:hidden" />
-        <GoogleCastButton />
+        <ChromecastButton />
         <PlayerVisualizerButton />
         <PlayerLyricsButton />
         <PlayerQueueButton />
-        <PlayerVolumeSlider class="hidden lg:flex" />
+        <PlayerVolumeSlider class="ml-2 hidden lg:flex" />
       </div>
     </div>
   </footer>

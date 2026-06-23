@@ -17,7 +17,8 @@
 ### Fast, small and feature packed with smart caching
 - No rocket emojis - just good old optimisation
 - Light and Dark mode
-- Visualizations with [butterchurn](https://butterchurnviz.com/) and a curated select of presets from [Ansorre's collection](https://github.com/ansorre/tens-of-thousands-milkdrop-presets-for-butterchurn/tree/master)
+- Auto-colours based on album art
+- Visualizations with [butterchurn](https://butterchurnviz.com/) and a curated select of presets from [Ansorre's collection](https://github.com/ansorre/tens-of-thousands-milkdrop-presets-for-butterchurn)
 
   ![butterchurn](./docs/assets/butterchurn-fullscreen.webp)
 - All transcoded audio is cached locally and cleaned with smart rules
@@ -26,11 +27,11 @@
 - Album art automatically fetched from album folder || embedded in track || https://api.deezer.com || coverartarchive.org
 - Artist art automatically fetched from artist folder || [deezer](https://api.deezer.com) || wikidata
 - Similar artists/songs are fetched from https://api.deezer.com and saved locally
+- Full podcast support, including downloading and offline playing
+- <svg viewBox="0 0 24 24" style="height: 1.3rem; vertical-align: sub;" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M21 5H3v4H1V3h22v18H13v-2h8V5zM5 21h2c0-3.5523-2.44772-6-6-6v2c2.44772 0 4 1.5523 4 4zm6 0H9c0-4.4477-3.55228-8-8-8v-2c5.55228 0 10 4.4477 10 10zM1 19c1 0 2 1 2 2H1v-2z"/></svg> Chromecast support!
 - Admins can update album or artist art via frontend
 
   ![art-selector](./docs/assets/art-selector.webp)
-- Full podcast support, including downloading and offline playing
-
 
 ### Uses the OpenSubsonic API
 Supports the following OpenSubsonic API extensions:
@@ -137,3 +138,7 @@ resolving Caddy cert issues on debian/ubuntu
   ```bash
   certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n "Caddy Local Authority" -i ~/.local/share/caddy/pki/authorities/local/root.crt
   ```
+
+## Attributions
+- Uses icons from [NRK](https://static.nrk.no/core-icons/latest/index.html#license)
+- Butterchurn presets from [Ansorre](https://github.com/ansorre/tens-of-thousands-milkdrop-presets-for-butterchurn)

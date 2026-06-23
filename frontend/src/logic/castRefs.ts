@@ -1,7 +1,0 @@
-export const chromecastAvailable = ref<boolean>(false)
-export const chromecastConnected = ref<boolean>(false)
-export const castPlayer = ref<cast.framework.RemotePlayer>()
-export const castPlayerController = ref<cast.framework.RemotePlayerController>()
-export const castSession = ref<cast.framework.CastSession>()
-export const isCasting = ref<boolean>(false)
-export const savedLocalPosition = ref<number>(0)

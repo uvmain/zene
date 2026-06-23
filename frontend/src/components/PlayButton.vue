@@ -11,7 +11,6 @@ const props = defineProps({
   track: { type: Object as PropType<SubsonicSong>, required: false },
   podcastEpisode: { type: Object as PropType<SubsonicPodcastEpisode>, required: false },
   playingRoute: { type: String, required: false },
-  hero: { type: Boolean, default: false },
 })
 
 const route = useRoute()
@@ -24,8 +23,7 @@ const currentRoute = computed(() => {
 <template>
   <div class="align-middle flex items-center">
     <ZButton
-      :primary="!hero"
-      :hero="hero"
+      :primary="true"
       class="group/button"
       :size12="true"
       :hover-text="`Play ${track ? 'track' : album ? 'album' : artist ? 'artist' : podcastEpisode ? 'podcast' : ''}`"

@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import type { StreamQuality } from '~/stores/main'
+import type { FfVersionsResponse } from '~/types'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, downloadNewFfBinaries, fetchFfVersions, openSubsonicFetchRequest } from '~/logic/backendFetch'
-import { initializeAccentColour, resetAccentColour, updateAccentColour } from '~/logic/colours'
+import { initializeAccentColour, resetAccentColour } from '~/logic/colours'
 import { clearApiKey } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
-import { accentColour, autoSwitchColours, debugEnabled, streamQualities, streamQuality } from '~/stores/main'
-
-interface FfVersions {
-  ffmpeg_version: string
-  ffprobe_version: string
-}
+import * as Store from '~/stores/main'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -18,17 +14,40 @@ const router = useRouter()
 const forceTags = ref(false)
 const forceArt = ref(false)
 const showLogoutModal = ref(false)
-const ffVersions = ref<FfVersions | null>(null)
+const ffVersions = ref<FfVersionsResponse | null>(null)
 
 const streamQualitiesArray = computed<(string | number)[]>(() => {
-  return Object.values(streamQualities)
+  return Object.values(Store.streamQualities)
 })
 
 const currentStreamQuality = computed(() => {
-  return streamQuality.value
+  return Store.streamQuality.value
 })
 
-watch(autoSwitchColours, (newValue) => {
+function colourToHex(colour: string): string {
+  const parser = new Option().style
+  parser.color = ''
+  parser.color = colour
+
+  const rgbMatch = parser.color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)
+  if (!rgbMatch) {
+    return '#fa742f'
+  }
+
+  const [r, g, b] = rgbMatch.slice(1).map(value => Number.parseInt(value, 10))
+  const toHex = (value: number) => value.toString(16).padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+const accentColourInputValue = computed({
+  get: () => colourToHex(Store.accentColour.value),
+  set: (value: string) => {
+    Store.accentColour.value = value
+    initializeAccentColour()
+  },
+})
+
+watch(Store.autoSwitchColours, (newValue) => {
   if (!newValue) {
     initializeAccentColour()
   }
@@ -44,15 +63,14 @@ async function runScan() {
 }
 
 function setStreamQuality(quality: StreamQuality) {
-  if (streamQuality.value === quality) {
+  if (Store.streamQuality.value === quality) {
     return
   }
-  streamQuality.value = quality
+  Store.streamQuality.value = quality
 }
 
 async function getFfVersions() {
-  const versions = await fetchFfVersions()
-  ffVersions.value = versions
+  ffVersions.value = await fetchFfVersions()
 }
 
 async function logOut() {
@@ -63,6 +81,10 @@ async function logOut() {
 async function downloadFfBinaries() {
   await downloadNewFfBinaries()
   await getFfVersions()
+}
+
+function resetBackendOverrides() {
+  Store.overrideBackendUrl.value = ''
 }
 
 onMounted(() => {
@@ -86,7 +108,7 @@ onMounted(() => {
       </label>
     </div>
     <ZButton @click="toggleDebug()">
-      <span class="text-nowrap">Debug: {{ debugEnabled ? 'On' : 'Off' }}</span>
+      <span class="text-nowrap">Debug: {{ Store.debugEnabled.value ? 'On' : 'Off' }}</span>
     </ZButton>
     <ZButton @click="toggleDark()">
       <span class="text-nowrap">Dark Mode: {{ isDark ? 'On' : 'Off' }}</span>
@@ -107,16 +129,15 @@ onMounted(() => {
 
     <div class="flex flex-row gap-2 items-center">
       <label for="auto-switch-colours" class="flex gap-x-2 items-center">
-        <input id="auto-switch-colours" v-model="autoSwitchColours" type="checkbox" class="accent-main-400 size-4">
+        <input id="auto-switch-colours" v-model="Store.autoSwitchColours.value" type="checkbox" class="accent-main-400 size-4">
         <span class="text-nowrap">Auto Switch Colours</span>
       </label>
       <input
         id="accent"
-        v-model="accentColour"
+        v-model="accentColourInputValue"
         type="color"
         name="accent"
         colorspace="display-p3"
-        @input="updateAccentColour"
       />
       <label for="accent">Accent color</label>
       <ZButton @click="resetAccentColour()">
@@ -125,14 +146,32 @@ onMounted(() => {
     </div>
 
     <div v-if="ffVersions" class="mr-auto p-2 border-muted corner-cut flex flex-col gap-y-2">
-      <div class="text-lg font-semibold">
-        FFmpeg Version: {{ ffVersions.ffmpeg_version }}
+      <div>
+        <span class="text-lg font-semibold">FFmpeg Version: </span>
+        <span>{{ ffVersions.ffmpeg_version }}</span>
       </div>
-      <div class="text-lg font-semibold">
-        FFprobe Version: {{ ffVersions.ffprobe_version }}
+      <div>
+        <span class="text-lg font-semibold">FFprobe Version: </span>
+        <span>{{ ffVersions.ffprobe_version }}</span>
       </div>
       <ZButton @click="downloadFfBinaries()">
         Update FFmpeg and FFprobe
+      </ZButton>
+    </div>
+
+    <div class="mr-auto flex flex-row gap-4 items-center">
+      <label for="override-backend-url" class="text-lg font-semibold flex gap-x-2 items-center">
+        <span>Override Backend URL: </span>
+        <input
+          id="override-backend-url"
+          v-model="Store.overrideBackendUrl.value"
+          type="text"
+          class="p-2 w-64"
+          placeholder="using default backend URL"
+        />
+      </label>
+      <ZButton @click="resetBackendOverrides">
+        Reset Override Backend URL
       </ZButton>
     </div>
 
