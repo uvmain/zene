@@ -1,4 +1,6 @@
+import type { PlayItem } from '~/types'
 import { seek as elementSeek } from '~/logic/audioElement'
+import { getCoverArtUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
 import { currentTime as uiCurrentTime } from '~/logic/playbackQueue'
 import { currentVolume } from '~/logic/volume'
@@ -115,7 +117,32 @@ export function setPlayerEvents() {
   )
 }
 
-export async function loadMedia(mediaUrl: string): Promise<void> {
+function buildMediaMetadata(playItem?: PlayItem) {
+  if (playItem?.track) {
+    const track = playItem.track
+    const metadata = new window.chrome.cast.media.MusicTrackMediaMetadata()
+    metadata.metadataType = window.chrome.cast.media.MetadataType.MUSIC_TRACK
+    metadata.title = track.title
+    metadata.artist = track.displayArtist || track.artist
+    metadata.albumName = track.album
+    metadata.trackNumber = track.trackNumber ?? track.track
+    metadata.images = [{ url: getCoverArtUrl(track.musicBrainzId), width: 400, height: 400 }]
+    return metadata
+  }
+
+  if (playItem?.podcastEpisode) {
+    const episode = playItem.podcastEpisode
+    const metadata = new window.chrome.cast.media.GenericMediaMetadata()
+    metadata.metadataType = window.chrome.cast.media.MetadataType.GENERIC
+    metadata.title = episode.title
+    metadata.images = [{ url: getCoverArtUrl(episode.streamId), width: 400, height: 400 }]
+    return metadata
+  }
+
+  return undefined
+}
+
+export async function loadMedia(mediaUrl: string, playItem?: PlayItem): Promise<void> {
   const contentType = 'audio/aac'
   const castSession = cast.framework.CastContext.getInstance().getCurrentSession()
   if (!castSession) {
@@ -129,6 +156,10 @@ export async function loadMedia(mediaUrl: string): Promise<void> {
   }
 
   const mediaInfo = new window.chrome.cast.media.MediaInfo(url, contentType)
+  const metadata = buildMediaMetadata(playItem)
+  if (metadata) {
+    mediaInfo.metadata = metadata
+  }
   const request = new window.chrome.cast.media.LoadRequest(mediaInfo)
 
   castSession.loadMedia(request).then(

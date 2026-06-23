@@ -94,7 +94,7 @@ export function createContextOnPlay() {
 export async function playWhenReady(playItem: PlayItem, src: string): Promise<boolean> {
   if (Chromecast.connected.value) {
     const mediaUrl = src
-    await Chromecast.loadMedia(mediaUrl)
+    await Chromecast.loadMedia(mediaUrl, playItem)
     void Chromecast.play()
     previousPlayItem.value = playItem
     return true
