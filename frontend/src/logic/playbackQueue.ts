@@ -392,6 +392,10 @@ export function seek(seekSeconds: number) {
 }
 
 export function setMediaSessionMetadata(playItem: PlayItem) {
+  if (!('mediaSession' in navigator) || (!playItem.track && !playItem.podcastEpisode)) {
+    return
+  }
+  
   const metadata = new MediaMetadata({
     title: playItem.track?.title || playItem.podcastEpisode?.title || '',
     artist: playItem.track?.artist || playItem.podcastEpisode?.parent || '',
