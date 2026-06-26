@@ -2,7 +2,7 @@ import type { PlayItem } from '~/types'
 import { seek as elementSeek } from '~/logic/audioElement'
 import { getCoverArtUrl } from '~/logic/common'
 import { debugLog } from '~/logic/logger'
-import { currentTime as uiCurrentTime } from '~/logic/playbackQueue'
+import { handleNextTrack, togglePlayback, currentTime as uiCurrentTime } from '~/logic/playbackQueue'
 import { currentVolume } from '~/logic/volume'
 
 export interface CastEventValue<T> { value?: T }
@@ -18,6 +18,12 @@ export const savedVolume = ref<number>(0.7)
 export const muted = ref<boolean>(false)
 export const isChromecastReady = ref<boolean>(false)
 
+const trackFinished = {
+  mediaInfoIsNull: false,
+  playerIdle: false,
+  chromecastStopped: false
+}
+
 const isChrome = ref<boolean>(false)
 
 export function isBrowserChrome(): boolean {
@@ -31,15 +37,15 @@ export async function initialiseChromecast() {
     debugLog('[chromecast] - initialiseChromecast called but browser is not Chrome, exiting')
     return
   }
-  window.__onGCastApiAvailable = (isAvailable: boolean) => {
+  window.__onGCastApiAvailable = async (isAvailable: boolean) => {
     if (isAvailable) {
-      setTimeout(() => {
+      await new Promise(resolve => setTimeout(() => {
         initializeCastApi()
-      }, 50)
+      }, 50))
     }
   }
-  await cast.framework.CastContext.getInstance().requestSession()
-  connected.value = cast.framework.CastContext.getInstance().getCurrentSession() !== null
+  // await cast.framework.CastContext.getInstance().requestSession()
+  // connected.value = cast.framework.CastContext.getInstance().getCurrentSession() !== null
 }
 
 export function initializeCastApi() {
@@ -247,6 +253,7 @@ export function stop() {
     requestId: 1,
     mediaSessionId: media.mediaSessionId,
   })
+  handleNextMedia({ chromecastStopped: true })
 }
 
 export function seekTo(value: number) {
@@ -339,6 +346,7 @@ export function onVolumeChange(event: Event) {
 export function onMediaInfoChanged(event: CastEventValue<{ duration?: number }>) {
   debugLog(`[chromecast:onMediaInfoChanged] - ${JSON.stringify(event)}`)
   duration.value = event.value?.duration ?? 0
+  handleNextMedia({ mediaInfoIsNull: event.value === undefined || event.value === null })
 }
 
 export function onCurrentTimeChanged(event: CastEventValue<number>) {
@@ -352,6 +360,7 @@ export function onCurrentTimeChanged(event: CastEventValue<number>) {
 export function onIsConnectedChanged(event: CastEventValue<boolean>) {
   debugLog(`[chromecast:onIsConnectedChanged] - ${JSON.stringify(event)}`)
   connected.value = event.value ?? false
+  togglePlayback()
 }
 
 export function onPlayerStateChanged(event: CastEventValue<string>) {
@@ -359,5 +368,29 @@ export function onPlayerStateChanged(event: CastEventValue<string>) {
   playing.value = event.value === 'PLAYING' || event.value === 'BUFFERING'
   if (event.value === 'PLAYING') {
     seeking.value = false
+  }
+  if (event.value === 'IDLE') {
+    handleNextMedia({ playerIdle: true })
+  }
+}
+
+function handleNextMedia({ mediaInfoIsNull, playerIdle, chromecastStopped }: { mediaInfoIsNull?: boolean; playerIdle?: boolean; chromecastStopped?: boolean }) {
+  if (mediaInfoIsNull !== undefined) {
+    trackFinished.mediaInfoIsNull = mediaInfoIsNull
+  }
+  if (playerIdle !== undefined) {
+    trackFinished.playerIdle = playerIdle
+  }
+  if (chromecastStopped !== undefined) {
+    trackFinished.chromecastStopped = chromecastStopped
+  }
+  if (trackFinished.mediaInfoIsNull && trackFinished.playerIdle && !trackFinished.chromecastStopped) {
+    debugLog('[chromecast:handleNextMedia] - Track finished, loading next track')
+    void handleNextTrack()
+    trackFinished.mediaInfoIsNull = false
+    trackFinished.playerIdle = false
+  }
+  else if (trackFinished.mediaInfoIsNull && trackFinished.playerIdle && !trackFinished.chromecastStopped) {
+    debugLog('[chromecast:handleNextMedia] - Track finished, but chromecast stopped, not loading next track')
   }
 }

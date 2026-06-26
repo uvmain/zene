@@ -23,13 +23,13 @@
     "vue-virtual-scroller": "^3.0.4"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^9.0.0",
+    "@antfu/eslint-config": "^9.1.0",
     "@iconify-json/ion": "^1.2.7",
     "@iconify-json/nrk": "^1.2.7",
     "@types/chrome": "^0.2.0",
     "@types/chromecast-caf-sender": "^1.0.11",
     "@types/md5": "^2.3.6",
-    "@types/node": "^26.0.0",
+    "@types/node": "^26.0.1",
     "@unocss/eslint-plugin": "^66.7.2",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.9.1",
@@ -40,6 +40,6 @@
     "unplugin-auto-import": "^21.0.0",
     "unplugin-icons": "^23.0.1",
     "unplugin-vue-components": "^32.1.0",
-    "vite": "^8.0.16"
+    "vite": "^8.1.0"
   }
 }
