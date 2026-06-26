@@ -1,6 +1,7 @@
 import type { PlayItem } from '~/types'
 import * as Chromecast from '~/logic/chromecast'
 import { debugLog } from '~/logic/logger'
+import { setMediaSessionMetadata } from './playbackQueue'
 
 export const audioElement = ref<HTMLAudioElement | null>(null)
 export const audioNode = ref<AudioNode | null>(null)
@@ -92,6 +93,8 @@ export function createContextOnPlay() {
 }
 
 export async function playWhenReady(playItem: PlayItem, src: string): Promise<boolean> {
+  setMediaSessionMetadata(playItem)
+
   if (Chromecast.connected.value) {
     const mediaUrl = src
     await Chromecast.loadMedia(mediaUrl, playItem)
