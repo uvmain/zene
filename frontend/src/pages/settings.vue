@@ -4,7 +4,7 @@ import type { FfVersionsResponse } from '~/types'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, downloadNewFfBinaries, fetchFfVersions, openSubsonicFetchRequest } from '~/logic/backendFetch'
 import { initializeAccentColour, resetAccentColour } from '~/logic/colours'
-import { clearApiKey } from '~/logic/common'
+import { clearApiKey, toggleWakeLock } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
 import * as Store from '~/stores/main'
 
@@ -143,6 +143,13 @@ onMounted(() => {
       <ZButton @click="resetAccentColour()">
         Reset
       </ZButton>
+    </div>
+
+    <div class="flex flex-row gap-2 items-center">
+      <label for="wake-lock" class="flex gap-x-2 items-center">
+        <input id="wake-lock" v-model="Store.wakeLockEnabled.value" type="checkbox" class="accent-main-400 size-4" @change="toggleWakeLock">
+        <span class="text-nowrap">Wake Lock - this is required to prevent the screen from turning off while using chromecast</span>
+      </label>
     </div>
 
     <div v-if="ffVersions" class="mr-auto p-2 border-muted corner-cut flex flex-col gap-y-2">

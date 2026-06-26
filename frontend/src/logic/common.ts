@@ -1,7 +1,35 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
-import { apiKey, backendUrl, streamQuality } from '~/stores/main'
+import { apiKey, backendUrl, streamQuality, wakeLockEnabled } from '~/stores/main'
+import { useWakeLock } from '@vueuse/core'
+import { debugLog } from './logger'
 
-let currentDomain: string = ''
+const { isSupported,request, release } = useWakeLock()
+
+export function toggleWakeLock() {
+  if (isSupported) {
+  if (wakeLockEnabled.value) {
+    request("screen")
+      .then(() => {
+        debugLog('Wake lock requested')
+      })
+      .catch((err) => {
+        debugLog(`Failed to request wake lock: ${err}`)
+      })
+  }
+  else {
+    release()
+      .then(() => {
+        debugLog('Wake lock released')
+      })
+      .catch((err) => {
+        debugLog(`Failed to release wake lock: ${err}`)
+      })
+    }
+  }
+  else {
+    debugLog('Wake lock is not supported on this device')
+  }
+}
 
 export function formatTimeFromSeconds(time: number): string {
   const minutes = Math.floor(time / 60)
