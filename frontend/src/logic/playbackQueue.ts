@@ -439,3 +439,17 @@ export function setMediaSessionHandlers() {
     navigator.mediaSession.setActionHandler('seekto', ({seekTime}) => { void seek(seekTime ?? 0) })
   }
 }
+
+watch(isPlaying, (newIsPlaying) => {
+  if ('mediaSession' in navigator) {
+    if (newIsPlaying) {
+      navigator.mediaSession.playbackState = 'playing'
+    }
+    else if (!currentlyPlayingItem.value.track || currentlyPlayingItem.value.podcastEpisode) {
+      navigator.mediaSession.playbackState = 'paused'
+    }
+    else {
+      navigator.mediaSession.playbackState = 'none'
+    }
+  }
+})
