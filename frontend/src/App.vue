@@ -1,3 +1,11 @@
+<script setup lang="ts">
+import { setMediaSessionHandlers } from '~/logic/playbackQueue'
+
+onMounted(() => {
+  setMediaSessionHandlers()
+})
+</script>
+
 <template>
   <main class="text-muted background-1 flex flex-row h-100svh overflow-x-hidden">
     <Navbar />

@@ -5,7 +5,7 @@ import type { SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { audioElement, clearActiveAudio, seek as elementSeek, playWhenReady } from '~/logic/audioElement'
 import { fetchAlbum, fetchArtistTopSongs, fetchRandomTracks } from '~/logic/backendFetch'
-import { getAuthenticatedTrackUrl } from '~/logic/common'
+import { getAuthenticatedTrackUrl, getCoverArtUrl } from '~/logic/common'
 import { postPlaycount } from '~/logic/playerUtils'
 import { routeTracks } from '~/logic/routeTracks'
 import { repeatStatus, shuffleEnabled } from '~/stores/main'
@@ -390,3 +390,70 @@ export function seek(seekSeconds: number) {
   }
   elementSeek(seekSeconds)
 }
+
+export function setMediaSessionMetadata(playItem: PlayItem) {
+  if (!('mediaSession' in navigator) || (!playItem.track && !playItem.podcastEpisode)) {
+    return
+  }
+  
+  const metadata = new MediaMetadata({
+    title: playItem.track?.title || playItem.podcastEpisode?.title || '',
+    artist: playItem.track?.artist || playItem.podcastEpisode?.parent || '',
+    album: playItem.track?.album || '',
+    artwork: [
+      {
+        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 96) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 96),
+        sizes: '96x96',
+        type: 'image/jpeg'
+      },
+      {
+        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 192) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 192),
+        sizes: '192x192',
+        type: 'image/jpeg'
+      },
+      {
+        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 256) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 256),
+        sizes: '256x256',
+        type: 'image/jpeg'
+      },
+      {
+        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 384) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 384),
+        sizes: '384x384',
+        type: 'image/jpeg'
+      },
+      {
+        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 512) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 512),
+        sizes: '512x512',
+        type: 'image/jpeg'
+      },
+    ],
+  })
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = metadata
+  }
+}
+
+export function setMediaSessionHandlers() {
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => { void togglePlayback() })
+    navigator.mediaSession.setActionHandler('pause', () => { void togglePlayback() })
+    navigator.mediaSession.setActionHandler('stop', () => { void stopPlayback() })
+    navigator.mediaSession.setActionHandler('previoustrack', () => { void handlePreviousTrack() })
+    navigator.mediaSession.setActionHandler('nexttrack', () => { void handleNextTrack() })
+    navigator.mediaSession.setActionHandler('seekto', ({seekTime}) => { void seek(seekTime ?? 0) })
+  }
+}
+
+watch(isPlaying, (newIsPlaying) => {
+  if ('mediaSession' in navigator) {
+    if (newIsPlaying) {
+      navigator.mediaSession.playbackState = 'playing'
+    }
+    else if (!currentlyPlayingItem.value.track || currentlyPlayingItem.value.podcastEpisode) {
+      navigator.mediaSession.playbackState = 'paused'
+    }
+    else {
+      navigator.mediaSession.playbackState = 'none'
+    }
+  }
+})
