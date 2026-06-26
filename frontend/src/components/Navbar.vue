@@ -8,7 +8,7 @@ import NavOpenerMobile from './NavOpenerMobile.vue'
 <template>
   <div v-if="apiKey" class="flex flex-row">
     <aside
-      class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 overflow-y-auto lg:(flex w-200px relative)"
+      class="p-4 background-2 flex flex-col max-h-100dvh w-full transition-transform duration-300 ease-in-out inset-y-0 left-0 fixed z-50 overflow-y-auto gap-4 lg:(flex w-200px relative)"
       :class="{
         'translate-x-0': isMobileNavOpen,
         '-translate-x-full lg:translate-x-0': !isMobileNavOpen,
