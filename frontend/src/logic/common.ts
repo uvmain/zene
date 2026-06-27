@@ -5,7 +5,15 @@ import { debugLog } from './logger'
 
 const { isSupported,request, release } = useWakeLock()
 
-export function enableWakeLock() {
+export function initWakeLock() {
+  if (isSupported) {
+    if (wakeLockEnabled.value) {
+      enableWakeLock()
+    }
+  }
+}
+
+function enableWakeLock() {
   if (isSupported) {
     request("screen")
       .then(() => {
