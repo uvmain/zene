@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { setMediaSessionHandlers } from '~/logic/playbackQueue'
+import { initWakeLock } from '~/logic/common'
 
 onMounted(() => {
   setMediaSessionHandlers()
+  initWakeLock()
 })
 </script>
 

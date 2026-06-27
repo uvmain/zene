@@ -5,9 +5,8 @@ import { debugLog } from './logger'
 
 const { isSupported,request, release } = useWakeLock()
 
-export function toggleWakeLock() {
+export function enableWakeLock() {
   if (isSupported) {
-  if (wakeLockEnabled.value) {
     request("screen")
       .then(() => {
         debugLog('Wake lock requested')
@@ -16,7 +15,10 @@ export function toggleWakeLock() {
         debugLog(`Failed to request wake lock: ${err}`)
       })
   }
-  else {
+}
+
+function disableWakeLock() {
+  if (isSupported) {
     release()
       .then(() => {
         debugLog('Wake lock released')
@@ -24,6 +26,16 @@ export function toggleWakeLock() {
       .catch((err) => {
         debugLog(`Failed to release wake lock: ${err}`)
       })
+  }
+}
+
+export function toggleWakeLock() {
+  if (isSupported) {
+    if (wakeLockEnabled.value) {
+      disableWakeLock()
+    }
+    else {
+      enableWakeLock()
     }
   }
   else {
