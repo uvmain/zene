@@ -58,6 +58,7 @@ type SubsonicStandard struct {
 	PodcastChannels        *PodcastChannels           `xml:"podcasts,omitempty" json:"podcasts,omitempty"`
 	PodcastEpisode         *PodcastEpisode            `xml:"podcastEpisode,omitempty" json:"podcastEpisode,omitempty"`
 	NewestPodcasts         *NewestPodcasts            `xml:"newestPodcasts,omitempty" json:"newestPodcasts,omitempty"`
+	TranscodeDecision      *TranscodeDecision         `xml:"transcodeDecision,omitempty" json:"transcodeDecision,omitempty"`
 }
 
 type SubsonicResponse struct {
