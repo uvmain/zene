@@ -70,7 +70,7 @@ func BuildTranscodeDecision(mediaId string, mediaType string, clientInfo types.C
 		AudioChannels: transcodeChannels,
 	}
 
-	decision.TranscodeParams = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%v", transcodeParams)))
+	decision.TranscodeParams = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%v%s", transcodeParams, GetCurrentTimeFormatted())))
 
 	return decision, transcodeParams
 }

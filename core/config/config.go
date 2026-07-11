@@ -105,11 +105,11 @@ func LoadConfig() {
 
 	transcodeParamsTtl := os.Getenv("TRANSCODE_PARAMS_TTL")
 	if transcodeParamsTtl == "" {
-		TranscodeParamsTtlSeconds = 3600
+		TranscodeParamsTtlSeconds = 1200
 	} else {
 		transcodeParamsTtlInt, err := strconv.Atoi(transcodeParamsTtl)
 		if err != nil {
-			TranscodeParamsTtlSeconds = 3600
+			TranscodeParamsTtlSeconds = 1200
 		} else {
 			TranscodeParamsTtlSeconds = transcodeParamsTtlInt
 		}
