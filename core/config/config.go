@@ -117,11 +117,11 @@ func LoadConfig() {
 
 	defaultBitRate := os.Getenv("DEFAULT_BIT_RATE")
 	if defaultBitRate == "" {
-		DefaultBitRate = 160
+		DefaultBitRate = 256
 	} else {
 		defaultBitRateInt, err := strconv.Atoi(defaultBitRate)
 		if err != nil {
-			DefaultBitRate = 160
+			DefaultBitRate = 256
 		} else {
 			DefaultBitRate = defaultBitRateInt
 		}
@@ -152,7 +152,7 @@ func LoadConfig() {
 	ffprobeConcurrentProcesses := os.Getenv("FFPROBE_CONCURRENT_PROCESSES")
 	ffprobeConcurrentProcessesInt, err := strconv.Atoi(ffprobeConcurrentProcesses)
 	if err != nil {
-		FfprobeConcurrentProcesses = 8 // default to 8 ffprobe concurrent processes
+		FfprobeConcurrentProcesses = runtime.NumCPU()
 	} else {
 		FfprobeConcurrentProcesses = ffprobeConcurrentProcessesInt
 	}
