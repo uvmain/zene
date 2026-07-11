@@ -30,6 +30,7 @@ var PodcastArtFolder string
 var AudioCacheFolder string
 var AudioCacheMaxMB int
 var AudioCacheMaxDays int
+var TranscodeParamsTtlSeconds int
 var AdminUsername string
 var AdminPassword string
 var AdminEmail string
@@ -99,6 +100,18 @@ func LoadConfig() {
 			AudioCacheMaxDays = 30
 		} else {
 			AudioCacheMaxDays = audioCacheMaxDaysInt
+		}
+	}
+
+	transcodeParamsTtl := os.Getenv("TRANSCODE_PARAMS_TTL")
+	if transcodeParamsTtl == "" {
+		TranscodeParamsTtlSeconds = 3600
+	} else {
+		transcodeParamsTtlInt, err := strconv.Atoi(transcodeParamsTtl)
+		if err != nil {
+			TranscodeParamsTtlSeconds = 3600
+		} else {
+			TranscodeParamsTtlSeconds = transcodeParamsTtlInt
 		}
 	}
 

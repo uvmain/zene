@@ -38,7 +38,7 @@ func RunScan(ctx context.Context, scanOptions types.ScanOptions) (types.ScanStat
 	}
 
 	if latestScan.Id > 0 && latestScan.CompletedDate == "" {
-		startedTime := logic.GetStringTimeFormatted(latestScan.StartedDate)
+		startedTime := logic.GetTimeFromString(latestScan.StartedDate)
 		bootTime := logic.GetBootTime()
 		if latestScan.Id > 0 && startedTime.Before(bootTime) {
 			// orphaned scan, set it to completed and continue to run a new one
@@ -202,7 +202,7 @@ func scanMusicDir(ctx context.Context, musicDir string, scanOptions types.ScanOp
 		if len(matchingMetadata) > 0 {
 			// Update existing metadata..
 			metadataDateModified := matchingMetadata[0].DateModified
-			if scanOptions.Force || logic.GetStringTimeFormatted(metadataDateModified).Before(logic.GetStringTimeFormatted(audioFile.DateModified)) {
+			if scanOptions.Force || logic.GetTimeFromString(metadataDateModified).Before(logic.GetTimeFromString(audioFile.DateModified)) {
 				// if the file's modified date is more recent than in the database
 				existingMetadataToUpdate = append(existingMetadataToUpdate, audioFile)
 			}

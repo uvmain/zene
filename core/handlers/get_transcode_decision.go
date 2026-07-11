@@ -103,7 +103,19 @@ func HandleGetTranscodeDecision(w http.ResponseWriter, r *http.Request) {
 		AudioBitdepth:   metadata.BitDepth,
 	}
 
-	decision := logic.BuildTranscodeDecision(mediaId, mediaType, clientInfo, sourceStream)
+	decision, transcodeParams := logic.BuildTranscodeDecision(mediaId, mediaType, clientInfo, sourceStream)
+
+	database.UpsertTranscodeParams(ctx, types.TranscodeParamsRow{
+		ParamString:   decision.TranscodeParams,
+		MediaId:       mediaId,
+		MediaType:     mediaType,
+		Container:     transcodeParams.Container,
+		AudioCodec:    transcodeParams.AudioCodec,
+		Protocol:      transcodeParams.Protocol,
+		TargetFormat:  transcodeParams.TargetFormat,
+		Bitrate:       transcodeParams.Bitrate,
+		AudioChannels: transcodeParams.AudioChannels,
+	})
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 	response.SubsonicResponse.TranscodeDecision = &decision

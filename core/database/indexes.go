@@ -15,7 +15,7 @@ func GetIndexes(ctx context.Context, userId int, musicFolderIds []int, ifModifie
 		return types.SubsonicIndexes{}, err
 	}
 
-	latestScanTime := logic.GetStringTimeFormatted(latestScan.CompletedDate)
+	latestScanTime := logic.GetTimeFromString(latestScan.CompletedDate)
 	latestScanTimeUnix := int(latestScanTime.UnixMilli())
 
 	response := types.SubsonicIndexes{}

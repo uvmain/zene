@@ -48,6 +48,17 @@ type StreamDetails struct {
 	AudioBitdepth   int    `xml:"audioBitdepth,attr,omitempty" json:"audioBitdepth,omitempty"`
 }
 
+type TranscodeParamsStruct struct {
+	MediaID       string `json:"mediaId"`
+	MediaType     string `json:"mediaType"`
+	Container     string `json:"container"`
+	AudioCodec    string `json:"audioCodec"`
+	Protocol      string `json:"protocol"`
+	TargetFormat  string `json:"targetFormat"`
+	Bitrate       int    `json:"bitrate"`
+	AudioChannels int    `json:"audioChannels"`
+}
+
 type TranscodeDecision struct {
 	CanDirectPlay   bool           `xml:"canDirectPlay,attr" json:"canDirectPlay"`
 	CanTranscode    bool           `xml:"canTranscode,attr" json:"canTranscode"`
@@ -56,4 +67,16 @@ type TranscodeDecision struct {
 	TranscodeParams string         `xml:"transcodeParams,attr,omitempty" json:"transcodeParams,omitempty"`
 	SourceStream    *StreamDetails `xml:"sourceStream,omitempty" json:"sourceStream,omitempty"`
 	TranscodeStream *StreamDetails `xml:"transcodeStream,omitempty" json:"transcodeStream,omitempty"`
+}
+
+type TranscodeParamsRow struct {
+	ParamString   string
+	MediaId       string
+	MediaType     string
+	Container     string
+	AudioCodec    string
+	Protocol      string
+	TargetFormat  string
+	Bitrate       int
+	AudioChannels int
 }

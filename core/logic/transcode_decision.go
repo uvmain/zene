@@ -11,7 +11,7 @@ import (
 	"zene/core/types"
 )
 
-func BuildTranscodeDecision(mediaId string, mediaType string, clientInfo types.ClientInfo, sourceStream types.StreamDetails) types.TranscodeDecision {
+func BuildTranscodeDecision(mediaId string, mediaType string, clientInfo types.ClientInfo, sourceStream types.StreamDetails) (types.TranscodeDecision, types.TranscodeParamsStruct) {
 	reasons := directPlayReasons(clientInfo.DirectPlayProfiles, clientInfo, sourceStream)
 	canDirectPlay := len(reasons) == 0
 
@@ -22,13 +22,13 @@ func BuildTranscodeDecision(mediaId string, mediaType string, clientInfo types.C
 	}
 
 	if canDirectPlay {
-		return decision
+		return decision, types.TranscodeParamsStruct{}
 	}
 
 	transcodeProfile, targetFormat := chooseTranscodingProfile(clientInfo.TranscodingProfiles, sourceStream)
 	if transcodeProfile == nil {
 		decision.ErrorReason = "NoTranscodingProfileMatched"
-		return decision
+		return decision, types.TranscodeParamsStruct{}
 	}
 
 	decision.CanTranscode = true
@@ -59,20 +59,20 @@ func BuildTranscodeDecision(mediaId string, mediaType string, clientInfo types.C
 		AudioBitdepth:   sourceStream.AudioBitdepth,
 	}
 
-	transcodeParams := map[string]interface{}{
-		"mediaId":       mediaId,
-		"mediaType":     mediaType,
-		"container":     transcodeProfile.Container,
-		"audioCodec":    transcodeProfile.AudioCodec,
-		"protocol":      transcodeProfile.Protocol,
-		"targetFormat":  targetFormat,
-		"bitrate":       transcodeBitrate,
-		"audioChannels": transcodeChannels,
+	transcodeParams := types.TranscodeParamsStruct{
+		MediaID:       mediaId,
+		MediaType:     mediaType,
+		Container:     transcodeProfile.Container,
+		AudioCodec:    transcodeProfile.AudioCodec,
+		Protocol:      transcodeProfile.Protocol,
+		TargetFormat:  targetFormat,
+		Bitrate:       transcodeBitrate,
+		AudioChannels: transcodeChannels,
 	}
 
 	decision.TranscodeParams = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%v", transcodeParams)))
 
-	return decision
+	return decision, transcodeParams
 }
 
 func directPlayReasons(profiles []types.DirectPlayProfile, clientInfo types.ClientInfo, sourceStream types.StreamDetails) []string {

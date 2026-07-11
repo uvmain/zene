@@ -45,6 +45,7 @@ func Initialise(ctx context.Context) {
 	migrateBookmarks(ctx)
 	migratePlayqueues(ctx)
 	migratePodcasts(ctx)
+	createTranscodeParamsTable(ctx)
 
 	checkVersion(ctx)
 }
