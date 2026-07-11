@@ -161,6 +161,15 @@ func MethodIsNotGetOrPost(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
+func MethodIsNotPost(w http.ResponseWriter, r *http.Request) bool {
+	if r.Method != http.MethodPost {
+		errorString := fmt.Sprintf("Unsupported method: %s", r.Method)
+		WriteSubsonicError(w, r, types.ErrorGeneric, errorString, "")
+		return true
+	}
+	return false
+}
+
 func ParseBooleanFromString(w http.ResponseWriter, r *http.Request, key string) bool {
 	parsedBool, err := strconv.ParseBool(key)
 	if err != nil {
