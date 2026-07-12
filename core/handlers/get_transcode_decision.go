@@ -1,12 +1,16 @@
 package handlers
 
 import (
+	"cmp"
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"zene/core/config"
 	"zene/core/database"
 	"zene/core/ffprobe"
 	"zene/core/logger"
@@ -81,26 +85,21 @@ func HandleGetTranscodeDecision(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metadata, err := ffprobe.GetMetadataFromFile(ctx, mediaFilepath)
+	metadata, err := GetMediaTranscodeMetadata(ctx, mediaId, mediaType)
 	if err != nil {
-		logger.Printf("Error probing media file %s: %v", mediaFilepath, err)
+		logger.Printf("Error fetching media metadata for %s: %v", mediaId, err)
 		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Unable to inspect media file.", "")
 		return
 	}
 
-	bitrateInt, err := strconv.Atoi(strings.TrimSpace(metadata.Bitrate))
-	if err != nil || bitrateInt < 0 {
-		bitrateInt = 0
-	}
-
 	sourceStream := types.StreamDetails{
 		Protocol:        "http",
-		Container:       logic.ParseMediaContainer(mediaFilepath, metadata),
+		Container:       metadata.Container,
 		Codec:           strings.ToLower(strings.TrimSpace(metadata.Codec)),
-		AudioChannels:   metadata.Channels,
-		AudioBitrate:    bitrateInt,
-		AudioSamplerate: metadata.SampleRate,
-		AudioBitdepth:   metadata.BitDepth,
+		AudioChannels:   metadata.AudioChannels,
+		AudioBitrate:    metadata.AudioBitrate,
+		AudioSamplerate: metadata.AudioSamplerate,
+		AudioBitdepth:   metadata.AudioBitdepth,
 	}
 
 	decision, transcodeParams := logic.BuildTranscodeDecision(mediaId, mediaType, clientInfo, sourceStream)
@@ -121,4 +120,49 @@ func HandleGetTranscodeDecision(w http.ResponseWriter, r *http.Request) {
 	response.SubsonicResponse.TranscodeDecision = &decision
 
 	net.WriteSubsonicResponse(w, r, response, format)
+}
+
+func GetMediaTranscodeMetadata(ctx context.Context, mediaId, mediaType string) (types.TranscodeMetadata, error) {
+	requestUser, err := database.GetUserByContext(ctx)
+	if err != nil {
+		return types.TranscodeMetadata{}, err
+	}
+
+	if !requestUser.PodcastRole && mediaType == "podcast" {
+		return types.TranscodeMetadata{}, fmt.Errorf("user %s does not have permission to access podcasts", requestUser.Username)
+	}
+
+	metadata := types.TranscodeMetadata{}
+
+	if mediaType == "podcast" {
+		podcastMetadata, err := ffprobe.GetMetadataFromFile(ctx, mediaId)
+		if err != nil {
+			return types.TranscodeMetadata{}, fmt.Errorf("Error fetching podcast metadata for %s: %v", mediaId, err)
+		}
+		bitrateInt, err := strconv.Atoi(podcastMetadata.Bitrate)
+		if err != nil {
+			bitrateInt = config.DefaultBitRate
+		}
+		metadata.FilePath = mediaId
+		metadata.Container = podcastMetadata.FormatName
+		metadata.Codec = podcastMetadata.Codec
+		metadata.AudioChannels = podcastMetadata.Channels
+		metadata.AudioBitrate = cmp.Or(bitrateInt, config.DefaultBitRate)
+		metadata.AudioSamplerate = podcastMetadata.SampleRate
+		metadata.AudioBitdepth = podcastMetadata.BitDepth
+	} else if mediaType == "song" {
+		songMetadata, err := database.GetTranscodeMetadataForSong(ctx, mediaId)
+		if err != nil {
+			return types.TranscodeMetadata{}, fmt.Errorf("Error fetching song metadata for %s: %v", mediaId, err)
+		}
+		metadata.FilePath = songMetadata.FilePath
+		metadata.Container = songMetadata.Container
+		metadata.Codec = songMetadata.Codec
+		metadata.AudioChannels = songMetadata.AudioChannels
+		metadata.AudioBitrate = cmp.Or(songMetadata.AudioBitrate, config.DefaultBitRate)
+		metadata.AudioSamplerate = songMetadata.AudioSamplerate
+		metadata.AudioBitdepth = songMetadata.AudioBitdepth
+	}
+
+	return metadata, nil
 }

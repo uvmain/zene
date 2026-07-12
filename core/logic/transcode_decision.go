@@ -3,8 +3,6 @@ package logic
 import (
 	"encoding/base64"
 	"fmt"
-	"net/url"
-	"path/filepath"
 	"slices"
 	"strings"
 	"zene/core/config"
@@ -182,26 +180,4 @@ func targetFormatForProfile(profile types.TranscodingProfile) string {
 	default:
 		return ""
 	}
-}
-
-func ParseMediaContainer(mediaPath string, metadata types.FfprobeStandard) string {
-	if parsedURL, err := url.Parse(mediaPath); err == nil && parsedURL.Path != "" {
-		if ext := filepath.Ext(parsedURL.Path); ext != "" {
-			return strings.TrimPrefix(strings.ToLower(ext), ".")
-		}
-	}
-
-	if ext := filepath.Ext(mediaPath); ext != "" {
-		return strings.TrimPrefix(strings.ToLower(ext), ".")
-	}
-
-	formatName := strings.ToLower(strings.TrimSpace(metadata.FormatName))
-	if formatName != "" {
-		parts := strings.Split(formatName, ",")
-		if len(parts) > 0 {
-			return strings.TrimSpace(parts[0])
-		}
-	}
-
-	return ""
 }

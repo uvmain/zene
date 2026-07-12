@@ -194,3 +194,22 @@ func startScanScheduleRoutine(ctx context.Context) {
 		}
 	}()
 }
+
+func startTranscodeParamsCleanupRoutine(ctx context.Context) {
+	logger.Println("Scheduler: starting transcode params cleanup routine")
+	database.ClearOldTranscodeParams(ctx)
+	go func() {
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Println("Scheduler: stopping transcode params cleanup routine")
+				return
+			case <-ticker.C:
+				database.ClearOldTranscodeParams(ctx)
+			}
+		}
+	}()
+}

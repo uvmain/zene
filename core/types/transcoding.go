@@ -80,3 +80,13 @@ type TranscodeParamsRow struct {
 	Bitrate       int
 	AudioChannels int
 }
+
+type TranscodeMetadata struct {
+	FilePath        string
+	Container       string
+	Codec           string
+	AudioChannels   int
+	AudioBitrate    int
+	AudioSamplerate int
+	AudioBitdepth   int
+}

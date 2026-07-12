@@ -34,6 +34,8 @@
   ![art-selector](./docs/assets/art-selector.webp)
 
 ### Uses the OpenSubsonic API
+[OpenSubsonic API](https://opensubsonic.netlify.app/docs/)
+
 Supports the following OpenSubsonic API extensions:
 - `apiKeyAuthentication` this project supports password, enc:password, salt & token, and ApiKey auth
 - `formPost` all endpoints support GET and POST, with either formData values OR query parameters
@@ -41,6 +43,7 @@ Supports the following OpenSubsonic API extensions:
 - `transcodeOffset` supports streaming from an offset
 - `indexBasedQueue` enables savePlayQueueByIndex and getPlayQueueByIndex endpoints
 - `getPodcastEpisode` enables the getPodcastEpisode endpoint
+- `transcoding` enables the getTranscodeDecision and getTranscodeStream endpoints
 
 ### Supports (and extends) the following OpenSubsonic API endpoints:
 
