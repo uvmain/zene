@@ -22,7 +22,7 @@ export enum ArtistOrders {
 
 export type ArtistOrder = typeof ArtistOrders[keyof typeof ArtistOrders]
 
-export const streamQualities = [96, 128, 160, 192, 256, 320, 512] as const
+export const streamQualities = [96, 128, 160, 192, 256, 320, 512, 1024] as const
 export type StreamQuality = typeof streamQualities[number]
 
 export const apiKey = useLocalStorage('apiKey', '')

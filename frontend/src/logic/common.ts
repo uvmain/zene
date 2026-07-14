@@ -2,6 +2,7 @@ import type { ReleaseDate } from '~/types/subsonicAlbum'
 import { apiKey, backendUrl, streamQuality, wakeLockEnabled } from '~/stores/main'
 import { useWakeLock } from '@vueuse/core'
 import { debugLog } from './logger'
+import { getTranscodeDecision } from './backendFetch'
 
 const { isSupported,request, release } = useWakeLock()
 
@@ -61,22 +62,28 @@ export async function clearApiKey() {
   apiKey.value = ''
 }
 
-export function getAuthenticatedTrackUrl(musicbrainz_track_id: string, raw = false): string {
+export async function getAuthenticatedTrackUrl(mediaId: string, mediaType: 'song' | 'podcast' = 'song'): Promise<string> {
+  let path: string
+  const transcodeDecision = await getTranscodeDecision(mediaId, mediaType)
   const queryParams = new URLSearchParams({
     apiKey: apiKey.value,
     c: 'zene-frontend',
     v: '1.6.0',
-    id: musicbrainz_track_id,
-    format: 'aac',
   })
-  if (!raw) {
-    queryParams.append('maxBitRate', streamQuality.value.toString())
+
+  if (transcodeDecision.canDirectPlay) {
+    queryParams.append('format', 'raw')
+    queryParams.append('id', mediaId)
+    path = '/rest/stream.view'
   }
   else {
-    queryParams.append('raw', 'true')
+    queryParams.append('mediaId', mediaId)
+    queryParams.append('mediaType', mediaType)
+    queryParams.append('transcodeParams', transcodeDecision.transcodeParams ?? '')
+    path = '/rest/getTranscodeStream.view'
   }
-  const path = `/rest/stream.view?${queryParams.toString()}`
-  const url = `${backendUrl.value}${path}`
+  
+  const url = `${backendUrl.value}${path}?${queryParams.toString()}`
   return url
 }
 

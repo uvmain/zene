@@ -10,7 +10,8 @@ import (
 )
 
 func BuildTranscodeDecision(mediaId string, mediaType string, clientInfo types.ClientInfo, sourceStream types.StreamDetails) (types.TranscodeDecision, types.TranscodeParamsStruct) {
-	reasons := directPlayReasons(clientInfo.DirectPlayProfiles, clientInfo, sourceStream)
+	clientInfo.MaxAudioBitrate = int(float32(clientInfo.MaxAudioBitrate) * float32(1.1)) // allow a small overhead for bitrate
+	reasons := cannotDirectPlayReasons(clientInfo.DirectPlayProfiles, clientInfo, sourceStream)
 	canDirectPlay := len(reasons) == 0
 
 	decision := types.TranscodeDecision{
@@ -73,14 +74,14 @@ func BuildTranscodeDecision(mediaId string, mediaType string, clientInfo types.C
 	return decision, transcodeParams
 }
 
-func directPlayReasons(profiles []types.DirectPlayProfile, clientInfo types.ClientInfo, sourceStream types.StreamDetails) []string {
+func cannotDirectPlayReasons(profiles []types.DirectPlayProfile, clientInfo types.ClientInfo, sourceStream types.StreamDetails) []string {
 	if len(profiles) == 0 {
 		return []string{"NoDirectPlayProfiles"}
 	}
 
 	reasons := make([]string, 0, len(profiles))
 	for _, profile := range profiles {
-		if directPlayProfileMatches(profile, clientInfo, sourceStream) {
+		if canDirectPlay(profile, clientInfo, sourceStream) {
 			return nil
 		}
 		reasons = append(reasons, directPlayProfileReason(profile, clientInfo, sourceStream))
@@ -89,8 +90,11 @@ func directPlayReasons(profiles []types.DirectPlayProfile, clientInfo types.Clie
 	return slices.Compact(reasons)
 }
 
-func directPlayProfileMatches(profile types.DirectPlayProfile, clientInfo types.ClientInfo, sourceStream types.StreamDetails) bool {
-	if clientInfo.MaxAudioBitrate > 0 && sourceStream.AudioBitrate > 0 && sourceStream.AudioBitrate > clientInfo.MaxAudioBitrate {
+func canDirectPlay(profile types.DirectPlayProfile, clientInfo types.ClientInfo, sourceStream types.StreamDetails) bool {
+	if clientInfo.MaxAudioBitrate < 1 || sourceStream.AudioBitrate < 1 {
+		return false
+	}
+	if sourceStream.AudioBitrate > clientInfo.MaxAudioBitrate {
 		return false
 	}
 

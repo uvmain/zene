@@ -84,8 +84,8 @@ async function startPlayback(playItem: PlayItem, src: string, options: PlaybackO
   isPlaying.value = started
 }
 
-async function playTrack(track: SubsonicSong, options: PlaybackOptions = {}) {
-  const src = getAuthenticatedTrackUrl(track.musicBrainzId)
+async function playTrack(track: SubsonicSong, options: PlaybackOptions = {}): Promise<void> {
+  const src = await getAuthenticatedTrackUrl(track.musicBrainzId, 'song')
   await startPlayback({ track }, src, options)
 }
 
@@ -233,7 +233,7 @@ export async function setCurrentlyPlayingTrack(track: SubsonicSong, autoPlay = t
 export async function setCurrentlyPlayingPodcast(episode: SubsonicPodcastEpisode) {
   const stored = await episodeIsStored(episode.streamId)
   if (!stored) {
-    return getAuthenticatedTrackUrl(episode.streamId, true)
+    return await getAuthenticatedTrackUrl(episode.streamId, 'podcast')
   }
 
   const blob = await getStoredEpisode(episode.streamId)

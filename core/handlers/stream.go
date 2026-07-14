@@ -101,14 +101,18 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
+		logger.Printf("serving %s without transcoding", mediaFilepath)
+
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
 		w.Header().Set("Cache-Control", "public, max-age=31536000")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		contentType := mime.TypeByExtension(filepath.Ext(fileInfo.Name()))
 		w.Header().Set("Content-Type", contentType)
 		_, err = io.Copy(w, file)
+		if err != nil {
+			logger.Printf("Error streaming raw file %s: %v", mediaFilepath, err)
+		}
 
-		logger.Printf("serving %s without transcoding", mediaFilepath)
 		return
 	}
 

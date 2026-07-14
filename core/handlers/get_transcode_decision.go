@@ -54,37 +54,6 @@ func HandleGetTranscodeDecision(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	requestUser, err := database.GetUserByContext(ctx)
-	if err != nil {
-		logger.Printf("Error getting user by context: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "User not found", "")
-		return
-	}
-
-	mediaFilepath, err := database.GetMediaFilePath(ctx, mediaId)
-
-	if mediaFilepath == "" || err != nil {
-		// check if the file is a podcast episode
-		if requestUser.PodcastRole {
-			episode, _ := database.GetPodcastEpisodeByGuid(ctx, mediaId)
-			if episode.SourceUrl != "" {
-				http.Redirect(w, r, episode.SourceUrl, http.StatusFound)
-				return
-			}
-		}
-	}
-
-	if err != nil {
-		logger.Printf("Error querying database for media filepath %s: %v", mediaId, err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "File not found in database.", "")
-		return
-	}
-
-	if mediaFilepath == "" {
-		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "File not available to stream.", "")
-		return
-	}
-
 	metadata, err := GetMediaTranscodeMetadata(ctx, mediaId, mediaType)
 	if err != nil {
 		logger.Printf("Error fetching media metadata for %s: %v", mediaId, err)
