@@ -106,11 +106,15 @@ func GetCurrentTimeFormatted() string {
 	return time.Now().UTC().Format(time.RFC3339Nano)
 }
 
+func GetTimeMinusSecondsFormatted(seconds int) string {
+	return time.Now().UTC().Add(-time.Duration(seconds) * time.Second).Format(time.RFC3339Nano)
+}
+
 func FormatTimeAsString(timeValue time.Time) string {
 	return timeValue.UTC().Format(time.RFC3339Nano)
 }
 
-func GetStringTimeFormatted(timeString string) time.Time {
+func GetTimeFromString(timeString string) time.Time {
 	timeTime, err := time.Parse(time.RFC3339Nano, timeString)
 	if err != nil {
 		logger.Printf("Error parsing time string '%s': %v", timeString, err)

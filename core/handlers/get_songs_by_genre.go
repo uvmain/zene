@@ -32,7 +32,7 @@ func HandleGetSongsByGenre(w http.ResponseWriter, r *http.Request) {
 	if ifModifiedSinceHeader != "" {
 		latestScan, err := database.GetLatestCompletedScan(ctx)
 		if err == nil {
-			latestScanTime := logic.GetStringTimeFormatted(latestScan.CompletedDate)
+			latestScanTime := logic.GetTimeFromString(latestScan.CompletedDate)
 			if net.IfModifiedResponse(w, r, latestScanTime) {
 				return
 			}

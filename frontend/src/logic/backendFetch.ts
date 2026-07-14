@@ -6,9 +6,11 @@ import type { SubsonicGenre } from '~/types/subsonicGenres'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
+import type { SubsonicTranscodeDecisionResponse, TranscodeDecision } from '~/types/subsonicTranscode'
 import { debugLog } from '~/logic/logger'
 import { albumSeed, apiKey, artistSeed, backendUrl } from '~/stores/main'
 import { generateSeed } from './common'
+import { getTranscodeClientInfo } from './transcodeDecision'
 
 const concurrencyMap = new Map<string, Promise<any>>()
 
@@ -607,4 +609,31 @@ export async function postAvatarImage(options: { userId: number, file: Blob }): 
   return openSubsonicFetchRequest<Types.SubsonicResponse>('updateAvatar', {
     body: formData,
   })
+}
+
+export async function getTranscodeDecision(mediaId: string, mediaType: 'song' | 'podcast'): Promise<TranscodeDecision> {
+  const queryParams = new URLSearchParams({
+    apiKey: apiKey.value,
+    c: 'zene-frontend',
+    v: '1.6.0',
+    f: 'json',
+    mediaId: mediaId.toString(),
+    mediaType: mediaType,
+  })
+  const clientInfo = await getTranscodeClientInfo()
+
+  const path = `/rest/getTranscodeDecision?${queryParams.toString()}`
+  const url = `${backendUrl.value}${path}`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(clientInfo),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to get transcode decision from ${url}: ${response.statusText}`)
+  }
+  const data = await response.json() as SubsonicTranscodeDecisionResponse
+  return data['subsonic-response'].transcodeDecision
 }

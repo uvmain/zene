@@ -116,6 +116,8 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/deleteplaylist", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeletePlaylist)))
 	// Media retrieval
 	apiRouter.Handle("/rest/stream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStream)))
+	apiRouter.Handle("/rest/gettranscodedecision", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTranscodeDecision)))
+	apiRouter.Handle("/rest/gettranscodestream", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetTranscodeStream)))
 	apiRouter.Handle("/rest/download", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownload)))
 	apiRouter.Handle("/rest/getcaptions", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCaptions)))
 	apiRouter.Handle("/rest/getcoverart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetCoverArt)))

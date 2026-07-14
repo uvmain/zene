@@ -34,6 +34,8 @@
   ![art-selector](./docs/assets/art-selector.webp)
 
 ### Uses the OpenSubsonic API
+[OpenSubsonic API](https://opensubsonic.netlify.app/docs/)
+
 Supports the following OpenSubsonic API extensions:
 - `apiKeyAuthentication` this project supports password, enc:password, salt & token, and ApiKey auth
 - `formPost` all endpoints support GET and POST, with either formData values OR query parameters
@@ -41,6 +43,7 @@ Supports the following OpenSubsonic API extensions:
 - `transcodeOffset` supports streaming from an offset
 - `indexBasedQueue` enables savePlayQueueByIndex and getPlayQueueByIndex endpoints
 - `getPodcastEpisode` enables the getPodcastEpisode endpoint
+- `transcoding` enables the getTranscodeDecision and getTranscodeStream endpoints
 
 ### Supports (and extends) the following OpenSubsonic API endpoints:
 
@@ -102,6 +105,30 @@ services:
     ports:
       - 3020:8080
 ```
+
+### Environment variables
+| Variable name | Default Value | Notes |
+| -------- | ------- | ------- |
+| PORT | 8080 |
+| MUSIC_DIRS | ./music |
+| DATA_PATH | ./data |
+| PODCAST_DIRECTORY | ./data/podcasts |
+| AUDIO_CACHE_MAX_MB | 500 |
+| AUDIO_CACHE_MAX_DAYS | 30 |
+| TRANSCODE_PARAMS_TTL | 1200 | 20 minutes |
+| DEFAULT_BIT_RATE | 256 | kbit/s default for transcoding |
+| FFMPEG_PATH | ./data/library/ffmpeg | Custom paths will require volume binding
+| FFPROBE_PATH | ./data/library/ffprobe | Custom paths will require volume binding
+| FFPROBE_CONCURRENT_PROCESSES | 0 | By default it uses the number of CPU cores available
+| AUDIO_FILE_TYPES | .aac,.alac,.flac,.m4a,.mp3,.ogg,.opus,.wav,.wma | Audio file types that are imported during scans
+| ADMIN_USERNAME | admin | Admin user created by default if this variable is not defined
+| ADMIN_PASSWORD | string | Randomly generated and printed in the console if this variable is not defined
+| ADMIN_EMAIL | admin@localhost | Currently unused
+| LOCAL_DEV_ENV | false | Sets the TCS address domain to `localhost`
+| AUTH_ENCRYPTION_KEY | 0123456789abcdef0123456789abcdef | Key for encrypting user passwords in the database. Recommended to change in production.
+
+
+
 
 ### Tech stack
 - `Sqlite` database

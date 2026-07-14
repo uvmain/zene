@@ -30,6 +30,7 @@ var PodcastArtFolder string
 var AudioCacheFolder string
 var AudioCacheMaxMB int
 var AudioCacheMaxDays int
+var TranscodeParamsTtlSeconds int
 var AdminUsername string
 var AdminPassword string
 var AdminEmail string
@@ -102,13 +103,25 @@ func LoadConfig() {
 		}
 	}
 
+	transcodeParamsTtl := os.Getenv("TRANSCODE_PARAMS_TTL")
+	if transcodeParamsTtl == "" {
+		TranscodeParamsTtlSeconds = 1200
+	} else {
+		transcodeParamsTtlInt, err := strconv.Atoi(transcodeParamsTtl)
+		if err != nil {
+			TranscodeParamsTtlSeconds = 1200
+		} else {
+			TranscodeParamsTtlSeconds = transcodeParamsTtlInt
+		}
+	}
+
 	defaultBitRate := os.Getenv("DEFAULT_BIT_RATE")
 	if defaultBitRate == "" {
-		DefaultBitRate = 160
+		DefaultBitRate = 256
 	} else {
 		defaultBitRateInt, err := strconv.Atoi(defaultBitRate)
 		if err != nil {
-			DefaultBitRate = 160
+			DefaultBitRate = 256
 		} else {
 			DefaultBitRate = defaultBitRateInt
 		}
@@ -139,7 +152,7 @@ func LoadConfig() {
 	ffprobeConcurrentProcesses := os.Getenv("FFPROBE_CONCURRENT_PROCESSES")
 	ffprobeConcurrentProcessesInt, err := strconv.Atoi(ffprobeConcurrentProcesses)
 	if err != nil {
-		FfprobeConcurrentProcesses = 8 // default to 8 ffprobe concurrent processes
+		FfprobeConcurrentProcesses = runtime.NumCPU()
 	} else {
 		FfprobeConcurrentProcesses = ffprobeConcurrentProcessesInt
 	}

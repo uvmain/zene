@@ -46,6 +46,7 @@ func HandleDownload(w http.ResponseWriter, r *http.Request) {
 
 	mimeType := http.DetectContentType(fileBlob)
 	w.Header().Set("Content-Type", mimeType)
+	w.Header().Set("Content-Disposition", "attachment; filename="+mediaFilepath)
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(fileBlob)
 	if err != nil {

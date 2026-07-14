@@ -22,7 +22,7 @@ export enum ArtistOrders {
 
 export type ArtistOrder = typeof ArtistOrders[keyof typeof ArtistOrders]
 
-export const streamQualities = [96, 128, 160, 192, 256] as const
+export const streamQualities = [96, 128, 160, 192, 256, 320, 512, 1024] as const
 export type StreamQuality = typeof streamQualities[number]
 
 export const apiKey = useLocalStorage('apiKey', '')
@@ -33,7 +33,7 @@ export const artistOrder = useLocalStorage<ArtistOrder>('artistOrder', ArtistOrd
 export const debugEnabled = useLocalStorage('debugEnabled', false)
 export const shuffleEnabled = useLocalStorage<boolean>('shuffleEnabled', false)
 export const repeatStatus = useLocalStorage<'off' | '1' | 'all'>('repeatStatus', 'off')
-export const streamQuality = useLocalStorage<StreamQuality>('streamQuality', 160)
+export const streamQuality = useLocalStorage<StreamQuality>('streamQuality', 320)
 export const randomTracksSeed = useLocalStorage<number>('randomTracksSeed', 0)
 export const albumsStore = useLocalStorage<SubsonicAlbum[]>('albumsStore', [])
 export const artistsStore = useLocalStorage<SubsonicArtist[]>('artistsStore', [])

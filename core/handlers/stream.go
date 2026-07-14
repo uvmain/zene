@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"mime"
 	"net/http"
 	"os"
@@ -93,19 +94,25 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if streamFormat == "raw" {
-		fileInfo, modTime, file, err := getFile(mediaFilepath)
+		fileInfo, _, file, err := getFile(mediaFilepath)
 		if err != nil {
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error opening file.", "")
 			return
 		}
 		defer file.Close()
 
+		logger.Printf("serving %s without transcoding", mediaFilepath)
+
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
 		w.Header().Set("Cache-Control", "public, max-age=31536000")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		contentType := mime.TypeByExtension(filepath.Ext(fileInfo.Name()))
 		w.Header().Set("Content-Type", contentType)
-		http.ServeContent(w, r, fileInfo.Name(), modTime, file)
+		_, err = io.Copy(w, file)
+		if err != nil {
+			logger.Printf("Error streaming raw file %s: %v", mediaFilepath, err)
+		}
+
 		return
 	}
 

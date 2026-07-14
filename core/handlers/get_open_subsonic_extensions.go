@@ -41,6 +41,10 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 		Name:     "getPodcastEpisode",
 		Versions: []int{1},
 	}
+	extension7 := types.OpenSubsonicExtensions{
+		Name:     "transcoding",
+		Versions: []int{1},
+	}
 
 	response.SubsonicResponse.OpenSubsonicExtensions = []*types.OpenSubsonicExtensions{
 		&extension1,
@@ -49,6 +53,7 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 		&extension4,
 		&extension5,
 		&extension6,
+		&extension7,
 	}
 
 	net.WriteSubsonicResponse(w, r, response, format)
