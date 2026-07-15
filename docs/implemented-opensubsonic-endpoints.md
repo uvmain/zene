@@ -47,7 +47,6 @@
 - [x] getCoverArt
 - [x] getLyrics
 - [x] getAvatar[^10]
-- [x] getLyricsBySongId
 ## Media annotation
 - [x] star
 - [x] unstar
@@ -89,12 +88,19 @@
 - [x] createBookmark
 - [x] deleteBookmark
 - [x] getPlayQueue
-- [x] getPlayQueueByIndex
 - [x] savePlayQueue
-- [x] savePlayQueueByIndex
 ## Media library scanning
 - [x] getScanStatus
 - [x] startScan
+## Extensions
+- [x] getPodcastEpisode
+- [x] savePlayQueueByIndex
+- [x] getPlayQueueByIndex
+- [x] reportPlayback
+- [x] getLyricsBySongId
+- [x] getTranscodeDecision
+- [x] getTranscodeStream
+
 
 [^1]: Endpoint exists but returns an unsupported error.
 [^2]: Similar artists are fetched from Deezer, not lastfm. Biography is not supported.
