@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { StreamQuality } from '~/stores/main'
 import type { FfVersionsResponse } from '~/types'
 import { useDark, useToggle } from '@vueuse/core'
 import { deleteAudioCache, downloadNewFfBinaries, fetchFfVersions, openSubsonicFetchRequest } from '~/logic/backendFetch'
@@ -16,12 +15,16 @@ const forceArt = ref(false)
 const showLogoutModal = ref(false)
 const ffVersions = ref<FfVersionsResponse | null>(null)
 
-const streamQualitiesArray = computed<(string | number)[]>(() => {
+const streamQualityOptions = computed<(string | number)[]>(() => {
   return Object.values(Store.streamQualities)
 })
 
-const currentStreamQuality = computed(() => {
-  return Store.streamQuality.value
+const transcodeStreamQuality = computed(() => {
+  return Store.transcodeStreamQuality.value
+})
+
+const directPlayMaxQuality = computed(() => {
+  return Store.directPlayMaxQuality.value
 })
 
 function colourToHex(colour: string): string {
@@ -62,11 +65,18 @@ async function runScan() {
   })
 }
 
-function setStreamQuality(quality: StreamQuality) {
-  if (Store.streamQuality.value === quality) {
+function setTranscodeStreamQuality(quality: number) {
+  if (Store.transcodeStreamQuality.value === quality) {
     return
   }
-  Store.streamQuality.value = quality
+  Store.transcodeStreamQuality.value = quality
+}
+
+function setDirectPlayMaxQuality(quality: string | number) {
+  if (Store.directPlayMaxQuality.value === quality) {
+    return
+  }
+  Store.directPlayMaxQuality.value = quality
 }
 
 async function getFfVersions() {
@@ -119,12 +129,20 @@ onMounted(() => {
     <ZButton @click="deleteAudioCache()">
       <span class="text-nowrap">Delete Audio Cache</span>
     </ZButton>
+    
     <DropdownMenu
-      title="Stream Quality"
-      :options="streamQualitiesArray"
+      title="Transcode Stream Quality"
+      :options="streamQualityOptions.filter(option => option !== 'Unlimited')"
       align="right"
-      :current-option="currentStreamQuality"
-      @select="setStreamQuality"
+      :current-option="transcodeStreamQuality"
+      @select="setTranscodeStreamQuality"
+    />
+    <DropdownMenu
+      title="Direct Play Max Quality"
+      :options="streamQualityOptions"
+      align="right"
+      :current-option="directPlayMaxQuality"
+      @select="setDirectPlayMaxQuality"
     />
 
     <div class="flex flex-row gap-2 items-center">

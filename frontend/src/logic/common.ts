@@ -1,5 +1,5 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
-import { apiKey, backendUrl, streamQuality, wakeLockEnabled } from '~/stores/main'
+import { apiKey, backendUrl, wakeLockEnabled } from '~/stores/main'
 import { useWakeLock } from '@vueuse/core'
 import { debugLog } from './logger'
 import { getTranscodeDecision } from './backendFetch'
