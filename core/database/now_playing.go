@@ -24,6 +24,18 @@ func migrateNowPlaying(ctx context.Context) {
 	createTable(ctx, schema)
 }
 
+func createPlaybackReportTable(ctx context.Context) {
+	schema := `CREATE TABLE playback_reports (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		now_playing_id INTEGER NOT NULL,
+		state TEXT NOT NULL,
+		position_ms INTEGER NOT NULL,
+		playback_rate TEXT NOT NULL,
+		FOREIGN KEY (now_playing_id) REFERENCES now_playing(id) ON DELETE CASCADE
+	);`
+	createTable(ctx, schema)
+}
+
 func UpsertNowPlaying(ctx context.Context, userId int, trackId string, playedAt int, playerId int, playerName string) error {
 	query := `DELETE FROM now_playing where user_id = ? and player_id = ? and player_name = ?`
 

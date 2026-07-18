@@ -14,6 +14,10 @@ const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200)
 })
 
+const imgAlt = computed(() => {
+  return `Artist art for ${props.artist.name}`
+})
+
 const loading = computed<LoadingAttribute>(() => {
   return props.index < 10 ? 'eager' : 'lazy'
 })
@@ -33,6 +37,7 @@ function navigateArtist() {
       <img
         class="rounded-full col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"
         :src="coverArtUrl"
+        :alt="imgAlt"
         :loading="loading"
         width="200"
         height="200"

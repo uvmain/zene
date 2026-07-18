@@ -26,7 +26,7 @@ const currentRoute = computed(() => {
       :primary="true"
       class="group/button"
       :size12="true"
-      :hover-text="`Play ${track ? 'track' : album ? 'album' : artist ? 'artist' : podcastEpisode ? 'podcast' : ''}`"
+      :title="`Play ${track ? 'track' : album ? 'album' : artist ? 'artist' : podcastEpisode ? 'podcast' : ''}`"
       @click="play({ artist, album, track, podcastEpisode, route: currentRoute })"
     >
       <icon-nrk-media-play

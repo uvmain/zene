@@ -119,7 +119,7 @@ onBeforeMount(async () => {
           </div>
           <img
             :src="channelCoverArt"
-            alt="Podcast Cover"
+            :alt="`Podcast art for ${podcast.title}`"
             class="rounded-md size-70 object-cover"
             width="280"
             height="280"

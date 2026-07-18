@@ -16,6 +16,10 @@ const genres = computed(() => {
   }
   return []
 })
+
+const imgAlt = computed(() => {
+  return `Podcast art for ${props.podcast.title}`
+})
 </script>
 
 <template>
@@ -29,6 +33,7 @@ const genres = computed(() => {
           <div class="flex flex-row gap-2 h-auto lg:gap-6">
             <img
               :src="coverArtUrl"
+              :alt="imgAlt"
               class="my-auto border-muted rounded-md aspect-square cursor-pointer shadow-background-500 shadow-md dark:shadow-background-900"
               loading="lazy"
               width="200"

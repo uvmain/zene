@@ -85,13 +85,13 @@ onKeyStroke('MediaStop', (e) => {
       class="group/button"
       :primary="true"
       :size12="true"
-      hover-text="Play/Pause"
+      :title="isPlaying ? 'Pause' : 'Play'"
       @click="togglePlayback()"
     >
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
       <icon-nrk-media-pause v-else class="footer-icon" />
     </ZButton>
-    <button v-else id="play-pause-compact" title="Play/Pause" class="media-control-button" @click="togglePlayback()">
+    <button v-else id="play-pause-compact" :title="isPlaying ? 'Pause' : 'Play'" class="media-control-button" @click="togglePlayback()">
       <icon-nrk-media-play v-if="!isPlaying" class="footer-icon" />
       <icon-nrk-media-pause v-else class="footer-icon" />
     </button>

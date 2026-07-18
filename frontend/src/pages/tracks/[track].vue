@@ -47,7 +47,7 @@ onMounted(async () => {
       <img
         v-if="coverArtUrl"
         :src="coverArtUrl"
-        alt="Album Art"
+        :alt="`Album art for ${track.title} by ${track.artist}`"
         class="h-auto max-w-30vw w-full shadow-lg"
         @error="onImageError"
       >

@@ -48,6 +48,16 @@ const artTarget = computed(() => {
   return currentlyPlayingItem.value.track ? `/albums/${currentlyPlayingItem.value.track.albumId}` : `/podcasts/${currentlyPlayingItem.value.podcastEpisode?.channelId}`
 })
 
+const imgAlt = computed(() => {
+  if (currentlyPlayingItem.value.track) {
+    return `Album art for ${currentlyPlayingItem.value.track.title} by ${currentlyPlayingItem.value.track.artist}`
+  }
+  else if (currentlyPlayingItem.value.podcastEpisode) {
+    return `Podcast art for ${currentlyPlayingItem.value.podcastEpisode.title}`
+  }
+  return 'Album art'
+})
+
 async function fetchPodcastChannelName(channelId: string) {
   const response = await fetchPodcastChannel(channelId)
   podcastChannelName.value = response?.podcasts.channel[0].title || ''
@@ -102,6 +112,7 @@ watch(currentlyPlayingItem, (newItem) => {
     >
       <img
         :src="coverArtUrl"
+        :alt="imgAlt"
         class="rounded-md size-full aspect-square cursor-pointer"
         @error="onImageError"
       />

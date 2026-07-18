@@ -1,4 +1,8 @@
 <script setup lang="ts">
+defineProps({
+  title: { type: String, default: 'Refresh' },
+})
+
 const emits = defineEmits(['refreshed'])
 
 const refreshed = ref(false)
@@ -14,11 +18,9 @@ async function refresh() {
 </script>
 
 <template>
-  <abbr title="Refresh">
-    <button class="flex rotate-30 items-center justify-center" @click="refresh()">
-      <icon-nrk-refresh class="text-sm cursor-pointer hover:text-main-400" :class="{ spin: refreshed }" />
-    </button>
-  </abbr>
+  <button :title="title" :aria-label="title" class="flex rotate-30 items-center justify-center" @click="refresh()">
+    <icon-nrk-refresh class="text-sm cursor-pointer hover:text-main-400" :class="{ spin: refreshed }" />
+  </button>
 </template>
 
 <style scoped lang="css">

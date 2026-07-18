@@ -23,7 +23,7 @@ onMounted(() => {
     <img
       v-if="!useDefaultAvatar && avatarUrl && avatarUrl.length > 0"
       :src="avatarUrl"
-      alt="User Avatar"
+      :alt="`Avatar for ${user.username}`"
       class="rounded-full size-10 object-cover"
       @error="onImageError"
     />
