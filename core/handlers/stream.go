@@ -117,7 +117,9 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 
 	err = ffmpeg.TranscodeAndStream(ctx, w, r, mediaFilepath, streamId, maxBitRate, timeOffset, streamFormat)
 	if err != nil {
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error streaming audio", "")
+		if !net.IsClientDisconnectError(err) {
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error streaming audio", "")
+		}
 		return
 	}
 }

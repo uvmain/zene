@@ -19,6 +19,14 @@ import (
 
 var activeTranscodes sync.Map
 
+func serveFileWithRangeSupport(w http.ResponseWriter, r *http.Request, file *os.File, modTime time.Time, format string) error {
+	w.Header().Set("Accept-Ranges", "bytes")
+	w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
+	filename := fmt.Sprintf("%s.%s", file.Name(), format)
+	http.ServeContent(w, r, filename, modTime, file)
+	return nil
+}
+
 func cleanupIncompleteCache(cachePath string, cacheKey string) {
 	if err := os.Remove(cachePath); err != nil {
 		logger.Printf("Failed to remove incomplete cache file %s: %v", cachePath, err)
@@ -55,10 +63,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 			if err != nil {
 				return fmt.Errorf("getting file info: %w", err)
 			}
-			w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
-			w.Header().Set("Cache-Control", "public, max-age=31536000")
-			w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
-			_, err = io.Copy(w, f)
+			err = serveFileWithRangeSupport(w, r, f, fileInfo.ModTime(), format)
 			return err
 		}
 
@@ -94,10 +99,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 					if err != nil {
 						return fmt.Errorf("getting file info: %w", err)
 					}
-					w.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
-					w.Header().Set("Cache-Control", "public, max-age=31536000")
-					w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
-					_, err = io.Copy(w, f)
+					err = serveFileWithRangeSupport(w, r, f, fileInfo.ModTime(), format)
 					return err
 				}
 				// Cache file doesn't exist, fallback to not using cache
@@ -199,6 +201,25 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}()
 
 	w.Header().Set("Content-Type", contentType)
+
+	// Periodically flush the response to prevent Chromecast and similar clients
+	// from timing out while waiting for buffered data to arrive.
+	if flusher, ok := w.(http.Flusher); ok {
+		stopFlusher := make(chan struct{})
+		defer close(stopFlusher)
+		go func() {
+			ticker := time.NewTicker(500 * time.Millisecond)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ticker.C:
+					flusher.Flush()
+				case <-stopFlusher:
+					return
+				}
+			}
+		}()
+	}
 
 	var mw io.Writer = w
 	var cacheFile *os.File
