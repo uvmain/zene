@@ -7,7 +7,7 @@ import (
 	"zene/core/types"
 )
 
-func migratePlayqueues(ctx context.Context) {
+func createPlayqueuesTable(ctx context.Context) {
 	schema := `CREATE TABLE playqueues (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,

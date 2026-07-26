@@ -15,7 +15,7 @@ type ScanRow struct {
 	CompletedDate string `xml:"completedDate,attr" json:"completedDate"`
 }
 
-func migrateScans(ctx context.Context) {
+func createScansTable(ctx context.Context) {
 	schema := `CREATE TABLE scans (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		count INTEGER NOT NULL,

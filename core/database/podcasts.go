@@ -11,7 +11,7 @@ import (
 	"zene/core/types"
 )
 
-func migratePodcasts(ctx context.Context) {
+func createPodcastsTable(ctx context.Context) {
 	schema := `CREATE TABLE podcast_channels (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		url TEXT NOT NULL,

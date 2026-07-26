@@ -19,23 +19,7 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 
 	extensions := []*types.OpenSubsonicExtensions{
 		{
-			Name:     "formPost",
-			Versions: []int{1},
-		},
-		{
 			Name:     "apiKeyAuthentication",
-			Versions: []int{1},
-		},
-		{
-			Name:     "transcodeOffset",
-			Versions: []int{1},
-		},
-		{
-			Name:     "songLyrics",
-			Versions: []int{1},
-		},
-		{
-			Name:     "indexBasedQueue",
 			Versions: []int{1},
 		},
 		{
@@ -43,11 +27,31 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 			Versions: []int{1},
 		},
 		{
-			Name:     "transcoding",
+			Name:     "formPost",
+			Versions: []int{1},
+		},
+		{
+			Name:     "indexBasedQueue",
 			Versions: []int{1},
 		},
 		{
 			Name:     "playbackReport",
+			Versions: []int{1},
+		},
+		{
+			Name:     "songLyrics",
+			Versions: []int{1},
+		},
+		{
+			Name:     "topSongsByArtistId",
+			Versions: []int{1},
+		},
+		{
+			Name:     "transcodeOffset",
+			Versions: []int{1},
+		},
+		{
+			Name:     "transcoding",
 			Versions: []int{1},
 		},
 	}
