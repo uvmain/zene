@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func migrateArt(ctx context.Context) {
+func createArtTables(ctx context.Context) {
 	createTable(ctx, `CREATE TABLE album_art (musicbrainz_album_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`)
 	createTable(ctx, `CREATE TABLE artist_art (musicbrainz_artist_id TEXT PRIMARY KEY, date_modified TEXT NOT NULL);`)
 }

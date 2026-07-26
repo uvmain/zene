@@ -101,7 +101,7 @@ onBeforeMount(async () => {
       <div class="flex flex-row gap-4 justify-start">
         <img
           :src="episodeArtUrl"
-          alt="Podcast Cover"
+          :alt="`Podcast art for ${props.episode.title}`"
           :loading="index < 20 ? 'eager' : 'lazy'"
           class="my-auto rounded-md col-span-full row-span-full size-34 cursor-pointer z-1 object-cover"
           width="136"
@@ -118,7 +118,7 @@ onBeforeMount(async () => {
           <div class="flex flex-row gap-2">
             <ZButton
               :size12="true"
-              :hover-text="episode.status === 'completed'
+              :title="episode.status === 'completed'
                 ? episodeDownloadedLocal ? 'Episode downloaded locally' : 'Episode downloaded on server'
                 : episode.status === 'downloading' ? 'Downloading...' : 'Download episode on server'"
               @click="downloadEpisode()"
@@ -139,7 +139,7 @@ onBeforeMount(async () => {
             <ZButton
               v-if="episode.status === 'completed'"
               :size12="true"
-              :hover-text="episodeDownloadedLocal ? 'Delete local download' : 'Delete server download'"
+              :title="episodeDownloadedLocal ? 'Delete local download' : 'Delete server download'"
               @click="deleteEpisode()"
             >
               <icon-nrk-trash class="size-8" />

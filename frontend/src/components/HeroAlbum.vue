@@ -71,6 +71,10 @@ const albumRoute = computed(() => {
   return `/albums/${currentAlbum.value.id}`
 })
 
+const imgAlt = computed(() => {
+  return `Album art for ${currentAlbum.value.name} by ${artist.value}`
+})
+
 function navigateAlbum() {
   router.push(albumRoute.value)
 }
@@ -118,6 +122,7 @@ onBeforeMount(async () => {
           <div class="flex flex-row gap-4 items-center">
             <img
               :src="coverArtUrl"
+              :alt="imgAlt"
               class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md object-cover lg:h-52 dark:shadow-background-900"
               loading="lazy"
               @error="onImageError"
@@ -143,7 +148,7 @@ onBeforeMount(async () => {
             </div>
           </div>
           <div v-if="!album" class="opacity-50 right-1 top-1 absolute hover:opacity-100 lg:(right-2 top-2)">
-            <ZButton size-10 @click="nextIndex()">
+            <ZButton title="Next album" size-10 @click="nextIndex()">
               <icon-nrk-media-next />
             </ZButton>
           </div>

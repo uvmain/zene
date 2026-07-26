@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func migrateBookmarks(ctx context.Context) {
+func createBookmarksTable(ctx context.Context) {
 	schema := `CREATE TABLE bookmarks (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,

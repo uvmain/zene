@@ -76,7 +76,9 @@ func HandleGetTranscodeStream(w http.ResponseWriter, r *http.Request) {
 
 	err = ffmpeg.TranscodeAndStream(ctx, w, r, mediaFilepath, transcodeParamsRow.MediaId, transcodeParamsRow.Bitrate, offsetInt, transcodeParamsRow.TargetFormat)
 	if err != nil {
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error streaming audio", "")
+		if !net.IsClientDisconnectError(err) {
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Error streaming audio", "")
+		}
 		return
 	}
 }

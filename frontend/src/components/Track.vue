@@ -79,7 +79,7 @@ watch(playcountUpdatedMusicbrainzTrackId, (newtrack) => {
             <img
               class="rounded-sm size-60px shadow-background-500 shadow-sm object-cover dark:shadow-background-900"
               :src="getCoverArtUrl(track.albumId, artSizes.size60)"
-              alt="Album Cover"
+              :alt="`Album art for ${track.title} by ${track.artist}`"
               :loading="trackIndex < 20 ? 'eager' : 'lazy'"
               width="60"
               height="60"

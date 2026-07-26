@@ -4,6 +4,13 @@ import { currentlyPlayingItem } from '~/logic/playbackQueue'
 
 const route = useRoute()
 const showTrackModal = ref(false)
+
+const imgAlt = computed(() => {
+  if (currentlyPlayingItem.value.track) {
+    return `Album art for ${currentlyPlayingItem.value.track.title} by ${currentlyPlayingItem.value.track.artist}`
+  }
+  return 'Album art'
+})
 </script>
 
 <template>
@@ -19,7 +26,7 @@ const showTrackModal = ref(false)
         <img
           class="rounded-sm size-60px shadow-background-500 shadow-sm object-cover dark:shadow-background-900"
           :src="getCoverArtUrl(currentlyPlayingItem.track.albumId, artSizes.size60)"
-          alt="Album Cover"
+          :alt="imgAlt"
           loading="lazy"
           width="60"
           height="60"

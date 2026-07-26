@@ -6,7 +6,7 @@ import (
 	"zene/core/types"
 )
 
-func migrateInternetRadio(ctx context.Context) {
+func createInternetRadioTable(ctx context.Context) {
 	schema := `CREATE TABLE internet_radio (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,

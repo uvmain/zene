@@ -30,7 +30,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 <template>
   <div class="w-fit relative">
-    <ZButton @click="show = !show">
+    <ZButton :title="title" @click="show = !show">
       <div class="flex flex-row gap-2 items-center">
         <span class="text-sm">{{ title }}</span>
         <icon-nrk-chevron-down />

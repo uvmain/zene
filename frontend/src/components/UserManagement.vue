@@ -119,7 +119,7 @@ onMounted(async () => {
       Manage Users
     </h1>
     <ZButton
-      hover-text="Create new user"
+      title="Create new user"
       @click="openCreateUserDialog"
     >
       Create new user
@@ -136,13 +136,13 @@ onMounted(async () => {
           <span>{{ user.adminRole ? 'Yes' : 'No' }}</span>
           <div class="flex flex-col gap-3 lg:flex-row">
             <ZButton
-              :hover-text="`Edit ${user.username} user`"
+              :title="`Edit ${user.username} user`"
               @click="openEditUserDialog(user)"
             >
               Edit
             </ZButton>
             <ZButton
-              :hover-text="`Delete ${user.username} user`"
+              :title="`Delete ${user.username} user`"
               :red="true"
               @click="openDeleteUserDialog(user)"
             >

@@ -1,14 +1,17 @@
 package net
 
 import (
+	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
+	stdnet "net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -21,6 +24,18 @@ import (
 	"zene/core/subsonic"
 	"zene/core/types"
 )
+
+func IsClientDisconnectError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var opErr *stdnet.OpError
+	if errors.As(err, &opErr) {
+		errorMessage := opErr.Err.Error()
+		return strings.Contains(errorMessage, "broken pipe") || strings.Contains(errorMessage, "connection reset")
+	}
+	return errors.Is(err, context.Canceled)
+}
 
 func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified time.Time) bool {
 	w.Header().Set("Last-Modified", lastModified.Truncate(time.Second).UTC().Format(http.TimeFormat))

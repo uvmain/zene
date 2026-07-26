@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func migrateTopSongs(ctx context.Context) {
+func createTopSongsTable(ctx context.Context) {
 	schema := `CREATE TABLE top_songs (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		musicbrainz_track_id TEXT NOT NULL,

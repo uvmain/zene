@@ -8,6 +8,10 @@ const chromecastConnected = computed(() => {
   return ChromeCast.connected.value
 })
 
+const buttonTitle = computed(() => {
+  return chromecastConnected.value ? 'Chromecast connected' : 'Connect to Chromecast'
+})
+
 onMounted(() => {
   isChrome.value = ChromeCast.isBrowserChrome()
   if (isChrome.value) {
@@ -22,10 +26,10 @@ onMounted(() => {
 
 <template>
   <div v-if="isChrome" class="flex items-center justify-center">
-    <button v-if="chromecastConnected" class="footer-icon-on" @click="ChromeCast.connect">
+    <button :title="buttonTitle" :aria-label="buttonTitle" v-if="chromecastConnected" class="footer-icon-on" @click="ChromeCast.connect">
       <icon-nrk-media-chromecast-active />
     </button>
-    <button v-else class="footer-icon" @click="ChromeCast.connect">
+    <button :title="buttonTitle" :aria-label="buttonTitle" v-else class="footer-icon" @click="ChromeCast.connect">
       <icon-nrk-media-chromecast />
     </button>
   </div>

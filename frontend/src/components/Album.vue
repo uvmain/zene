@@ -16,6 +16,10 @@ const artist = computed(() => {
   return props.album.displayAlbumArtist ?? props.album.artist ?? props.album.displayArtist ?? 'Unknown Artist'
 })
 
+const imgAlt = computed(() => {
+  return `Album art for ${props.album.title} by ${artist.value}`
+})
+
 const artistAndDate = computed(() => {
   if (props.album.releaseDate) {
     return `${artist.value} • ${parseReleaseDate(props.album.releaseDate)}`
@@ -60,6 +64,7 @@ function navigateArtist() {
         class="col-span-full row-span-full aspect-square shadow-background-500 shadow-md z-1 object-cover dark:shadow-background-950"
         :src="coverArtUrl"
         :loading="loading"
+        :alt="imgAlt"
         width="200"
         height="200"
         @error="onImageError"

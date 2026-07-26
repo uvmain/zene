@@ -50,6 +50,9 @@ type SubsonicNowPlayingEntry struct {
 	MinutesAgo         int                 `xml:"minutesAgo,attr" json:"minutesAgo"`
 	PlayerId           int                 `xml:"playerId,attr" json:"playerId"`
 	PlayerName         string              `xml:"playerName,attr" json:"playerName"`
+	State              string              `xml:"state,attr" json:"state"`
+	PositionMs         int                 `xml:"positionMs,attr" json:"positionMs"`
+	PlaybackRate       float64             `xml:"playbackRate,attr" json:"playbackRate"`
 }
 
 type SubsonicNowPlaying struct {

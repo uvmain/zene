@@ -20,7 +20,7 @@ onBeforeMount(async () => {
         <h2 class="text-lg font-semibold uppercase lg:text-xl">
           Genres
         </h2>
-        <Refresher @refreshed="getGenres()" />
+        <Refresher title="Refresh genres" @refreshed="getGenres()" />
       </div>
       <hr class="mx-2 border-t border-main-400/20 flex-1 lg:mx-4" />
       <ZButton>

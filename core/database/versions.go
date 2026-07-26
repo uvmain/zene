@@ -9,7 +9,7 @@ import (
 	"zene/core/types"
 )
 
-func migrateVersions(ctx context.Context) {
+func createVersionsTable(ctx context.Context) {
 	schema := `CREATE TABLE versions (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		server_version TEXT NOT NULL,

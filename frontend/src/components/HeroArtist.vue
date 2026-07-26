@@ -19,6 +19,10 @@ const coverArtUrl = computed(() => {
   return getCoverArtUrl(props.artist.coverArt, artSizes.size200, artUpdatedTime.value)
 })
 
+const imgAlt = computed(() => {
+  return `Artist art for ${props.artist.name}`
+})
+
 const artistRoute = computed(() => {
   return `/artists/${props.artist.id}`
 })
@@ -40,6 +44,7 @@ function actOnUpdatedArt() {
         <div class="flex flex-row gap-4 items-center">
           <img
             :src="coverArtUrl"
+            :alt="imgAlt"
             class="border-muted rounded-md h-32 aspect-square cursor-pointer shadow-background-500 shadow-md object-cover lg:h-52 dark:shadow-background-900"
             loading="eager"
             @error="onImageError"

@@ -99,7 +99,7 @@ onBeforeMount(async () => {
         <h2 class="text-lg font-semibold uppercase lg:text-xl">
           {{ title }}
         </h2>
-        <Refresher @refreshed="refresh" />
+        <Refresher :title="`Refresh ${title}`" @refreshed="refresh" />
       </div>
       <hr v-if="!props.orderDisabled" class="mx-2 border-t border-main-400/20 flex-1 lg:mx-4" />
       <DropdownMenu

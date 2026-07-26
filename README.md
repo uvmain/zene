@@ -44,6 +44,8 @@ Supports the following OpenSubsonic API extensions:
 - `indexBasedQueue` enables savePlayQueueByIndex and getPlayQueueByIndex endpoints
 - `getPodcastEpisode` enables the getPodcastEpisode endpoint
 - `transcoding` enables the getTranscodeDecision and getTranscodeStream endpoints
+- `playbackReport` enables the reportPlayback endpoint and extends the getNowPlaying endpoint
+- `topSongsByArtistId` enables an `id` parameter for the getTopSongs endpoint
 
 ### Supports (and extends) the following OpenSubsonic API endpoints:
 

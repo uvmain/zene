@@ -6,7 +6,7 @@ import (
 	"zene/core/logic"
 )
 
-func migratePlayCounts(ctx context.Context) {
+func createPlayCountsTable(ctx context.Context) {
 	schema := `CREATE TABLE play_counts (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		user_id INTEGER NOT NULL,

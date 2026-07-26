@@ -28,7 +28,7 @@ onBeforeMount(getPlaylist)
       <div>
         <img
           :src="playlist.coverArt"
-          alt="Playlist Cover"
+          :alt="`Playlist art for ${playlist.name}`"
           class="rounded-md size-40 object-cover"
           loading="lazy"
           width="200"

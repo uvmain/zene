@@ -15,7 +15,7 @@ const loaded = ref(false)
     <img
       class="rounded-md size-224px object-cover"
       :src="imageUrl"
-      :alt="label"
+      :alt="`${props.label} album art`"
       width="224"
       height="224"
       @load="loaded = true"
@@ -23,7 +23,7 @@ const loaded = ref(false)
     <Loading v-if="!loaded" class="size-56 translate-x--1/2 translate-y--1/2 left-1/2 top-1/2 absolute" />
     <ZButton
       class="opacity-70 bottom-10 right-2 absolute hover:opacity-100"
-      aria-label="Choose art"
+      :title="`Use ${props.label} album art`"
       @click="$emit('updateArt', props.type)"
     >
       Use This Art

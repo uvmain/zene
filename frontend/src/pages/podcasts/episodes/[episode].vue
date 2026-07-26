@@ -40,7 +40,7 @@ onBeforeMount(async () => {
       <div class="flex flex-row gap-4">
         <img
           :src="coverArt"
-          alt="Podcast Cover"
+          :alt="`Podcast art for ${episode.title}`"
           class="rounded-md size-70 object-cover"
           width="280"
           height="280"

@@ -175,6 +175,7 @@ func StartServer() *http.Server {
 	// Media library scanning
 	apiRouter.Handle("/rest/startscan", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleStartScan)))
 	apiRouter.Handle("/rest/{unknownEndpoint}", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleNotFound)))
+	apiRouter.Handle("/rest/reportplayback", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleReportPlayback)))
 	/* cSpell:enable */
 
 	// frontend router (case-sensitive, for static files and SPA)

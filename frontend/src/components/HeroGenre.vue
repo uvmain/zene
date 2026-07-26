@@ -31,6 +31,11 @@ const coverArtUrl = computed(() => {
   return getCoverArtUrl(track.coverArt, artSizes.size200)
 })
 
+const imgAlt = computed(() => {
+  const track = props.tracks[current.value]
+  return `Album art for ${track.title} by ${track.displayArtist ?? track.artist ?? 'Unknown Artist'}`
+})
+
 interface ArtistCount {
   name: string
   count: number
@@ -97,7 +102,7 @@ onUnmounted(() => {
               {{ genre }}
             </div>
             <div class="flex-wrap gap-2 hidden justify-start overflow-hidden md:flex">
-              <ZButton v-for="artist in genreArtists.slice(0, 6)" :key="artist.name" @click="navigateToArtist(artist.musicBrainzId)">
+              <ZButton v-for="artist in genreArtists.slice(0, 6)" :key="artist.name" :title="`Navigate to ${artist.name}`" @click="navigateToArtist(artist.musicBrainzId)">
                 <span class="text-nowrap">{{ artist.name }}</span>
               </ZButton>
             </div>
@@ -105,6 +110,7 @@ onUnmounted(() => {
               <PlayButton :playing-route="genreRoute" class="fade flex justify-start" />
               <img
                 :src="coverArtUrl"
+                :alt="imgAlt"
                 class="hidden"
                 loading="eager"
               />

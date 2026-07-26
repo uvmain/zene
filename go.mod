@@ -12,7 +12,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.11.1
 	github.com/timematic/anytime v0.0.0-20250424004116-93a49dc8f85f
-	github.com/ulikunitz/xz v0.5.15
+	github.com/ulikunitz/xz v0.5.16
 	golang.org/x/image v0.44.0
 	golang.org/x/sync v0.22.0
 )

@@ -34,7 +34,7 @@ function navigateAlbum() {
           <img
             v-if="coverArtUrl"
             :src="coverArtUrl"
-            alt="Album Art"
+            :alt="`Album art for ${track.title} by ${track.artist}`"
             class="mx-auto h-auto max-w-400px w-full aspect-square cursor-pointer shadow-lg"
             @error="onImageError"
             @click="navigateAlbum()"

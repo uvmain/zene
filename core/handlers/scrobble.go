@@ -59,7 +59,12 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 
 	var submissionBool = true
 	if submission != "" {
-		submissionBool = net.ParseBooleanFromString(w, r, submission)
+		submissionBool, err = strconv.ParseBool(submission)
+		if err != nil {
+			logger.Printf("Error parsing submission for user %d: %v", user.Id, err)
+			net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid submission, must be a boolean", "")
+			return
+		}
 	}
 
 	for _, trackId := range metadataIds {
@@ -71,7 +76,7 @@ func HandleScrobble(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 		}
-		err = database.UpsertNowPlaying(ctx, user.Id, trackId, timeInt, 0, playerName)
+		_, err = database.UpsertNowPlaying(ctx, user.Id, trackId, timeInt, 0, playerName)
 		if err != nil {
 			logger.Printf("Error upserting now playing for user %d: %v", user.Id, err)
 			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to upsert user now playing", "")

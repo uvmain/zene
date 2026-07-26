@@ -18,6 +18,7 @@ func Initialise(ctx context.Context) {
 	startPodcastCleanupRoutine(ctx)
 	startPodcastEpisodeRefreshRoutine(ctx)
 	startScanScheduleRoutine(ctx)
+	startPlaybackReportsCleanupRoutine(ctx)
 }
 
 func startAudioCacheCleanupRoutine(ctx context.Context) {
@@ -209,6 +210,25 @@ func startTranscodeParamsCleanupRoutine(ctx context.Context) {
 				return
 			case <-ticker.C:
 				database.ClearOldTranscodeParams(ctx)
+			}
+		}
+	}()
+}
+
+func startPlaybackReportsCleanupRoutine(ctx context.Context) {
+	logger.Println("Scheduler: starting playback reports cleanup routine")
+	database.CleanupPlaybackReports(ctx)
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Println("Scheduler: stopping playback reports cleanup routine")
+				return
+			case <-ticker.C:
+				database.CleanupPlaybackReports(ctx)
 			}
 		}
 	}()

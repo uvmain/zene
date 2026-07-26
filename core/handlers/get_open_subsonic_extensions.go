@@ -17,44 +17,46 @@ func HandleOpenSubsonicExtensions(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(r.Context())
 
-	extension1 := types.OpenSubsonicExtensions{
-		Name:     "formPost",
-		Versions: []int{1},
-	}
-	extension2 := types.OpenSubsonicExtensions{
-		Name:     "apiKeyAuthentication",
-		Versions: []int{1},
-	}
-	extension3 := types.OpenSubsonicExtensions{
-		Name:     "transcodeOffset",
-		Versions: []int{1},
-	}
-	extension4 := types.OpenSubsonicExtensions{
-		Name:     "songLyrics",
-		Versions: []int{1},
-	}
-	extension5 := types.OpenSubsonicExtensions{
-		Name:     "indexBasedQueue",
-		Versions: []int{1},
-	}
-	extension6 := types.OpenSubsonicExtensions{
-		Name:     "getPodcastEpisode",
-		Versions: []int{1},
-	}
-	extension7 := types.OpenSubsonicExtensions{
-		Name:     "transcoding",
-		Versions: []int{1},
+	extensions := []*types.OpenSubsonicExtensions{
+		{
+			Name:     "apiKeyAuthentication",
+			Versions: []int{1},
+		},
+		{
+			Name:     "getPodcastEpisode",
+			Versions: []int{1},
+		},
+		{
+			Name:     "formPost",
+			Versions: []int{1},
+		},
+		{
+			Name:     "indexBasedQueue",
+			Versions: []int{1},
+		},
+		{
+			Name:     "playbackReport",
+			Versions: []int{1},
+		},
+		{
+			Name:     "songLyrics",
+			Versions: []int{1},
+		},
+		{
+			Name:     "topSongsByArtistId",
+			Versions: []int{1},
+		},
+		{
+			Name:     "transcodeOffset",
+			Versions: []int{1},
+		},
+		{
+			Name:     "transcoding",
+			Versions: []int{1},
+		},
 	}
 
-	response.SubsonicResponse.OpenSubsonicExtensions = []*types.OpenSubsonicExtensions{
-		&extension1,
-		&extension2,
-		&extension3,
-		&extension4,
-		&extension5,
-		&extension6,
-		&extension7,
-	}
+	response.SubsonicResponse.OpenSubsonicExtensions = extensions
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }
