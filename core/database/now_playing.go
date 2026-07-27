@@ -22,12 +22,13 @@ func createNowPlayingTable(ctx context.Context) {
 		UNIQUE (user_id, track_id, player_id, player_name)
 	);`
 	createTable(ctx, schema)
+	createIndex(ctx, "nowPlayingUniqueIndexName", "now_playing", []string{"user_id", "track_id", "player_id", "player_name"}, true)
 }
 
 func UpsertNowPlaying(ctx context.Context, userId int, trackId string, playedAt int, playerId int, playerName string) (int, error) {
 	query := `INSERT INTO now_playing (user_id, track_id, played_at, player_id, player_name)
 		VALUES (?, ?, ?, ?, ?)
-		ON CONFLICT(user_id, track_id, player_id, player_name) DO UPDATE SET player_name=excluded.player_name`
+		ON CONFLICT(user_id, track_id, player_id, player_name) DO UPDATE SET played_at=excluded.played_at, player_name=excluded.player_name`
 
 	_, err := DB.ExecContext(ctx, query, userId, trackId, playedAt, playerId, playerName)
 	if err != nil {

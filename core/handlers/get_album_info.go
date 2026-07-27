@@ -60,13 +60,11 @@ func HandleGetAlbumInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shareUrl := logic.GetUnauthenticatedImageUrl(musicbrainzAlbumId, 600)
-
 	albumInfo := types.AlbumInfo{
 		MusicBrainzId:  musicbrainzAlbumId,
-		SmallImageUrl:  shareUrl + "?size=300",
-		MediumImageUrl: shareUrl + "?size=600",
-		LargeImageUrl:  shareUrl + "?size=1200",
+		SmallImageUrl:  logic.GetUnauthenticatedImageUrl(musicbrainzAlbumId, 300),
+		MediumImageUrl: logic.GetUnauthenticatedImageUrl(musicbrainzAlbumId, 600),
+		LargeImageUrl:  logic.GetUnauthenticatedImageUrl(musicbrainzAlbumId, 1200),
 	}
 
 	switch version {
