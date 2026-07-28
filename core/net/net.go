@@ -14,11 +14,9 @@ import (
 	stdnet "net"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-	"zene/core/config"
 	zene_io "zene/core/io"
 	"zene/core/logger"
 	"zene/core/subsonic"
@@ -54,41 +52,6 @@ func IfModifiedResponse(w http.ResponseWriter, r *http.Request, lastModified tim
 func AddUserAgentHeaderToRequest(req *http.Request) {
 	var userAgent = "zene/core/1.0 (https://github.com/uvmain/zene)"
 	req.Header.Set("User-Agent", userAgent)
-}
-
-func DownloadZip(url string, fileName string, targetDirectory string, fileNameFilter []string) error {
-	logger.Println("Downloading:", url)
-	response, err := http.Get(url)
-	if err != nil {
-		zene_io.Cleanup(fileName)
-		return fmt.Errorf("downloading zip from %s: %v", url, err)
-	}
-	defer response.Body.Close()
-
-	fileName = filepath.Join(config.TempDirectory, fileName)
-	out, err := os.Create(fileName)
-	if err != nil {
-		out.Close()
-		zene_io.Cleanup(fileName)
-		return err
-	}
-
-	_, err = io.Copy(out, response.Body)
-	if err != nil {
-		out.Close()
-		stringErr := fmt.Sprintf("error copying response body to file: %v", err)
-		zene_io.Cleanup(fileName)
-		return fmt.Errorf("%s: %v", stringErr, err)
-	}
-
-	out.Close()
-
-	if err := zene_io.Unzip(fileName, targetDirectory, fileNameFilter); err != nil {
-		zene_io.Cleanup(fileName)
-		return fmt.Errorf("unzipping %s: %v", fileName, err)
-	}
-
-	return nil
 }
 
 func DownloadBinaryFile(url string, filePath string) error {
@@ -269,4 +232,17 @@ func ParseDuplicateFormKeys(r *http.Request, key string, intArray bool) ([]int, 
 		}
 	}
 	return intSlice, stringSlice, nil
+}
+
+type FlushWriter struct {
+	http.ResponseWriter
+	http.Flusher
+}
+
+func (flushWriter FlushWriter) Write(packets []byte) (int, error) {
+	written, err := flushWriter.ResponseWriter.Write(packets)
+	if written > 0 {
+		flushWriter.Flush()
+	}
+	return written, err
 }

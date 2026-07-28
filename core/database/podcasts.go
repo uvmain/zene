@@ -162,31 +162,6 @@ func DeletePodcastChannel(ctx context.Context, channelId int) error {
 	return nil
 }
 
-func IsValidPodcastCover(ctx context.Context, coverArtId string) (bool, error) {
-	query := `SELECT cover_art
-		FROM (
-				SELECT cover_art
-				FROM podcast_channels
-				WHERE cover_art = ?
-				UNION ALL
-				SELECT cover_art
-				FROM podcast_episodes
-				WHERE cover_art = ?
-		)
-		LIMIT 1;`
-	row := DB.QueryRowContext(ctx, query, coverArtId, coverArtId)
-
-	var dbCoverArtId string
-	if err := row.Scan(&dbCoverArtId); err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		return false, fmt.Errorf("checking podcast cover validity: %v", err)
-	}
-
-	return dbCoverArtId == coverArtId, nil
-}
-
 func GetPodcasts(ctx context.Context, podcastId int, includeEpisodes bool) ([]types.PodcastChannel, error) {
 	user, err := GetUserByContext(ctx)
 	if err != nil {

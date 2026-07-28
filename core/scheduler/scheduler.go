@@ -19,6 +19,7 @@ func Initialise(ctx context.Context) {
 	startPodcastEpisodeRefreshRoutine(ctx)
 	startScanScheduleRoutine(ctx)
 	startPlaybackReportsCleanupRoutine(ctx)
+	startTranscodeParamsCleanupRoutine(ctx)
 }
 
 func startAudioCacheCleanupRoutine(ctx context.Context) {

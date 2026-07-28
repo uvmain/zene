@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	"mime"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"time"
 	"zene/core/config"
@@ -101,14 +99,6 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 		defer file.Close()
 
 		logger.Printf("serving %s without transcoding", mediaFilepath)
-
-		w.Header().Set("Cache-Control", "public, max-age=31536000")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-
-		contentType := mime.TypeByExtension(filepath.Ext(fileInfo.Name()))
-		if contentType != "" {
-			w.Header().Set("Content-Type", contentType)
-		}
 
 		http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), file)
 

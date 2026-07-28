@@ -90,7 +90,8 @@ func DeleteTranscodeParams(ctx context.Context, paramString string) error {
 
 func ClearOldTranscodeParams(ctx context.Context) error {
 	query := `DELETE FROM transcode_params WHERE created_at < ?`
-	_, err := DB.ExecContext(ctx, query, logic.GetTimeMinusSecondsFormatted(config.TranscodeParamsTtlSeconds))
+	ttlTime := logic.GetTimeMinusSecondsFormatted(config.TranscodeParamsTtlSeconds)
+	_, err := DB.ExecContext(ctx, query, ttlTime)
 	if err != nil {
 		return err
 	}

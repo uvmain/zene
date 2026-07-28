@@ -44,19 +44,6 @@ func UpsertNowPlaying(ctx context.Context, userId int, trackId string, playedAt 
 	return nowPlayingId, nil
 }
 
-func MediaIsCurrentlyPlaying(ctx context.Context, userId int, trackId string, playerName string) (bool, error) {
-	query := `SELECT 1 FROM now_playing WHERE user_id = ? AND track_id = ? AND player_name = ? LIMIT 1`
-	var exists int
-	err := DB.QueryRowContext(ctx, query, userId, trackId, playerName).Scan(&exists)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		return false, fmt.Errorf("checking now playing session: %v", err)
-	}
-	return true, nil
-}
-
 func CleanupNowPlaying(ctx context.Context) error {
 	query := `DELETE FROM now_playing
 		WHERE id IN (

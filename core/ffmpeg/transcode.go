@@ -15,13 +15,12 @@ import (
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/net"
 )
 
 var activeTranscodes sync.Map
 
 func serveFileWithRangeSupport(w http.ResponseWriter, r *http.Request, file *os.File, modTime time.Time, format string) error {
-	w.Header().Set("Accept-Ranges", "bytes")
-	w.Header().Set("Content-Type", fmt.Sprintf("audio/%s", format))
 	filename := fmt.Sprintf("%s.%s", file.Name(), format)
 	http.ServeContent(w, r, filename, modTime, file)
 	return nil
@@ -68,56 +67,19 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		}
 
 		// check if another request is already transcoding this file
-		mutex, loaded := activeTranscodes.LoadOrStore(cacheKey, &sync.Mutex{})
-		transcodeInProgress := loaded
+		mutex, transcodeInProgress := activeTranscodes.LoadOrStore(cacheKey, &sync.Mutex{})
 		cacheMutex := mutex.(*sync.Mutex)
 
 		if transcodeInProgress {
-			logger.Printf("Waiting for concurrent transcode to complete for: %s", cacheKey)
-
-			done := make(chan bool, 1)
-			go func() {
-				cacheMutex.Lock()
-				defer cacheMutex.Unlock()
-				done <- true
+			useCache = false
+			logger.Printf("transcode already in progress for %s, not using cache", cacheKey)
+		} else {
+			cacheMutex.Lock()
+			defer func() {
+				cacheMutex.Unlock()
+				activeTranscodes.Delete(cacheKey)
 			}()
-
-			select {
-			case <-done:
-				// transcode finished, check if cache file now exists
-				if _, err := os.Stat(cachePath); err == nil {
-					logger.Printf("Serving transcoded file from cache for %s after waiting: %s", filePathAbs, cachePath)
-					if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
-						logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
-					}
-					f, err := os.Open(cachePath)
-					if err != nil {
-						return fmt.Errorf("opening cached file: %w", err)
-					}
-					defer f.Close()
-					fileInfo, err := f.Stat()
-					if err != nil {
-						return fmt.Errorf("getting file info: %w", err)
-					}
-					err = serveFileWithRangeSupport(w, r, f, fileInfo.ModTime(), format)
-					return err
-				}
-				// Cache file doesn't exist, fallback to not using cache
-				logger.Printf("Cache file not found after waiting, will transcode: %s", cacheKey)
-			case <-time.After(5 * time.Second):
-				// timed out waiting for first transcode to cache, fallback to not using cache
-				logger.Printf("Timeout waiting for concurrent transcode, will transcode ourselves: %s", cacheKey)
-			case <-ctx.Done():
-				return ctx.Err()
-			}
 		}
-
-		// Lock the mutex for this cache key so other requests will wait
-		cacheMutex.Lock()
-		defer func() {
-			cacheMutex.Unlock()
-			activeTranscodes.Delete(cacheKey)
-		}()
 	}
 
 	if timeOffset > 0 {
@@ -189,39 +151,29 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return fmt.Errorf("getting ffmpeg stderr: %w", err)
 	}
 
+	w.Header().Set("Content-Type", contentType)
+	w.WriteHeader(http.StatusOK)
+
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("starting ffmpeg: %w", err)
 	}
 
 	go func() {
-		slurp, _ := io.ReadAll(stderr)
-		if len(slurp) > 0 {
-			logger.Printf("ffmpeg stderr: %s", slurp)
+		ffmpegError, _ := io.ReadAll(stderr)
+		if len(ffmpegError) > 0 {
+			logger.Printf("ffmpeg stderr: %s", ffmpegError)
 		}
 	}()
 
-	w.Header().Set("Content-Type", contentType)
+	var mw io.Writer = w
 
-	// Periodically flush the response to prevent Chromecast and similar clients
-	// from timing out while waiting for buffered data to arrive.
 	if flusher, ok := w.(http.Flusher); ok {
-		stopFlusher := make(chan struct{})
-		defer close(stopFlusher)
-		go func() {
-			ticker := time.NewTicker(500 * time.Millisecond)
-			defer ticker.Stop()
-			for {
-				select {
-				case <-ticker.C:
-					flusher.Flush()
-				case <-stopFlusher:
-					return
-				}
-			}
-		}()
+		mw = net.FlushWriter{
+			ResponseWriter: w,
+			Flusher:        flusher,
+		}
 	}
 
-	var mw io.Writer = w
 	var cacheFile *os.File
 	var tempCachePath string
 	cacheFileCreated := false
@@ -244,7 +196,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 			return fmt.Errorf("creating temp cache file: %w", err)
 		}
 		cacheFileCreated = true
-		mw = io.MultiWriter(w, cacheFile)
+		mw = io.MultiWriter(mw, cacheFile)
 	}
 
 	_, err = io.Copy(mw, stdout)
@@ -260,15 +212,15 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	if waitErr != nil {
+		if useCache && cacheFileCreated {
+			cacheFile.Close()
+			cleanupIncompleteCache(tempCachePath, cacheKey)
+		}
 		if ctx.Err() != nil {
 			logger.Printf("ffmpeg killed due to client disconnect: %s (trackId=%s, client=%s, UA=%s)", filePathAbs, trackId, r.RemoteAddr, r.UserAgent())
 			return nil
 		}
 		logger.Printf("ffmpeg exited with error while streaming %s (trackId=%s, client=%s, UA=%s): %v", filePathAbs, trackId, r.RemoteAddr, r.UserAgent(), waitErr)
-		if useCache && cacheFileCreated {
-			cacheFile.Close()
-			cleanupIncompleteCache(tempCachePath, cacheKey)
-		}
 		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
 	}
 
@@ -288,7 +240,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 			return err
 		}
 	} else {
-		logger.Printf("Transcoding %s complete (offset stream, not cached)", filePathAbs)
+		logger.Printf("Transcoding %s complete (not cached)", filePathAbs)
 	}
 
 	return nil

@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"io"
+	"time"
+)
 
 type ContextKey string
 
@@ -147,4 +150,14 @@ type TopSongRow struct {
 type SseMessage struct {
 	Source string      `json:"source"`
 	Data   interface{} `json:"data"`
+}
+
+type ServeStreamDetails struct {
+	Id            string
+	Name          string
+	Raw           bool
+	ContentLength string
+	ContentType   string
+	Content       io.ReadSeeker
+	ModTime       time.Time
 }
