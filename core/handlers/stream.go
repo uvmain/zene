@@ -100,7 +100,7 @@ func HandleStream(w http.ResponseWriter, r *http.Request) {
 
 		logger.Printf("serving %s without transcoding", mediaFilepath)
 
-		http.ServeContent(w, r, fileInfo.Name(), fileInfo.ModTime(), file)
+		net.ServeFileWithRangeSupport(w, r, file, fileInfo.ModTime(), streamFormat)
 
 		return
 	}

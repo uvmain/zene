@@ -30,6 +30,19 @@ func HandleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
+	requestUser, err := database.GetUserByContext(ctx)
+	if err != nil {
+		logger.Printf("Error getting user by context: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to create users", "")
+		return
+	}
+
+	if !requestUser.PlaylistRole {
+		logger.Printf("User %s attempted to create a playlist without playlist role", requestUser.Username)
+		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to create playlists", "")
+		return
+	}
+
 	if playlistId == "" && playlistName == "" {
 		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "either playlistId or name parameter is required", "")
 		return
@@ -52,7 +65,7 @@ func HandleCreatePlaylist(w http.ResponseWriter, r *http.Request) {
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
-	result, err := database.CreatePlaylist(ctx, playlistName, playlistIdInt, songIds)
+	result, err := database.CreatePlaylist(ctx, requestUser, playlistName, playlistIdInt, songIds)
 	if err != nil && err.Error() == "existing playlist provided with no new songIds" {
 		logger.Printf("Error creating playlist: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error creating playlist, existing playlist provided with no new songIds", "")

@@ -107,7 +107,7 @@
 [^3]: Scrobble updates local Now Playing and Play Count - it does not integrate with lastfm.
 [^4]: Notes property is not supported.
 [^5]: Top songs are fetched from Deezer, not lastfm.
-[^6]: Additionally allows `coverArt` and multiple `allowedUserId` params to be sent.
+[^6]: Additionally allows `coverArt` param to be sent.
 [^7]: Additionally support `offset` param to enable paging through the same random results.
 [^8]: Additionally supports a `type` param value of `release`, ordering by release date desc.
 [^9]: Additionally supports a `seed` integer param value for deterministic random ordering.

@@ -10,7 +10,6 @@ export interface SubsonicPlaylist {
   created: string
   changed: string
   coverArt: string
-  allowedUser: string[]
   entry: SubsonicSong[]
 }
 

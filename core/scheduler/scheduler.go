@@ -199,7 +199,10 @@ func startScanScheduleRoutine(ctx context.Context) {
 
 func startTranscodeParamsCleanupRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting transcode params cleanup routine")
-	database.ClearOldTranscodeParams(ctx)
+	err := database.ClearOldTranscodeParams(ctx)
+	if err != nil {
+		logger.Printf("Error clearing old transcode params: %v", err)
+	}
 	go func() {
 		ticker := time.NewTicker(1 * time.Hour)
 		defer ticker.Stop()
@@ -210,7 +213,10 @@ func startTranscodeParamsCleanupRoutine(ctx context.Context) {
 				logger.Println("Scheduler: stopping transcode params cleanup routine")
 				return
 			case <-ticker.C:
-				database.ClearOldTranscodeParams(ctx)
+				err := database.ClearOldTranscodeParams(ctx)
+				if err != nil {
+					logger.Printf("Error clearing old transcode params: %v", err)
+				}
 			}
 		}
 	}()
@@ -218,7 +224,10 @@ func startTranscodeParamsCleanupRoutine(ctx context.Context) {
 
 func startPlaybackReportsCleanupRoutine(ctx context.Context) {
 	logger.Println("Scheduler: starting playback reports cleanup routine")
-	database.CleanupPlaybackReports(ctx)
+	err := database.CleanupPlaybackReports(ctx)
+	if err != nil {
+		logger.Printf("Error cleaning up playback reports: %v", err)
+	}
 	go func() {
 		ticker := time.NewTicker(5 * time.Minute)
 		defer ticker.Stop()
@@ -229,7 +238,10 @@ func startPlaybackReportsCleanupRoutine(ctx context.Context) {
 				logger.Println("Scheduler: stopping playback reports cleanup routine")
 				return
 			case <-ticker.C:
-				database.CleanupPlaybackReports(ctx)
+				err := database.CleanupPlaybackReports(ctx)
+				if err != nil {
+					logger.Printf("Error cleaning up playback reports: %v", err)
+				}
 			}
 		}
 	}()

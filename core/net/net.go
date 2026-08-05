@@ -246,3 +246,9 @@ func (flushWriter FlushWriter) Write(packets []byte) (int, error) {
 	}
 	return written, err
 }
+
+func ServeFileWithRangeSupport(w http.ResponseWriter, r *http.Request, file *os.File, modTime time.Time, format string) error {
+	filename := fmt.Sprintf("%s.%s", file.Name(), format)
+	http.ServeContent(w, r, filename, modTime, file)
+	return nil
+}
