@@ -4,12 +4,17 @@ import { RecycleScroller } from 'vue-virtual-scroller'
 import { debugLog } from '~/logic/logger'
 import { currentlyPlayingItem } from '~/logic/playbackQueue'
 import 'vue-virtual-scroller/index.css'
+import { currentQueue } from '~/logic/playbackQueue'
 
 const props = defineProps({
   primaryArtist: { type: String, required: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
   autoScrolling: { type: Boolean, default: true },
 })
+
+watch(currentQueue, async () => {
+  scrollToActiveTrack()
+}, { immediate: true })
 
 const scroller = useTemplateRef('scroller')
 

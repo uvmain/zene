@@ -143,6 +143,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/random-tracks': RouteRecordInfo<
+      '/random-tracks',
+      '/random-tracks',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/search': RouteRecordInfo<
       '/search',
       '/search',
@@ -314,6 +321,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/radio.vue': {
       routes:
         | '/radio'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/random-tracks.vue': {
+      routes:
+        | '/random-tracks'
       views:
         | never
       pathParamNames:

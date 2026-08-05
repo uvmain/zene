@@ -13,9 +13,10 @@ const route = useRoute()
 
 async function handleGetRandomTracks(count = 1000) {
   await getRandomTracks(count)
-  if (route.path !== '/tracks' && route.path !== '/visualizer') {
-    nowPlayingRoute.value = '/tracks'
-    router.push('/tracks')
+
+  nowPlayingRoute.value = '/random-tracks'
+  if (route.path !== '/random-tracks' && route.path !== '/visualizer') {
+    router.push('/random-tracks')
   }
 }
 
