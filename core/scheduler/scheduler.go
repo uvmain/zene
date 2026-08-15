@@ -6,243 +6,43 @@ import (
 	"zene/core/database"
 	"zene/core/logger"
 	"zene/core/scanner"
-	"zene/core/types"
 )
 
+func startSchedule(ctx context.Context, name string, interval time.Duration, task func(context.Context) error) {
+	logger.Printf("[Scheduler] starting %s routine", name)
+	err := task(ctx)
+	if err != nil {
+		logger.Printf("[Scheduler] error running %s routine: %v", name, err)
+	}
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Printf("[Scheduler] stopping %s routine", name)
+				return
+			case <-ticker.C:
+				err := task(ctx)
+				if err != nil {
+					logger.Printf("[Scheduler] error running %s routine: %v", name, err)
+				}
+			}
+		}
+	}()
+}
+
 func Initialise(ctx context.Context) {
-	startAudioCacheCleanupRoutine(ctx)
-	startNowPlayingCleanupRoutine(ctx)
-	startAlbumArtCleanupRoutine(ctx)
-	startArtistArtCleanupRoutine(ctx)
-	startOrphanedPlaylistEntriesCleanupRoutine(ctx)
-	startPodcastCleanupRoutine(ctx)
-	startPodcastEpisodeRefreshRoutine(ctx)
-	startScanScheduleRoutine(ctx)
-	startPlaybackReportsCleanupRoutine(ctx)
-	startTranscodeParamsCleanupRoutine(ctx)
-}
-
-func startAudioCacheCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting audio cache cleanup routine")
-	cleanupAudioCache(ctx)
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping audio cache cleanup routine")
-				return
-			case <-ticker.C:
-				cleanupAudioCache(ctx)
-			}
-		}
-	}()
-}
-
-func startNowPlayingCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting now playing cleanup routine")
-	err := database.CleanupNowPlaying(ctx)
-	if err != nil {
-		logger.Printf("Error cleaning up now playing: %v", err)
-	}
-	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping now playing cleanup routine")
-				return
-			case <-ticker.C:
-				err := database.CleanupNowPlaying(ctx)
-				if err != nil {
-					logger.Printf("Error cleaning up now playing: %v", err)
-				}
-			}
-		}
-	}()
-}
-
-func startOrphanedPlaylistEntriesCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting orphaned playlist entries cleanup routine")
-	err := database.RemoveOrphanedPlaylistEntries(ctx)
-	if err != nil {
-		logger.Printf("Error removing orphaned playlist entries: %v", err)
-	}
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping orphaned playlist entries cleanup routine")
-				return
-			case <-ticker.C:
-				err := database.RemoveOrphanedPlaylistEntries(ctx)
-				if err != nil {
-					logger.Printf("Error removing orphaned playlist entries: %v", err)
-				}
-			}
-		}
-	}()
-}
-
-func startPodcastCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting podcast cleanup routine")
-	cleanupMissingPodcasts(ctx)
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping podcast cleanup routine")
-				return
-			case <-ticker.C:
-				cleanupMissingPodcasts(ctx)
-			}
-		}
-	}()
-}
-
-func startPodcastEpisodeRefreshRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting podcast episode refresh routine")
-	go func() {
-		fetchNewPodcastEpisodes(ctx)
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping podcast episode refresh routine")
-				return
-			case <-ticker.C:
-				fetchNewPodcastEpisodes(ctx)
-			}
-		}
-	}()
-}
-
-func startAlbumArtCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting album art cleanup routine")
-	cleanupAlbumArt(ctx)
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping album art cleanup routine")
-				return
-			case <-ticker.C:
-				cleanupAlbumArt(ctx)
-			}
-		}
-	}()
-}
-
-func startArtistArtCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting artist art cleanup routine")
-	cleanupArtistArt(ctx)
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping artist art cleanup routine")
-				return
-			case <-ticker.C:
-				cleanupArtistArt(ctx)
-			}
-		}
-	}()
-}
-
-func startScanScheduleRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting scan schedule routine")
-
-	scanOptions := types.ScanOptions{
-		Force:      false,
-		IncludeArt: true,
-	}
-	_, err := scanner.RunScan(ctx, scanOptions)
-	if err != nil {
-		logger.Printf("Error starting scan schedule routine: %v", err)
-	}
-	go func() {
-		ticker := time.NewTicker(45 * time.Minute)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping album art cleanup routine")
-				return
-			case <-ticker.C:
-				_, err := scanner.RunScan(ctx, scanOptions)
-				if err != nil {
-					logger.Printf("Error running scan: %v", err)
-				}
-			}
-		}
-	}()
-}
-
-func startTranscodeParamsCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting transcode params cleanup routine")
-	err := database.ClearOldTranscodeParams(ctx)
-	if err != nil {
-		logger.Printf("Error clearing old transcode params: %v", err)
-	}
-	go func() {
-		ticker := time.NewTicker(1 * time.Hour)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping transcode params cleanup routine")
-				return
-			case <-ticker.C:
-				err := database.ClearOldTranscodeParams(ctx)
-				if err != nil {
-					logger.Printf("Error clearing old transcode params: %v", err)
-				}
-			}
-		}
-	}()
-}
-
-func startPlaybackReportsCleanupRoutine(ctx context.Context) {
-	logger.Println("Scheduler: starting playback reports cleanup routine")
-	err := database.CleanupPlaybackReports(ctx)
-	if err != nil {
-		logger.Printf("Error cleaning up playback reports: %v", err)
-	}
-	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ctx.Done():
-				logger.Println("Scheduler: stopping playback reports cleanup routine")
-				return
-			case <-ticker.C:
-				err := database.CleanupPlaybackReports(ctx)
-				if err != nil {
-					logger.Printf("Error cleaning up playback reports: %v", err)
-				}
-			}
-		}
-	}()
+	startSchedule(ctx, "audio cache cleanup", 1*time.Hour, cleanupAudioCache)
+	startSchedule(ctx, "now playing cleanup", 5*time.Minute, database.CleanupNowPlaying)
+	startSchedule(ctx, "orphaned playlist entries cleanup", 1*time.Hour, database.RemoveOrphanedPlaylistEntries)
+	startSchedule(ctx, "album art cleanup", 1*time.Hour, cleanupAlbumArt)
+	startSchedule(ctx, "artist art cleanup", 1*time.Hour, cleanupArtistArt)
+	startSchedule(ctx, "podcast cleanup", 1*time.Hour, cleanupMissingPodcasts)
+	startSchedule(ctx, "podcast episode refresh", 2*time.Hour, fetchNewPodcastEpisodes)
+	startSchedule(ctx, "playback reports cleanup", 5*time.Minute, database.CleanupPlaybackReports)
+	startSchedule(ctx, "transcode params cleanup", 1*time.Hour, database.ClearOldTranscodeParams)
+	startSchedule(ctx, "share cleanup", 1*time.Hour, database.ClearExpiredShares)
+	startSchedule(ctx, "scheduled scan", 45*time.Minute, scanner.RunScheduledScan)
 }
