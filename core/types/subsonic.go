@@ -46,6 +46,7 @@ type SubsonicStandard struct {
 	SearchResult3          *SearchResult3             `xml:"searchResult3,omitempty" json:"searchResult3,omitempty"`
 	AlbumList              *AlbumList                 `xml:"albumList,omitempty" json:"albumList,omitempty"`
 	AlbumList2             *AlbumList2                `xml:"albumList2,omitempty" json:"albumList2,omitempty"`
+	Shares                 *Shares                    `xml:"shares,omitempty" json:"shares,omitempty"`
 	SimilarSongs           *SimilarSongs              `xml:"similarSongs,omitempty" json:"similarSongs,omitempty"`
 	SimilarSongs2          *SimilarSongs2             `xml:"similarSongs2,omitempty" json:"similarSongs2,omitempty"`
 	Playlist               *PlaylistRow               `xml:"playlist,omitempty" json:"playlist,omitempty"`

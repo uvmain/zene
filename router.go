@@ -133,6 +133,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/setrating", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSetRating)))
 	apiRouter.Handle("/rest/scrobble", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleScrobble)))
 	// Sharing
+	apiRouter.Handle("/rest/createshare", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateShare)))
 	// Podcast
 	apiRouter.Handle("/rest/getpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcasts)))
 	apiRouter.Handle("/rest/getnewestpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetNewestPodcasts)))

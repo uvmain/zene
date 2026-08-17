@@ -110,6 +110,10 @@ func GetTimeMinusSecondsFormatted(seconds int) string {
 	return time.Now().UTC().Add(-time.Duration(seconds) * time.Second).Format(time.RFC3339Nano)
 }
 
+func GetTimeFromUnixTimestamp(unixTimestamp int) time.Time {
+	return time.Unix(int64(unixTimestamp), 0)
+}
+
 func FormatTimeAsString(timeValue time.Time) string {
 	return timeValue.UTC().Format(time.RFC3339Nano)
 }

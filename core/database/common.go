@@ -77,11 +77,11 @@ func createTable(ctx context.Context, schema string) {
 	if !tableExists {
 		_, err := DB.ExecContext(ctx, schema)
 		if err != nil {
-			log.Fatalf("Database: error creating %s table: %v", tableName, err)
+			log.Fatalf("[Database] error creating %s table: %v", tableName, err)
 		}
-		logger.Printf("Database: %s table created", tableName)
+		logger.Printf("[Database] %s table created", tableName)
 	} else {
-		logger.Printf("Database: %s table already exists", tableName)
+		logger.Printf("[Database] %s table already exists", tableName)
 	}
 }
 
@@ -98,11 +98,11 @@ func createView(ctx context.Context, schema string) {
 	if !viewExists {
 		_, err := DB.ExecContext(ctx, schema)
 		if err != nil {
-			log.Fatalf("Database: error creating %s view: %v", viewName, err)
+			log.Fatalf("[Database] error creating %s view: %v", viewName, err)
 		}
-		logger.Printf("Database: %s view created", viewName)
+		logger.Printf("[Database] %s view created", viewName)
 	} else {
-		logger.Printf("Database: %s view already exists", viewName)
+		logger.Printf("[Database] %s view already exists", viewName)
 	}
 }
 
@@ -119,14 +119,14 @@ func createTrigger(ctx context.Context, schema string) {
 	if err == sql.ErrNoRows {
 		_, err := DB.ExecContext(ctx, schema)
 		if err != nil {
-			log.Fatalf("Database: error creating %s trigger: %v", triggerName, err)
+			log.Fatalf("[Database] error creating %s trigger: %v", triggerName, err)
 			return
 		}
-		logger.Printf("Database: %s trigger created", triggerName)
+		logger.Printf("[Database] %s trigger created", triggerName)
 	} else if err != nil {
-		log.Fatalf("Database: error checking for %s trigger: %v", triggerName, err)
+		log.Fatalf("[Database] error checking for %s trigger: %v", triggerName, err)
 	} else {
-		logger.Printf("Database: %s trigger already exists", triggerName)
+		logger.Printf("[Database] %s trigger already exists", triggerName)
 	}
 }
 
@@ -145,13 +145,13 @@ func createIndex(ctx context.Context, indexName, indexTable string, indexColumns
 
 		_, err := DB.ExecContext(ctx, sql)
 		if err != nil {
-			log.Fatalf("Database: error creating %s index: %v", indexName, err)
+			log.Fatalf("[Database] error creating %s index: %v", indexName, err)
 			return
 		}
-		logger.Printf("Database: %s index created", indexName)
+		logger.Printf("[Database] %s index created", indexName)
 	} else if err != nil {
-		log.Fatalf("Database: error checking for %s index: %v", indexName, err)
+		log.Fatalf("[Database] error checking for %s index: %v", indexName, err)
 	} else {
-		logger.Printf("Database: %s index already exists", indexName)
+		logger.Printf("[Database] %s index already exists", indexName)
 	}
 }
