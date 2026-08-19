@@ -164,6 +164,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/shares/[token]': RouteRecordInfo<
+      '/shares/[token]',
+      '/shares/:token',
+      { token: ParamValue<true> },
+      { token: ParamValue<false> },
+      | never
+    >,
     '/tracks/': RouteRecordInfo<
       '/tracks/',
       '/tracks',
@@ -349,6 +356,14 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | never
+    }
+    'src/pages/shares/[token].vue': {
+      routes:
+        | '/shares/[token]'
+      views:
+        | never
+      pathParamNames:
+        | 'token'
     }
     'src/pages/tracks/index.vue': {
       routes:

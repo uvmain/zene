@@ -53,15 +53,5 @@ export default defineConfig({
       '@vueuse/core',
     ],
     exclude: [],
-  },
-  server: {
-    host: true,
-    allowedHosts: true,
-    port: 5173,
-    strictPort: true,
-    proxy: {
-      '/rest': { target: 'http://localhost:8080' },
-      '/share': { target: 'http://localhost:8080' },
-    },
-  },
+  }
 })

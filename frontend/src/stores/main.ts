@@ -1,6 +1,6 @@
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist } from '~/types/subsonicArtist'
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, useSessionStorage } from '@vueuse/core'
 
 export enum AlbumOrders {
   RecentlyUpdated = 'Recently Updated',
@@ -24,7 +24,8 @@ export type ArtistOrder = typeof ArtistOrders[keyof typeof ArtistOrders]
 
 export const streamQualities: readonly (string | number)[] = ['Unlimited', 96, 128, 160, 192, 256, 320, 512, 1024]
 
-export const apiKey = useLocalStorage('apiKey', '')
+export const apiKey = useLocalStorage<string>('apiKey', '')
+export const shareToken = useSessionStorage<string>('shareToken', '')
 export const albumSeed = useLocalStorage<number>('albumSeed', 0)
 export const albumOrder = useLocalStorage<AlbumOrder>('albumOrder', AlbumOrders.RecentlyUpdated)
 export const artistSeed = useLocalStorage<number>('artistSeed', 0)

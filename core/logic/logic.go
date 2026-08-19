@@ -217,7 +217,7 @@ func GetUnauthenticatedImageUrl(musicbrainzId string, size int) string {
 
 func GetShareUrl(shareToken string) string {
 	baseUrl := config.BaseUrl
-	return fmt.Sprintf("%s/share/%s", baseUrl, shareToken)
+	return fmt.Sprintf("%s/shares/%s", baseUrl, shareToken)
 }
 
 func StringToArray(inputString, separator string) []string {

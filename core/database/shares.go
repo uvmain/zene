@@ -479,6 +479,7 @@ func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) 
 	}
 
 	share.Entries = entries
+	share.Url = logic.GetShareUrl(token)
 
 	return share, nil
 }

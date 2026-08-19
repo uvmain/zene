@@ -38,7 +38,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to: RouteLocationNormalized) => {
-  if ((apiKey.value == null || apiKey.value.length === 0) && to.path !== '/login') {
+  if ((apiKey.value == null || apiKey.value.length === 0) && to.path !== '/login' && to.path.startsWith('/shares/') === false) {
     return { path: '/login', replace: true }
   }
 })
