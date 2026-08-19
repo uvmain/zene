@@ -58,7 +58,7 @@ func StartServer() *http.Server {
 	// API router (case-insensitive)
 	apiRouter := NewCaseInsensitiveMux()
 	// all registered API paths should be lowercase
-	apiRouter.Handle("/share/img/{image_id}", http.HandlerFunc(handlers.HandleGetShareImg))
+	apiRouter.Handle("/share/{media_id}/img", http.HandlerFunc(handlers.HandleGetShareImg))
 	apiRouter.Handle("/rest/getalbumarts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArts)))
 	apiRouter.Handle("/rest/getalbumartssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArtsServerSentEvents)))
 	apiRouter.Handle("/rest/updatealbumart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAlbumArt)))

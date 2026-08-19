@@ -110,7 +110,7 @@ export enum artSizes {
 }
 
 export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.size400, timeUpdated?: string): string {
-  let url = new URL(`${backendUrl.value}/share/img/${musicbrainzId}`)
+  let url = new URL(`${backendUrl.value}/share/${musicbrainzId}/img`)
 
   const params = new URLSearchParams()
   if (timeUpdated != null) {
