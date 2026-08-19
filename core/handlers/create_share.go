@@ -66,11 +66,20 @@ func HandleCreateShare(w http.ResponseWriter, r *http.Request) {
 		ExpiresAt:   expiresTime,
 		MediaIds:    mediaIds,
 	}
-	logger.Printf("%v", createShareOptions)
+
+	share, err := database.CreateShare(ctx, createShareOptions)
+	if err != nil {
+		logger.Printf("Error creating share: %v", err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to create share", "")
+		return
+	}
+
+	logger.Printf("User %s created share with ID %d", requestUser.Username, share.Id)
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 
 	response.SubsonicResponse.Shares = &types.Shares{}
+	response.SubsonicResponse.Shares.Share = append(response.SubsonicResponse.Shares.Share, share)
 
 	net.WriteSubsonicResponse(w, r, response, format)
 }
