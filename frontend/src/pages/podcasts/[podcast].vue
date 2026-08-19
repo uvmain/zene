@@ -2,6 +2,7 @@
 import type { SubsonicPodcastChannelsResponse } from '~/types/subsonic'
 import type { SubsonicPodcastChannel, SubsonicPodcastEpisode } from '~/types/subsonicPodcasts'
 import { openSubsonicFetchRequest, useServerSentEventsForPodcast } from '~/logic/backendFetch'
+import { getCoverArtUrl } from '~/logic/common'
 
 const route = useRoute('/podcasts/[podcast]')
 const router = useRouter()
@@ -28,7 +29,7 @@ async function getPodcast() {
 const channelCoverArt = computed(() => {
   if (!podcast.value)
     return ''
-  return `/share/img/${podcast.value.coverArt}?size=400`
+  return getCoverArtUrl(podcast.value.coverArt, 400)
 })
 
 const descriptionLinesCleaned = computed(() => {

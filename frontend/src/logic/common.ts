@@ -110,15 +110,17 @@ export enum artSizes {
 }
 
 export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.size400, timeUpdated?: string): string {
-  let path = ''
+  let url = new URL(`${backendUrl.value}/share/img/${musicbrainzId}`)
+
+  const params = new URLSearchParams()
   if (timeUpdated != null) {
-    path = size === 0 ? `/share/img/${musicbrainzId}?time=${timeUpdated}` : `/share/img/${musicbrainzId}?size=${size}&time=${timeUpdated}`
+    params.append('time', timeUpdated)
   }
-  else {
-    path = size === 0 ? `/share/img/${musicbrainzId}` : `/share/img/${musicbrainzId}?size=${size}`
+  if (size !== 0) {
+    params.append('size', size.toString())
   }
-  const url = `${backendUrl.value}${path}`
-  return url
+  url.search = params.toString()
+  return url.toString()
 }
 
 export async function cacheBustArt(musicbrainz_id: string) {
