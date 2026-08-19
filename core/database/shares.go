@@ -424,6 +424,65 @@ func GetShareById(ctx context.Context, id int) (types.ShareRow, error) {
 	return share, nil
 }
 
+func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) {
+	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count
+		from shares s
+		join users u on u.id = s.owner_user_id
+		where s.token = ?
+		limit 1`
+
+	var share types.ShareRow
+	var expires sql.NullString
+
+	err := DB.QueryRowContext(ctx, query, token).Scan(
+		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return types.ShareRow{}, fmt.Errorf("no share found with token %s", token)
+		}
+		return types.ShareRow{}, fmt.Errorf("querying share by token %s: %v", token, err)
+	}
+
+	if expires.Valid && expires.String != "" && logic.GetTimeFromString(expires.String).Before(time.Now()) {
+		return types.ShareRow{}, fmt.Errorf("share has expired")
+	}
+
+	mediaQuery := `SELECT media_id FROM shared_media WHERE share_id = ?`
+	mediaRows, err := DB.QueryContext(ctx, mediaQuery, share.Id)
+	if err != nil {
+		if mediaRows != nil {
+			mediaRows.Close()
+		}
+		return types.ShareRow{}, fmt.Errorf("querying shared media: %v", err)
+	}
+
+	var mediaIds []string
+	for mediaRows.Next() {
+		var mediaId string
+		if err := mediaRows.Scan(&mediaId); err != nil {
+			mediaRows.Close()
+			return types.ShareRow{}, fmt.Errorf("scanning shared media: %v", err)
+		}
+		mediaIds = append(mediaIds, mediaId)
+	}
+	if err := mediaRows.Err(); err != nil {
+		mediaRows.Close()
+		return types.ShareRow{}, fmt.Errorf("iterating over shared media: %v", err)
+	}
+	mediaRows.Close()
+
+	entries, err := GetSongsByShareId(ctx, share.Id)
+	if err != nil {
+		return types.ShareRow{}, fmt.Errorf("getting songs by share ID: %v", err)
+	}
+
+	share.Entries = entries
+
+	return share, nil
+}
+
 func ClearExpiredShares(ctx context.Context) error {
 	query := `DELETE FROM shares WHERE expires_at IS NOT NULL AND expires_at < ?`
 	now := logic.GetCurrentTimeFormatted()
@@ -531,4 +590,27 @@ func GetSongsByShareId(ctx context.Context, shareId int) ([]types.SubsonicChild,
 	}
 
 	return songs, nil
+}
+
+func ValidateShareToken(ctx context.Context, shareToken string) (int, bool) {
+	query := `SELECT s.id, u.username, s.expires_at FROM shares s JOIN users u ON u.id = s.owner_user_id WHERE s.token = ? LIMIT 1`
+
+	var shareId int
+	var expires sql.NullString
+
+	err := DB.QueryRowContext(ctx, query, shareToken).Scan(&shareId, &expires)
+
+	if err != nil {
+		logger.Printf("Query failed: %v", err)
+		return 0, false
+	}
+
+	if expires.Valid && expires.String != "" {
+		expiresTime := logic.GetTimeFromString(expires.String)
+		if !expiresTime.IsZero() && expiresTime.Before(time.Now()) {
+			return 0, false
+		}
+	}
+
+	return shareId, true
 }
