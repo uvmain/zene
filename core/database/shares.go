@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 	"zene/core/logger"
@@ -62,6 +63,7 @@ func createSharedMediaTable(ctx context.Context) {
 	);`
 	createTable(ctx, schema)
 	createIndex(ctx, "idx_shared_media_share_id", "shared_media", []string{"share_id"}, false)
+	createIndex(ctx, "idx_shared_media_share_id_media_id", "shared_media", []string{"share_id", "media_id"}, false)
 }
 
 func CreateShare(ctx context.Context, options CreateShareOptions) (types.ShareRow, error) {
@@ -209,12 +211,58 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 		return nil, err
 	}
 
-	query := `select s.id, s.token
-		from shares s
-		join users u on u.id = s.owner_user_id
-		where u.id = ?
-		order by s.created_at desc`
-	rows, err := DB.QueryContext(ctx, query, owner.Id)
+	query := `WITH gr AS (
+    SELECT metadata_id, AVG(rating) AS avg_rating
+    FROM user_ratings
+    GROUP BY metadata_id
+		),
+		plays AS (
+				SELECT musicbrainz_track_id, SUM(play_count) AS play_count, MAX(last_played) AS last_played
+				FROM play_counts
+				WHERE user_id = ?
+				GROUP BY musicbrainz_track_id
+		),
+		share_media AS (
+				SELECT sh.id AS share_id, sh.owner_user_id, sh.token, sh.description, sh.created_at, sh.expires_at, sh.visit_count, sm.media_id
+				FROM shares sh
+				JOIN shared_media sm ON sm.share_id = sh.id
+				WHERE sh.owner_user_id = ?
+		),
+		shared_metadata AS (
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				FROM share_media sm
+				JOIN metadata m ON m.musicbrainz_track_id = sm.media_id
+				UNION
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				FROM share_media sm
+				JOIN metadata m ON m.musicbrainz_album_id = sm.media_id
+				UNION
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				FROM share_media sm
+				JOIN metadata m ON m.musicbrainz_artist_id = sm.media_id
+		)
+		SELECT
+				sm.share_id AS id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, u.username,
+				m.musicbrainz_track_id AS id, m.musicbrainz_album_id AS album_id, m.title, m.album, m.artist,
+				COALESCE(m.track_number, 0) AS track, REPLACE(PRINTF('%4s', substr(m.release_date, 1, 4)),' ','0') AS year,
+				substr(m.genre,1,instr(m.genre, ';') - 1) AS genre, m.musicbrainz_track_id AS cover_art, m.size,
+				m.duration, m.bitrate, m.file_path AS path, m.date_added AS created, m.disc_number, m.musicbrainz_artist_id AS artist_id,
+				m.album_artist, m.bit_depth, m.sample_rate, m.channels, COALESCE(ur.rating, 0) AS user_rating,
+				COALESCE(gr.avg_rating, 0.0) AS average_rating, COALESCE(plays.play_count, 0) AS play_count, plays.last_played AS played,
+			us.created_at AS starred, maa.musicbrainz_artist_id, maa.artist AS album_artist_name
+		FROM shared_metadata sm
+		JOIN metadata m ON m.musicbrainz_track_id = sm.musicbrainz_track_id
+		JOIN user_music_folders f ON f.folder_id = m.music_folder_id AND f.user_id = sm.owner_user_id
+		JOIN users u ON u.id = sm.owner_user_id
+		LEFT JOIN user_stars us ON us.metadata_id = m.musicbrainz_track_id AND us.user_id = sm.owner_user_id
+		LEFT JOIN user_ratings ur ON ur.metadata_id = m.musicbrainz_track_id AND ur.user_id = sm.owner_user_id
+		LEFT JOIN gr ON gr.metadata_id = m.musicbrainz_artist_id
+		LEFT JOIN plays ON plays.musicbrainz_track_id = m.musicbrainz_track_id
+		LEFT JOIN metadata maa ON maa.artist = m.album_artist
+		group by sm.share_id, m.musicbrainz_track_id
+		ORDER BY sm.created_at DESC, m.musicbrainz_artist_id, m.musicbrainz_album_id, m.musicbrainz_track_id`
+
+	rows, err := DB.QueryContext(ctx, query, owner.Id, owner.Id)
 	if err != nil {
 		return nil, fmt.Errorf("querying shares: %v", err)
 	}
@@ -223,21 +271,94 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 	var shares []types.ShareRow
 
 	for rows.Next() {
-		var shareId int
-		var token string
-		if err := rows.Scan(&shareId, &token); err != nil {
-			return nil, fmt.Errorf("scanning share: %v", err)
+		var row types.DbUserShare
+		var lastPlayed sql.NullString
+		var dateStarred sql.NullString
+		var durationFloat float64
+		var albumArtistName sql.NullString
+		var albumArtistId sql.NullString
+		var shareExpiresAt sql.NullString
+		if err := rows.Scan(
+			&row.ShareId, &row.Token, &row.Description, &row.ShareCreated, &shareExpiresAt, &row.VisitCount, &row.ShareOwner,
+			&row.TrackId, &row.AlbumId, &row.Title, &row.Album, &row.Artist, &row.TrackNumber, &row.Year,
+			&row.Genre, &row.CoverArt, &row.Size, &durationFloat, &row.Bitrate, &row.Path, &row.DateAdded,
+			&row.DiscNumber, &row.ArtistId, &row.AlbumArtist, &row.BitDepth, &row.SampleRate, &row.Channels,
+			&row.UserRating, &row.AverageRating, &row.PlayCount, &lastPlayed, &dateStarred, &albumArtistId, &albumArtistName,
+		); err != nil {
+			return nil, fmt.Errorf("scanning share row: %v", err)
 		}
 
-		share, err := GetShareById(ctx, shareId)
-		if err != nil {
-			if err.Error() == "share has expired" {
-				continue
-			}
-			return nil, fmt.Errorf("getting share by id: %v", err)
+		var entry types.SubsonicChild
+		entry.Genres = []types.ChildGenre{}
+		for _, genre := range strings.Split(row.Genre, ";") {
+			entry.Genres = append(entry.Genres, types.ChildGenre{Name: genre})
 		}
-		share.Url = logic.GetShareUrl(token)
-		shares = append(shares, share)
+
+		if lastPlayed.Valid {
+			entry.Played = lastPlayed.String
+		}
+
+		if dateStarred.Valid {
+			entry.Starred = dateStarred.String
+		}
+
+		if dateStarred.Valid {
+			entry.Starred = dateStarred.String
+		}
+
+		entry.Id = row.TrackId
+		entry.Duration = int(durationFloat)
+		entry.IsDir = false
+		entry.MusicBrainzId = entry.Id
+		entry.AlbumId = entry.Parent
+		entry.Title = row.Title
+		entry.Album = row.Album
+		entry.Artist = row.Artist
+		entry.Track = row.TrackNumber
+		entry.Year = row.Year
+		entry.Genre = row.Genre
+		entry.CoverArt = row.CoverArt
+		entry.Size = row.Size
+		entry.BitRate = row.Bitrate
+		entry.Path = row.Path
+		entry.Created = row.DateAdded
+		entry.DiscNumber = row.DiscNumber
+		entry.ArtistId = row.ArtistId
+		entry.BitDepth = row.BitDepth
+		entry.SamplingRate = row.SampleRate
+		entry.ChannelCount = row.Channels
+		entry.UserRating = row.UserRating
+		entry.AverageRating = row.AverageRating
+		entry.PlayCount = row.PlayCount
+
+		entry.Artists = []types.ChildArtist{}
+		entry.Artists = append(entry.Artists, types.ChildArtist{Id: entry.ArtistId, Name: entry.Artist})
+
+		entry.DisplayArtist = entry.Artist
+
+		entry.AlbumArtists = []types.ChildArtist{}
+		if albumArtistId.Valid && albumArtistName.Valid {
+			entry.AlbumArtists = append(entry.AlbumArtists, types.ChildArtist{Id: albumArtistId.String, Name: albumArtistName.String})
+		}
+
+		entry.DisplayAlbumArtist = albumArtistName.String
+
+		currentShare := slices.IndexFunc(shares, func(s types.ShareRow) bool { return s.Id == row.ShareId })
+
+		if currentShare == -1 {
+			shares = append(shares, types.ShareRow{
+				Id:          row.ShareId,
+				Description: row.Description,
+				Username:    row.ShareOwner,
+				Url:         logic.GetShareUrl(row.Token),
+				Created:     row.ShareCreated,
+				VisitCount:  row.VisitCount,
+				Entries:     []types.SubsonicChild{},
+			})
+			currentShare = len(shares) - 1
+		}
+
+		shares[currentShare].Entries = append(shares[currentShare].Entries, entry)
 	}
 
 	return shares, nil
