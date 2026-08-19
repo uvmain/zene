@@ -53,7 +53,7 @@
 - [x] setRating
 - [x] scrobble[^3]
 ## Sharing
-- [ ] getShares
+- [x] getShares
 - [x] createShare
 - [x] updateShare
 - [x] deleteShare

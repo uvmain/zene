@@ -127,8 +127,6 @@ func CreateShare(ctx context.Context, options CreateShareOptions) (types.ShareRo
 		return types.ShareRow{}, fmt.Errorf("retrieving created share: %v", err)
 	}
 
-	share.Url = logic.GetShareUrl(token)
-
 	return share, nil
 }
 
@@ -205,61 +203,41 @@ func DeleteShare(ctx context.Context, id int) error {
 	return nil
 }
 
-func GetSharesByUser(ctx context.Context) ([]Share, error) {
+func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 	owner, err := GetUserByContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	query := `SELECT id, owner_user_id, token, description, created_at, expires_at, visit_count FROM shares WHERE owner_user_id = ?`
+	query := `select s.id, s.token
+		from shares s
+		join users u on u.id = s.owner_user_id
+		where u.id = ?
+		order by s.created_at desc`
 	rows, err := DB.QueryContext(ctx, query, owner.Id)
 	if err != nil {
 		return nil, fmt.Errorf("querying shares: %v", err)
 	}
 	defer rows.Close()
 
-	var shares []Share
+	var shares []types.ShareRow
+
 	for rows.Next() {
-		var share Share
-		var expiresString sql.NullString
-		if err := rows.Scan(&share.Id, &share.OwnerUserId, &share.Token, &share.Description, &share.CreatedAt, &expiresString, &share.VisitCount); err != nil {
+		var shareId int
+		var token string
+		if err := rows.Scan(&shareId, &token); err != nil {
 			return nil, fmt.Errorf("scanning share: %v", err)
 		}
-		if expiresString.Valid {
-			share.ExpiresAt = expiresString.String
-		}
-		shares = append(shares, share)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("iterating over shares: %v", err)
-	}
 
-	for index, share := range shares {
-		mediaQuery := `SELECT media_id FROM shared_media WHERE share_id = ?`
-		mediaRows, err := DB.QueryContext(ctx, mediaQuery, share.Id)
+		share, err := GetShareById(ctx, shareId)
 		if err != nil {
-			if mediaRows != nil {
-				mediaRows.Close()
+			if err.Error() == "share has expired" {
+				continue
 			}
-			return nil, fmt.Errorf("querying shared media: %v", err)
+			return nil, fmt.Errorf("getting share by id: %v", err)
 		}
-
-		var mediaIds []string
-		for mediaRows.Next() {
-			var mediaId string
-			if err := mediaRows.Scan(&mediaId); err != nil {
-				mediaRows.Close()
-				return nil, fmt.Errorf("scanning shared media: %v", err)
-			}
-			mediaIds = append(mediaIds, mediaId)
-		}
-		if err := mediaRows.Err(); err != nil {
-			mediaRows.Close()
-			return nil, fmt.Errorf("iterating over shared media: %v", err)
-		}
-		mediaRows.Close()
-
-		shares[index].MediaIds = mediaIds
+		share.Url = logic.GetShareUrl(token)
+		shares = append(shares, share)
 	}
 
 	return shares, nil
