@@ -92,6 +92,7 @@ ADMIN_PASSWORD=supersecretpassword
 ADMIN_EMAIL=admin@localhost
 AUDIO_CACHE_MAX_DAYS=30
 AUDIO_CACHE_MAX_MB=500
+BASE_URL=https://zene.domain.tld
 ```
 > docker-compose.yml
 ```
@@ -111,6 +112,7 @@ services:
 ### Environment variables
 | Variable name | Default Value | Notes |
 | -------- | ------- | ------- |
+| BASE_URL | http://localhost:8080 | required for generating urls for shares
 | PORT | 8080 |
 | MUSIC_DIRS | ./music |
 | DATA_PATH | ./data |

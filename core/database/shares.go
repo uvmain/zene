@@ -18,6 +18,14 @@ type CreateShareOptions struct {
 	MediaIds    []string
 }
 
+type UpdateShareOptions struct {
+	ShareId           int
+	UpdateDescription bool
+	Description       string
+	UpdateExpiresAt   bool
+	ExpiresAt         time.Time
+}
+
 type Share struct {
 	Id          int
 	OwnerUserId int
@@ -119,7 +127,60 @@ func CreateShare(ctx context.Context, options CreateShareOptions) (types.ShareRo
 		return types.ShareRow{}, fmt.Errorf("retrieving created share: %v", err)
 	}
 
+	share.Url = logic.GetShareUrl(token)
+
 	return share, nil
+}
+
+func UpdateShare(ctx context.Context, options UpdateShareOptions) error {
+	if !options.UpdateExpiresAt && !options.UpdateDescription {
+		return fmt.Errorf("UpdateShare called with neither UpdateExpiresAt nor UpdateDescription set to true")
+	}
+
+	user, err := GetUserByContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	query := `SELECT owner_user_id FROM shares WHERE id = ?`
+	var ownerUserId int
+	err = DB.QueryRowContext(ctx, query, options.ShareId).Scan(&ownerUserId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("share with id %d not found", options.ShareId)
+		}
+		return fmt.Errorf("querying share owner: %v", err)
+	}
+
+	if ownerUserId != user.Id {
+		return fmt.Errorf("user does not own the share")
+	}
+
+	if options.UpdateDescription {
+		updateQuery := `UPDATE shares SET description = ? WHERE id = ?`
+		_, err := DB.ExecContext(ctx, updateQuery, options.Description, options.ShareId)
+		if err != nil {
+			return fmt.Errorf("updating share description: %v", err)
+		}
+	}
+
+	if options.UpdateExpiresAt {
+		expiresAtForDb := sql.NullString{}
+		if !options.ExpiresAt.IsZero() {
+			expiresAtForDb = sql.NullString{
+				String: logic.FormatTimeAsString(options.ExpiresAt),
+				Valid:  true,
+			}
+		}
+
+		updateQuery := `UPDATE shares SET expires_at = ? WHERE id = ?`
+		_, err := DB.ExecContext(ctx, updateQuery, expiresAtForDb, options.ShareId)
+		if err != nil {
+			return fmt.Errorf("updating share expires_at: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func DeleteShare(ctx context.Context, id int) error {

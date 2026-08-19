@@ -37,6 +37,7 @@ var AdminEmail string
 var UserAvatarFolder string
 var DefaultBitRate int
 var FfprobeConcurrentProcesses int
+var BaseUrl string
 
 func LoadConfig() {
 
@@ -51,6 +52,8 @@ func LoadConfig() {
 		logger.Printf("Invalid PORT environment variable, defaulting to 8080: %v", err)
 		Port = 8080
 	}
+
+	BaseUrl = cmp.Or(os.Getenv("BASE_URL"), "http://localhost:8080")
 
 	musicDirs := cmp.Or(os.Getenv("MUSIC_DIRS"), "./music")
 

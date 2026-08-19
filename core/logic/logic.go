@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
 
@@ -212,6 +213,11 @@ func GetUnauthenticatedImageUrl(musicbrainzId string, size int) string {
 		url = fmt.Sprintf("%s?size=%d", url, size)
 	}
 	return url
+}
+
+func GetShareUrl(shareToken string) string {
+	baseUrl := config.BaseUrl
+	return fmt.Sprintf("%s/share/%s", baseUrl, shareToken)
 }
 
 func StringToArray(inputString, separator string) []string {

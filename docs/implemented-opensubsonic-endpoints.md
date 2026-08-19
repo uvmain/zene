@@ -54,9 +54,9 @@
 - [x] scrobble[^3]
 ## Sharing
 - [ ] getShares
-- [ ] createShare
-- [ ] updateShare
-- [ ] deleteShare
+- [x] createShare
+- [x] updateShare
+- [x] deleteShare
 ## Podcast
 - [x] getPodcasts
 - [x] getPodcastEpisode
