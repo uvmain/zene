@@ -594,7 +594,13 @@ func GetSongsByShareId(ctx context.Context, shareId int) ([]types.SubsonicChild,
 }
 
 func ValidateShareToken(ctx context.Context, shareToken string) (int, bool) {
-	query := `SELECT s.id, u.username, s.expires_at FROM shares s JOIN users u ON u.id = s.owner_user_id WHERE s.token = ? LIMIT 1`
+	query := `SELECT s.id,
+			s.expires_at
+		FROM shares s
+		JOIN users u ON u.id = s.owner_user_id
+		WHERE u.share_role = 1
+		AND s.token = ?
+		LIMIT 1`
 
 	var shareId int
 	var expires sql.NullString

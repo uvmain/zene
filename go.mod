@@ -1,13 +1,13 @@
 module zene
 
-go 1.26.6
+go 1.27.0
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/djherbis/times v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/mmcdole/gofeed v1.4.1
+	github.com/mmcdole/gofeed v1.4.2
 	github.com/ncruces/go-sqlite3 v0.35.3
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.11.1
@@ -19,7 +19,7 @@ require (
 
 require (
 	github.com/mmcdole/goxpp/v2 v2.0.0 // indirect
-	github.com/ncruces/go-sqlite3-wasm/v3 v3.2.35304 // indirect
+	github.com/ncruces/go-sqlite3-wasm/v3 v3.3.35304 // indirect
 	github.com/ncruces/julianday v1.0.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
