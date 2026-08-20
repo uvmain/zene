@@ -73,7 +73,7 @@ func HandleGetTranscodeDecision(w http.ResponseWriter, r *http.Request) {
 
 	decision, transcodeParams := logic.BuildTranscodeDecision(mediaId, mediaType, clientInfo, sourceStream)
 
-	database.UpsertTranscodeParams(ctx, types.TranscodeParamsRow{
+	err = database.UpsertTranscodeParams(ctx, types.TranscodeParamsRow{
 		ParamString:   decision.TranscodeParams,
 		MediaId:       mediaId,
 		MediaType:     mediaType,
@@ -84,6 +84,11 @@ func HandleGetTranscodeDecision(w http.ResponseWriter, r *http.Request) {
 		Bitrate:       transcodeParams.Bitrate,
 		AudioChannels: transcodeParams.AudioChannels,
 	})
+	if err != nil {
+		logger.Printf("Error upserting transcode params for %s: %v", mediaId, err)
+		net.WriteSubsonicError(w, r, types.ErrorGeneric, "server failed to upsert transcode parameters", "")
+		return
+	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)
 	response.SubsonicResponse.TranscodeDecision = &decision

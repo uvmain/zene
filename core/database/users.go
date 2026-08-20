@@ -64,7 +64,7 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 	}
 
 	if adminUserExists {
-		logger.Printf("Admin user already exists, skipping creation")
+		logger.Printf("[Bootstrap] Admin user already exists, skipping creation")
 		return nil
 	}
 
@@ -74,29 +74,29 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 
 	if adminUsername == "" {
 		adminUsername = "admin"
-		logger.Println("Admin username not set in configuration, using default 'admin'")
+		logger.Printf("[Bootstrap] Admin username not set in configuration, using default 'admin'")
 	}
 
 	if adminPassword == "" {
-		logger.Logger.Println("admin password not set in configuration, generating a random one")
+		logger.Printf("[Bootstrap] Admin password not set in configuration, generating a random one")
 		adminPassword, err = logic.GenerateRandomPassword(12)
 		if err != nil {
-			logger.Printf("Error generating random password for admin user: %v", err)
+			logger.Printf("[Bootstrap] Error generating random password for admin user: %v", err)
 			return fmt.Errorf("generating random password for admin user: %v", err)
 		} else {
-			logger.Printf("** Generated random password for admin user: %s", adminPassword)
+			logger.Printf("[Bootstrap] ** Generated random password for admin user: %s", adminPassword)
 		}
 	}
 
 	encryptedPassword, err := encryption.EncryptAES(adminPassword)
 	if err != nil {
-		logger.Printf("Error encrypting admin password: %v", err)
+		logger.Printf("[Bootstrap] Error encrypting admin password: %v", err)
 		return fmt.Errorf("encrypting admin password: %v", err)
 	}
 
 	musicDirs, err := GetMusicFolders(ctx)
 	if err != nil {
-		logger.Printf("Error getting music folders: %v", err)
+		logger.Printf("[Bootstrap] Error getting music folders: %v", err)
 		return fmt.Errorf("getting music folders: %v", err)
 	}
 
@@ -128,11 +128,11 @@ func CreateAdminUserIfRequired(ctx context.Context) error {
 
 	_, err = UpsertUser(ctx, user)
 	if err != nil {
-		logger.Printf("Error upserting admin user: %v", err)
+		logger.Printf("[Bootstrap] Error upserting admin user: %v", err)
 		return fmt.Errorf("upserting admin user: %v", err)
 	}
 
-	logger.Printf("Admin user %s created successfully", adminUsername)
+	logger.Printf("[Bootstrap] Admin user %s created successfully", adminUsername)
 	return nil
 }
 

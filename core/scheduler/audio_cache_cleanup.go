@@ -19,7 +19,7 @@ func maxCacheSizeBytes() int64 {
 	return int64(config.AudioCacheMaxMB) * 1024 * 1024
 }
 
-func cleanupAudioCache(ctx context.Context) {
+func cleanupAudioCache(ctx context.Context) error {
 	err := removeOrphanCache(ctx)
 	if err != nil {
 		logger.Printf("Error removing orphan cache files: %v", err)
@@ -54,7 +54,7 @@ func cleanupAudioCache(ctx context.Context) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		logger.Printf("Failed to read audio cache directory: %v", err)
-		return
+		return nil
 	}
 
 	type fileInfo struct {
@@ -85,7 +85,7 @@ func cleanupAudioCache(ctx context.Context) {
 	}
 
 	if totalSize <= maxCacheSizeBytes() {
-		return
+		return nil
 	}
 
 	logger.Printf("Audio cache is %d bytes, cleaning up based on size...", totalSize)
@@ -115,6 +115,7 @@ func cleanupAudioCache(ctx context.Context) {
 			break
 		}
 	}
+	return nil
 }
 
 func removeOrphanCache(ctx context.Context) error {

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"zene/core/config"
 	"zene/core/logger"
 	"zene/core/types"
 
@@ -110,6 +111,10 @@ func GetTimeMinusSecondsFormatted(seconds int) string {
 	return time.Now().UTC().Add(-time.Duration(seconds) * time.Second).Format(time.RFC3339Nano)
 }
 
+func GetTimeFromUnixTimestamp(unixTimestamp int) time.Time {
+	return time.Unix(int64(unixTimestamp), 0)
+}
+
 func FormatTimeAsString(timeValue time.Time) string {
 	return timeValue.UTC().Format(time.RFC3339Nano)
 }
@@ -203,11 +208,16 @@ func GetDefaultRoleValue(roleName string) bool {
 }
 
 func GetUnauthenticatedImageUrl(musicbrainzId string, size int) string {
-	url := fmt.Sprintf("/share/img/%s", musicbrainzId)
+	url := fmt.Sprintf("/share/%s/img", musicbrainzId)
 	if size > 0 {
 		url = fmt.Sprintf("%s?size=%d", url, size)
 	}
 	return url
+}
+
+func GetShareUrl(shareToken string) string {
+	baseUrl := config.BaseUrl
+	return fmt.Sprintf("%s/shares/%s", baseUrl, shareToken)
 }
 
 func StringToArray(inputString, separator string) []string {
@@ -242,4 +252,14 @@ func LowercaseArray(originalStringArray []string) []string {
 		result = append(result, strings.ToLower(originalString))
 	}
 	return result
+}
+
+func PathSegmentIsSafe(pathSegment string) bool {
+	if pathSegment == "" || pathSegment == "." || pathSegment == ".." {
+		return false
+	}
+	if strings.Contains(pathSegment, "/") || strings.Contains(pathSegment, "\\") || strings.Contains(pathSegment, "..") {
+		return false
+	}
+	return true
 }

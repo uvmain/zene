@@ -11,22 +11,22 @@ import (
 	"zene/core/logger"
 )
 
-func cleanupArtistArt(ctx context.Context) {
+func cleanupArtistArt(ctx context.Context) error {
 
 	artistIds, err := database.SelectArtistArtIds(ctx)
 	if err != nil {
 		logger.Printf("Error selecting artist art IDs: %v", err)
-		return
+		return err
 	}
 
 	artistArtFiles, err := io.GetFiles(ctx, config.ArtistArtFolder, []string{".jpg"})
 	if err != nil {
 		logger.Printf("Error getting artist art files: %v", err)
-		return
+		return err
 	}
 
 	if len(artistArtFiles) == 0 && len(artistIds) == 0 {
-		return
+		return nil
 	}
 
 	files := make([]string, len(artistArtFiles))
@@ -73,4 +73,5 @@ func cleanupArtistArt(ctx context.Context) {
 	if artistArtFilesDeleted > 0 {
 		logger.Printf("Artist art cleanup: deleted %d orphaned artist art files.", artistArtFilesDeleted)
 	}
+	return nil
 }

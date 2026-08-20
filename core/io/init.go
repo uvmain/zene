@@ -23,11 +23,11 @@ func CreateDirs() {
 		{config.PodcastDirectory, "Podcast folder already exists"},
 	}
 
-	for _, d := range dirs {
-		if FileExists(d.path) {
-			logger.Println(d.msg)
+	for _, dir := range dirs {
+		if FileExists(dir.path) {
+			logger.Printf("[Bootstrap] %s", dir.msg)
 		} else {
-			CreateDir(d.path)
+			CreateDir(dir.path)
 		}
 	}
 }

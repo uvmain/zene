@@ -58,7 +58,7 @@ func StartServer() *http.Server {
 	// API router (case-insensitive)
 	apiRouter := NewCaseInsensitiveMux()
 	// all registered API paths should be lowercase
-	apiRouter.Handle("/share/img/{image_id}", http.HandlerFunc(handlers.HandleGetShareImg))
+	apiRouter.Handle("/share/{media_id}/img", http.HandlerFunc(handlers.HandleGetShareImg))
 	apiRouter.Handle("/rest/getalbumarts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArts)))
 	apiRouter.Handle("/rest/getalbumartssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArtsServerSentEvents)))
 	apiRouter.Handle("/rest/updatealbumart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAlbumArt)))
@@ -133,6 +133,11 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/setrating", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleSetRating)))
 	apiRouter.Handle("/rest/scrobble", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleScrobble)))
 	// Sharing
+	apiRouter.Handle("/rest/createshare", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateShare)))
+	apiRouter.Handle("/rest/deleteshare", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteShare)))
+	apiRouter.Handle("/rest/getshares", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetShares)))
+	apiRouter.Handle("/rest/getshare/{share_token}", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleGetShare)))
+	apiRouter.Handle("/rest/updateshare", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateShare)))
 	// Podcast
 	apiRouter.Handle("/rest/getpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcasts)))
 	apiRouter.Handle("/rest/getnewestpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetNewestPodcasts)))

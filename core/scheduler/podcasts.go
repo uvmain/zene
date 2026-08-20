@@ -12,11 +12,12 @@ import (
 	"zene/core/types"
 )
 
-func cleanupMissingPodcasts(ctx context.Context) {
+func cleanupMissingPodcasts(ctx context.Context) error {
 
 	episodes, err := database.GetPodcastEpisodesUserless(ctx)
 	if err != nil {
 		logger.Printf("Error selecting stale audio cache entries: %v", err)
+		return err
 	}
 
 	// remove files for missing episodes in DB
@@ -25,7 +26,7 @@ func cleanupMissingPodcasts(ctx context.Context) {
 	logger.Printf("Found %d podcast episode files in podcast directory", len(podcastEpisodeFiles))
 	if err != nil {
 		logger.Printf("Failed to get podcast episode files in cleanupMissingPodcasts: %v", err)
-		return
+		return err
 	}
 	for _, file := range podcastEpisodeFiles {
 		found := false
@@ -61,7 +62,7 @@ func cleanupMissingPodcasts(ctx context.Context) {
 				episodeIdInt, err := strconv.Atoi(episode.Id)
 				if err != nil {
 					logger.Printf("Failed to convert episode ID to int: %v", err)
-					return
+					return err
 				}
 				err = database.UpdatePodcastEpisodeStatus(ctx, episodeIdInt, string(types.PodcastStatusNew))
 				if err != nil {
@@ -70,11 +71,14 @@ func cleanupMissingPodcasts(ctx context.Context) {
 			}
 		}
 	}
+	return nil
 }
 
-func fetchNewPodcastEpisodes(ctx context.Context) {
+func fetchNewPodcastEpisodes(ctx context.Context) error {
 	err := podcasts.RefreshAllPodcasts(ctx)
 	if err != nil {
 		logger.Printf("Failed to refresh podcast episodes: %v", err)
+		return err
 	}
+	return nil
 }

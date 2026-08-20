@@ -43,6 +43,8 @@ func Initialise(ctx context.Context) {
 	createPlaylistTables(ctx)
 	createInternetRadioTable(ctx)
 	createBookmarksTable(ctx)
+	createSharesTable(ctx)
+	createSharedMediaTable(ctx)
 	createPlayqueuesTable(ctx)
 	createPodcastsTable(ctx)
 	createTranscodeParamsTable(ctx)

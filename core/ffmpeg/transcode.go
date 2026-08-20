@@ -11,20 +11,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
-	"time"
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/net"
 )
 
 var activeTranscodes sync.Map
-
-func serveFileWithRangeSupport(w http.ResponseWriter, r *http.Request, file *os.File, modTime time.Time, format string) error {
-	filename := fmt.Sprintf("%s.%s", file.Name(), format)
-	http.ServeContent(w, r, filename, modTime, file)
-	return nil
-}
 
 func cleanupIncompleteCache(cachePath string, cacheKey string) {
 	if err := os.Remove(cachePath); err != nil {
@@ -41,40 +35,58 @@ func cleanupIncompleteCache(cachePath string, cacheKey string) {
 }
 
 func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, maxBitRate int, timeOffset int, format string) error {
+	if !logic.PathSegmentIsSafe(trackId) {
+		logger.Printf("Invalid track id in TranscodeAndStream: %s", trackId)
+		return fmt.Errorf("invalid track id")
+	}
+	if !logic.PathSegmentIsSafe(format) {
+		logger.Printf("Invalid format in TranscodeAndStream: %s", format)
+		return fmt.Errorf("invalid format")
+	}
 	cacheKey := fmt.Sprintf("%s-%d.%s", trackId, maxBitRate, format)
-	cachePath := filepath.Join(config.AudioCacheFolder, cacheKey)
+	cacheHash := sha256.Sum256([]byte(cacheKey))
+	cacheFileName := hex.EncodeToString(cacheHash[:]) + "." + format
+	tempCachePath := filepath.Join(config.AudioCacheFolder, ".tmp-"+hex.EncodeToString(cacheHash[:]))
+	cachePath := filepath.Join(config.AudioCacheFolder, cacheFileName)
 
-	useCache := timeOffset <= 0
+	createCache := timeOffset <= 0
 
-	if useCache {
-		// serve from cache if it exists
-		if _, err := os.Stat(cachePath); err == nil {
-			logger.Printf("Serving transcoded file from cache for %s: %s", filePathAbs, cachePath)
-			if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
-				logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
-			}
-			f, err := os.Open(cachePath)
-			if err != nil {
-				return fmt.Errorf("opening cached file: %w", err)
-			}
-			defer f.Close()
-			fileInfo, err := f.Stat()
-			if err != nil {
-				return fmt.Errorf("getting file info: %w", err)
-			}
-			err = serveFileWithRangeSupport(w, r, f, fileInfo.ModTime(), format)
-			return err
+	// serve from cache if it exists
+	if _, err := os.Stat(cachePath); err == nil {
+		logger.Printf("Serving transcoded file from cache for %s: %s", filePathAbs, cachePath)
+		if err := database.UpsertAudioCacheEntry(ctx, cacheKey); err != nil {
+			logger.Printf("Failed to update last_accessed for %s: %v", cacheKey, err)
 		}
+		f, err := os.Open(cachePath)
+		if err != nil {
+			return fmt.Errorf("opening cached file: %w", err)
+		}
+		defer f.Close()
+		fileInfo, err := f.Stat()
+		if err != nil {
+			return fmt.Errorf("getting file info: %w", err)
+		}
+		err = net.ServeFileWithRangeSupport(w, r, f, fileInfo.ModTime(), format)
+		return err
+	}
 
+	if createCache {
 		// check if another request is already transcoding this file
 		mutex, transcodeInProgress := activeTranscodes.LoadOrStore(cacheKey, &sync.Mutex{})
 		cacheMutex := mutex.(*sync.Mutex)
 
 		if transcodeInProgress {
-			useCache = false
+			createCache = false
 			logger.Printf("transcode already in progress for %s, not using cache", cacheKey)
 		} else {
 			cacheMutex.Lock()
+			// check if tempCachePath file exists, and delete it if it does, since we are about to create a new one
+			if _, err := os.Stat(tempCachePath); err == nil {
+				logger.Printf("Cache file %s exists but no entry in activeTranscodes, deleting it", tempCachePath)
+				if err := os.Remove(tempCachePath); err != nil {
+					logger.Printf("Failed to remove stale cache file %s: %v", tempCachePath, err)
+				}
+			}
 			defer func() {
 				cacheMutex.Unlock()
 				activeTranscodes.Delete(cacheKey)
@@ -83,7 +95,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	if timeOffset > 0 {
-		logger.Printf("Transcoding %s to stream at %s %dk starting from %ds (no cache)", filePathAbs, format, maxBitRate, timeOffset)
+		logger.Printf("Transcoding %s to stream at %s %dk starting from %ds", filePathAbs, format, maxBitRate, timeOffset)
 	} else {
 		logger.Printf("Transcoding %s to stream at %s %dk", filePathAbs, format, maxBitRate)
 	}
@@ -175,22 +187,18 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	var cacheFile *os.File
-	var tempCachePath string
 	cacheFileCreated := false
 	defer func() {
 		// clean up temp file if it exists and we didn't finish successfully
-		if useCache && cacheFileCreated {
+		if createCache && cacheFileCreated {
 			if _, err := os.Stat(tempCachePath); err == nil {
 				os.Remove(tempCachePath)
 			}
 		}
 	}()
 
-	if useCache {
+	if createCache {
 		// write to a temp file first, only move to cachePath on success
-		// Use deterministic hash for temp path so concurrent requests use same temp file
-		hash := sha256.Sum256([]byte(cacheKey))
-		tempCachePath = filepath.Join(config.AudioCacheFolder, ".tmp-"+hex.EncodeToString(hash[:]))
 		cacheFile, err = os.Create(tempCachePath)
 		if err != nil {
 			return fmt.Errorf("creating temp cache file: %w", err)
@@ -204,7 +212,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 
 	if err != nil {
 		logger.Printf("io.Copy error while streaming %s (trackId=%s, client=%s, UA=%s): %v", filePathAbs, trackId, r.RemoteAddr, r.UserAgent(), err)
-		if useCache && cacheFileCreated {
+		if createCache && cacheFileCreated {
 			cacheFile.Close()
 			cleanupIncompleteCache(tempCachePath, cacheKey)
 		}
@@ -212,7 +220,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	if waitErr != nil {
-		if useCache && cacheFileCreated {
+		if createCache && cacheFileCreated {
 			cacheFile.Close()
 			cleanupIncompleteCache(tempCachePath, cacheKey)
 		}
@@ -224,7 +232,7 @@ func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return fmt.Errorf("ffmpeg exited with error: %w", waitErr)
 	}
 
-	if useCache && cacheFileCreated {
+	if createCache && cacheFileCreated {
 		cacheFile.Close()
 		// move temp file to final cache path
 		if err := os.Rename(tempCachePath, cachePath); err != nil {

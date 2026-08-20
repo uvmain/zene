@@ -24,13 +24,6 @@ func HandleUpdatePlaylist(w http.ResponseWriter, r *http.Request) {
 	public := form["public"]
 	coverArt := form["coverart"]
 
-	allowedUsers, _, err := net.ParseDuplicateFormKeys(r, "allowedUserId", true)
-	if err != nil {
-		logger.Printf("Error parsing allowedUserId: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorMissingParameter, "Invalid allowedUserId", "")
-		return
-	}
-
 	_, songIdsToAdd, err := net.ParseDuplicateFormKeys(r, "songIdToAdd", false)
 	if err != nil {
 		logger.Printf("Error parsing songIdToAdd: %v", err)
@@ -73,7 +66,7 @@ func HandleUpdatePlaylist(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.UpdatePlaylist(ctx, playlistIdInt, playlistName, comment, public, coverArt, allowedUsers, songIdsToAdd, songIndexesToRemove)
+	err = database.UpdatePlaylist(ctx, playlistIdInt, playlistName, comment, public, coverArt, songIdsToAdd, songIndexesToRemove)
 	if err != nil && err.Error() == "existing playlist provided with no new songIds" {
 		logger.Printf("Error creating playlist: %v", err)
 		net.WriteSubsonicError(w, r, types.ErrorDataNotFound, "Error creating playlist, existing playlist provided with no new songIds", "")

@@ -19,6 +19,19 @@ import (
 	"zene/core/types"
 )
 
+func RunScheduledScan(ctx context.Context) error {
+	scanOptions := types.ScanOptions{
+		Force:      false,
+		IncludeArt: true,
+	}
+	_, err := RunScan(ctx, scanOptions)
+	if err != nil {
+		logger.Printf("Error running scheduled scan: %v", err)
+		return err
+	}
+	return nil
+}
+
 func RunScan(ctx context.Context, scanOptions types.ScanOptions) (types.ScanStatus, error) {
 	latestScan, err := database.GetLatestScan(ctx)
 	if err != nil && err != sql.ErrNoRows {

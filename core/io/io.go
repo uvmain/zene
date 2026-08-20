@@ -37,12 +37,12 @@ func CreateDir(directoryPath string) {
 	if _, err := os.Stat(directoryPath); os.IsNotExist(err) {
 		err := os.MkdirAll(directoryPath, 0755)
 		if err != nil {
-			logger.Printf("Error creating directory %s: %s", directoryPath, err)
+			logger.Printf("[Bootstrap] Error creating directory %s: %s", directoryPath, err)
 		} else {
-			logger.Printf("Directory created: %s", directoryPath)
+			logger.Printf("[Bootstrap] Directory created: %s", directoryPath)
 		}
 	} else {
-		logger.Printf("Directory already exists: %s", directoryPath)
+		logger.Printf("[Bootstrap] Directory already exists: %s", directoryPath)
 	}
 }
 

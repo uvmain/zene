@@ -143,6 +143,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/random-tracks': RouteRecordInfo<
+      '/random-tracks',
+      '/random-tracks',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/search': RouteRecordInfo<
       '/search',
       '/search',
@@ -155,6 +162,13 @@ declare module 'vue-router/auto-routes' {
       '/settings',
       Record<never, never>,
       Record<never, never>,
+      | never
+    >,
+    '/shares/[token]': RouteRecordInfo<
+      '/shares/[token]',
+      '/shares/:token',
+      { token: ParamValue<true> },
+      { token: ParamValue<false> },
       | never
     >,
     '/tracks/': RouteRecordInfo<
@@ -319,6 +333,14 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/random-tracks.vue': {
+      routes:
+        | '/random-tracks'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/search.vue': {
       routes:
         | '/search'
@@ -334,6 +356,14 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | never
+    }
+    'src/pages/shares/[token].vue': {
+      routes:
+        | '/shares/[token]'
+      views:
+        | never
+      pathParamNames:
+        | 'token'
     }
     'src/pages/tracks/index.vue': {
       routes:

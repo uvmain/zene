@@ -173,3 +173,22 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
+
+func ShareAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		token := r.PathValue("share_token")
+		shareId, tokenIsValid := database.ValidateShareToken(ctx, token)
+		if !tokenIsValid {
+			logger.Printf("Error validating share token %s", token)
+			net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Invalid Share Token", "")
+			return
+		}
+		if shareId == 0 {
+			logger.Printf("Share token %s not found", token)
+			net.WriteSubsonicError(w, r, types.ErrorInvalidApiKey, "Invalid Share Token", "")
+			return
+		}
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}

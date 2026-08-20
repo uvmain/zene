@@ -16,7 +16,7 @@ func HandleGetShareImg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imageId := r.PathValue("image_id")
+	imageId := r.PathValue("media_id")
 
 	form := net.NormalisedForm(r, w)
 	sizeQueryParameter := form["size"]

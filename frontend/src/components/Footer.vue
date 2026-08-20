@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { apiKey } from '~/stores/main'
+import { apiKey, shareToken } from '~/stores/main'
 
 const loggedIn = computed(() => {
-  return !!apiKey.value
+  return apiKey.value.length > 0 || shareToken.value.length > 0
 })
 </script>
 
