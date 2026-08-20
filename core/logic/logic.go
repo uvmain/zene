@@ -253,3 +253,13 @@ func LowercaseArray(originalStringArray []string) []string {
 	}
 	return result
 }
+
+func PathSegmentIsSafe(pathSegment string) bool {
+	if pathSegment == "" || pathSegment == "." || pathSegment == ".." {
+		return false
+	}
+	if strings.Contains(pathSegment, "/") || strings.Contains(pathSegment, "\\") || strings.Contains(pathSegment, "..") {
+		return false
+	}
+	return true
+}

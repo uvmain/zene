@@ -14,6 +14,7 @@ import (
 	"zene/core/config"
 	"zene/core/database"
 	"zene/core/logger"
+	"zene/core/logic"
 	"zene/core/net"
 )
 
@@ -34,10 +35,19 @@ func cleanupIncompleteCache(cachePath string, cacheKey string) {
 }
 
 func TranscodeAndStream(ctx context.Context, w http.ResponseWriter, r *http.Request, filePathAbs string, trackId string, maxBitRate int, timeOffset int, format string) error {
+	if !logic.PathSegmentIsSafe(trackId) {
+		logger.Printf("Invalid track id in TranscodeAndStream: %s", trackId)
+		return fmt.Errorf("invalid track id")
+	}
+	if !logic.PathSegmentIsSafe(format) {
+		logger.Printf("Invalid format in TranscodeAndStream: %s", format)
+		return fmt.Errorf("invalid format")
+	}
 	cacheKey := fmt.Sprintf("%s-%d.%s", trackId, maxBitRate, format)
 	cacheHash := sha256.Sum256([]byte(cacheKey))
+	cacheFileName := hex.EncodeToString(cacheHash[:]) + "." + format
 	tempCachePath := filepath.Join(config.AudioCacheFolder, ".tmp-"+hex.EncodeToString(cacheHash[:]))
-	cachePath := filepath.Join(config.AudioCacheFolder, cacheKey)
+	cachePath := filepath.Join(config.AudioCacheFolder, cacheFileName)
 
 	createCache := timeOffset <= 0
 
