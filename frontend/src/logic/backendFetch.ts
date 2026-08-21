@@ -637,11 +637,3 @@ export async function getTranscodeDecision(mediaId: string, mediaType: 'song' | 
   const data = await response.json() as SubsonicTranscodeDecisionResponse
   return data['subsonic-response'].transcodeDecision
 }
-
-export async function fetchShare(shareToken: string): Promise<any> {
-  const path = `/rest/getshare/${shareToken}?f=json`
-  const url = `${backendUrl.value}${path}`
-  const response = await fetch(url)
-  const data = await response.json()
-  return data
-}
