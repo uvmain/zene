@@ -621,3 +621,31 @@ func ValidateShareToken(ctx context.Context, shareToken string) (int, bool) {
 
 	return shareId, true
 }
+
+func ValidateTokenAndMediaId(ctx context.Context, token string, mediaId string) (int, bool) {
+	query := `SELECT s.id, s.expires_at
+		FROM shares s
+		JOIN users u ON u.id = s.owner_user_id
+		JOIN shared_media sm ON sm.share_id = s.id
+		WHERE u.share_role = 1
+		AND s.token = ?
+		AND sm.media_id = ?
+		LIMIT 1`
+
+	var shareId int
+	var expires sql.NullString
+
+	err := DB.QueryRowContext(ctx, query, token, mediaId).Scan(&shareId, &expires)
+	if err != nil {
+		logger.Printf("Error validating mediaId %s for token %s: %v", mediaId, token, err)
+		return 0, false
+	}
+
+	if expires.Valid && expires.String != "" {
+		expiresTime := logic.GetTimeFromString(expires.String)
+		if !expiresTime.IsZero() && expiresTime.Before(time.Now()) {
+			return 0, false
+		}
+	}
+	return shareId, true
+}
