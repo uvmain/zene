@@ -10,6 +10,7 @@ const props = defineProps({
   primaryArtist: { type: String, required: false },
   tracks: { type: Object as PropType<SubsonicSong[]>, required: true },
   autoScrolling: { type: Boolean, default: true },
+  isShare: { type: Boolean, default: false },
 })
 
 watch(currentQueue, async () => {
@@ -55,7 +56,8 @@ onMounted(async () => {
 <template>
   <div v-if="tracks && tracks.length > 0" class="corner-cut background-2 lg:corner-cut-large">
     <div class="p-2 text-left flex flex-col h-full lg:p-4">
-      <TracksHeader class="hidden md:grid" />
+      <ShareTracksHeader v-if="isShare" class="hidden md:grid" />
+      <TracksHeader v-else class="hidden md:grid" />
       <RecycleScroller
         v-slot="{ item, index }"
         ref="scroller"
@@ -66,7 +68,11 @@ onMounted(async () => {
         key-field="id"
         @visible="scrollToActiveTrack()"
       >
-        <Track
+        <ShareTrack v-if="isShare"
+          :track="item"
+          :track-index="index"
+        />
+        <Track v-else
           :track="item"
           :track-index="index"
           :primary-artist="primaryArtist"

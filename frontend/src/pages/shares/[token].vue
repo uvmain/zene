@@ -29,6 +29,6 @@ onUnmounted(() => {
     <div v-if="description" class="mb-4 text-center text-lg text-muted">
       {{ description }}
     </div>
-    <Tracks v-if="tracks" :tracks="tracks" />
+    <Tracks v-if="tracks" :tracks="tracks" :is-share="true" />
   </div>
 </template>
