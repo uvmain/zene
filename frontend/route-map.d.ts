@@ -45,13 +45,6 @@ declare module 'vue-router/auto-routes' {
       { all: ParamValue<false> },
       | never
     >,
-    '/admin': RouteRecordInfo<
-      '/admin',
-      '/admin',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/albums/': RouteRecordInfo<
       '/albums/',
       '/albums',
@@ -220,14 +213,6 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | 'all'
-    }
-    'src/pages/admin.vue': {
-      routes:
-        | '/admin'
-      views:
-        | never
-      pathParamNames:
-        | never
     }
     'src/pages/albums/index.vue': {
       routes:

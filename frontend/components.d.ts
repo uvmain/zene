@@ -93,6 +93,7 @@ declare module 'vue' {
     Refresher: typeof import('./src/components/Refresher.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Shares: typeof import('./src/components/Shares.vue')['default']
     ShareTrack: typeof import('./src/components/ShareTrack.vue')['default']
     ShareTracks: typeof import('./src/components/ShareTracks.vue')['default']
     ShareTracksHeader: typeof import('./src/components/ShareTracksHeader.vue')['default']

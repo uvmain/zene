@@ -114,7 +114,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="currentUser?.adminRole" class="flex flex-col gap-4">
+  <div v-if="currentUser?.adminRole" class="flex flex-col gap-4 lg:max-w-7xl">
     <h1 class="text-2xl font-semibold">
       Manage Users
     </h1>
@@ -125,7 +125,7 @@ onMounted(async () => {
       Create new user
     </ZButton>
     <div>
-      <div class="lg:w-2xl">
+      <div>
         <div class="text-primary px-4 py-3 corner-cut background-3 gap-4 grid grid-cols-3 uppercase">
           <span>User</span>
           <span>Admin</span>

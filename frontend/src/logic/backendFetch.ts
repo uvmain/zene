@@ -3,6 +3,7 @@ import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
+import type { SubsonicSharesResponse } from '~/types/share'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
@@ -153,6 +154,11 @@ export async function fetchAlbum(musicbrainz_album_id: string): Promise<Subsonic
     body: formData,
   })
   return response.album
+}
+
+export async function fetchShares(): Promise<SubsonicSharesResponse> {
+  const response = await openSubsonicFetchRequest<SubsonicSharesResponse>('getShares')
+  return response
 }
 
 export async function fetchAlbums({ type, size, offset, seed }: { type: string, size?: number, offset?: number, seed?: number }): Promise<SubsonicAlbum[] | null> {

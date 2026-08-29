@@ -1,3 +1,5 @@
+import { SubsonicResponse } from "./subsonic"
+
 export type Share = {
   id: number
   url: string
@@ -46,4 +48,10 @@ export type Share = {
     }[]
     displayAlbumArtist: string
   }[]
+}
+
+export interface SubsonicSharesResponse extends SubsonicResponse {
+  shares: {
+    share: Share[]
+  }
 }
