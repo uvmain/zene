@@ -403,26 +403,26 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 				GROUP BY musicbrainz_track_id
 		),
 		share_media AS (
-				SELECT sh.id AS share_id, sh.owner_user_id, sh.token, sh.description, sh.created_at, sh.expires_at, sh.visit_count, sm.media_id
+				SELECT sh.id AS share_id, sh.owner_user_id, sh.token, sh.description, sh.created_at, sh.expires_at, sh.visit_count, sh.last_visited, sm.media_id
 				FROM shares sh
 				JOIN shared_media sm ON sm.share_id = sh.id
 				WHERE sh.owner_user_id = ?
 		),
 		shared_metadata AS (
-				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
 				FROM share_media sm
 				JOIN metadata m ON m.musicbrainz_track_id = sm.media_id
 				UNION
-				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
 				FROM share_media sm
 				JOIN metadata m ON m.musicbrainz_album_id = sm.media_id
 				UNION
-				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
 				FROM share_media sm
 				JOIN metadata m ON m.musicbrainz_artist_id = sm.media_id
 		)
 		SELECT
-				sm.share_id AS id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, u.username,
+				sm.share_id AS id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, u.username,
 				m.musicbrainz_track_id AS id, m.musicbrainz_album_id AS album_id, m.title, m.album, m.artist,
 				COALESCE(m.track_number, 0) AS track, REPLACE(PRINTF('%4s', substr(m.release_date, 1, 4)),' ','0') AS year,
 				substr(m.genre,1,instr(m.genre, ';') - 1) AS genre, m.musicbrainz_track_id AS cover_art, m.size,
@@ -458,8 +458,9 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 		var albumArtistName sql.NullString
 		var albumArtistId sql.NullString
 		var shareExpiresAt sql.NullString
+		var shareLastVisited sql.NullString
 		if err := rows.Scan(
-			&row.ShareId, &row.Token, &row.Description, &row.ShareCreated, &shareExpiresAt, &row.VisitCount, &row.ShareOwner,
+			&row.ShareId, &row.Token, &row.Description, &row.ShareCreated, &shareExpiresAt, &row.VisitCount, &shareLastVisited, &row.ShareOwner,
 			&row.TrackId, &row.AlbumId, &row.Title, &row.Album, &row.Artist, &row.TrackNumber, &row.Year,
 			&row.Genre, &row.CoverArt, &row.Size, &durationFloat, &row.Bitrate, &row.Path, &row.DateAdded,
 			&row.DiscNumber, &row.ArtistId, &row.AlbumArtist, &row.BitDepth, &row.SampleRate, &row.Channels,
@@ -525,6 +526,16 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 
 		currentShare := slices.IndexFunc(shares, func(s types.ShareRow) bool { return s.Id == row.ShareId })
 
+		var expiresAt string
+		if shareExpiresAt.Valid {
+			expiresAt = shareExpiresAt.String
+		}
+
+		var lastVisited string
+		if shareLastVisited.Valid {
+			lastVisited = shareLastVisited.String
+		}
+
 		if currentShare == -1 {
 			shares = append(shares, types.ShareRow{
 				Id:          row.ShareId,
@@ -533,6 +544,8 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 				Url:         logic.GetShareUrl(row.Token),
 				Created:     row.ShareCreated,
 				VisitCount:  row.VisitCount,
+				Expires:     expiresAt,
+				LastVisited: lastVisited,
 				Entries:     []types.SubsonicChild{},
 			})
 			currentShare = len(shares) - 1
@@ -545,7 +558,7 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 }
 
 func GetShareById(ctx context.Context, id int) (types.ShareRow, error) {
-	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count
+	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count, s.last_visited
 		from shares s
 		join users u on u.id = s.owner_user_id
 		where s.id = ?
@@ -554,9 +567,10 @@ func GetShareById(ctx context.Context, id int) (types.ShareRow, error) {
 	var share types.ShareRow
 	var token string
 	var expires sql.NullString
+	var lastVisited sql.NullString
 
 	err := DB.QueryRowContext(ctx, query, id).Scan(
-		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount,
+		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount, &lastVisited,
 	)
 
 	if err != nil {
@@ -599,13 +613,21 @@ func GetShareById(ctx context.Context, id int) (types.ShareRow, error) {
 		return types.ShareRow{}, fmt.Errorf("getting songs by share ID: %v", err)
 	}
 
+	if expires.Valid {
+		share.Expires = expires.String
+	}
+
+	if lastVisited.Valid {
+		share.LastVisited = lastVisited.String
+	}
+
 	share.Entries = entries
 
 	return share, nil
 }
 
 func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) {
-	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count
+	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count, s.last_visited
 		from shares s
 		join users u on u.id = s.owner_user_id
 		where s.token = ?
@@ -613,9 +635,10 @@ func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) 
 
 	var share types.ShareRow
 	var expires sql.NullString
+	var lastVisited sql.NullString
 
 	err := DB.QueryRowContext(ctx, query, token).Scan(
-		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount,
+		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount, &lastVisited,
 	)
 
 	if err != nil {
@@ -660,6 +683,14 @@ func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) 
 
 	share.Entries = entries
 	share.Url = logic.GetShareUrl(token)
+
+	if expires.Valid {
+		share.Expires = expires.String
+	}
+
+	if lastVisited.Valid {
+		share.LastVisited = lastVisited.String
+	}
 
 	return share, nil
 }

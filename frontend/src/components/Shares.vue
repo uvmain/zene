@@ -45,6 +45,10 @@ async function handleDeleteShare() {
   shares.value = await fetchShares()
 }
 
+function getUserByUsername(username: string): SubsonicUser {
+  return users.value.find(user => user.username === username) as SubsonicUser
+}
+
 onMounted(async () => {
   const response = await fetchCurrentUser()
   if (response) {
@@ -73,7 +77,10 @@ onMounted(async () => {
         <span>Last Visited</span>
       </div>
       <div v-for="share in shares.shares.share" :key="share.id" class="text-muted p-4 border-primary border-t-0 background-2 share-grid">
-        <Avatar :user="users.find(user => user.username === share.username) as SubsonicUser" />
+        <Avatar
+          v-if="users.some(user => user.username === share.username)"
+          :user="getUserByUsername(share.username)"
+        />
         <a class="col-span-2 underline" :href="share.url" target="_blank">{{ share.description }}</a>
         <div> {{ share.visitCount }} </div>
         <div> {{ new Date(share.created).toLocaleString() }} </div>
