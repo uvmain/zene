@@ -6,7 +6,6 @@ import { initializeAccentColour, resetAccentColour } from '~/logic/colours'
 import { clearApiKey, toggleWakeLock } from '~/logic/common'
 import { toggleDebug } from '~/logic/logger'
 import * as Store from '~/stores/main'
-import { Share } from 'node:stream/iter'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)

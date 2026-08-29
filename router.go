@@ -67,6 +67,7 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/share/{share_token}/stream", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareStream)))
 	apiRouter.Handle("/share/{share_token}/download", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareDownload)))
 	apiRouter.Handle("/share/{share_token}/lyrics", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareLyrics)))
+	apiRouter.Handle("/share/{share_token}/incrementvisitcount", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareIncrementVisitCount)))
 
 	// other non-opensubsonic
 	apiRouter.Handle("/rest/getalbumarts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArts)))

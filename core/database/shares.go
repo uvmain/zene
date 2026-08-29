@@ -183,6 +183,16 @@ func UpdateShare(ctx context.Context, options UpdateShareOptions) error {
 	return nil
 }
 
+func IncrementShareVisitCount(ctx context.Context, shareId int) error {
+	updateQuery := `UPDATE shares SET visit_count = visit_count + 1 WHERE id = ?`
+	_, err := DB.ExecContext(ctx, updateQuery, shareId)
+	if err != nil {
+		return fmt.Errorf("incrementing share visit count: %v", err)
+	}
+
+	return nil
+}
+
 func DeleteShare(ctx context.Context, id int) error {
 	owner, err := GetUserByContext(ctx)
 	if err != nil {

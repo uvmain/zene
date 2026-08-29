@@ -18,7 +18,10 @@ const avatar = ref<string | null>(null)
 const adminCount = computed(() => users.value.filter(user => user.adminRole).length)
 
 async function getCurrentUser() {
-  currentUser.value = await fetchCurrentUser()
+  const response = await fetchCurrentUser()
+  if (response) {
+    currentUser.value = response
+  }
 }
 
 async function getUsers() {

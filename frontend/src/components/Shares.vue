@@ -8,7 +8,10 @@ const currentUser = ref<SubsonicUser>({} as SubsonicUser)
 const shares = ref<SubsonicSharesResponse | null>(null)
 
 onMounted(async () => {
-  currentUser.value = await fetchCurrentUser()
+  const response = await fetchCurrentUser()
+  if (response) {
+    currentUser.value = response
+  }
   shares.value = await fetchShares()
 })
 </script>
@@ -21,13 +24,15 @@ onMounted(async () => {
     <div v-if="shares">
       <div class="text-primary px-4 py-3 corner-cut background-3 share-grid uppercase">
         <span>User</span>
-        <span>Description</span>
-        <span>Link</span>
+        <span class="col-span-2">Share</span>
+        <span>Visits</span>
+        <span>Created</span>
       </div>
       <div v-for="share in shares.shares.share" :key="share.id" class="text-muted p-4 border-primary border-t-0 background-2 share-grid">
         <div> {{ share.username }} </div>
-        <div> {{ share.description }} </div>
-        <a class="col-span-2" :href="share.url" target="_blank">{{ share.url }}</a>
+        <a class="col-span-2 underline" :href="share.url" target="_blank">{{ share.description }}</a>
+        <div> {{ share.visitCount }} </div>
+        <div> {{ new Date(share.created).toLocaleString() }} </div>
       </div>
     </div>
     <div v-else>
@@ -39,8 +44,7 @@ onMounted(async () => {
 <style lang="css" scoped>
 .share-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1rem;
-  align-items: center;
 }
 </style>
