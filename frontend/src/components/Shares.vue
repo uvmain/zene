@@ -5,7 +5,9 @@ import type { SubsonicUser } from '~/types/subsonicUser'
 import { fetchCurrentUser } from '~/logic/users'
 import { SubsonicResponse } from '~/types/subsonic'
 import { openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { fetchUsers } from '~/logic/users'
 
+const users = ref<SubsonicUser[]>([])
 const currentUser = ref<SubsonicUser>({} as SubsonicUser)
 const shares = ref<SubsonicSharesResponse | null>(null)
 const shareToDelete = ref<Share>({} as Share)
@@ -49,6 +51,10 @@ onMounted(async () => {
     currentUser.value = response
   }
   shares.value = await fetchShares()
+
+  if (currentUser.value?.adminRole) {
+    users.value = await fetchUsers()
+  }
 })
 </script>
 
@@ -63,12 +69,16 @@ onMounted(async () => {
         <span class="col-span-2">Share</span>
         <span>Visits</span>
         <span>Created</span>
+        <span>Expires</span>
+        <span>Last Visited</span>
       </div>
       <div v-for="share in shares.shares.share" :key="share.id" class="text-muted p-4 border-primary border-t-0 background-2 share-grid">
-        <div> {{ share.username }} </div>
+        <Avatar :user="users.find(user => user.username === share.username) as SubsonicUser" />
         <a class="col-span-2 underline" :href="share.url" target="_blank">{{ share.description }}</a>
         <div> {{ share.visitCount }} </div>
         <div> {{ new Date(share.created).toLocaleString() }} </div>
+        <div> {{ share.expires ? new Date(share.expires).toLocaleString() : 'Never' }} </div>
+        <div> {{ share.lastVisited ? new Date(share.lastVisited).toLocaleString() : 'Never' }} </div>
         <ZButton
           :title="`Delete ${share.description}`"
           :red="true"
@@ -103,8 +113,7 @@ onMounted(async () => {
 
 <style lang="css" scoped>
 .share-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 1rem;
+  @apply grid gap-4 items-center;
+  grid-template-columns: repeat(8, 1fr);
 }
 </style>

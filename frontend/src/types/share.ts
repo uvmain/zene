@@ -7,6 +7,9 @@ export type Share = {
   username: string
   created: string
   visitCount: number
+  expires?: string
+  lastVisited?: string
+
   entry: {
     id: string
     parent: string
