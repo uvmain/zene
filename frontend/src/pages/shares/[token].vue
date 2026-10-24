@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SubsonicSong } from '~/types/subsonicSong'
-import { fetchShare } from '~/logic/backendFetch'
+import { fetchShare } from '~/logic/shareFetch'
 import { shareToken } from '~/stores/main'
 
 const route = useRoute('/shares/[token]')
@@ -13,10 +13,9 @@ onBeforeMount(async () => {
   console.log('Fetching share details for token:', shareTokenParam.value)
   shareToken.value = shareTokenParam.value
   const response = await fetchShare(shareToken.value)
-  if (response && response['subsonic-response'] && response['subsonic-response'].shares && response['subsonic-response'].shares.share) {
-    const share = response['subsonic-response'].shares.share[0]
-    description.value = share.description || ''
-    tracks.value = share.entry || []
+  if (response) {
+    description.value = response.description || ''
+    tracks.value = response.entry || []
   }
 })
 
@@ -30,6 +29,6 @@ onUnmounted(() => {
     <div v-if="description" class="mb-4 text-center text-lg text-muted">
       {{ description }}
     </div>
-    <Tracks v-if="tracks" :tracks="tracks" />
+    <Tracks v-if="tracks" :tracks="tracks" :is-share="true" />
   </div>
 </template>

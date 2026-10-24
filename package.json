@@ -3,21 +3,21 @@
   "version": "1.0.0",
   "description": "Self Hosted Music Server",
   "main": "index.js",
-  "packageManager": "pnpm@11.6.0",
+  "packageManager": "pnpm@12.15.0",
+  "type": "module",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "go:deps": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go install golang.org/x/vuln/cmd/govulncheck@latest && go mod download",
-    "clean:build": "rimraf -v -I zene zene.exe frontend/dist tmp",
-    "clean:modules": "rimraf -v -I ./frontend/node_modules ./node_modules",
+    "clean:build": "node utils/rmr.js zene zene.exe frontend/dist tmp",
+    "clean:modules": "node utils/rmr.js ./frontend/node_modules ./node_modules",
     "clean": "pnpm clean:build && pnpm clean:modules",
     "dev:backend": "air",
     "dev:frontend": "pnpm --filter ./frontend dev",
-    "dev": "concurrently pnpm:caddy pnpm:dev:backend pnpm:dev:frontend",
-    "dev:noproxy": "concurrently pnpm:dev:backend pnpm:dev:frontend",
-    "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && cpy zene . --rename=zene.exe",
+    "dev": "node utils/concurrently.js",
+    "build:backend": "cross-env CGO_ENABLED=0 go build -ldflags=\"-s -w\" -o zene . && node utils/copy.js zene ./zene.exe",
     "build:frontend": "pnpm --filter ./frontend build",
     "build": "pnpm build:frontend && pnpm build:backend",
-    "preview": "concurrently pnpm:caddy:preview pnpm:preview:go",
+    "preview": "node utils/concurrently.js preview",
     "preview:go": "zene.exe",
     "caddy": "caddy run --config Caddyfile",
     "caddy:preview": "caddy run --config Caddyfile.preview",
@@ -39,10 +39,7 @@
   },
   "homepage": "https://github.com/uvmain/zene#readme",
   "devDependencies": {
-    "caddy-baron": "^5.0.1",
-    "concurrently": "^10.0.5",
-    "cpy-cli": "^7.0.0",
-    "cross-env": "^10.1.0",
-    "rimraf": "^6.1.3"
+    "caddy-baron": "^5.0.2",
+    "cross-env": "^10.1.0"
   }
 }

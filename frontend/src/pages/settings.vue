@@ -103,7 +103,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-4 flex flex-col gap-y-6">
+  <div class="p-4 flex flex-col gap-y-6 lg:max-w-7xl">
     <div class="flex gap-4">
       <ZButton @click="runScan()">
         <span class="text-nowrap">Run a scan</span>
@@ -201,6 +201,8 @@ onMounted(() => {
     </div>
 
     <UserManagement />
+
+    <Shares />
 
     <!-- Logout Modal -->
     <Modal :show-modal="showLogoutModal" modal-title="Logout" @close="showLogoutModal = false">

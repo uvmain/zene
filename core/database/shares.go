@@ -35,6 +35,7 @@ type Share struct {
 	CreatedAt   string
 	ExpiresAt   string
 	VisitCount  int
+	LastVisited string
 	MediaIds    []string
 }
 
@@ -47,6 +48,7 @@ func createSharesTable(ctx context.Context) {
 		created_at TEXT NOT NULL,
 		expires_at TEXT,
 		visit_count INTEGER NOT NULL DEFAULT 0,
+		last_visited TEXT,
 		FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE,
 		UNIQUE(token)
 	);`
@@ -183,6 +185,19 @@ func UpdateShare(ctx context.Context, options UpdateShareOptions) error {
 	return nil
 }
 
+func IncrementShareVisitCount(ctx context.Context, shareId int) error {
+	lastVisited := logic.GetCurrentTimeFormatted()
+	updateQuery := `UPDATE shares SET visit_count = visit_count + 1,
+		last_visited = ?
+		WHERE id = ?`
+	_, err := DB.ExecContext(ctx, updateQuery, lastVisited, shareId)
+	if err != nil {
+		return fmt.Errorf("incrementing share visit count: %v", err)
+	}
+
+	return nil
+}
+
 func DeleteShare(ctx context.Context, id int) error {
 	owner, err := GetUserByContext(ctx)
 	if err != nil {
@@ -205,6 +220,171 @@ func DeleteShare(ctx context.Context, id int) error {
 	return nil
 }
 
+func GetAllShares(ctx context.Context) ([]types.ShareRow, error) {
+	query := `WITH gr AS (
+    SELECT metadata_id, AVG(rating) AS avg_rating
+    FROM user_ratings
+    GROUP BY metadata_id
+		),
+		plays AS (
+				SELECT musicbrainz_track_id, SUM(play_count) AS play_count, MAX(last_played) AS last_played
+				FROM play_counts
+				GROUP BY musicbrainz_track_id
+		),
+		share_media AS (
+				SELECT sh.id AS share_id, sh.owner_user_id, sh.token, sh.description, sh.created_at, sh.expires_at, sh.visit_count, sh.last_visited, sm.media_id
+				FROM shares sh
+				JOIN shared_media sm ON sm.share_id = sh.id
+		),
+		shared_metadata AS (
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
+				FROM share_media sm
+				JOIN metadata m ON m.musicbrainz_track_id = sm.media_id
+				UNION
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
+				FROM share_media sm
+				JOIN metadata m ON m.musicbrainz_album_id = sm.media_id
+				UNION
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
+				FROM share_media sm
+				JOIN metadata m ON m.musicbrainz_artist_id = sm.media_id
+		)
+		SELECT
+				sm.share_id AS id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, u.username,
+				m.musicbrainz_track_id AS id, m.musicbrainz_album_id AS album_id, m.title, m.album, m.artist,
+				COALESCE(m.track_number, 0) AS track, REPLACE(PRINTF('%4s', substr(m.release_date, 1, 4)),' ','0') AS year,
+				substr(m.genre,1,instr(m.genre, ';') - 1) AS genre, m.musicbrainz_track_id AS cover_art, m.size,
+				m.duration, m.bitrate, m.file_path AS path, m.date_added AS created, m.disc_number, m.musicbrainz_artist_id AS artist_id,
+				m.album_artist, m.bit_depth, m.sample_rate, m.channels, COALESCE(ur.rating, 0) AS user_rating,
+				COALESCE(gr.avg_rating, 0.0) AS average_rating, COALESCE(plays.play_count, 0) AS play_count, plays.last_played AS played,
+			us.created_at AS starred, maa.musicbrainz_artist_id, maa.artist AS album_artist_name
+		FROM shared_metadata sm
+		JOIN metadata m ON m.musicbrainz_track_id = sm.musicbrainz_track_id
+		JOIN user_music_folders f ON f.folder_id = m.music_folder_id AND f.user_id = sm.owner_user_id
+		JOIN users u ON u.id = sm.owner_user_id
+		LEFT JOIN user_stars us ON us.metadata_id = m.musicbrainz_track_id AND us.user_id = sm.owner_user_id
+		LEFT JOIN user_ratings ur ON ur.metadata_id = m.musicbrainz_track_id AND ur.user_id = sm.owner_user_id
+		LEFT JOIN gr ON gr.metadata_id = m.musicbrainz_artist_id
+		LEFT JOIN plays ON plays.musicbrainz_track_id = m.musicbrainz_track_id
+		LEFT JOIN metadata maa ON maa.artist = m.album_artist
+		group by sm.share_id, m.musicbrainz_track_id
+		ORDER BY sm.created_at DESC, m.musicbrainz_artist_id, m.musicbrainz_album_id, m.musicbrainz_track_id`
+
+	rows, err := DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("querying shares: %v", err)
+	}
+	defer rows.Close()
+
+	var shares []types.ShareRow
+
+	for rows.Next() {
+		var row types.DbUserShare
+		var lastPlayed sql.NullString
+		var dateStarred sql.NullString
+		var durationFloat float64
+		var albumArtistName sql.NullString
+		var albumArtistId sql.NullString
+		var shareExpiresAt sql.NullString
+		var shareLastVisited sql.NullString
+		if err := rows.Scan(
+			&row.ShareId, &row.Token, &row.Description, &row.ShareCreated, &shareExpiresAt, &row.VisitCount, &shareLastVisited,
+			&row.ShareOwner, &row.TrackId, &row.AlbumId, &row.Title, &row.Album, &row.Artist, &row.TrackNumber, &row.Year,
+			&row.Genre, &row.CoverArt, &row.Size, &durationFloat, &row.Bitrate, &row.Path, &row.DateAdded,
+			&row.DiscNumber, &row.ArtistId, &row.AlbumArtist, &row.BitDepth, &row.SampleRate, &row.Channels,
+			&row.UserRating, &row.AverageRating, &row.PlayCount, &lastPlayed, &dateStarred, &albumArtistId, &albumArtistName,
+		); err != nil {
+			return nil, fmt.Errorf("scanning share row: %v", err)
+		}
+
+		var entry types.SubsonicChild
+		entry.Genres = []types.ChildGenre{}
+		for _, genre := range strings.Split(row.Genre, ";") {
+			entry.Genres = append(entry.Genres, types.ChildGenre{Name: genre})
+		}
+
+		if lastPlayed.Valid {
+			entry.Played = lastPlayed.String
+		}
+
+		if dateStarred.Valid {
+			entry.Starred = dateStarred.String
+		}
+
+		if dateStarred.Valid {
+			entry.Starred = dateStarred.String
+		}
+
+		entry.Id = row.TrackId
+		entry.Duration = int(durationFloat)
+		entry.IsDir = false
+		entry.MusicBrainzId = entry.Id
+		entry.AlbumId = entry.Parent
+		entry.Title = row.Title
+		entry.Album = row.Album
+		entry.Artist = row.Artist
+		entry.Track = row.TrackNumber
+		entry.Year = row.Year
+		entry.Genre = row.Genre
+		entry.CoverArt = row.CoverArt
+		entry.Size = row.Size
+		entry.BitRate = row.Bitrate
+		entry.Path = row.Path
+		entry.Created = row.DateAdded
+		entry.DiscNumber = row.DiscNumber
+		entry.ArtistId = row.ArtistId
+		entry.BitDepth = row.BitDepth
+		entry.SamplingRate = row.SampleRate
+		entry.ChannelCount = row.Channels
+		entry.UserRating = row.UserRating
+		entry.AverageRating = row.AverageRating
+		entry.PlayCount = row.PlayCount
+
+		entry.Artists = []types.ChildArtist{}
+		entry.Artists = append(entry.Artists, types.ChildArtist{Id: entry.ArtistId, Name: entry.Artist})
+
+		entry.DisplayArtist = entry.Artist
+
+		entry.AlbumArtists = []types.ChildArtist{}
+		if albumArtistId.Valid && albumArtistName.Valid {
+			entry.AlbumArtists = append(entry.AlbumArtists, types.ChildArtist{Id: albumArtistId.String, Name: albumArtistName.String})
+		}
+
+		entry.DisplayAlbumArtist = albumArtistName.String
+
+		currentShare := slices.IndexFunc(shares, func(s types.ShareRow) bool { return s.Id == row.ShareId })
+
+		var expiresAt string
+		if shareExpiresAt.Valid {
+			expiresAt = shareExpiresAt.String
+		}
+
+		var lastVisited string
+		if shareLastVisited.Valid {
+			lastVisited = shareLastVisited.String
+		}
+
+		if currentShare == -1 {
+			shares = append(shares, types.ShareRow{
+				Id:          row.ShareId,
+				Description: row.Description,
+				Username:    row.ShareOwner,
+				Url:         logic.GetShareUrl(row.Token),
+				Created:     row.ShareCreated,
+				VisitCount:  row.VisitCount,
+				LastVisited: lastVisited,
+				Expires:     expiresAt,
+				Entries:     []types.SubsonicChild{},
+			})
+			currentShare = len(shares) - 1
+		}
+
+		shares[currentShare].Entries = append(shares[currentShare].Entries, entry)
+	}
+
+	return shares, nil
+}
+
 func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 	owner, err := GetUserByContext(ctx)
 	if err != nil {
@@ -223,26 +403,26 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 				GROUP BY musicbrainz_track_id
 		),
 		share_media AS (
-				SELECT sh.id AS share_id, sh.owner_user_id, sh.token, sh.description, sh.created_at, sh.expires_at, sh.visit_count, sm.media_id
+				SELECT sh.id AS share_id, sh.owner_user_id, sh.token, sh.description, sh.created_at, sh.expires_at, sh.visit_count, sh.last_visited, sm.media_id
 				FROM shares sh
 				JOIN shared_media sm ON sm.share_id = sh.id
 				WHERE sh.owner_user_id = ?
 		),
 		shared_metadata AS (
-				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
 				FROM share_media sm
 				JOIN metadata m ON m.musicbrainz_track_id = sm.media_id
 				UNION
-				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
 				FROM share_media sm
 				JOIN metadata m ON m.musicbrainz_album_id = sm.media_id
 				UNION
-				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, m.*
+				SELECT sm.share_id, sm.owner_user_id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, m.*
 				FROM share_media sm
 				JOIN metadata m ON m.musicbrainz_artist_id = sm.media_id
 		)
 		SELECT
-				sm.share_id AS id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, u.username,
+				sm.share_id AS id, sm.token, sm.description, sm.created_at, sm.expires_at, sm.visit_count, sm.last_visited, u.username,
 				m.musicbrainz_track_id AS id, m.musicbrainz_album_id AS album_id, m.title, m.album, m.artist,
 				COALESCE(m.track_number, 0) AS track, REPLACE(PRINTF('%4s', substr(m.release_date, 1, 4)),' ','0') AS year,
 				substr(m.genre,1,instr(m.genre, ';') - 1) AS genre, m.musicbrainz_track_id AS cover_art, m.size,
@@ -278,8 +458,9 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 		var albumArtistName sql.NullString
 		var albumArtistId sql.NullString
 		var shareExpiresAt sql.NullString
+		var shareLastVisited sql.NullString
 		if err := rows.Scan(
-			&row.ShareId, &row.Token, &row.Description, &row.ShareCreated, &shareExpiresAt, &row.VisitCount, &row.ShareOwner,
+			&row.ShareId, &row.Token, &row.Description, &row.ShareCreated, &shareExpiresAt, &row.VisitCount, &shareLastVisited, &row.ShareOwner,
 			&row.TrackId, &row.AlbumId, &row.Title, &row.Album, &row.Artist, &row.TrackNumber, &row.Year,
 			&row.Genre, &row.CoverArt, &row.Size, &durationFloat, &row.Bitrate, &row.Path, &row.DateAdded,
 			&row.DiscNumber, &row.ArtistId, &row.AlbumArtist, &row.BitDepth, &row.SampleRate, &row.Channels,
@@ -345,6 +526,16 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 
 		currentShare := slices.IndexFunc(shares, func(s types.ShareRow) bool { return s.Id == row.ShareId })
 
+		var expiresAt string
+		if shareExpiresAt.Valid {
+			expiresAt = shareExpiresAt.String
+		}
+
+		var lastVisited string
+		if shareLastVisited.Valid {
+			lastVisited = shareLastVisited.String
+		}
+
 		if currentShare == -1 {
 			shares = append(shares, types.ShareRow{
 				Id:          row.ShareId,
@@ -353,6 +544,8 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 				Url:         logic.GetShareUrl(row.Token),
 				Created:     row.ShareCreated,
 				VisitCount:  row.VisitCount,
+				Expires:     expiresAt,
+				LastVisited: lastVisited,
 				Entries:     []types.SubsonicChild{},
 			})
 			currentShare = len(shares) - 1
@@ -365,7 +558,7 @@ func GetSharesByUser(ctx context.Context) ([]types.ShareRow, error) {
 }
 
 func GetShareById(ctx context.Context, id int) (types.ShareRow, error) {
-	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count
+	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count, s.last_visited
 		from shares s
 		join users u on u.id = s.owner_user_id
 		where s.id = ?
@@ -374,9 +567,10 @@ func GetShareById(ctx context.Context, id int) (types.ShareRow, error) {
 	var share types.ShareRow
 	var token string
 	var expires sql.NullString
+	var lastVisited sql.NullString
 
 	err := DB.QueryRowContext(ctx, query, id).Scan(
-		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount,
+		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount, &lastVisited,
 	)
 
 	if err != nil {
@@ -419,13 +613,21 @@ func GetShareById(ctx context.Context, id int) (types.ShareRow, error) {
 		return types.ShareRow{}, fmt.Errorf("getting songs by share ID: %v", err)
 	}
 
+	if expires.Valid {
+		share.Expires = expires.String
+	}
+
+	if lastVisited.Valid {
+		share.LastVisited = lastVisited.String
+	}
+
 	share.Entries = entries
 
 	return share, nil
 }
 
 func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) {
-	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count
+	query := `select s.id, u.username, s.token, s.description, s.created_at, s.expires_at, s.visit_count, s.last_visited
 		from shares s
 		join users u on u.id = s.owner_user_id
 		where s.token = ?
@@ -433,9 +635,10 @@ func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) 
 
 	var share types.ShareRow
 	var expires sql.NullString
+	var lastVisited sql.NullString
 
 	err := DB.QueryRowContext(ctx, query, token).Scan(
-		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount,
+		&share.Id, &share.Username, &token, &share.Description, &share.Created, &expires, &share.VisitCount, &lastVisited,
 	)
 
 	if err != nil {
@@ -480,6 +683,14 @@ func GetShareByToken(ctx context.Context, token string) (types.ShareRow, error) 
 
 	share.Entries = entries
 	share.Url = logic.GetShareUrl(token)
+
+	if expires.Valid {
+		share.Expires = expires.String
+	}
+
+	if lastVisited.Valid {
+		share.LastVisited = lastVisited.String
+	}
 
 	return share, nil
 }
@@ -619,5 +830,33 @@ func ValidateShareToken(ctx context.Context, shareToken string) (int, bool) {
 		}
 	}
 
+	return shareId, true
+}
+
+func ValidateTokenAndMediaId(ctx context.Context, token string, mediaId string) (int, bool) {
+	query := `SELECT s.id, s.expires_at
+		FROM shares s
+		JOIN users u ON u.id = s.owner_user_id
+		JOIN shared_media sm ON sm.share_id = s.id
+		WHERE u.share_role = 1
+		AND s.token = ?
+		AND sm.media_id = ?
+		LIMIT 1`
+
+	var shareId int
+	var expires sql.NullString
+
+	err := DB.QueryRowContext(ctx, query, token, mediaId).Scan(&shareId, &expires)
+	if err != nil {
+		logger.Printf("Error validating mediaId %s for token %s: %v", mediaId, token, err)
+		return 0, false
+	}
+
+	if expires.Valid && expires.String != "" {
+		expiresTime := logic.GetTimeFromString(expires.String)
+		if !expiresTime.IsZero() && expiresTime.Before(time.Now()) {
+			return 0, false
+		}
+	}
 	return shareId, true
 }

@@ -25,17 +25,28 @@ func HandleGetShares(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !requestUser.ShareRole {
-		logger.Printf("User %s attempted to get shares without share role", requestUser.Username)
+	if !requestUser.ShareRole && !requestUser.AdminRole {
+		logger.Printf("User %s attempted to get shares without share or admin role", requestUser.Username)
 		net.WriteSubsonicError(w, r, types.ErrorNotAuthorized, "You do not have permission to get shares", "")
 		return
 	}
 
-	shares, err := database.GetSharesByUser(ctx)
-	if err != nil {
-		logger.Printf("Error getting shares: %v", err)
-		net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to get shares", "")
-		return
+	var shares []types.ShareRow
+
+	if requestUser.AdminRole {
+		shares, err = database.GetAllShares(ctx)
+		if err != nil {
+			logger.Printf("Error getting all shares for admin user %s: %v", requestUser.Username, err)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to get shares", "")
+			return
+		}
+	} else {
+		shares, err = database.GetSharesByUser(ctx)
+		if err != nil {
+			logger.Printf("Error getting shares for user %s: %v", requestUser.Username, err)
+			net.WriteSubsonicError(w, r, types.ErrorGeneric, "Failed to get shares", "")
+			return
+		}
 	}
 
 	response := subsonic.GetPopulatedSubsonicResponse(ctx)

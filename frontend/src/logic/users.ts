@@ -2,9 +2,9 @@ import type { SubsonicResponse, SubsonicUserResponse, SubsonicUsersResponse } fr
 import type { SubsonicUser } from '~/types/subsonicUser'
 import { openSubsonicFetchRequest } from '~/logic/backendFetch'
 
-export async function fetchCurrentUser(): Promise<SubsonicUser> {
+export async function fetchCurrentUser(): Promise<SubsonicUser | null> {
   const response = await openSubsonicFetchRequest<SubsonicUserResponse>('getUser')
-  return response.user
+  return response.user ?? null
 }
 
 export async function fetchUsers(): Promise<SubsonicUser[]> {

@@ -58,7 +58,18 @@ func StartServer() *http.Server {
 	// API router (case-insensitive)
 	apiRouter := NewCaseInsensitiveMux()
 	// all registered API paths should be lowercase
+
+	// shares
 	apiRouter.Handle("/share/{media_id}/img", http.HandlerFunc(handlers.HandleGetShareImg))
+	apiRouter.Handle("/share/{share_token}", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleGetShare)))
+	apiRouter.Handle("/share/{share_token}/transcodedecision", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareTranscodeDecision)))
+	apiRouter.Handle("/share/{share_token}/transcodestream", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareTranscodeStream)))
+	apiRouter.Handle("/share/{share_token}/stream", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareStream)))
+	apiRouter.Handle("/share/{share_token}/download", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareDownload)))
+	apiRouter.Handle("/share/{share_token}/lyrics", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareLyrics)))
+	apiRouter.Handle("/share/{share_token}/incrementvisitcount", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleShareIncrementVisitCount)))
+
+	// other non-opensubsonic
 	apiRouter.Handle("/rest/getalbumarts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArts)))
 	apiRouter.Handle("/rest/getalbumartssse", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetAlbumArtsServerSentEvents)))
 	apiRouter.Handle("/rest/updatealbumart", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateAlbumArt)))
@@ -136,7 +147,6 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/createshare", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleCreateShare)))
 	apiRouter.Handle("/rest/deleteshare", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDeleteShare)))
 	apiRouter.Handle("/rest/getshares", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetShares)))
-	apiRouter.Handle("/rest/getshare/{share_token}", auth.ShareAuthMiddleware(http.HandlerFunc(handlers.HandleGetShare)))
 	apiRouter.Handle("/rest/updateshare", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleUpdateShare)))
 	// Podcast
 	apiRouter.Handle("/rest/getpodcasts", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetPodcasts)))

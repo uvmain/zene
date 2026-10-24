@@ -7,6 +7,8 @@ type ShareRow struct {
 	Username    string          `json:"username" xml:"username,attr"`
 	Created     string          `json:"created" xml:"created,attr"`
 	VisitCount  int             `json:"visitCount" xml:"visit_count,attr"`
+	Expires     string          `json:"expires,omitempty" xml:"expires,attr,omitempty"`
+	LastVisited string          `json:"lastVisited,omitempty" xml:"last_visited,attr,omitempty"`
 	Entries     []SubsonicChild `json:"entry,omitempty" xml:"entry,omitempty"`
 }
 

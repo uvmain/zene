@@ -32,9 +32,11 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
         <div v-if="modalTitle" class="text-lg text-muted font-semibold mb-4 max-w-80%">
           {{ modalTitle }}
         </div>
-        <ZButton :size10="true" title="Close modal" class="right-4 top-4 absolute" @click="$emit('close')">
-          <icon-nrk-close class="text-primary size-full" />
-        </ZButton>
+        <div class="opacity-50 right-1 top-1 absolute hover:opacity-100 lg:(right-2 top-2)">
+          <ZButton title="Close modal" size-10 @click="$emit('close')">
+            <icon-nrk-close class="text-primary size-full" />
+          </ZButton>
+        </div>
         <slot name="content" />
       </div>
     </div>
