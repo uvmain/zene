@@ -1,6 +1,6 @@
 module zene
 
-go 1.27.2
+go 1.27.3
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
