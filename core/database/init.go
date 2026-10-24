@@ -25,6 +25,7 @@ func Initialise(ctx context.Context) {
 	createMusicFoldersTable(ctx)
 	createUsersTable(ctx)
 	createApiKeysTable(ctx)
+	createQRLoginChallengesTable(ctx)
 	createMetadataTable(ctx)
 	createPlayCountsTable(ctx)
 	createChatsTable(ctx)

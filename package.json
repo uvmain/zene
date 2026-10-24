@@ -1,10 +1,20 @@
 {
   "name": "zene",
-  "version": "1.0.0",
-  "description": "Self Hosted Music Server",
-  "main": "index.js",
-  "packageManager": "pnpm@12.15.0",
   "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@12.15.0",
+  "description": "Self Hosted Music Server",
+  "author": "Ian Baron",
+  "license": "ISC",
+  "homepage": "https://github.com/uvmain/zene#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uvmain/zene.git"
+  },
+  "bugs": {
+    "url": "https://github.com/uvmain/zene/issues"
+  },
+  "main": "index.js",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "go:deps": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest && go install golang.org/x/vuln/cmd/govulncheck@latest && go mod download",
@@ -28,16 +38,6 @@
     "cspell": "cspell \"**/*.{go,ts,js,vue}\"",
     "deps:update": "go get -u && go mod tidy && pnpm update -r --latest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/uvmain/zene.git"
-  },
-  "author": "Ian Baron",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/uvmain/zene/issues"
-  },
-  "homepage": "https://github.com/uvmain/zene#readme",
   "devDependencies": {
     "caddy-baron": "^5.0.2",
     "cross-env": "^10.1.0"

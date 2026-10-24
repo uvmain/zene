@@ -39,7 +39,13 @@ const router = createRouter({
 
 router.beforeEach((to: RouteLocationNormalized) => {
   if ((apiKey.value == null || apiKey.value.length === 0) && to.path !== '/login' && to.path.startsWith('/shares/') === false) {
-    return { path: '/login', replace: true }
+    return {
+      path: '/login',
+      query: to.path === '/qr-login'
+        ? { redirect: to.fullPath }
+        : undefined,
+      replace: true,
+    }
   }
 })
 

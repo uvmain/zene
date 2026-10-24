@@ -1,7 +1,11 @@
+minimumReleaseAge: 1440
+minimumReleaseAgeExcludePrune: true
+trustPolicy: no-downgrade
+shellEmulator: true
+
 packages:
-  - 'frontend'
+  - frontend
 
 allowBuilds:
   caddy-baron: true
 
-minimumReleaseAge: 1440

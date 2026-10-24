@@ -42,7 +42,7 @@ const components = [
     path: path.resolve(__dirname, '../'),
     script: `pnpm run ${frontendScript}`,
     colour: 'yellow',
-  }
+  },
 ].filter(Boolean)
 
 const activeChildren = new Map()
@@ -55,7 +55,12 @@ function killChildProcess(childProcess) {
   }
 
   if (process.platform === 'win32') {
-    const killer = spawn('taskkill', ['/pid', String(childProcess.pid), '/T', '/F'], {
+    const killer = spawn('taskkill', [
+      '/pid',
+      String(childProcess.pid),
+      '/T',
+      '/F',
+    ], {
       stdio: 'ignore',
       windowsHide: true,
     })
@@ -74,7 +79,9 @@ function shutdownAll(exitedName, code, signal) {
   }
 
   isShuttingDown = true
-  shutdownExitCode = typeof code === 'number' ? code : 1
+  shutdownExitCode = typeof code === 'number'
+    ? code
+    : 1
 
   const reason = typeof code === 'number'
     ? `code ${code}`

@@ -7,7 +7,6 @@ const tracks = ref<SubsonicSong[]>()
 watch(currentQueue, async () => {
   tracks.value = currentQueue.value
 }, { immediate: true })
-
 </script>
 
 <template>

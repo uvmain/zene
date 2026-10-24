@@ -29,7 +29,9 @@ const isTrackPlaying = computed(() => {
 })
 
 const trackGenres = computed(() => {
-  const genres = props.track.genres.length ? props.track.genres.map(g => g.name.trim()) : []
+  const genres = props.track.genres.length
+    ? props.track.genres.map(g => g.name.trim())
+    : []
   return genres
 })
 

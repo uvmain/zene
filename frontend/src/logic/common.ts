@@ -1,13 +1,13 @@
 import type { ReleaseDate } from '~/types/subsonicAlbum'
-import { apiKey, backendUrl, wakeLockEnabled } from '~/stores/main'
 import { useWakeLock } from '@vueuse/core'
-import { debugLog } from './logger'
+import { apiKey, backendUrl, wakeLockEnabled } from '~/stores/main'
 import { getTranscodeDecision } from './backendFetch'
+import { debugLog } from './logger'
 
-const { isSupported,request, release } = useWakeLock()
+const { isSupported, request, release } = useWakeLock()
 
 export function initWakeLock() {
-  if (isSupported) {
+  if (isSupported.value) {
     if (wakeLockEnabled.value) {
       enableWakeLock()
     }
@@ -15,8 +15,8 @@ export function initWakeLock() {
 }
 
 function enableWakeLock() {
-  if (isSupported) {
-    request("screen")
+  if (isSupported.value) {
+    request('screen')
       .then(() => {
         debugLog('Wake lock requested')
       })
@@ -27,7 +27,7 @@ function enableWakeLock() {
 }
 
 function disableWakeLock() {
-  if (isSupported) {
+  if (isSupported.value) {
     release()
       .then(() => {
         debugLog('Wake lock released')
@@ -39,7 +39,7 @@ function disableWakeLock() {
 }
 
 export function toggleWakeLock() {
-  if (isSupported) {
+  if (isSupported.value) {
     if (wakeLockEnabled.value) {
       disableWakeLock()
     }
@@ -82,7 +82,7 @@ export async function getAuthenticatedTrackUrl(mediaId: string, mediaType: 'song
     queryParams.append('transcodeParams', transcodeDecision.transcodeParams ?? '')
     path = '/rest/getTranscodeStream.view'
   }
-  
+
   const url = `${backendUrl.value}${path}?${queryParams.toString()}`
   return url
 }
@@ -110,7 +110,7 @@ export enum artSizes {
 }
 
 export function getCoverArtUrl(musicbrainzId: string, size: number = artSizes.size400, timeUpdated?: string): string {
-  let url = new URL(`${backendUrl.value}/share/${musicbrainzId}/img`)
+  const url = new URL(`${backendUrl.value}/share/${musicbrainzId}/img`)
 
   const params = new URLSearchParams()
   if (timeUpdated != null) {

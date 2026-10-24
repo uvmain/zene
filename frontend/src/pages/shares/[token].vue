@@ -26,7 +26,7 @@ onUnmounted(() => {
 
 <template>
   <div class="mx-auto p-4 container">
-    <div v-if="description" class="mb-4 text-center text-lg text-muted">
+    <div v-if="description" class="text-lg text-muted mb-4 text-center">
       {{ description }}
     </div>
     <Tracks v-if="tracks" :tracks="tracks" :is-share="true" />

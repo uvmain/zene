@@ -68,6 +68,7 @@ Supports the following OpenSubsonic API extensions:
 - `refreshPodcast` Like refreshPodcasts, but for a single channel. Requires an `id` parameter.
 - `getbutterchurnpresets` Accepts `count: number` and `random: boolean` parameters. Returns `[{ name: 'presetName', preset: 'presetJson' }]`
 - `deleteaudiocache` Deletes all cached transcoded audio. Only admins can call this endpoint.
+- `qrlogin` Provides the web player's two-minute QR-login challenge flow. It stores hashes of the phone and computer challenge credentials, approving from an authenticated phone creates a new API key for the computer.
 
 ## Versioning
 This project uses a [calver](https://calver.org/) versioning system like `pip`

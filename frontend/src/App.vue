@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { setMediaSessionHandlers } from '~/logic/playbackQueue'
 import { initWakeLock } from '~/logic/common'
+import { setMediaSessionHandlers } from '~/logic/playbackQueue'
 import { apiKey } from './stores/main'
 
 onMounted(() => {

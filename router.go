@@ -82,6 +82,11 @@ func StartServer() *http.Server {
 	apiRouter.Handle("/rest/getbutterchurnpresets", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetButterchurnPresets)))
 	apiRouter.Handle("/rest/getffversions", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleGetFfVersions)))
 	apiRouter.Handle("/rest/downloadffbinaries", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDownloadFfBinaries)))
+	apiRouter.Handle("/rest/qrlogin/create", http.HandlerFunc(handlers.HandleCreateQRLoginChallenge))
+	apiRouter.Handle("/rest/qrlogin/claim", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleClaimQRLoginChallenge)))
+	apiRouter.Handle("/rest/qrlogin/decide", auth.AuthMiddleware(http.HandlerFunc(handlers.HandleDecideQRLoginChallenge)))
+	apiRouter.Handle("/rest/qrlogin/status", http.HandlerFunc(handlers.HandleQRLoginChallengeStatus))
+	apiRouter.Handle("/rest/qrlogin/complete", http.HandlerFunc(handlers.HandleCompleteQRLoginChallenge))
 	/* cSpell:disable */
 
 	// System

@@ -12,7 +12,6 @@ const props = defineProps({
 const route = useRoute()
 
 const playCount = ref(props.track.playCount ?? 0)
-const isStarred = ref<string | undefined>(props.track.starred)
 const showTrackModal = ref(false)
 
 const isTrackPlaying = computed(() => {
@@ -20,7 +19,9 @@ const isTrackPlaying = computed(() => {
 })
 
 const trackGenres = computed(() => {
-  const genres = props.track.genres.length ? props.track.genres.map(g => g.name.trim()) : []
+  const genres = props.track.genres.length
+    ? props.track.genres.map(g => g.name.trim())
+    : []
   return genres
 })
 

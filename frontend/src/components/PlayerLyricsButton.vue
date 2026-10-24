@@ -18,7 +18,9 @@ async function getLyrics() {
     return
   }
   lyricsRef.value = lyrics.line.map(line => ({
-    start: line.start ? line.start / 1000 : 0, // convert milliseconds to seconds, default to 0
+    start: line.start
+      ? line.start / 1000
+      : 0, // convert milliseconds to seconds, default to 0
     value: line.value,
   }))
 }

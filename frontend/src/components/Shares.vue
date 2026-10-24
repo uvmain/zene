@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { fetchShares } from '~/logic/backendFetch'
 import type { Share, SubsonicSharesResponse } from '~/types/share'
+import type { SubsonicResponse } from '~/types/subsonic'
 import type { SubsonicUser } from '~/types/subsonicUser'
-import { fetchCurrentUser } from '~/logic/users'
-import { SubsonicResponse } from '~/types/subsonic'
-import { openSubsonicFetchRequest } from '~/logic/backendFetch'
-import { fetchUsers } from '~/logic/users'
+import { fetchShares, openSubsonicFetchRequest } from '~/logic/backendFetch'
+import { fetchCurrentUser, fetchUsers } from '~/logic/users'
 
 const users = ref<SubsonicUser[]>([])
 const currentUser = ref<SubsonicUser>({} as SubsonicUser)
@@ -68,7 +66,7 @@ onMounted(async () => {
       Manage Shares
     </h1>
     <div v-if="shares">
-      <div class="text-primary px-4 py-3 corner-cut background-3 share-grid uppercase">
+      <div class="share-grid text-primary px-4 py-3 corner-cut background-3 uppercase">
         <span>User</span>
         <span class="col-span-2">Share</span>
         <span>Visits</span>
@@ -76,12 +74,12 @@ onMounted(async () => {
         <span>Expires</span>
         <span>Last Visited</span>
       </div>
-      <div v-for="share in shares.shares.share" :key="share.id" class="text-muted p-4 border-primary border-t-0 background-2 share-grid">
+      <div v-for="share in shares.shares.share" :key="share.id" class="share-grid text-muted p-4 border-primary border-t-0 background-2">
         <Avatar
           v-if="users.some(user => user.username === share.username)"
           :user="getUserByUsername(share.username)"
         />
-        <a class="col-span-2 underline" :href="share.url" target="_blank">{{ share.description }}</a>
+        <a class="underline col-span-2" :href="share.url" target="_blank">{{ share.description }}</a>
         <div> {{ share.visitCount }} </div>
         <div> {{ new Date(share.created).toLocaleString() }} </div>
         <div> {{ share.expires ? new Date(share.expires).toLocaleString() : 'Never' }} </div>
@@ -91,8 +89,8 @@ onMounted(async () => {
           :red="true"
           @click="openDeleteShareDialog(share)"
         >
-        Delete
-      </ZButton>
+          Delete
+        </ZButton>
       </div>
     </div>
     <div v-else>

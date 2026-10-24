@@ -3,7 +3,10 @@ import type { StructuredLyricLine } from '~/types/subsonicLyrics'
 
 const props = defineProps({
   modalTitle: { type: String, default: 'Lyrics' },
-  lyrics: { type: Array as PropType<StructuredLyricLine[]>, default: () => [] },
+  lyrics: {
+    type: Array as PropType<StructuredLyricLine[]>,
+    default: () => [],
+  },
   currentSeconds: { type: Number, default: 0 },
 })
 
@@ -20,7 +23,9 @@ const currentIndex = computed(() => {
 
 function setScroller(element: unknown, index: number) {
   if (currentIndex.value === index) {
-    scroller.value = element instanceof HTMLElement ? element : null
+    scroller.value = element instanceof HTMLElement
+      ? element
+      : null
   }
 }
 

@@ -22,7 +22,17 @@ export enum ArtistOrders {
 
 export type ArtistOrder = typeof ArtistOrders[keyof typeof ArtistOrders]
 
-export const streamQualities: readonly (string | number)[] = ['Unlimited', 96, 128, 160, 192, 256, 320, 512, 1024]
+export const streamQualities: readonly (string | number)[] = [
+  'Unlimited',
+  96,
+  128,
+  160,
+  192,
+  256,
+  320,
+  512,
+  1024,
+]
 
 export const apiKey = useLocalStorage<string>('apiKey', '')
 export const shareToken = useSessionStorage<string>('shareToken', '')

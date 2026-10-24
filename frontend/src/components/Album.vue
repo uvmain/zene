@@ -37,7 +37,9 @@ const showDate = computed(() => {
 })
 
 const loading = computed<LoadingAttribute>(() => {
-  return props.index < 10 ? 'eager' : 'lazy'
+  return props.index < 10
+    ? 'eager'
+    : 'lazy'
 })
 
 const coverArtUrl = computed(() => {

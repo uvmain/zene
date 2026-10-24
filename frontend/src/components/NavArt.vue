@@ -41,11 +41,15 @@ watch(autoSwitchColours, (newValue) => {
 })
 
 const artistTarget = computed(() => {
-  return currentlyPlayingItem.value.track ? `/artists/${currentlyPlayingItem.value.track.artistId}` : `/podcasts/${currentlyPlayingItem.value.podcastEpisode?.channelId}`
+  return currentlyPlayingItem.value.track
+    ? `/artists/${currentlyPlayingItem.value.track.artistId}`
+    : `/podcasts/${currentlyPlayingItem.value.podcastEpisode?.channelId}`
 })
 
 const artTarget = computed(() => {
-  return currentlyPlayingItem.value.track ? `/albums/${currentlyPlayingItem.value.track.albumId}` : `/podcasts/${currentlyPlayingItem.value.podcastEpisode?.channelId}`
+  return currentlyPlayingItem.value.track
+    ? `/albums/${currentlyPlayingItem.value.track.albumId}`
+    : `/podcasts/${currentlyPlayingItem.value.podcastEpisode?.channelId}`
 })
 
 const imgAlt = computed(() => {

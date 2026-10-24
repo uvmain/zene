@@ -1,6 +1,6 @@
-import { SubsonicResponse } from "./subsonic"
+import type { SubsonicResponse } from './subsonic'
 
-export type Share = {
+export interface Share {
   id: number
   url: string
   description: string

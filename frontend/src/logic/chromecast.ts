@@ -21,7 +21,7 @@ export const isChromecastReady = ref<boolean>(false)
 const trackFinished = {
   mediaInfoIsNull: false,
   playerIdle: false,
-  chromecastStopped: false
+  chromecastStopped: false,
 }
 
 const isChrome = ref<boolean>(false)
@@ -132,7 +132,13 @@ function buildMediaMetadata(playItem?: PlayItem): chrome.cast.media.MusicTrackMe
     metadata.artist = track.displayArtist || track.artist
     metadata.albumName = track.album
     metadata.trackNumber = track.trackNumber ?? track.track
-    metadata.images = [{ url: getCoverArtUrl(track.musicBrainzId), width: 400, height: 400 }]
+    metadata.images = [
+      {
+        url: getCoverArtUrl(track.musicBrainzId),
+        width: 400,
+        height: 400,
+      },
+    ]
     return metadata
   }
 
@@ -141,7 +147,13 @@ function buildMediaMetadata(playItem?: PlayItem): chrome.cast.media.MusicTrackMe
     const metadata = new window.chrome.cast.media.GenericMediaMetadata()
     metadata.metadataType = window.chrome.cast.media.MetadataType.GENERIC
     metadata.title = episode.title
-    metadata.images = [{ url: getCoverArtUrl(episode.streamId), width: 400, height: 400 }]
+    metadata.images = [
+      {
+        url: getCoverArtUrl(episode.streamId),
+        width: 400,
+        height: 400,
+      },
+    ]
     return metadata
   }
 
@@ -188,7 +200,9 @@ export async function loadMedia(mediaUrl: string, playItem?: PlayItem): Promise<
       debugLog('[chromecast] - Load succeeded')
     },
     (err: unknown) => {
-      debugLog(`[chromecast] - Error:${err instanceof Error ? err.message : JSON.stringify(err)}`)
+      debugLog(`[chromecast] - Error:${err instanceof Error
+        ? err.message
+        : JSON.stringify(err)}`)
     },
   )
 }
@@ -374,7 +388,7 @@ export function onPlayerStateChanged(event: CastEventValue<string>) {
   }
 }
 
-function handleNextMedia({ mediaInfoIsNull, playerIdle, chromecastStopped }: { mediaInfoIsNull?: boolean; playerIdle?: boolean; chromecastStopped?: boolean }) {
+function handleNextMedia({ mediaInfoIsNull, playerIdle, chromecastStopped }: { mediaInfoIsNull?: boolean, playerIdle?: boolean, chromecastStopped?: boolean }) {
   if (mediaInfoIsNull !== undefined) {
     trackFinished.mediaInfoIsNull = mediaInfoIsNull
   }

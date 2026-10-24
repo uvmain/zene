@@ -53,5 +53,5 @@ export default defineConfig({
       '@vueuse/core',
     ],
     exclude: [],
-  }
+  },
 })

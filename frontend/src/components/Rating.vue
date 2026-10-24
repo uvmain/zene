@@ -18,7 +18,9 @@ function updateRating(newRating: number) {
 }
 
 function effectiveRating() {
-  return hoverRating.value > 0 ? hoverRating.value : model.value
+  return hoverRating.value > 0
+    ? hoverRating.value
+    : model.value
 }
 </script>
 
