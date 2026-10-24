@@ -3,6 +3,7 @@ FROM ghcr.io/pnpm/pnpm:latest AS frontend-build
 WORKDIR /app
 
 COPY ./frontend ./frontend
+COPY ./utils ./utils
 COPY ./pnpm-lock.yaml ./pnpm-workspace.yaml ./package.json ./
 
 RUN pnpm runtime set node 24 -g
