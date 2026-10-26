@@ -24,6 +24,8 @@ const trackFinished = {
   chromecastStopped: false,
 }
 
+let isReplacingMedia = false
+
 const isChrome = ref<boolean>(false)
 
 export function isBrowserChrome(): boolean {
@@ -195,16 +197,15 @@ export async function loadMedia(mediaUrl: string, playItem?: PlayItem): Promise<
   }
   const request = new window.chrome.cast.media.LoadRequest(mediaInfo)
 
-  castSession.loadMedia(request).then(
-    () => {
-      debugLog('[chromecast] - Load succeeded')
-    },
-    (err: unknown) => {
-      debugLog(`[chromecast] - Error:${err instanceof Error
-        ? err.message
-        : JSON.stringify(err)}`)
-    },
-  )
+  isReplacingMedia = true
+  try {
+    await castSession.loadMedia(request)
+    debugLog('[chromecast] - Load succeeded')
+  }
+  catch (err: unknown) {
+    isReplacingMedia = false
+    debugLog(`[chromecast] - Error:${err instanceof Error ? err.message : JSON.stringify(err)}`)
+  }
 }
 
 export async function play() {
@@ -360,7 +361,13 @@ export function onVolumeChange(event: Event) {
 export function onMediaInfoChanged(event: CastEventValue<{ duration?: number }>) {
   debugLog(`[chromecast:onMediaInfoChanged] - ${JSON.stringify(event)}`)
   duration.value = event.value?.duration ?? 0
-  handleNextMedia({ mediaInfoIsNull: event.value === undefined || event.value === null })
+  const mediaInfoIsNull = event.value === undefined || event.value === null
+  if (!mediaInfoIsNull) {
+    isReplacingMedia = false
+    trackFinished.mediaInfoIsNull = false
+    trackFinished.playerIdle = false
+  }
+  handleNextMedia({ mediaInfoIsNull })
 }
 
 export function onCurrentTimeChanged(event: CastEventValue<number>) {
@@ -399,12 +406,16 @@ function handleNextMedia({ mediaInfoIsNull, playerIdle, chromecastStopped }: { m
     trackFinished.chromecastStopped = chromecastStopped
   }
   if (trackFinished.mediaInfoIsNull && trackFinished.playerIdle && !trackFinished.chromecastStopped) {
-    debugLog('[chromecast:handleNextMedia] - Track finished, loading next track')
-    void handleNextTrack()
     trackFinished.mediaInfoIsNull = false
     trackFinished.playerIdle = false
+    if (isReplacingMedia) {
+      debugLog('[chromecast:handleNextMedia] - Media was replaced, not loading another track')
+      return
+    }
+    debugLog('[chromecast:handleNextMedia] - Track finished, loading next track')
+    void handleNextTrack()
   }
-  else if (trackFinished.mediaInfoIsNull && trackFinished.playerIdle && !trackFinished.chromecastStopped) {
+  else if (trackFinished.mediaInfoIsNull && trackFinished.playerIdle && trackFinished.chromecastStopped) {
     debugLog('[chromecast:handleNextMedia] - Track finished, but chromecast stopped, not loading next track')
   }
 }
