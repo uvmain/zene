@@ -1,9 +1,9 @@
 import type { ButterchurnPreset, FfVersionsResponse, SearchResult } from '~/types'
+import type { SubsonicSharesResponse } from '~/types/share'
 import type * as Types from '~/types/subsonic'
 import type { SubsonicAlbum } from '~/types/subsonicAlbum'
 import type { SubsonicArtist, SubsonicArtistInfo } from '~/types/subsonicArtist'
 import type { SubsonicGenre } from '~/types/subsonicGenres'
-import type { SubsonicSharesResponse } from '~/types/share'
 import type { StructuredLyric } from '~/types/subsonicLyrics'
 import type { SubsonicPodcastChannel } from '~/types/subsonicPodcasts'
 import type { SubsonicSong } from '~/types/subsonicSong'
@@ -89,7 +89,10 @@ export async function openSubsonicFetchRequest<T>(path: string, options: Request
 
   const formDataEntries = [] as [string, string][]
   (options?.body as FormData)?.forEach((value: FormDataEntryValue, key: string) => {
-    formDataEntries.push([key, value.toString()])
+    formDataEntries.push([
+      key,
+      value.toString(),
+    ])
   })
 
   const concurrencyKey = `${path}|${options.method}|${JSON.stringify(formDataEntries)}|${JSON.stringify(options.body)}`
@@ -624,7 +627,7 @@ export async function getTranscodeDecision(mediaId: string, mediaType: 'song' | 
     v: '1.6.0',
     f: 'json',
     mediaId: mediaId.toString(),
-    mediaType: mediaType,
+    mediaType,
   })
   const clientInfo = await getTranscodeClientInfo()
 

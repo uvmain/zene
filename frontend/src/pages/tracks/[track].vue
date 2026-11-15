@@ -12,7 +12,9 @@ const error = ref<string | null>(null)
 const musicbrainzTrackId = computed(() => route.params.track as string)
 
 const coverArtUrl = computed(() => {
-  return track.value ? getCoverArtUrl(track.value?.musicBrainzId) : ''
+  return track.value
+    ? getCoverArtUrl(track.value?.musicBrainzId)
+    : ''
 })
 
 onMounted(async () => {

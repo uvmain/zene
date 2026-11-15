@@ -115,10 +115,10 @@ onBeforeMount(async () => {
       :style="{ backgroundImage: `url(${coverArtUrl})` }"
     >
       <div class="corner-cut background-grad-2 backdrop-blur-md lg:(corner-cut-large)">
-        <div class="p-4 lg:p-8 flex flex-col gap-4">
+        <div class="p-4 flex flex-col gap-4 lg:p-8">
           <div class="text-2xl font-bold link line-clamp-1 lg:hidden" @click="navigateAlbum()">
-                {{ currentAlbum.name }}
-              </div>
+            {{ currentAlbum.name }}
+          </div>
           <div class="flex flex-row gap-4 items-center">
             <img
               :src="coverArtUrl"
@@ -129,7 +129,7 @@ onBeforeMount(async () => {
               @click="navigateAlbum"
             >
             <div class="text-left flex flex-col gap-1 justify-center lg:gap-4">
-              <div class="hidden font-bold link lg:line-clamp-1 lg:block text-4xl" @click="navigateAlbum()">
+              <div class="text-4xl font-bold link hidden lg:block lg:line-clamp-1" @click="navigateAlbum()">
                 {{ currentAlbum.name }}
               </div>
               <div class="text-xl hidden lg:block">
@@ -139,7 +139,7 @@ onBeforeMount(async () => {
                 {{ artist }}
               </div>
               <Genres v-if="albumGenres.length > 0" :genre-strings="albumGenres" :row-limit="1" />
-              <div class="flex flex-col lg:flex-row gap-2 lg:gap-6 items-start lg:items-center" >
+              <div class="flex flex-col gap-2 items-start lg:flex-row lg:gap-6 lg:items-center">
                 <PlayButton class="flex justify-start" :album="currentAlbum" :playing-route="albumRoute" />
                 <Fave v-model="currentAlbum.starred" :musicbrainz-id="currentAlbum.id" />
                 <Rating v-model="currentAlbum.userRating" :musicbrainz-id="currentAlbum.id" />

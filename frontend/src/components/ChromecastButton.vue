@@ -26,10 +26,10 @@ onMounted(() => {
 
 <template>
   <div v-if="isChrome" class="flex items-center justify-center">
-    <button :title="buttonTitle" :aria-label="buttonTitle" v-if="chromecastConnected" class="footer-icon-on" @click="ChromeCast.connect">
+    <button v-if="chromecastConnected" :title="buttonTitle" :aria-label="buttonTitle" class="footer-icon-on" @click="ChromeCast.connect">
       <icon-nrk-media-chromecast-active />
     </button>
-    <button :title="buttonTitle" :aria-label="buttonTitle" v-else class="footer-icon" @click="ChromeCast.connect">
+    <button v-else :title="buttonTitle" :aria-label="buttonTitle" class="footer-icon" @click="ChromeCast.connect">
       <icon-nrk-media-chromecast />
     </button>
   </div>

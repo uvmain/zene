@@ -1,5 +1,5 @@
-import { backendUrl } from '~/stores/main'
 import type { Share } from '~/types/share'
+import { backendUrl } from '~/stores/main'
 
 export async function fetchShare(shareToken: string): Promise<Share> {
   const url = `${backendUrl.value}/share/${shareToken}`

@@ -5,7 +5,10 @@ defineProps({
   title: { type: String, required: true },
   options: { type: Array as PropType<(string | number)[]>, required: true },
   align: { type: String as PropType<Alignment>, default: 'left' },
-  currentOption: { type: [String, Number], required: false },
+  currentOption: {
+    type: [String, Number],
+    required: false,
+  },
 })
 
 const emits = defineEmits(['select'])

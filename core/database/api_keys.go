@@ -99,6 +99,10 @@ func CreateApiKey(ctx context.Context, userId int) (types.ApiKey, error) {
 		return types.ApiKey{}, fmt.Errorf("user not authorized to create API keys for other users")
 	}
 
+	return createApiKey(ctx, userId)
+}
+
+func createApiKey(ctx context.Context, userId int) (types.ApiKey, error) {
 	newApiKey, err := logic.GenerateNewApiKey()
 	if err != nil {
 		return types.ApiKey{}, fmt.Errorf("generating new API key: %v", err)

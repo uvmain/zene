@@ -19,7 +19,9 @@ const imgAlt = computed(() => {
 })
 
 const loading = computed<LoadingAttribute>(() => {
-  return props.index < 10 ? 'eager' : 'lazy'
+  return props.index < 10
+    ? 'eager'
+    : 'lazy'
 })
 
 const artistRoute = computed(() => {

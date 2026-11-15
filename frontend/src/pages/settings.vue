@@ -129,7 +129,7 @@ onMounted(() => {
     <ZButton @click="deleteAudioCache()">
       <span class="text-nowrap">Delete Audio Cache</span>
     </ZButton>
-    
+
     <DropdownMenu
       title="Transcode Stream Quality"
       :options="streamQualityOptions.filter(option => option !== 'Unlimited')"

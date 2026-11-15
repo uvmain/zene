@@ -226,14 +226,16 @@ export async function setCurrentlyPlayingTrack(track: SubsonicSong, autoPlay = t
   const queuePosition = currentQueue.value?.indexOf(track)
   await playTrack(track, {
     autoPlay,
-    queuePosition: queuePosition !== undefined && queuePosition >= 0 ? queuePosition : undefined,
+    queuePosition: queuePosition !== undefined && queuePosition >= 0
+      ? queuePosition
+      : undefined,
   })
 }
 
 export async function setCurrentlyPlayingPodcast(episode: SubsonicPodcastEpisode) {
   const stored = await episodeIsStored(episode.streamId)
   if (!stored) {
-    return await getAuthenticatedTrackUrl(episode.streamId, 'podcast')
+    return getAuthenticatedTrackUrl(episode.streamId, 'podcast')
   }
 
   const blob = await getStoredEpisode(episode.streamId)
@@ -395,36 +397,46 @@ export function setMediaSessionMetadata(playItem: PlayItem) {
   if (!('mediaSession' in navigator) || (!playItem.track && !playItem.podcastEpisode)) {
     return
   }
-  
+
   const metadata = new MediaMetadata({
     title: playItem.track?.title || playItem.podcastEpisode?.title || '',
     artist: playItem.track?.artist || playItem.podcastEpisode?.parent || '',
     album: playItem.track?.album || '',
     artwork: [
       {
-        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 96) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 96),
+        src: playItem.track
+          ? getCoverArtUrl(playItem.track.musicBrainzId, 96)
+          : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 96),
         sizes: '96x96',
-        type: 'image/jpeg'
+        type: 'image/jpeg',
       },
       {
-        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 192) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 192),
+        src: playItem.track
+          ? getCoverArtUrl(playItem.track.musicBrainzId, 192)
+          : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 192),
         sizes: '192x192',
-        type: 'image/jpeg'
+        type: 'image/jpeg',
       },
       {
-        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 256) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 256),
+        src: playItem.track
+          ? getCoverArtUrl(playItem.track.musicBrainzId, 256)
+          : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 256),
         sizes: '256x256',
-        type: 'image/jpeg'
+        type: 'image/jpeg',
       },
       {
-        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 384) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 384),
+        src: playItem.track
+          ? getCoverArtUrl(playItem.track.musicBrainzId, 384)
+          : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 384),
         sizes: '384x384',
-        type: 'image/jpeg'
+        type: 'image/jpeg',
       },
       {
-        src: playItem.track ? getCoverArtUrl(playItem.track.musicBrainzId, 512) : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 512),
+        src: playItem.track
+          ? getCoverArtUrl(playItem.track.musicBrainzId, 512)
+          : getCoverArtUrl(playItem.podcastEpisode!.coverArt, 512),
         sizes: '512x512',
-        type: 'image/jpeg'
+        type: 'image/jpeg',
       },
     ],
   })
@@ -435,12 +447,24 @@ export function setMediaSessionMetadata(playItem: PlayItem) {
 
 export function setMediaSessionHandlers() {
   if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => { void togglePlayback() })
-    navigator.mediaSession.setActionHandler('pause', () => { void togglePlayback() })
-    navigator.mediaSession.setActionHandler('stop', () => { void stopPlayback() })
-    navigator.mediaSession.setActionHandler('previoustrack', () => { void handlePreviousTrack() })
-    navigator.mediaSession.setActionHandler('nexttrack', () => { void handleNextTrack() })
-    navigator.mediaSession.setActionHandler('seekto', ({seekTime}) => { void seek(seekTime ?? 0) })
+    navigator.mediaSession.setActionHandler('play', () => {
+      void togglePlayback()
+    })
+    navigator.mediaSession.setActionHandler('pause', () => {
+      void togglePlayback()
+    })
+    navigator.mediaSession.setActionHandler('stop', () => {
+      void stopPlayback()
+    })
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      void handlePreviousTrack()
+    })
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      void handleNextTrack()
+    })
+    navigator.mediaSession.setActionHandler('seekto', ({ seekTime }) => {
+      void seek(seekTime ?? 0)
+    })
   }
 }
 

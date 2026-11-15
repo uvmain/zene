@@ -129,6 +129,13 @@ declare module 'vue-router/auto-routes' {
       { episode: ParamValue<false> },
       | never
     >,
+    '/qr-login': RouteRecordInfo<
+      '/qr-login',
+      '/qr-login',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/radio': RouteRecordInfo<
       '/radio',
       '/radio',
@@ -309,6 +316,14 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | 'episode'
+    }
+    'src/pages/qr-login.vue': {
+      routes:
+        | '/qr-login'
+      views:
+        | never
+      pathParamNames:
+        | never
     }
     'src/pages/radio.vue': {
       routes:

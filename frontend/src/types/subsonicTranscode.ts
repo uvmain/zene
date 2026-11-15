@@ -36,7 +36,7 @@ interface Limitation {
 }
 
 export interface SubsonicTranscodeDecisionResponse {
-  "subsonic-response": {
+  'subsonic-response': {
     status: string
     version: string
     type: string

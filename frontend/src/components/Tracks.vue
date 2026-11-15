@@ -2,9 +2,8 @@
 import type { SubsonicSong } from '~/types/subsonicSong'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import { debugLog } from '~/logic/logger'
-import { currentlyPlayingItem } from '~/logic/playbackQueue'
+import { currentlyPlayingItem, currentQueue } from '~/logic/playbackQueue'
 import 'vue-virtual-scroller/index.css'
-import { currentQueue } from '~/logic/playbackQueue'
 
 const props = defineProps({
   primaryArtist: { type: String, required: false },
@@ -68,11 +67,13 @@ onMounted(async () => {
         key-field="id"
         @visible="scrollToActiveTrack()"
       >
-        <ShareTrack v-if="isShare"
+        <ShareTrack
+          v-if="isShare"
           :track="item"
           :track-index="index"
         />
-        <Track v-else
+        <Track
+          v-else
           :track="item"
           :track-index="index"
           :primary-artist="primaryArtist"
